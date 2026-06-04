@@ -1,5 +1,6 @@
 import { openDB } from './db.js';
-import { register, initRouter } from './router.js';
+import { register, initRouter, navigate, currentRoute } from './router.js';
+import { openSettings } from './components/settings.js';
 import { render as renderDashboard } from './modules/dashboard.js';
 import { render as renderTaxi } from './modules/taxi.js';
 import { render as renderKoran } from './modules/koran.js';
@@ -16,6 +17,10 @@ async function main() {
   register('goals', renderGoals);
   register('todo', renderTodo);
   initRouter();
+
+  document.getElementById('settings-btn').onclick = () => {
+    openSettings(() => navigate(currentRoute() || 'dashboard'));
+  };
 
   let _deferredInstall = null;
   window.addEventListener('beforeinstallprompt', (e) => {

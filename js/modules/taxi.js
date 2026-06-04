@@ -1,45 +1,78 @@
 import { all, put, del } from '../db.js';
 import { openModal } from '../components/modal.js';
-import { uid, fmtMoney, todayISO, startOfWeek, startOfMonth, monthKey, escapeHTML } from '../utils.js';
+import { uid, fmtMoney, todayISO, startOfWeek, startOfMonth, monthKey, escapeHTML, ymd, sameDay } from '../utils.js';
+import { getNumber } from '../settings.js';
+
+let _tickTimer = null;
 
 export async function render(container) {
+  if (_tickTimer) { clearInterval(_tickTimer); _tickTimer = null; }
+
   const rides = await all('rides');
   const expenses = await all('expenses');
+  const shifts = await all('shifts');
   const now = new Date();
   const weekStart = startOfWeek(now);
   const monthStart = startOfMonth(now);
 
   const sumIf = (arr, pred) => arr.filter(pred).reduce((s, r) => s + Number(r.amount || 0), 0);
+  const todayIncome = sumIf(rides, r => sameDay(new Date(r.date), now));
   const weekIncome  = sumIf(rides, r => new Date(r.date) >= weekStart);
   const monthIncome = sumIf(rides, r => new Date(r.date) >= monthStart);
   const weekExp  = sumIf(expenses, e => new Date(e.date) >= weekStart);
   const monthExp = sumIf(expenses, e => new Date(e.date) >= monthStart);
 
+  const taxPct = getNumber('taxReservePercent');
+  const monthTaxReserve = monthIncome * (taxPct / 100);
+
   const bySource = { uber: 0, bolt: 0, whatsapp: 0 };
-  rides.forEach(r => { bySource[r.source] = (bySource[r.source] || 0) + Number(r.amount || 0); });
+  const countBySource = { uber: 0, bolt: 0, whatsapp: 0 };
+  rides.forEach(r => {
+    bySource[r.source] = (bySource[r.source] || 0) + Number(r.amount || 0);
+    countBySource[r.source] = (countBySource[r.source] || 0) + 1;
+  });
   const totalIncome = bySource.uber + bySource.bolt + bySource.whatsapp;
+
+  const activeShift = shifts.find(s => !s.endTime);
 
   container.innerHTML = `
     <h1>Taxi</h1>
+
+    <div class="card shift-card" id="shift-card">
+      <h2>⏱️ Dienst</h2>
+      <div id="shift-body"></div>
+    </div>
+
     <button class="btn block" id="add-ride">+ Nieuwe rit</button>
     <button class="btn secondary block" id="add-expense" style="margin-top:8px">+ Nieuwe uitgave</button>
     <button class="btn secondary block" id="export-csv" style="margin-top:8px">CSV exporteren</button>
 
     <div class="card" style="margin-top:16px">
+      <h2>Vandaag</h2>
+      <p class="big-money">${fmtMoney(todayIncome)}</p>
+    </div>
+    <div class="card">
       <h2>Deze week</h2>
-      <p>Bruto: <b>${fmtMoney(weekIncome)}</b> · Uitgaven: <b>${fmtMoney(weekExp)}</b> · Netto: <b>${fmtMoney(weekIncome - weekExp)}</b></p>
+      <p>Bruto: <b class="money">${fmtMoney(weekIncome)}</b> · Uitgaven: <b>${fmtMoney(weekExp)}</b></p>
+      <p>Netto: <b class="money">${fmtMoney(weekIncome - weekExp)}</b></p>
     </div>
     <div class="card">
       <h2>Deze maand</h2>
-      <p>Bruto: <b>${fmtMoney(monthIncome)}</b> · Uitgaven: <b>${fmtMoney(monthExp)}</b> · Netto: <b>${fmtMoney(monthIncome - monthExp)}</b></p>
+      <p>Bruto: <b class="money">${fmtMoney(monthIncome)}</b> · Uitgaven: <b>${fmtMoney(monthExp)}</b></p>
+      <p>Netto: <b class="money">${fmtMoney(monthIncome - monthExp)}</b></p>
+      <p class="muted" style="margin-top:8px">💰 Reserveer voor belasting (${taxPct}%): <b>${fmtMoney(monthTaxReserve)}</b></p>
     </div>
     <div class="card">
       <h2>Per bron (totaal)</h2>
       ${['uber','bolt','whatsapp'].map(s => {
-        const v = bySource[s]; const pct = totalIncome ? Math.round(v / totalIncome * 100) : 0;
-        return `<p>${s[0].toUpperCase()+s.slice(1)}: <b>${fmtMoney(v)}</b> <span class="muted">(${pct}%)</span></p>`;
+        const v = bySource[s]; const c = countBySource[s];
+        const pct = totalIncome ? Math.round(v / totalIncome * 100) : 0;
+        const avg = c ? v / c : 0;
+        return `<p>${s[0].toUpperCase()+s.slice(1)}: <b class="money">${fmtMoney(v)}</b> <span class="muted">(${pct}% · ${c} rit${c===1?'':'ten'} · gem ${fmtMoney(avg)})</span></p>`;
       }).join('')}
     </div>
+
+    <div class="card"><h2>Statistieken</h2><div id="stats"></div></div>
 
     <div class="card"><h2>Netto per maand (12 mnd)</h2><div id="chart"></div></div>
 
@@ -50,13 +83,105 @@ export async function render(container) {
     <div class="list" id="exp-list"></div>
   `;
 
+  renderShiftCard(container, activeShift, shifts, rides);
   renderRidesList(container, rides);
   renderExpensesList(container, expenses);
   renderChart(container, rides, expenses);
+  renderStats(container, rides, shifts);
 
   container.querySelector('#add-ride').onclick = () => openRideModal(container);
   container.querySelector('#add-expense').onclick = () => openExpenseModal(container);
   container.querySelector('#export-csv').onclick = () => exportCSV(rides, expenses);
+
+  if (activeShift) {
+    _tickTimer = setInterval(() => updateLiveTimer(container, activeShift, rides), 1000);
+  }
+}
+
+function renderShiftCard(container, active, shifts, rides) {
+  const body = container.querySelector('#shift-body');
+  if (active) {
+    body.innerHTML = `
+      <p>Bezig sinds <b>${new Date(active.startTime).toLocaleTimeString('nl-NL', {hour:'2-digit',minute:'2-digit'})}</b></p>
+      <p class="big-money" id="shift-elapsed">--:--:--</p>
+      <p class="muted">Verdiend deze dienst: <b class="money" id="shift-earned">€ 0.00</b> · <span id="shift-perhour">€ 0.00/u</span></p>
+      <button class="btn danger block" id="stop-shift" style="margin-top:8px">Dienst stoppen</button>
+    `;
+    updateLiveTimer(container, active, rides);
+    body.querySelector('#stop-shift').onclick = async () => {
+      await put('shifts', { ...active, endTime: new Date().toISOString() });
+      render(container);
+    };
+  } else {
+    const last = shifts.filter(s => s.endTime).sort((a,b) => b.startTime.localeCompare(a.startTime))[0];
+    body.innerHTML = `
+      <p class="muted">Geen actieve dienst</p>
+      ${last ? `<p class="muted" style="font-size:.85rem">Laatste: ${new Date(last.startTime).toLocaleDateString('nl-NL')} — ${shiftDuration(last)}</p>` : ''}
+      <button class="btn block" id="start-shift" style="margin-top:8px">Dienst starten</button>
+    `;
+    body.querySelector('#start-shift').onclick = async () => {
+      await put('shifts', { id: uid(), startTime: new Date().toISOString(), endTime: null });
+      render(container);
+    };
+  }
+}
+
+function updateLiveTimer(container, shift, rides) {
+  const el = container.querySelector('#shift-elapsed');
+  const earnedEl = container.querySelector('#shift-earned');
+  const phEl = container.querySelector('#shift-perhour');
+  if (!el) return;
+  const start = new Date(shift.startTime);
+  const now = new Date();
+  const sec = Math.floor((now - start) / 1000);
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const earned = rides.filter(r => new Date(r.date) >= start).reduce((sum, r) => sum + Number(r.amount || 0), 0);
+  earnedEl.textContent = fmtMoney(earned);
+  const hours = sec / 3600;
+  phEl.textContent = hours > 0 ? fmtMoney(earned / hours) + '/u' : '€ 0.00/u';
+}
+
+function shiftDuration(shift) {
+  const ms = new Date(shift.endTime) - new Date(shift.startTime);
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return `${h}u ${m}m`;
+}
+
+function renderStats(container, rides, shifts) {
+  const el = container.querySelector('#stats');
+  if (!rides.length) { el.innerHTML = '<p class="muted">Nog geen data.</p>'; return; }
+
+  const dayNames = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+  const byDay = Array(7).fill(0).map(() => ({ total: 0, count: 0 }));
+  rides.forEach(r => {
+    const d = new Date(r.date).getDay();
+    byDay[d].total += Number(r.amount || 0);
+    byDay[d].count += 1;
+  });
+  const dayAvg = byDay.map((b, i) => ({
+    name: dayNames[i],
+    avg: b.count ? b.total / Math.max(1, new Set(rides.filter(r => new Date(r.date).getDay() === i).map(r => ymd(new Date(r.date)))).size) : 0,
+  })).sort((a, b) => b.avg - a.avg);
+  const bestDay = dayAvg[0];
+
+  const avgRide = rides.reduce((s, r) => s + Number(r.amount || 0), 0) / rides.length;
+
+  const totalShiftHours = shifts.filter(s => s.endTime).reduce((sum, s) => sum + (new Date(s.endTime) - new Date(s.startTime)) / 3600000, 0);
+  const totalShiftEarnings = shifts.filter(s => s.endTime).reduce((sum, s) => {
+    const start = new Date(s.startTime), end = new Date(s.endTime);
+    return sum + rides.filter(r => { const d = new Date(r.date); return d >= start && d <= end; }).reduce((a, r) => a + Number(r.amount || 0), 0);
+  }, 0);
+  const avgPerHour = totalShiftHours > 0 ? totalShiftEarnings / totalShiftHours : 0;
+
+  el.innerHTML = `
+    <p>📅 Beste dag: <b>${bestDay.name}</b> <span class="muted">(gem ${fmtMoney(bestDay.avg)})</span></p>
+    <p>🚗 Gemiddelde rit: <b class="money">${fmtMoney(avgRide)}</b></p>
+    <p>⏱️ Gemiddelde €/uur (alle diensten): <b class="money">${fmtMoney(avgPerHour)}</b> <span class="muted">over ${totalShiftHours.toFixed(1)}u</span></p>
+  `;
 }
 
 function renderRidesList(container, rides) {
@@ -66,7 +191,7 @@ function renderRidesList(container, rides) {
   list.innerHTML = recent.map(r => `
     <div class="list-item">
       <div>
-        <div><b>${fmtMoney(r.amount)}</b> <span class="pill">${escapeHTML(r.source)}</span></div>
+        <div><b class="money">${fmtMoney(r.amount)}</b> <span class="pill">${escapeHTML(r.source)}</span></div>
         <div class="muted" style="font-size:.8rem">
           ${new Date(r.date).toLocaleString('nl-NL')}${r.km ? ' · ' + r.km + ' km' : ''}${r.note ? ' · ' + escapeHTML(r.note) : ''}
         </div>
