@@ -622,6 +622,27 @@ body.is-offline .view { padding-top: 50px; }
 .subtask input { width: auto; }
 .subtask input:checked + span { text-decoration: line-through; color: var(--text-dim); }
 
+/* HABITS */
+.hab-check {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--bg-elev-2);
+  border: 2px solid var(--border);
+  color: var(--gold);
+  font-size: 1.1rem; font-weight: 700;
+  cursor: pointer; flex: 0 0 auto;
+  font-family: inherit;
+  transition: transform .15s ease;
+}
+.hab-check.done { background: var(--gold); color: #001423; border-color: var(--gold); }
+.hab-check:active { transform: scale(.92); }
+.hab-strip { display: flex; gap: 2px; margin-top: 6px; }
+.hab-day { width: 12px; height: 6px; border-radius: 2px; background: var(--bg-elev-3); }
+.hab-day.done { background: var(--ok); }
+
+/* POT */
+.pot-card { background: linear-gradient(135deg, var(--gold-glow), var(--bg-elev) 70%); }
+
 /* NOTES */
 .note-body { margin-top: 8px; font-size: .92rem; line-height: 1.5; color: var(--text); }
 .note-body code { background: var(--bg-elev-2); padding: 1px 5px; border-radius: 4px; font-size: .85em; }

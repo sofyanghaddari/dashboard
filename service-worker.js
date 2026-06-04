@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v7';
+const CACHE = 'dashboard-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -38,6 +38,7 @@ const ASSETS = [
   './js/modules/notes.js',
   './js/components/pomodoro.js',
   './js/components/calendar.js',
+  './js/components/year-review.js',
 ];
 
 self.addEventListener('install', (e) => {

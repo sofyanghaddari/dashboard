@@ -7,7 +7,7 @@ import { exportICal } from '../export-ical.js';
 import { setupGithub, syncUp, syncDown, getSyncStatus } from '../github-sync.js';
 import { isLockEnabled, setPin } from '../lock.js';
 
-const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts'];
+const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots'];
 
 export async function openSettings(onClose) {
   const earned = await computeEarnedBadges();

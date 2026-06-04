@@ -93,7 +93,10 @@ export async function render(container) {
         <p class="muted">Sinds ${new Date(activeShift.startTime).toLocaleTimeString('nl-NL', {hour:'2-digit',minute:'2-digit'})}</p>
       </div>` : ''}
 
-    <button class="btn secondary block" id="open-calendar" style="margin-bottom:12px">📅 Kalender openen</button>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn secondary" id="open-calendar">📅 Kalender</button>
+      <button class="btn secondary" id="open-yr">📊 Jaaroverzicht</button>
+    </div>
 
     <div class="card" id="weather-card">
       <h2>🌤️ Weer & ritten-radar</h2>
@@ -159,6 +162,7 @@ export async function render(container) {
   `;
 
   container.querySelector('#open-calendar').onclick = () => window.openCalendar && window.openCalendar();
+  container.querySelector('#open-yr').onclick = () => window.openYearReview && window.openYearReview();
 
   // Weer ophalen + opportunities tonen
   loadWeather(container);

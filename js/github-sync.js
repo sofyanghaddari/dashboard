@@ -2,7 +2,7 @@
 import { all, put, clear } from './db.js';
 import { getSetting, setSetting } from './settings.js';
 
-const STORES = ['rides','expenses','hizb_log','cards','goals','todos','shifts'];
+const STORES = ['rides','expenses','hizb_log','cards','goals','todos','shifts','notes','habits','habit_log','pots'];
 const FILE = 'dashboard-backup.json';
 
 async function api(path, token, opts = {}) {

@@ -6,6 +6,7 @@ import { enablePullToRefresh } from './components/pullrefresh.js';
 import { initCmdK, openSearch } from './components/cmdk.js';
 import { initPomodoro } from './components/pomodoro.js';
 import { openCalendar } from './components/calendar.js';
+import { openYearReview } from './components/year-review.js';
 import { lockScreen } from './lock.js';
 import { maybeAutoSync } from './github-sync.js';
 import { render as renderDashboard } from './modules/dashboard.js';
@@ -28,6 +29,7 @@ async function bootApp() {
   initRouter();
   initPomodoro();
   window.openCalendar = openCalendar;
+  window.openYearReview = openYearReview;
 
   document.getElementById('settings-btn').onclick = () => {
     openSettings(() => navigate(currentRoute() || 'dashboard'));
