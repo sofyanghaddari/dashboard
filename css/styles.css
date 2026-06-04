@@ -202,15 +202,22 @@ label {
 .tab {
   background: none; border: 0;
   color: var(--text-faint);
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 2px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  font-size: 1.35rem; gap: 3px;
+  font-size: 1.15rem; gap: 2px;
   cursor: pointer;
   font-family: inherit;
   transition: color var(--transition), transform var(--transition);
   position: relative;
+  overflow: hidden;
 }
-.tab span { font-size: .62rem; letter-spacing: .04em; font-weight: 500; text-transform: uppercase; }
+.tab span { font-size: .58rem; letter-spacing: .03em; font-weight: 500; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+@media (max-width: 380px) {
+  .tab { font-size: 1.05rem; }
+  .tab span { font-size: .54rem; letter-spacing: 0; }
+}
 .tab.active { color: var(--gold); }
 .tab.active::before {
   content: '';
@@ -467,6 +474,77 @@ body.is-offline .view { padding-top: 50px; }
   transform: translateY(20px) !important;
 }
 @keyframes pullSpin { to { transform: translateY(20px) rotate(360deg); } }
+
+/* SEARCH BUTTON (next to settings) */
+.search-btn { right: 64px; }
+
+/* CMD-K SEARCH */
+.cmdk-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 12vh;
+  z-index: 1100;
+  animation: fadeIn .15s ease;
+}
+.cmdk {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%; max-width: 580px;
+  margin: 0 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+#cmdk-input {
+  border: 0; background: transparent;
+  font-size: 1.05rem;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+}
+#cmdk-input:focus { box-shadow: none; }
+.cmdk-results { max-height: 50vh; overflow-y: auto; }
+.cmdk-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-soft);
+  transition: background var(--transition);
+  font-size: .95rem;
+}
+.cmdk-item.active { background: var(--bg-elev-2); border-left: 3px solid var(--gold); padding-left: 17px; }
+.cmdk-empty { padding: 24px; text-align: center; color: var(--text-dim); }
+.cmdk-hint { padding: 10px 20px; font-size: .75rem; color: var(--text-faint); border-top: 1px solid var(--border-soft); }
+
+/* TAG-ROW (filter chips) */
+.tag-row {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 4px 0;
+}
+.tag-row .pill {
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+.tag-row .pill.active {
+  background: var(--gold);
+  color: #001423;
+  font-weight: 600;
+}
+
+/* SUBTASKS */
+.subtasks { margin-top: 6px; padding-left: 4px; border-left: 2px solid var(--border); padding: 6px 0 6px 10px; }
+.subtask { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: .88rem; cursor: pointer; }
+.subtask input { width: auto; }
+.subtask input:checked + span { text-decoration: line-through; color: var(--text-dim); }
+
+/* SUGGESTION CARD */
+.suggestion-card {
+  background: linear-gradient(135deg, rgba(110,201,255,.06), var(--bg-elev) 60%);
+  border-color: rgba(110,201,255,.2);
+}
 
 /* SKELETON */
 .skeleton {

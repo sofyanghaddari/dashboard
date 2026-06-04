@@ -3,6 +3,7 @@ import { register, initRouter, navigate, currentRoute } from './router.js';
 import { openSettings } from './components/settings.js';
 import { initTheme } from './theme.js';
 import { enablePullToRefresh } from './components/pullrefresh.js';
+import { initCmdK, openSearch } from './components/cmdk.js';
 import { render as renderDashboard } from './modules/dashboard.js';
 import { render as renderTaxi } from './modules/taxi.js';
 import { render as renderKoran } from './modules/koran.js';
@@ -35,6 +36,10 @@ async function main() {
 
   // Pull-to-refresh
   enablePullToRefresh(() => navigate(currentRoute() || 'dashboard'));
+
+  // ⌘K universele zoek
+  initCmdK();
+  window.openCmdK = openSearch;
 
   let _deferredInstall = null;
   window.addEventListener('beforeinstallprompt', (e) => {

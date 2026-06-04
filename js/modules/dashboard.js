@@ -41,6 +41,28 @@ export async function render(container) {
 
   const activeShift = shifts.find(s => !s.endTime);
 
+  // Voorspelling: huidig tempo deze maand → projectie einde maand
+  const now2 = new Date();
+  const daysIntoMonth = now2.getDate();
+  const daysInMonth = new Date(now2.getFullYear(), now2.getMonth() + 1, 0).getDate();
+  const projectedMonth = daysIntoMonth > 0 ? (monthIncome / daysIntoMonth) * daysInMonth : 0;
+
+  // Suggesties op basis van patronen
+  const suggestions = [];
+  if (activeShift) {
+    const shiftHours = (new Date() - new Date(activeShift.startTime)) / 3600000;
+    if (shiftHours > 10) suggestions.push('☕ Je werkt al meer dan 10 uur — even pauze?');
+  }
+  if (!todayHizb && new Date().getHours() >= 20) suggestions.push('📖 Vandaag nog geen hizb afgevinkt — voor je gaat slapen?');
+  const dayName = ['zo','ma','di','wo','do','vr','za'][new Date().getDay()];
+  const sameDayRides = rides.filter(r => ['zo','ma','di','wo','do','vr','za'][new Date(r.date).getDay()] === dayName);
+  if (sameDayRides.length >= 5) {
+    const avgSameDay = sameDayRides.reduce((s, r) => s + Number(r.amount || 0), 0) / new Set(sameDayRides.map(r => ymd(new Date(r.date)))).size;
+    if (avgSameDay > 0 && todayIncome < avgSameDay * 0.5 && new Date().getHours() >= 14) {
+      suggestions.push(`📊 Op ${['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'][new Date().getDay()]} verdien je gem ${fmtMoney(avgSameDay)}. Vandaag pas ${fmtMoney(todayIncome)}.`);
+    }
+  }
+
   container.innerHTML = `
     <h1>Dashboard</h1>
 
@@ -51,6 +73,12 @@ export async function render(container) {
         <p class="muted">Sinds ${new Date(activeShift.startTime).toLocaleTimeString('nl-NL', {hour:'2-digit',minute:'2-digit'})}</p>
       </div>` : ''}
 
+    ${suggestions.length ? `
+      <div class="card suggestion-card">
+        <h2>💡 Suggesties</h2>
+        ${suggestions.map(s => `<p>${s}</p>`).join('')}
+      </div>` : ''}
+
     <div class="card">
       <h2>🚖 Vandaag</h2>
       <p class="big-money">${fmtMoney(todayIncome)}</p>
@@ -59,6 +87,7 @@ export async function render(container) {
         <p class="muted" style="font-size:.85rem;margin-top:4px">${goalPct}% van doel (${fmtMoney(dailyGoal)})</p>
       ` : ''}
       <p class="muted" style="margin-top:8px">Deze week: ${fmtMoney(sum(weekRides))} · Deze maand: ${fmtMoney(monthIncome)}</p>
+      ${projectedMonth > monthIncome ? `<p class="muted" style="font-size:.85rem">🔮 Projectie einde maand: <b class="money">${fmtMoney(projectedMonth)}</b></p>` : ''}
       ${taxPct > 0 ? `<p class="muted" style="font-size:.85rem">💰 Belasting deze maand: ${fmtMoney(monthTax)} (${taxPct}%)</p>` : ''}
     </div>
 

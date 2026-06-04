@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v3';
+const CACHE = 'dashboard-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -12,12 +12,15 @@ const ASSETS = [
   './js/settings.js',
   './js/theme.js',
   './js/achievements.js',
+  './js/activity.js',
   './js/components/modal.js',
   './js/components/settings.js',
   './js/components/toast.js',
   './js/components/celebrate.js',
   './js/components/swipe.js',
   './js/components/pullrefresh.js',
+  './js/components/cmdk.js',
+  './js/components/undo.js',
   './js/modules/dashboard.js',
   './js/modules/taxi.js',
   './js/modules/koran.js',
