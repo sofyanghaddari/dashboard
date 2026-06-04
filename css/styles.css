@@ -40,7 +40,7 @@ html, body {
 body { min-height: 100vh; }
 
 .view {
-  padding: 20px 18px calc(var(--tabbar-h) + var(--safe-bottom) + 20px);
+  padding: 64px 18px calc(var(--tabbar-h) + var(--safe-bottom) + 20px);
   max-width: 720px; margin: 0 auto;
   animation: fadeIn .25s ease;
 }
