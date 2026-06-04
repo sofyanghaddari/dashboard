@@ -1,6 +1,9 @@
 import { all, put, del } from '../db.js';
 import { openModal } from '../components/modal.js';
-import { uid, escapeHTML } from '../utils.js';
+import { uid, escapeHTML, ymd } from '../utils.js';
+import { celebrateTask, celebrateAllDone } from '../components/celebrate.js';
+import { ok } from '../components/toast.js';
+import { enableSwipeDelete } from '../components/swipe.js';
 
 const LABELS = { high: 'Prioriteit', medium: 'Medium', waiting: 'Waiting' };
 
@@ -39,12 +42,29 @@ export async function render(container) {
   container.querySelector('#tab-archive').onclick = () => { container.dataset.todoView = 'archive'; render(container); };
 }
 
+async function completeTask(container, item) {
+  await put('todos', { ...item, done: true, completedAt: new Date().toISOString() });
+  celebrateTask();
+  // Check if alle actieve taken vandaag klaar zijn → grote viering
+  const todos = await all('todos');
+  const remaining = todos.filter(t => !t.done);
+  if (remaining.length === 0) {
+    const today = ymd();
+    const lastBig = localStorage.getItem('lastAllDoneCelebrate');
+    if (lastBig !== today) {
+      localStorage.setItem('lastAllDoneCelebrate', today);
+      setTimeout(() => celebrateAllDone(), 600);
+    }
+  }
+  render(container);
+}
+
 function renderBucket(container, p, items) {
   const el = container.querySelector(`[data-bucket="${p}"]`);
   if (!items.length) { el.innerHTML = '<p class="muted">Geen taken.</p>'; return; }
   el.innerHTML = items.map(t => `
-    <div class="list-item">
-      <label style="display:flex;gap:8px;align-items:center;flex:1;margin:0">
+    <div class="list-item" data-id="${t.id}">
+      <label style="display:flex;gap:10px;align-items:center;flex:1;margin:0">
         <input type="checkbox" data-check="${t.id}" style="width:auto" />
         <div>
           <div>${escapeHTML(t.title)}</div>
@@ -56,12 +76,21 @@ function renderBucket(container, p, items) {
   el.querySelectorAll('[data-check]').forEach(cb => {
     cb.onchange = async () => {
       const t = items.find(x => x.id === cb.dataset.check);
-      await put('todos', { ...t, done: true });
-      render(container);
+      await completeTask(container, t);
     };
   });
   el.querySelectorAll('[data-del]').forEach(b => {
-    b.onclick = async () => { await del('todos', b.dataset.del); render(container); };
+    b.onclick = async (e) => {
+      e.stopPropagation();
+      await del('todos', b.dataset.del);
+      ok('Taak verwijderd');
+      render(container);
+    };
+  });
+  enableSwipeDelete(el, async (id) => {
+    await del('todos', id);
+    ok('Taak verwijderd');
+    render(container);
   });
 }
 
@@ -69,7 +98,7 @@ function renderArchive(container, items) {
   const el = container.querySelector('[data-bucket="archive"]');
   if (!items.length) { el.innerHTML = '<p class="muted">Niets afgerond.</p>'; return; }
   el.innerHTML = items.map(t => `
-    <div class="list-item">
+    <div class="list-item" data-id="${t.id}">
       <div>
         <div style="text-decoration:line-through">${escapeHTML(t.title)}</div>
         <div class="muted" style="font-size:.8rem">${LABELS[t.priority]}</div>
@@ -107,6 +136,7 @@ function openTodoModal(container) {
       id: uid(), title: d.title, note: d.note || null,
       priority: d.priority, done: false, createdAt: new Date().toISOString(),
     });
+    ok('Taak toegevoegd');
     render(container);
   });
 }

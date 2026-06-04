@@ -1,6 +1,9 @@
 import { all } from '../db.js';
 import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML } from '../utils.js';
 import { getNumber } from '../settings.js';
+import { celebrateGoalHit, celebrateStreak } from '../components/celebrate.js';
+import { checkNewBadges, BADGES } from '../achievements.js';
+import { toast } from '../components/toast.js';
 
 let _tickTimer = null;
 
@@ -92,6 +95,29 @@ export async function render(container) {
         : '<p class="muted">Geen prioriteit-taken.</p>'}
     </div>
   `;
+
+  // Dagdoel-viering — alleen één keer per dag
+  if (dailyGoal > 0 && todayIncome >= dailyGoal) {
+    const lastHit = localStorage.getItem('lastGoalHitDate');
+    if (lastHit !== today) {
+      localStorage.setItem('lastGoalHitDate', today);
+      setTimeout(() => celebrateGoalHit(), 400);
+    }
+  }
+  // Streak-mijlpalen (7, 30, 100)
+  if ([7, 30, 100].includes(streak)) {
+    const key = 'streakCelebrated-' + streak;
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, today);
+      setTimeout(() => celebrateStreak(), 500);
+    }
+  }
+  // Nieuwe badges tonen
+  checkNewBadges().then(newOnes => {
+    newOnes.forEach((b, i) => {
+      setTimeout(() => toast(`${b.emoji} <b>Badge verdiend:</b> ${b.name}`, { type: 'ok', duration: 5000 }), 800 + i * 1200);
+    });
+  });
 
   if (activeShift) {
     const tick = () => {

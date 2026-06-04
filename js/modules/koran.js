@@ -1,5 +1,7 @@
 import { all, put, get } from '../db.js';
 import { ymd, escapeHTML } from '../utils.js';
+import { celebrateTask } from '../components/celebrate.js';
+import { ok } from '../components/toast.js';
 
 let _reminderTimer = null;
 
@@ -48,18 +50,19 @@ export async function render(container) {
 
   container.querySelector('#check').onclick = async () => {
     await put('hizb_log', { date: today, completed: true });
+    celebrateTask();
     render(container);
   };
   container.querySelector('#save-settings').onclick = () => {
     localStorage.setItem('hizbReminderTime', container.querySelector('#reminder').value);
     localStorage.setItem('hizbStartPoint', container.querySelector('#start').value);
     scheduleReminder();
-    alert('Opgeslagen');
+    ok('Opgeslagen');
   };
   container.querySelector('#enable-notif').onclick = async () => {
-    if (!('Notification' in window)) { alert('Notificaties niet ondersteund'); return; }
+    if (!('Notification' in window)) { ok('Notificaties niet ondersteund'); return; }
     const res = await Notification.requestPermission();
-    alert('Status: ' + res);
+    ok('Status: ' + res);
     if (res === 'granted') scheduleReminder();
   };
 
