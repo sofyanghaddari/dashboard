@@ -2,6 +2,8 @@ import { all, put, del } from '../db.js';
 import { openModal } from '../components/modal.js';
 import { uid, fmtMoney, todayISO, startOfWeek, startOfMonth, monthKey, escapeHTML, ymd, sameDay } from '../utils.js';
 import { getNumber } from '../settings.js';
+import { voiceAvailable, startVoice, parseRide } from '../voice.js';
+import { ok, err, info } from '../components/toast.js';
 
 let _tickTimer = null;
 
@@ -43,9 +45,17 @@ export async function render(container) {
       <div id="shift-body"></div>
     </div>
 
-    <button class="btn block" id="add-ride">+ Nieuwe rit</button>
+    <div class="row">
+      <button class="btn" id="add-ride" style="flex:3">+ Nieuwe rit</button>
+      ${voiceAvailable() ? `<button class="btn secondary" id="voice-ride" title="Spreek in" style="flex:1">🎙️</button>` : ''}
+    </div>
     <button class="btn secondary block" id="add-expense" style="margin-top:8px">+ Nieuwe uitgave</button>
-    <button class="btn secondary block" id="export-csv" style="margin-top:8px">CSV exporteren</button>
+    <div class="row" style="margin-top:8px">
+      <button class="btn secondary" id="export-csv">CSV exporteren</button>
+      <label for="import-csv" class="btn secondary" style="text-align:center;display:flex;align-items:center;justify-content:center">CSV importeren</label>
+      <input type="file" id="import-csv" accept=".csv,.txt" style="display:none" />
+    </div>
+    ${navigator.share ? `<button class="btn secondary block" id="share-stats" style="margin-top:8px">📤 Deel maandoverzicht</button>` : ''}
 
     <div class="card" style="margin-top:16px">
       <h2>Vandaag</h2>
@@ -92,6 +102,31 @@ export async function render(container) {
   container.querySelector('#add-ride').onclick = () => openRideModal(container);
   container.querySelector('#add-expense').onclick = () => openExpenseModal(container);
   container.querySelector('#export-csv').onclick = () => exportCSV(rides, expenses);
+  container.querySelector('#import-csv').onchange = (e) => importCSV(container, e.target.files[0]);
+
+  const voiceBtn = container.querySelector('#voice-ride');
+  if (voiceBtn) voiceBtn.onclick = () => {
+    info('Spreek nu, bv. "Uber 25 euro"');
+    voiceBtn.classList.add('listening');
+    startVoice({
+      onResult: async (text) => {
+        voiceBtn.classList.remove('listening');
+        const { source, amount } = parseRide(text);
+        if (!source || !amount) { err('Niet verstaan: "' + text + '"'); return; }
+        await put('rides', { id: uid(), date: todayISO(), amount, source, km: null, note: 'Voice: ' + text });
+        ok(`${fmtMoney(amount)} (${source}) toegevoegd`);
+        render(container);
+      },
+      onError: (e) => { voiceBtn.classList.remove('listening'); err('Mislukt: ' + e); },
+    });
+  };
+
+  const shareBtn = container.querySelector('#share-stats');
+  if (shareBtn) shareBtn.onclick = async () => {
+    const text = `🚖 Maandinkomen: ${fmtMoney(monthIncome)}\n💸 Uitgaven: ${fmtMoney(monthExp)}\n✨ Netto: ${fmtMoney(monthIncome - monthExp)}\n📅 ${new Date().toLocaleString('nl-NL', { month: 'long', year: 'numeric' })}`;
+    try { await navigator.share({ title: 'Taxi maandoverzicht', text }); }
+    catch (_) {}
+  };
 
   if (activeShift) {
     _tickTimer = setInterval(() => updateLiveTimer(container, activeShift, rides), 1000);
@@ -285,6 +320,43 @@ function renderChart(container, rides, expenses) {
         </div>`;
       }).join('')}
     </div>`;
+}
+
+async function importCSV(container, file) {
+  if (!file) return;
+  const text = await file.text();
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (!lines.length) { err('Bestand leeg'); return; }
+  const header = lines[0].toLowerCase();
+  const sep = header.includes('\t') ? '\t' : (header.includes(';') ? ';' : ',');
+  const cols = header.split(sep).map(c => c.trim().replace(/^["']|["']$/g, ''));
+  let okCount = 0, skip = 0;
+  for (let i = 1; i < lines.length; i++) {
+    const parts = lines[i].split(sep).map(p => p.trim().replace(/^["']|["']$/g, ''));
+    const get = (names) => {
+      for (const n of names) {
+        const idx = cols.indexOf(n);
+        if (idx >= 0) return parts[idx];
+      }
+      return null;
+    };
+    const amountStr = get(['amount','bedrag','fare','total','net amount','net earnings','income']);
+    const dateStr = get(['date','datum','timestamp','request time','accepted time']);
+    let source = (get(['source','platform','bron']) || '').toLowerCase();
+    if (!source) {
+      if (/uber/i.test(text)) source = 'uber';
+      else if (/bolt/i.test(text)) source = 'bolt';
+      else source = 'uber';
+    }
+    if (!['uber','bolt','whatsapp'].includes(source)) source = 'uber';
+    const amount = parseFloat((amountStr || '').replace(',', '.').replace(/[^\d.-]/g,''));
+    if (!isFinite(amount) || amount <= 0) { skip++; continue; }
+    const date = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
+    await put('rides', { id: uid(), date, amount, source, km: null, note: 'CSV-import' });
+    okCount++;
+  }
+  ok(`${okCount} ritten geïmporteerd${skip ? `, ${skip} overgeslagen` : ''}`);
+  render(container);
 }
 
 function exportCSV(rides, expenses) {

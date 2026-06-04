@@ -6,6 +6,7 @@ import { ok } from '../components/toast.js';
 import { enableSwipeDelete } from '../components/swipe.js';
 import { undoable } from '../components/undo.js';
 import { logActivity } from '../activity.js';
+import { parseTaskInput } from '../nlp.js';
 
 const LABELS = { high: 'Prioriteit', medium: 'Medium', waiting: 'Waiting' };
 
@@ -43,7 +44,8 @@ export async function render(container) {
         </div>` : ''}
     ` : ''}
 
-    <button class="btn block" id="add" style="margin-top:8px">+ Nieuwe taak</button>
+    <input id="quick-add" placeholder="⚡ Snel toevoegen: 'morgen 10:00 APK' of 'elke maandag tanken'" style="margin-top:8px" />
+    <button class="btn block" id="add" style="margin-top:8px">+ Nieuwe taak (gedetailleerd)</button>
     ${view === 'active' ? `<button class="btn secondary block" id="bulk-toggle" style="margin-top:8px">${bulkMode ? 'Bulk-modus uit' : '☑️ Bulk-selectie'}</button>` : ''}
     ${bulkMode ? `
       <div class="row" style="margin-top:8px" id="bulk-bar">
@@ -76,6 +78,25 @@ export async function render(container) {
   }
 
   container.querySelector('#add').onclick = () => openTodoModal(container);
+
+  const quick = container.querySelector('#quick-add');
+  if (quick) quick.onkeydown = async (e) => {
+    if (e.key !== 'Enter' || !quick.value.trim()) return;
+    const parsed = parseTaskInput(quick.value);
+    if (!parsed.title) return;
+    await put('todos', {
+      id: uid(), title: parsed.title,
+      note: null, priority: parsed.priority,
+      done: false, savedForLater: false,
+      dueDate: parsed.dueDate, recurring: parsed.recurring,
+      tags: [], subtasks: [],
+      createdAt: new Date().toISOString(),
+    });
+    logActivity('task-quick', parsed.title);
+    ok('Toegevoegd: ' + parsed.title);
+    quick.value = '';
+    render(container);
+  };
   container.querySelector('#tab-active').onclick = () => { container.dataset.todoView = 'active'; render(container); };
   container.querySelector('#tab-later').onclick = () => { container.dataset.todoView = 'later'; render(container); };
   container.querySelector('#tab-archive').onclick = () => { container.dataset.todoView = 'archive'; render(container); };

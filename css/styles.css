@@ -546,6 +546,50 @@ body.is-offline .view { padding-top: 50px; }
   border-color: rgba(110,201,255,.2);
 }
 
+/* PIN LOCK */
+.lock-overlay {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  background-image: var(--bg-grad);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000;
+}
+.lock-box {
+  text-align: center;
+  padding: 32px;
+  max-width: 320px;
+}
+.lock-icon { font-size: 3rem; }
+#pin-input {
+  font-size: 1.8rem;
+  text-align: center;
+  letter-spacing: .4em;
+  font-variant-numeric: tabular-nums;
+  margin-top: 16px;
+}
+
+/* VOICE LISTENING */
+.btn.listening {
+  animation: pulse 1.2s ease-in-out infinite;
+  background: linear-gradient(180deg, var(--danger), #e34d52);
+  color: white;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,107,112,.6); }
+  50% { transform: scale(1.03); box-shadow: 0 0 0 12px rgba(255,107,112,0); }
+}
+
+/* PRINT */
+@media print {
+  body { background: white; color: black; }
+  .tabbar, .settings-btn, .search-btn, .offline-banner, .pull-indicator,
+  .modal-backdrop, .toast-container, .celebrate-pop, #confetti-canvas,
+  button { display: none !important; }
+  .view { padding: 0; max-width: none; }
+  .card { background: white; border: 1px solid #ddd; box-shadow: none; page-break-inside: avoid; }
+  .money, .big-money { color: black; text-shadow: none; }
+}
+
 /* SKELETON */
 .skeleton {
   background: linear-gradient(90deg, var(--bg-elev-2) 0%, var(--bg-elev-3) 50%, var(--bg-elev-2) 100%);
