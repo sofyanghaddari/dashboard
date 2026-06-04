@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v9';
+const CACHE = 'dashboard-v10';
 const ASSETS = [
   './',
   './index.html',
@@ -21,6 +21,7 @@ const ASSETS = [
   './js/weather.js',
   './js/mascot.js',
   './js/quotes.js',
+  './js/animate.js',
   './js/components/modal.js',
   './js/components/settings.js',
   './js/components/toast.js',

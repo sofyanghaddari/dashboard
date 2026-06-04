@@ -46,6 +46,156 @@ body { min-height: 100vh; }
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: none } }
 
+/* CARD STAGGER ENTRANCE */
+.stagger-in {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: cardIn .5s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* RIPPLE */
+.btn, .tab { position: relative; overflow: hidden; }
+.ripple {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,.4);
+  transform: scale(0);
+  animation: rippleAnim .6s ease-out;
+  pointer-events: none;
+}
+@keyframes rippleAnim {
+  to { transform: scale(2.5); opacity: 0; }
+}
+
+/* MONEY GLOW PULSE */
+.big-money {
+  animation: moneyGlow 3s ease-in-out infinite;
+}
+@keyframes moneyGlow {
+  0%,100% { text-shadow: 0 0 24px var(--gold-glow); }
+  50%     { text-shadow: 0 0 36px var(--gold-bright), 0 0 12px var(--gold-glow); }
+}
+
+/* PROGRESS BAR ANIMATED FILL */
+.progress-fill {
+  animation: fillIn .9s cubic-bezier(.34,1.56,.64,1);
+  transform-origin: left center;
+}
+@keyframes fillIn {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* BAR CHART RISE */
+.bar {
+  transform-origin: bottom center;
+  animation: barRise .7s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes barRise {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+/* TAB ACTIVE INDICATOR SLIDE */
+.tab.active::before {
+  animation: tabPop .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes tabPop {
+  from { transform: translateX(-50%) scaleX(0); }
+  to   { transform: translateX(-50%) scaleX(1); }
+}
+
+/* MASCOT BOUNCE ON RENDER */
+.mascot {
+  animation: mascotEnter .6s cubic-bezier(.34,1.56,.64,1), mascotBob 3s ease-in-out infinite 0.6s;
+}
+@keyframes mascotEnter {
+  0% { transform: scale(0) rotate(-20deg); }
+  60% { transform: scale(1.2) rotate(8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* HERO GLOW SHIFT */
+.hero::before {
+  animation: heroGlow 8s ease-in-out infinite;
+}
+@keyframes heroGlow {
+  0%,100% { opacity: 1; transform: rotate(0deg); }
+  50%     { opacity: .6; transform: rotate(8deg); }
+}
+
+/* LIST ITEM HOVER LIFT */
+.list-item {
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+.list-item:active { transform: scale(.98); }
+
+/* CARD TAP RESPONSE */
+.card { transition: transform var(--transition), box-shadow var(--transition); }
+.card:active { transform: scale(.99); }
+
+/* HIZB DAY CELL ANIMATION */
+.hab-day { transition: background .3s ease, transform .3s ease; }
+.hab-day.done { animation: dayPop .4s ease; }
+@keyframes dayPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+/* HABIT CHECK BUTTON ANIMATION */
+.hab-check.done { animation: habCheckPop .4s cubic-bezier(.34,1.56,.64,1); }
+@keyframes habCheckPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3) rotate(8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* FLOATING GOLD PARTICLES (luxe themes) */
+body[data-preset="marble"]::after,
+body[data-preset="mosque"]::after {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 10% 20%, var(--gold), transparent),
+    radial-gradient(1px 1px at 30% 70%, var(--gold-bright), transparent),
+    radial-gradient(1.5px 1.5px at 60% 40%, var(--gold), transparent),
+    radial-gradient(1px 1px at 80% 80%, var(--gold-bright), transparent),
+    radial-gradient(2px 2px at 90% 10%, var(--gold), transparent);
+  opacity: .25;
+  animation: dustFloat 30s linear infinite;
+  z-index: 1;
+}
+@keyframes dustFloat {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-100px); }
+}
+
+/* SETTINGS BUTTON ROTATE ON HOVER (al deels) */
+.settings-btn { transition: transform .4s cubic-bezier(.4,0,.2,1); }
+.settings-btn:active { transform: rotate(90deg) scale(.95); }
+
+/* TOAST ENTRANCE BOUNCE */
+.toast.show { animation: toastBounce .4s cubic-bezier(.34,1.56,.64,1); }
+@keyframes toastBounce {
+  0% { opacity: 0; transform: translateY(-30px) scale(.9); }
+  60% { opacity: 1; transform: translateY(4px) scale(1.02); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* POMODORO TIME PULSE */
+.pomo-time {
+  animation: pomoTick 1s ease-in-out infinite;
+}
+@keyframes pomoTick {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.03); }
+}
+
 h1, h2, h3 { margin: 0 0 14px; letter-spacing: -.01em; font-weight: 600; }
 h1 { font-size: 1.7rem; letter-spacing: -.02em; }
 h2 { font-size: 1.05rem; color: var(--text); font-weight: 600; }

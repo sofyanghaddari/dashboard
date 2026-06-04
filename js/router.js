@@ -13,6 +13,7 @@ export async function navigate(name) {
   currentView = route;
   location.hash = '#' + route;
   await routes[route](view);
+  if (window.staggerIn) window.staggerIn(view);
 }
 
 export function currentRoute() { return currentView; }
