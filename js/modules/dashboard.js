@@ -4,6 +4,9 @@ import { getNumber } from '../settings.js';
 import { celebrateGoalHit, celebrateStreak } from '../components/celebrate.js';
 import { checkNewBadges, BADGES } from '../achievements.js';
 import { toast } from '../components/toast.js';
+import { getWeather, codeInfo, rideOpportunities } from '../weather.js';
+import { getMascotState, shouldShame, pickShame } from '../mascot.js';
+import { quoteOfDay } from '../quotes.js';
 
 let _tickTimer = null;
 
@@ -41,19 +44,30 @@ export async function render(container) {
 
   const activeShift = shifts.find(s => !s.endTime);
 
-  // Voorspelling: huidig tempo deze maand → projectie einde maand
-  const now2 = new Date();
-  const daysIntoMonth = now2.getDate();
-  const daysInMonth = new Date(now2.getFullYear(), now2.getMonth() + 1, 0).getDate();
+  // Maand-vs-vorige maand
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+  const lastMonthRides = rides.filter(r => {
+    const d = new Date(r.date);
+    return d >= lastMonthStart && d <= lastMonthEnd;
+  });
+  const lastMonthIncome = sum(lastMonthRides);
+  const daysIntoMonth = now.getDate();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const projectedMonth = daysIntoMonth > 0 ? (monthIncome / daysIntoMonth) * daysInMonth : 0;
+  const lastMonthAtSamePoint = daysIntoMonth > 0 ? (lastMonthIncome / lastMonthEnd.getDate()) * daysIntoMonth : 0;
+  const monthDelta = lastMonthAtSamePoint > 0 ? ((monthIncome - lastMonthAtSamePoint) / lastMonthAtSamePoint) * 100 : 0;
 
-  // Suggesties op basis van patronen
+  const mascot = await getMascotState();
+  const shame = await shouldShame();
+  const quote = quoteOfDay();
+
   const suggestions = [];
   if (activeShift) {
     const shiftHours = (new Date() - new Date(activeShift.startTime)) / 3600000;
     if (shiftHours > 10) suggestions.push('☕ Je werkt al meer dan 10 uur — even pauze?');
   }
-  if (!todayHizb && new Date().getHours() >= 20) suggestions.push('📖 Vandaag nog geen hizb afgevinkt — voor je gaat slapen?');
+  if (!todayHizb && new Date().getHours() >= 20) suggestions.push('📖 Vandaag nog geen hizb — voor je gaat slapen?');
   const dayName = ['zo','ma','di','wo','do','vr','za'][new Date().getDay()];
   const sameDayRides = rides.filter(r => ['zo','ma','di','wo','do','vr','za'][new Date(r.date).getDay()] === dayName);
   if (sameDayRides.length >= 5) {
@@ -64,7 +78,13 @@ export async function render(container) {
   }
 
   container.innerHTML = `
-    <h1>Dashboard</h1>
+    <div class="hero">
+      <div class="mascot">${mascot.e}</div>
+      <div class="hero-text">
+        <div class="hero-msg">${shame ? pickShame() : escapeHTML(mascot.msg)}</div>
+        <div class="hero-quote">"${escapeHTML(quote.t)}" <span class="muted">— ${escapeHTML(quote.s)}</span></div>
+      </div>
+    </div>
 
     ${activeShift ? `
       <div class="card accent-card">
@@ -72,6 +92,11 @@ export async function render(container) {
         <p class="big-money" id="dash-shift-timer">--:--:--</p>
         <p class="muted">Sinds ${new Date(activeShift.startTime).toLocaleTimeString('nl-NL', {hour:'2-digit',minute:'2-digit'})}</p>
       </div>` : ''}
+
+    <div class="card" id="weather-card">
+      <h2>🌤️ Weer & ritten-radar</h2>
+      <p class="muted" id="weather-body">Laden…</p>
+    </div>
 
     ${suggestions.length ? `
       <div class="card suggestion-card">
@@ -87,6 +112,12 @@ export async function render(container) {
         <p class="muted" style="font-size:.85rem;margin-top:4px">${goalPct}% van doel (${fmtMoney(dailyGoal)})</p>
       ` : ''}
       <p class="muted" style="margin-top:8px">Deze week: ${fmtMoney(sum(weekRides))} · Deze maand: ${fmtMoney(monthIncome)}</p>
+      ${lastMonthIncome > 0 ? `
+        <p class="muted" style="font-size:.85rem">
+          📊 Vergeleken met vorige maand op dag ${daysIntoMonth}:
+          ${monthDelta >= 0 ? '🟢 +' : '🔴 '}${monthDelta.toFixed(0)}%
+          <span class="muted">(toen ${fmtMoney(lastMonthAtSamePoint)})</span>
+        </p>` : ''}
       ${projectedMonth > monthIncome ? `<p class="muted" style="font-size:.85rem">🔮 Projectie einde maand: <b class="money">${fmtMoney(projectedMonth)}</b></p>` : ''}
       ${taxPct > 0 ? `<p class="muted" style="font-size:.85rem">💰 Belasting deze maand: ${fmtMoney(monthTax)} (${taxPct}%)</p>` : ''}
     </div>
@@ -125,7 +156,10 @@ export async function render(container) {
     </div>
   `;
 
-  // Dagdoel-viering — alleen één keer per dag
+  // Weer ophalen + opportunities tonen
+  loadWeather(container);
+
+  // Dagdoel-viering
   if (dailyGoal > 0 && todayIncome >= dailyGoal) {
     const lastHit = localStorage.getItem('lastGoalHitDate');
     if (lastHit !== today) {
@@ -133,7 +167,6 @@ export async function render(container) {
       setTimeout(() => celebrateGoalHit(), 400);
     }
   }
-  // Streak-mijlpalen (7, 30, 100)
   if ([7, 30, 100].includes(streak)) {
     const key = 'streakCelebrated-' + streak;
     if (!localStorage.getItem(key)) {
@@ -141,7 +174,6 @@ export async function render(container) {
       setTimeout(() => celebrateStreak(), 500);
     }
   }
-  // Nieuwe badges tonen
   checkNewBadges().then(newOnes => {
     newOnes.forEach((b, i) => {
       setTimeout(() => toast(`${b.emoji} <b>Badge verdiend:</b> ${b.name}`, { type: 'ok', duration: 5000 }), 800 + i * 1200);
@@ -160,5 +192,28 @@ export async function render(container) {
     };
     tick();
     _tickTimer = setInterval(tick, 1000);
+  }
+}
+
+async function loadWeather(container) {
+  const body = container.querySelector('#weather-body');
+  if (!body) return;
+  try {
+    const w = await getWeather();
+    const cur = w.current;
+    const today = w.daily;
+    const info = codeInfo(cur.weather_code);
+    const opps = rideOpportunities(w);
+    body.innerHTML = `
+      <p style="font-size:1.3rem;margin:4px 0">${info.e} ${Math.round(cur.temperature_2m)}° · ${info.d}</p>
+      <p class="muted" style="font-size:.85rem">Vandaag: ${Math.round(today.temperature_2m_min[0])}° / ${Math.round(today.temperature_2m_max[0])}° · regen ${today.precipitation_probability_max[0]}%</p>
+      ${opps.length ? `<div style="margin-top:8px">
+        <div class="muted" style="font-size:.78rem;text-transform:uppercase;letter-spacing:.04em">Kansen</div>
+        ${opps.map(o => `<p style="font-size:.9rem;margin:4px 0">${o.msg}</p>`).join('')}
+      </div>` : ''}
+      <p style="margin-top:10px"><a href="https://www.schiphol.nl/nl/aankomsten/" target="_blank" style="color:var(--accent)">🛬 Live Schiphol-aankomsten</a></p>
+    `;
+  } catch (e) {
+    body.innerHTML = `<p class="muted">Weer niet beschikbaar (${e.message || e}). Geef toestemming voor locatie in je browser-instellingen.</p>`;
   }
 }

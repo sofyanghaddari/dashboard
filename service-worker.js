@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v5';
+const CACHE = 'dashboard-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -18,6 +18,9 @@ const ASSETS = [
   './js/lock.js',
   './js/github-sync.js',
   './js/export-ical.js',
+  './js/weather.js',
+  './js/mascot.js',
+  './js/quotes.js',
   './js/components/modal.js',
   './js/components/settings.js',
   './js/components/toast.js',

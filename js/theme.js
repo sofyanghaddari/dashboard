@@ -8,21 +8,27 @@ const ACCENTS = {
   red:    { gold: '#ff8585', goldBright: '#ffa0a0', glow: 'rgba(255,133,133,.15)' },
 };
 
+export const THEME_PRESETS = ['midnight','sunset','forest','ocean','royal','carbon'];
+
 export function applyTheme() {
   const mode = getSetting('themeMode') || 'dark';
   const accent = getSetting('accentColor') || 'gold';
+  const preset = getSetting('themePreset') || 'midnight';
 
   let actual = mode;
   if (mode === 'auto') {
     actual = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   }
   document.body.dataset.theme = actual;
+  document.body.dataset.preset = preset;
 
   const a = ACCENTS[accent] || ACCENTS.gold;
   document.documentElement.style.setProperty('--gold', a.gold);
   document.documentElement.style.setProperty('--gold-bright', a.goldBright);
   document.documentElement.style.setProperty('--gold-glow', a.glow);
 }
+
+export function setPreset(preset) { setSetting('themePreset', preset); applyTheme(); }
 
 export function initTheme() {
   applyTheme();

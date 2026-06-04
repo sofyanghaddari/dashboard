@@ -1,6 +1,6 @@
 import { all, put, clear } from '../db.js';
 import { getSetting, setSetting } from '../settings.js';
-import { setThemeMode, setAccent, ACCENT_NAMES } from '../theme.js';
+import { setThemeMode, setAccent, ACCENT_NAMES, setPreset, THEME_PRESETS } from '../theme.js';
 import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
@@ -13,6 +13,7 @@ export async function openSettings(onClose) {
   const earned = await computeEarnedBadges();
   const themeMode = getSetting('themeMode') || 'dark';
   const accent = getSetting('accentColor') || 'gold';
+  const preset = getSetting('themePreset') || 'midnight';
   const sync = getSyncStatus();
   const lockOn = isLockEnabled();
 
@@ -34,6 +35,11 @@ export async function openSettings(onClose) {
         ${ACCENT_NAMES.map(name => `
           <button type="button" class="accent-swatch accent-${name} ${name===accent?'active':''}" data-accent="${name}" aria-label="${name}"></button>
         `).join('')}
+      </div>
+
+      <label>Sfeer / thema</label>
+      <div class="preset-picker">
+        ${THEME_PRESETS.map(p => `<button type="button" class="preset-chip preset-${p} ${p===preset?'active':''}" data-preset="${p}">${p}</button>`).join('')}
       </div>
 
       <label>Dagelijks inkomensdoel (€)</label>
@@ -121,6 +127,14 @@ export async function openSettings(onClose) {
   });
 
   backdrop.querySelector('#set-theme').onchange = (e) => setThemeMode(e.target.value);
+
+  backdrop.querySelectorAll('[data-preset]').forEach(btn => {
+    btn.onclick = () => {
+      setPreset(btn.dataset.preset);
+      backdrop.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+    };
+  });
 
   backdrop.querySelector('#save-settings').onclick = () => {
     setSetting('dailyIncomeGoal', backdrop.querySelector('#set-goal').value);
