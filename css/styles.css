@@ -306,42 +306,169 @@ label {
   .modal { border-radius: 20px; max-width: 480px; }
 }
 
-/* PRESET THEMES (verschillende sferen) */
+/* PRESET THEMES — luxe + opvallend */
+
+/* AURORA — animated rainbow gradient */
+body[data-preset="aurora"] {
+  --bg: #0a0e1a;
+  --bg-elev: rgba(28, 22, 51, .7); --bg-elev-2: rgba(40, 30, 70, .6); --bg-elev-3: rgba(60, 45, 95, .5);
+  --accent: #ff79c6; --accent-dim: #d75ba1;
+  --gold: #ffd166; --gold-bright: #ffe599; --gold-glow: rgba(255,209,102,.3);
+  --border: rgba(255,255,255,.1);
+}
+body[data-preset="aurora"] {
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,121,198,.35) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(80,250,123,.25) 0%, transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(139,233,253,.3) 0%, transparent 50%),
+    linear-gradient(135deg, #0a0e1a 0%, #1a1033 50%, #0a0e1a 100%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 200% 200%;
+  background-attachment: fixed;
+  animation: auroraShift 20s ease-in-out infinite;
+}
+body[data-preset="aurora"] .card { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+body[data-preset="aurora"] .tabbar { background: rgba(15,10,30,.6); }
+@keyframes auroraShift {
+  0%,100% { background-position: 0% 0%, 100% 100%, 50% 100%, 0% 0%; }
+  50%     { background-position: 30% 20%, 70% 80%, 50% 80%, 100% 100%; }
+}
+
+/* CYBER — neon op donker, grid-patroon */
+body[data-preset="cyber"] {
+  --bg: #05050f;
+  --bg-elev: #0c0c1f; --bg-elev-2: #131333; --bg-elev-3: #1a1a44;
+  --accent: #00f0ff; --accent-dim: #00bcd4;
+  --gold: #ff00ff; --gold-bright: #ff7fff; --gold-glow: rgba(255,0,255,.4);
+  --border: #2a2a55;
+  --text: #e0e0ff;
+}
+body[data-preset="cyber"] {
+  background:
+    linear-gradient(rgba(0,240,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,240,255,.03) 1px, transparent 1px),
+    radial-gradient(circle at 20% 0%, #1a0a3a 0%, #05050f 60%);
+  background-size: 40px 40px, 40px 40px, 100% 100%;
+  background-attachment: fixed;
+}
+body[data-preset="cyber"] .big-money { text-shadow: 0 0 16px var(--gold), 0 0 32px var(--gold-glow); }
+body[data-preset="cyber"] .card { box-shadow: 0 0 24px rgba(0,240,255,.06), var(--shadow-md); }
+body[data-preset="cyber"] .btn { box-shadow: 0 0 16px rgba(0,240,255,.4); }
+
+/* MARBLE — luxe zwart + goud filigraan */
+body[data-preset="marble"] {
+  --bg: #0d0a05;
+  --bg-elev: #1a140a; --bg-elev-2: #241c10; --bg-elev-3: #2f2415;
+  --accent: #d4af37; --accent-dim: #b8941f;
+  --gold: #d4af37; --gold-bright: #f5d76e; --gold-glow: rgba(212,175,55,.3);
+  --border: #3a2d18;
+  --text: #f0e8d6;
+}
+body[data-preset="marble"] {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(212,175,55,.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 0% 50%, rgba(212,175,55,.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 100%, rgba(212,175,55,.05) 0%, transparent 50%),
+    linear-gradient(135deg, #0d0a05 0%, #1a1408 100%);
+  background-attachment: fixed;
+}
+body[data-preset="marble"] .card {
+  background: linear-gradient(135deg, #1a140a 0%, #241c10 100%);
+  border-top: 1px solid rgba(212,175,55,.3);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(212,175,55,.1);
+}
+body[data-preset="marble"] .hero {
+  background: linear-gradient(135deg, rgba(212,175,55,.15), rgba(212,175,55,.04));
+  border: 1px solid rgba(212,175,55,.25);
+}
+
+/* VELVET — rijk donkerrood + goud */
+body[data-preset="velvet"] {
+  --bg: #1a0508;
+  --bg-elev: #2a0d14; --bg-elev-2: #3a1320; --bg-elev-3: #4a1a2a;
+  --accent: #ff5470; --accent-dim: #d83d58;
+  --gold: #f4c542; --gold-bright: #ffe178; --gold-glow: rgba(244,197,66,.3);
+  --border: #4a1a2a;
+  --text: #ffe8e8;
+}
+body[data-preset="velvet"] {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,84,112,.15) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(244,197,66,.1) 0%, transparent 50%),
+    linear-gradient(135deg, #1a0508 0%, #2a0a14 100%);
+  background-attachment: fixed;
+}
+body[data-preset="velvet"] .card {
+  background: linear-gradient(180deg, #2a0d14 0%, #240a10 100%);
+  border-top: 1px solid rgba(244,197,66,.15);
+}
+
+/* MOSQUE — diepblauw + goud + Islamitisch geometrisch patroon */
+body[data-preset="mosque"] {
+  --bg: #051826;
+  --bg-elev: #0a2436; --bg-elev-2: #103048; --bg-elev-3: #163c5a;
+  --accent: #20b4d4; --accent-dim: #1a8fa8;
+  --gold: #e8c170; --gold-bright: #f5d99a; --gold-glow: rgba(232,193,112,.35);
+  --border: #1a3a54;
+  --text: #e8eef4;
+}
+body[data-preset="mosque"] {
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><g fill='none' stroke='%23e8c170' stroke-width='.7' opacity='.08'><polygon points='40,5 50,25 70,25 55,40 60,60 40,50 20,60 25,40 10,25 30,25'/></g></svg>"),
+    radial-gradient(circle at 50% 0%, rgba(232,193,112,.1) 0%, transparent 60%),
+    linear-gradient(180deg, #082138 0%, #051826 100%);
+  background-attachment: fixed;
+  background-size: 80px 80px, 100% 100%, 100% 100%;
+}
+body[data-preset="mosque"] .card {
+  border-top: 1px solid rgba(232,193,112,.25);
+}
+body[data-preset="mosque"] .hero::after {
+  content: ''; position: absolute; top: -20px; right: -20px;
+  width: 120px; height: 120px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g fill='%23e8c170' opacity='.15'><circle cx='50' cy='50' r='3'/><circle cx='50' cy='20' r='2'/><circle cx='50' cy='80' r='2'/><circle cx='20' cy='50' r='2'/><circle cx='80' cy='50' r='2'/><path d='M50 10 L60 50 L50 90 L40 50 Z' fill='%23e8c170' opacity='.5'/></g></svg>") center/contain no-repeat;
+  pointer-events: none;
+}
+
+/* SUNSET — warme oranje-roze gradient */
 body[data-preset="sunset"] {
-  --bg: #1a0e1a;
-  --bg-grad: radial-gradient(circle at 20% 0%, #5c1d3a 0%, #1a0e1a 60%);
-  --bg-elev: #25132a; --bg-elev-2: #321935; --bg-elev-3: #432048;
+  --bg: #1a0a1a;
+  --bg-elev: rgba(45,15,35,.8); --bg-elev-2: rgba(60,20,45,.7); --bg-elev-3: rgba(75,25,55,.6);
   --accent: #ff9a3d; --accent-dim: #e07a26;
-  --border: #3a1f3e;
+  --gold: #ffb347; --gold-bright: #ffd584; --gold-glow: rgba(255,179,71,.3);
+  --border: rgba(255,154,61,.2);
+  --text: #fff0e0;
 }
-body[data-preset="forest"] {
-  --bg: #0a1310;
-  --bg-grad: radial-gradient(circle at 20% 0%, #1f3a2e 0%, #0a1310 60%);
-  --bg-elev: #14211b; --bg-elev-2: #1c2c24; --bg-elev-3: #28392f;
-  --accent: #7ce0a3; --accent-dim: #5ec487;
-  --border: #213027;
+body[data-preset="sunset"] {
+  background:
+    linear-gradient(180deg, #2d0a30 0%, #5c1d3a 30%, #8b2e3f 50%, #c84b3f 70%, #1a0a1a 100%);
+  background-attachment: fixed;
 }
-body[data-preset="ocean"] {
-  --bg: #07111c;
-  --bg-grad: radial-gradient(circle at 20% 0%, #143452 0%, #07111c 60%);
-  --bg-elev: #0e1d2e; --bg-elev-2: #142a40; --bg-elev-3: #1c3a55;
-  --accent: #4cc2ff; --accent-dim: #3aa3d8;
-  --border: #1b2e44;
+body[data-preset="sunset"] .card { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+body[data-preset="sunset"] .tabbar { background: rgba(40,10,30,.7); }
+
+/* GALAXY — sterren op donker */
+body[data-preset="galaxy"] {
+  --bg: #050510;
+  --bg-elev: #0d0d22; --bg-elev-2: #141432; --bg-elev-3: #1c1c44;
+  --accent: #a78bfa; --accent-dim: #8b6fd9;
+  --gold: #fbbf24; --gold-bright: #fde047; --gold-glow: rgba(251,191,36,.3);
+  --border: #252550;
+  --text: #e8e8ff;
 }
-body[data-preset="royal"] {
-  --bg: #110d1c;
-  --bg-grad: radial-gradient(circle at 20% 0%, #2e1955 0%, #110d1c 60%);
-  --bg-elev: #1c1530; --bg-elev-2: #261d3f; --bg-elev-3: #322750;
-  --accent: #c084fc; --accent-dim: #9d62d9;
-  --border: #2a2243;
+body[data-preset="galaxy"] {
+  background:
+    radial-gradient(1px 1px at 20px 30px, white, transparent),
+    radial-gradient(1px 1px at 60px 70px, rgba(255,255,255,.8), transparent),
+    radial-gradient(1.5px 1.5px at 110px 50px, white, transparent),
+    radial-gradient(1px 1px at 180px 90px, rgba(255,255,255,.7), transparent),
+    radial-gradient(2px 2px at 240px 30px, white, transparent),
+    radial-gradient(1px 1px at 30px 130px, white, transparent),
+    radial-gradient(circle at 50% 50%, rgba(167,139,250,.15) 0%, transparent 70%),
+    linear-gradient(180deg, #0a0518 0%, #050510 100%);
+  background-size: 300px 300px, 300px 300px, 300px 300px, 300px 300px, 300px 300px, 300px 300px, 100% 100%, 100% 100%;
+  background-attachment: fixed;
 }
-body[data-preset="carbon"] {
-  --bg: #000000;
-  --bg-grad: radial-gradient(circle at 20% 0%, #0e0e0e 0%, #000000 60%);
-  --bg-elev: #0a0a0a; --bg-elev-2: #141414; --bg-elev-3: #1e1e1e;
-  --accent: #00ffaa; --accent-dim: #00cc88;
-  --border: #1a1a1a;
-}
+body[data-preset="galaxy"] .big-money { text-shadow: 0 0 20px var(--gold-glow); }
 
 /* LIGHT THEME */
 body[data-theme="light"] {
@@ -461,11 +588,13 @@ body[data-theme="light"] .btn.secondary { background: #f2f4f7; }
 }
 .preset-chip.active { border-color: var(--gold); color: var(--gold); }
 .preset-midnight { background: linear-gradient(90deg, #0b0e13, #161b22); color: #d4b06b; }
-.preset-sunset   { background: linear-gradient(90deg, #1a0e1a, #5c1d3a); color: #ff9a3d; }
-.preset-forest   { background: linear-gradient(90deg, #0a1310, #1f3a2e); color: #7ce0a3; }
-.preset-ocean    { background: linear-gradient(90deg, #07111c, #143452); color: #4cc2ff; }
-.preset-royal    { background: linear-gradient(90deg, #110d1c, #2e1955); color: #c084fc; }
-.preset-carbon   { background: linear-gradient(90deg, #000, #1a1a1a); color: #00ffaa; }
+.preset-aurora   { background: linear-gradient(90deg, #ff79c6, #50fa7b, #8be9fd); color: white; font-weight: 700; }
+.preset-cyber    { background: linear-gradient(90deg, #00f0ff, #ff00ff); color: #05050f; font-weight: 700; }
+.preset-marble   { background: linear-gradient(90deg, #0d0a05, #d4af37); color: #f5d76e; }
+.preset-velvet   { background: linear-gradient(90deg, #1a0508, #ff5470); color: #f4c542; }
+.preset-mosque   { background: linear-gradient(90deg, #051826, #e8c170); color: white; }
+.preset-sunset   { background: linear-gradient(90deg, #2d0a30, #c84b3f); color: #ffd584; }
+.preset-galaxy   { background: linear-gradient(90deg, #050510, #a78bfa); color: #fde047; }
 
 /* BADGES */
 .badge-grid {
