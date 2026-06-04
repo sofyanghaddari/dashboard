@@ -16,5 +16,26 @@ async function main() {
   register('goals', renderGoals);
   register('todo', renderTodo);
   initRouter();
+
+  let _deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    _deferredInstall = e;
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.textContent = 'App installeren';
+    btn.style.cssText = 'position:fixed;top:8px;right:8px;z-index:30';
+    btn.onclick = async () => {
+      btn.remove();
+      _deferredInstall.prompt();
+      await _deferredInstall.userChoice;
+      _deferredInstall = null;
+    };
+    document.body.appendChild(btn);
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js').catch(err => console.warn('SW error', err));
+  }
 }
 main();
