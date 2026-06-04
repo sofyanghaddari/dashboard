@@ -93,6 +93,8 @@ export async function render(container) {
         <p class="muted">Sinds ${new Date(activeShift.startTime).toLocaleTimeString('nl-NL', {hour:'2-digit',minute:'2-digit'})}</p>
       </div>` : ''}
 
+    <button class="btn secondary block" id="open-calendar" style="margin-bottom:12px">📅 Kalender openen</button>
+
     <div class="card" id="weather-card">
       <h2>🌤️ Weer & ritten-radar</h2>
       <p class="muted" id="weather-body">Laden…</p>
@@ -155,6 +157,8 @@ export async function render(container) {
         : '<p class="muted">Geen prioriteit-taken.</p>'}
     </div>
   `;
+
+  container.querySelector('#open-calendar').onclick = () => window.openCalendar && window.openCalendar();
 
   // Weer ophalen + opportunities tonen
   loadWeather(container);

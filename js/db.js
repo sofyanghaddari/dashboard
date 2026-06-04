@@ -1,13 +1,17 @@
 const DB_NAME = 'dashboard';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORES = {
-  rides:    { keyPath: 'id',   indexes: [['date', 'date']] },
-  expenses: { keyPath: 'id',   indexes: [['date', 'date']] },
-  hizb_log: { keyPath: 'date' },
-  cards:    { keyPath: 'id',   indexes: [['dueDate', 'dueDate']] },
-  goals:    { keyPath: 'id' },
-  todos:    { keyPath: 'id' },
-  shifts:   { keyPath: 'id',   indexes: [['startTime', 'startTime']] },
+  rides:     { keyPath: 'id',   indexes: [['date', 'date']] },
+  expenses:  { keyPath: 'id',   indexes: [['date', 'date']] },
+  hizb_log:  { keyPath: 'date' },
+  cards:     { keyPath: 'id',   indexes: [['dueDate', 'dueDate']] },
+  goals:     { keyPath: 'id' },
+  todos:     { keyPath: 'id' },
+  shifts:    { keyPath: 'id',   indexes: [['startTime', 'startTime']] },
+  notes:     { keyPath: 'id',   indexes: [['updatedAt', 'updatedAt']] },
+  habits:    { keyPath: 'id' },
+  habit_log: { keyPath: 'id' },
+  pots:      { keyPath: 'id' },
 };
 
 let _dbPromise = null;

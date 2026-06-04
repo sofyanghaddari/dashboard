@@ -622,6 +622,75 @@ body.is-offline .view { padding-top: 50px; }
 .subtask input { width: auto; }
 .subtask input:checked + span { text-decoration: line-through; color: var(--text-dim); }
 
+/* NOTES */
+.note-body { margin-top: 8px; font-size: .92rem; line-height: 1.5; color: var(--text); }
+.note-body code { background: var(--bg-elev-2); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+.note-body h2 { font-size: 1.05rem; margin: 10px 0 4px; }
+.note-body h3 { font-size: .95rem; margin: 8px 0 4px; }
+.note-body h4 { font-size: .88rem; margin: 6px 0 4px; color: var(--gold); }
+
+/* POMODORO */
+.pomodoro-bubble {
+  position: fixed;
+  left: 14px; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 14px);
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  font-size: 1.4rem;
+  cursor: pointer;
+  z-index: 15;
+  box-shadow: var(--shadow-md);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: inherit;
+  color: var(--text);
+}
+.pomodoro-bubble small { font-size: .55rem; margin-top: -2px; color: var(--gold); }
+.pomodoro-bubble.running { animation: pomoBeat 1.6s ease-in-out infinite; }
+.pomodoro-bubble.running.break { background: linear-gradient(135deg, var(--ok), var(--accent)); }
+@keyframes pomoBeat { 0%,100% { transform: scale(1) } 50% { transform: scale(1.05) } }
+.pomodoro-panel {
+  position: fixed;
+  left: 14px; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 76px);
+  width: 240px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  z-index: 14;
+  box-shadow: var(--shadow-lg);
+  animation: fadeIn .2s ease;
+}
+.pomo-head { font-size: .8rem; color: var(--text-dim); margin-bottom: 6px; }
+.pomo-time { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--gold); text-align: center; margin: 6px 0 12px; }
+
+/* CALENDAR */
+.cal-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  background: var(--bg-elev-2);
+  padding: 6px; border-radius: 12px;
+}
+.cal-head-day { text-align: center; font-size: .68rem; color: var(--text-dim); padding: 4px 0; text-transform: uppercase; }
+.cal-cell {
+  aspect-ratio: 1;
+  background: var(--bg-elev);
+  border-radius: 8px;
+  padding: 4px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  font-size: .8rem;
+}
+.cal-cell.today { background: linear-gradient(135deg, var(--gold-glow), var(--bg-elev)); border: 1px solid var(--gold); }
+.cal-day { font-weight: 600; }
+.cal-dots { display: flex; gap: 2px; flex-wrap: wrap; }
+.dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.dot-hizb { background: var(--ok); }
+.dot-todo { background: var(--accent); }
+.dot-goal { background: var(--gold); }
+.cal-legend { display: flex; gap: 14px; margin-top: 10px; font-size: .75rem; color: var(--text-dim); flex-wrap: wrap; }
+.cal-legend span { display: flex; align-items: center; gap: 4px; }
+
 /* SUGGESTION CARD */
 .suggestion-card {
   background: linear-gradient(135deg, rgba(110,201,255,.06), var(--bg-elev) 60%);

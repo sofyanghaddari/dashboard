@@ -4,6 +4,8 @@ import { openSettings } from './components/settings.js';
 import { initTheme } from './theme.js';
 import { enablePullToRefresh } from './components/pullrefresh.js';
 import { initCmdK, openSearch } from './components/cmdk.js';
+import { initPomodoro } from './components/pomodoro.js';
+import { openCalendar } from './components/calendar.js';
 import { lockScreen } from './lock.js';
 import { maybeAutoSync } from './github-sync.js';
 import { render as renderDashboard } from './modules/dashboard.js';
@@ -12,6 +14,7 @@ import { render as renderKoran } from './modules/koran.js';
 import { render as renderArabic } from './modules/arabic.js';
 import { render as renderGoals } from './modules/goals.js';
 import { render as renderTodo } from './modules/todo.js';
+import { render as renderNotes } from './modules/notes.js';
 
 async function bootApp() {
   await openDB();
@@ -21,7 +24,10 @@ async function bootApp() {
   register('arabic', renderArabic);
   register('goals', renderGoals);
   register('todo', renderTodo);
+  register('notes', renderNotes);
   initRouter();
+  initPomodoro();
+  window.openCalendar = openCalendar;
 
   document.getElementById('settings-btn').onclick = () => {
     openSettings(() => navigate(currentRoute() || 'dashboard'));
