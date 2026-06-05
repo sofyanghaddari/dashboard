@@ -5,6 +5,7 @@ const DEFAULTS = {
   dailyIncomeGoal: '200',
   monthlyIncomeGoal: '5000',
   taxReservePercent: '25',
+  lockGraceMin: '5',
 };
 
 export function getSetting(key) {

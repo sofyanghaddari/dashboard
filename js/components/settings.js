@@ -5,7 +5,7 @@ import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
 import { setupGithub, syncUp, syncDown, getSyncStatus } from '../github-sync.js';
-import { isLockEnabled, setPin } from '../lock.js';
+import { isLockEnabled, setPin, clearUnlock } from '../lock.js';
 import { biometricAvailable, platformAuthenticatorAvailable, registerBiometric, isBiometricEnabled, disableBiometric } from '../biometric.js';
 import { exportMonthPDF } from '../pdf-export.js';
 import { openWeeklyReview } from './weekly-review.js';
@@ -78,6 +78,25 @@ export async function openSettings(onClose) {
             <button type="button" class="btn secondary" id="set-pin">${lockOn ? 'Wijzig' : 'Instellen'}</button>
             ${lockOn ? `<button type="button" class="btn danger" id="remove-pin">Verwijder</button>` : ''}
           </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-main">
+            <div class="settings-row-title">Niet opnieuw vragen voor</div>
+            <div class="settings-row-sub muted">Na ontgrendeling blijft de app open</div>
+          </div>
+          <select id="lock-grace" style="flex:0 0 auto;width:auto">
+            ${[
+              ['0','Altijd vragen'],['1','1 minuut'],['5','5 minuten'],
+              ['15','15 minuten'],['60','1 uur'],['1440','24 uur'],
+            ].map(([v,l]) => `<option value="${v}" ${getSetting('lockGraceMin')===v?'selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-main">
+            <div class="settings-row-title">Nu vergrendelen</div>
+            <div class="settings-row-sub muted">Vraag direct opnieuw om PIN/Face ID</div>
+          </div>
+          <button type="button" class="btn secondary" id="lock-now" style="flex:0 0 auto">Vergrendel</button>
         </div>
       </div>
 
@@ -257,6 +276,9 @@ export async function openSettings(onClose) {
     };
     refresh();
   })();
+
+  backdrop.querySelector('#lock-grace').onchange = (e) => setSetting('lockGraceMin', e.target.value);
+  backdrop.querySelector('#lock-now').onclick = () => { clearUnlock(); ok('Vergrendeld'); close(); setTimeout(() => location.reload(), 400); };
 
   const remBtn = backdrop.querySelector('#remove-pin');
   if (remBtn) remBtn.onclick = async () => {

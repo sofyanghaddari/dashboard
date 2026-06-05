@@ -1,5 +1,22 @@
 // Lock-screen: Face ID (WebAuthn) of PIN als fallback.
 import { isBiometricEnabled, verifyBiometric } from './biometric.js';
+import { getSetting } from './settings.js';
+
+const GRACE_KEY = 'lastUnlock';
+
+function gracePeriodMs() {
+  const min = parseInt(getSetting('lockGraceMin') || '5', 10);
+  return Math.max(0, min) * 60 * 1000;
+}
+
+function inGracePeriod() {
+  const last = parseInt(localStorage.getItem(GRACE_KEY) || '0', 10);
+  return last > 0 && (Date.now() - last) < gracePeriodMs();
+}
+
+function markUnlocked() {
+  localStorage.setItem(GRACE_KEY, Date.now().toString());
+}
 
 async function hash(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -27,12 +44,16 @@ export async function verifyPin(pin) {
 
 export async function lockScreen(onUnlock) {
   if (!anyLockEnabled()) { onUnlock(); return; }
+  // Grace-periode: nog steeds binnen tijdsvenster sinds laatste ontgrendeling?
+  if (inGracePeriod()) { onUnlock(); return; }
 
   const overlay = document.createElement('div');
   overlay.className = 'lock-overlay';
   document.body.appendChild(overlay);
-  renderLock(overlay, onUnlock);
+  renderLock(overlay, () => { markUnlocked(); onUnlock(); });
 }
+
+export function clearUnlock() { localStorage.removeItem(GRACE_KEY); }
 
 function renderLock(overlay, onUnlock) {
   const hasBio = isBiometricEnabled();
