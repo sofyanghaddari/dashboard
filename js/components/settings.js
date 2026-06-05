@@ -6,6 +6,7 @@ import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
 import { setupGithub, syncUp, syncDown, getSyncStatus } from '../github-sync.js';
 import { isLockEnabled, setPin } from '../lock.js';
+import { biometricAvailable, platformAuthenticatorAvailable, registerBiometric, isBiometricEnabled, disableBiometric } from '../biometric.js';
 import { exportMonthPDF } from '../pdf-export.js';
 import { openWeeklyReview } from './weekly-review.js';
 
@@ -57,8 +58,9 @@ export async function openSettings(onClose) {
 
       <hr style="border-color:var(--border);margin:20px 0" />
 
-      <h3>🔒 Beveiliging</h3>
-      <p class="muted" style="font-size:.85rem;margin:0 0 8px">PIN-code bij openen.</p>
+      <h3>Beveiliging</h3>
+      <p class="muted" style="font-size:.85rem;margin:0 0 8px">Vergrendel app bij openen.</p>
+      <div id="bio-row" class="muted" style="font-size:.85rem;margin-bottom:8px">Face ID/Touch ID checken…</div>
       <div class="row">
         <button type="button" class="btn ${lockOn?'secondary':''}" id="set-pin">${lockOn ? 'Wijzig PIN' : 'PIN instellen'}</button>
         ${lockOn ? `<button type="button" class="btn danger" id="remove-pin">PIN verwijderen</button>` : ''}
@@ -172,6 +174,37 @@ export async function openSettings(onClose) {
     ok('PIN ingesteld');
     close();
   };
+  // Biometric init
+  (async () => {
+    const row = backdrop.querySelector('#bio-row');
+    if (!row) return;
+    if (!biometricAvailable()) { row.innerHTML = '<i>Face ID/Touch ID niet ondersteund op dit apparaat.</i>'; return; }
+    const avail = await platformAuthenticatorAvailable();
+    if (!avail) { row.innerHTML = '<i>Geen platform-authenticator gevonden (geen Face/Touch ID aanwezig).</i>'; return; }
+    const on = isBiometricEnabled();
+    row.innerHTML = on
+      ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+           <span>👤 Face ID/Touch ID actief</span>
+           <button class="btn danger" id="bio-off">Uitschakelen</button>
+         </div>`
+      : `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+           <span>👤 Face ID/Touch ID beschikbaar</span>
+           <button class="btn" id="bio-on">Inschakelen</button>
+         </div>`;
+    const onBtn = backdrop.querySelector('#bio-on');
+    if (onBtn) onBtn.onclick = async () => {
+      try { await registerBiometric(); ok('Face ID ingeschakeld'); close(); }
+      catch (e) { err('Mislukt: ' + (e.message || e)); }
+    };
+    const offBtn = backdrop.querySelector('#bio-off');
+    if (offBtn) offBtn.onclick = () => {
+      if (!confirm('Face ID uitschakelen?')) return;
+      disableBiometric();
+      ok('Uitgeschakeld');
+      close();
+    };
+  })();
+
   const remBtn = backdrop.querySelector('#remove-pin');
   if (remBtn) remBtn.onclick = async () => {
     if (!confirm('PIN verwijderen?')) return;

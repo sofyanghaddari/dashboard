@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v13';
+const CACHE = 'dashboard-v14';
 const ASSETS = [
   './',
   './index.html',
@@ -23,6 +23,7 @@ const ASSETS = [
   './js/quotes.js',
   './js/animate.js',
   './js/crypto.js',
+  './js/biometric.js',
   './js/auto-export.js',
   './js/pdf-export.js',
   './js/components/weekly-review.js',

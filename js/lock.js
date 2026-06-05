@@ -1,4 +1,6 @@
-// Lichte PIN-lock. Niet militaire encryptie — bescherming tegen toevallige kijkers.
+// Lock-screen: Face ID (WebAuthn) of PIN als fallback.
+import { isBiometricEnabled, verifyBiometric } from './biometric.js';
+
 async function hash(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
@@ -6,6 +8,10 @@ async function hash(str) {
 
 export function isLockEnabled() {
   return !!localStorage.getItem('pinHash');
+}
+
+export function anyLockEnabled() {
+  return isLockEnabled() || isBiometricEnabled();
 }
 
 export async function setPin(pin) {
@@ -19,18 +25,70 @@ export async function verifyPin(pin) {
   return stored === await hash(pin);
 }
 
-export function lockScreen(onUnlock) {
-  if (!isLockEnabled()) { onUnlock(); return; }
+export async function lockScreen(onUnlock) {
+  if (!anyLockEnabled()) { onUnlock(); return; }
+
   const overlay = document.createElement('div');
   overlay.className = 'lock-overlay';
+  document.body.appendChild(overlay);
+  renderLock(overlay, onUnlock);
+}
+
+function renderLock(overlay, onUnlock) {
+  const hasBio = isBiometricEnabled();
+  const hasPin = isLockEnabled();
+
+  overlay.innerHTML = `
+    <div class="lock-box">
+      <div class="lock-icon">${hasBio ? '👤' : '🔒'}</div>
+      <h2 style="margin:8px 0">${hasBio ? 'Ontgrendelen' : 'Voer pincode in'}</h2>
+      ${hasBio ? `
+        <button class="btn block" id="bio-try" style="margin-top:14px">Gebruik Face ID</button>
+        ${hasPin ? `<button class="btn secondary block" id="show-pin" style="margin-top:8px">Gebruik PIN</button>` : ''}
+        <div id="bio-err" style="color:var(--danger);min-height:1em;margin-top:8px;font-size:.85rem"></div>
+      ` : `
+        <input id="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••" />
+        <div id="pin-error" style="color:var(--danger);min-height:1em;margin-top:6px;font-size:.85rem"></div>
+      `}
+    </div>`;
+
+  if (hasBio) {
+    const tryBio = async () => {
+      const err = overlay.querySelector('#bio-err');
+      err.textContent = '';
+      try {
+        await verifyBiometric();
+        overlay.remove();
+        onUnlock();
+      } catch (e) {
+        err.textContent = 'Mislukt. Probeer opnieuw of gebruik PIN.';
+      }
+    };
+    overlay.querySelector('#bio-try').onclick = tryBio;
+    const showPin = overlay.querySelector('#show-pin');
+    if (showPin) showPin.onclick = () => { showPinForm(overlay, onUnlock); };
+    // Probeer meteen
+    setTimeout(tryBio, 200);
+  } else {
+    bindPinInput(overlay, onUnlock);
+  }
+}
+
+function showPinForm(overlay, onUnlock) {
   overlay.innerHTML = `
     <div class="lock-box">
       <div class="lock-icon">🔒</div>
       <h2 style="margin:8px 0">Voer pincode in</h2>
       <input id="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••" />
       <div id="pin-error" style="color:var(--danger);min-height:1em;margin-top:6px;font-size:.85rem"></div>
+      ${isBiometricEnabled() ? `<button class="btn secondary block" id="back-bio" style="margin-top:12px">Terug naar Face ID</button>` : ''}
     </div>`;
-  document.body.appendChild(overlay);
+  bindPinInput(overlay, onUnlock);
+  const back = overlay.querySelector('#back-bio');
+  if (back) back.onclick = () => renderLock(overlay, onUnlock);
+}
+
+function bindPinInput(overlay, onUnlock) {
   const input = overlay.querySelector('#pin-input');
   const err = overlay.querySelector('#pin-error');
   setTimeout(() => input.focus(), 50);
