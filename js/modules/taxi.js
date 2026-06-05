@@ -1,9 +1,7 @@
 import { all, put, del } from '../db.js';
 import { openModal } from '../components/modal.js';
 import { uid, fmtMoney, todayISO, startOfWeek, startOfMonth, monthKey, escapeHTML, ymd, sameDay } from '../utils.js';
-import { getNumber } from '../settings.js';
-import { voiceAvailable, startVoice, parseRide } from '../voice.js';
-import { ok, err, info } from '../components/toast.js';
+import { ok } from '../components/toast.js';
 
 let _tickTimer = null;
 
@@ -11,7 +9,6 @@ export async function render(container) {
   if (_tickTimer) { clearInterval(_tickTimer); _tickTimer = null; }
 
   const rides = await all('rides');
-  const expenses = await all('expenses');
   const shifts = await all('shifts');
   const now = new Date();
   const weekStart = startOfWeek(now);
@@ -21,19 +18,6 @@ export async function render(container) {
   const todayIncome = sumIf(rides, r => sameDay(new Date(r.date), now));
   const weekIncome  = sumIf(rides, r => new Date(r.date) >= weekStart);
   const monthIncome = sumIf(rides, r => new Date(r.date) >= monthStart);
-  const weekExp  = sumIf(expenses, e => new Date(e.date) >= weekStart);
-  const monthExp = sumIf(expenses, e => new Date(e.date) >= monthStart);
-
-  const taxPct = getNumber('taxReservePercent');
-  const monthTaxReserve = monthIncome * (taxPct / 100);
-
-  const bySource = { uber: 0, bolt: 0, whatsapp: 0 };
-  const countBySource = { uber: 0, bolt: 0, whatsapp: 0 };
-  rides.forEach(r => {
-    bySource[r.source] = (bySource[r.source] || 0) + Number(r.amount || 0);
-    countBySource[r.source] = (countBySource[r.source] || 0) + 1;
-  });
-  const totalIncome = bySource.uber + bySource.bolt + bySource.whatsapp;
 
   const activeShift = shifts.find(s => !s.endTime);
 
@@ -45,17 +29,8 @@ export async function render(container) {
       <div id="shift-body"></div>
     </div>
 
-    <div class="row">
-      <button class="btn" id="add-ride" style="flex:3">+ Nieuwe rit</button>
-      ${voiceAvailable() ? `<button class="btn secondary" id="voice-ride" title="Spreek in" style="flex:1">🎙️</button>` : ''}
-    </div>
-    <button class="btn secondary block" id="add-expense" style="margin-top:8px">+ Nieuwe uitgave</button>
-    <div class="row" style="margin-top:8px">
-      <button class="btn secondary" id="export-csv">CSV exporteren</button>
-      <label for="import-csv" class="btn secondary" style="text-align:center;display:flex;align-items:center;justify-content:center">CSV importeren</label>
-      <input type="file" id="import-csv" accept=".csv,.txt" style="display:none" />
-    </div>
-    ${navigator.share ? `<button class="btn secondary block" id="share-stats" style="margin-top:8px">📤 Deel maandoverzicht</button>` : ''}
+    <button class="btn block" id="add-income">+ Inkomen vandaag noteren</button>
+    <button class="btn secondary block" id="export-csv" style="margin-top:8px">CSV exporteren</button>
 
     <div class="card" style="margin-top:16px">
       <h2>Vandaag</h2>
@@ -63,70 +38,28 @@ export async function render(container) {
     </div>
     <div class="card">
       <h2>Deze week</h2>
-      <p>Bruto: <b class="money">${fmtMoney(weekIncome)}</b> · Uitgaven: <b>${fmtMoney(weekExp)}</b></p>
-      <p>Netto: <b class="money">${fmtMoney(weekIncome - weekExp)}</b></p>
+      <p class="big-money">${fmtMoney(weekIncome)}</p>
     </div>
     <div class="card">
       <h2>Deze maand</h2>
-      <p>Bruto: <b class="money">${fmtMoney(monthIncome)}</b> · Uitgaven: <b>${fmtMoney(monthExp)}</b></p>
-      <p>Netto: <b class="money">${fmtMoney(monthIncome - monthExp)}</b></p>
-      <p class="muted" style="margin-top:8px">💰 Reserveer voor belasting (${taxPct}%): <b>${fmtMoney(monthTaxReserve)}</b></p>
-    </div>
-    <div class="card">
-      <h2>Per bron (totaal)</h2>
-      ${['uber','bolt','whatsapp'].map(s => {
-        const v = bySource[s]; const c = countBySource[s];
-        const pct = totalIncome ? Math.round(v / totalIncome * 100) : 0;
-        const avg = c ? v / c : 0;
-        return `<p>${s[0].toUpperCase()+s.slice(1)}: <b class="money">${fmtMoney(v)}</b> <span class="muted">(${pct}% · ${c} rit${c===1?'':'ten'} · gem ${fmtMoney(avg)})</span></p>`;
-      }).join('')}
+      <p class="big-money">${fmtMoney(monthIncome)}</p>
     </div>
 
     <div class="card"><h2>Statistieken</h2><div id="stats"></div></div>
 
-    <div class="card"><h2>Netto per maand (12 mnd)</h2><div id="chart"></div></div>
+    <div class="card"><h2>Per maand (12 mnd)</h2><div id="chart"></div></div>
 
-    <h2 style="margin-top:16px">Recente ritten</h2>
+    <h2 style="margin-top:16px">Recente notities</h2>
     <div class="list" id="rides-list"></div>
-
-    <h2 style="margin-top:16px">Recente uitgaven</h2>
-    <div class="list" id="exp-list"></div>
   `;
 
   renderShiftCard(container, activeShift, shifts, rides);
   renderRidesList(container, rides);
-  renderExpensesList(container, expenses);
-  renderChart(container, rides, expenses);
+  renderChart(container, rides);
   renderStats(container, rides, shifts);
 
-  container.querySelector('#add-ride').onclick = () => openRideModal(container);
-  container.querySelector('#add-expense').onclick = () => openExpenseModal(container);
-  container.querySelector('#export-csv').onclick = () => exportCSV(rides, expenses);
-  container.querySelector('#import-csv').onchange = (e) => importCSV(container, e.target.files[0]);
-
-  const voiceBtn = container.querySelector('#voice-ride');
-  if (voiceBtn) voiceBtn.onclick = () => {
-    info('Spreek nu, bv. "Uber 25 euro"');
-    voiceBtn.classList.add('listening');
-    startVoice({
-      onResult: async (text) => {
-        voiceBtn.classList.remove('listening');
-        const { source, amount } = parseRide(text);
-        if (!source || !amount) { err('Niet verstaan: "' + text + '"'); return; }
-        await put('rides', { id: uid(), date: todayISO(), amount, source, km: null, note: 'Voice: ' + text });
-        ok(`${fmtMoney(amount)} (${source}) toegevoegd`);
-        render(container);
-      },
-      onError: (e) => { voiceBtn.classList.remove('listening'); err('Mislukt: ' + e); },
-    });
-  };
-
-  const shareBtn = container.querySelector('#share-stats');
-  if (shareBtn) shareBtn.onclick = async () => {
-    const text = `🚖 Maandinkomen: ${fmtMoney(monthIncome)}\n💸 Uitgaven: ${fmtMoney(monthExp)}\n✨ Netto: ${fmtMoney(monthIncome - monthExp)}\n📅 ${new Date().toLocaleString('nl-NL', { month: 'long', year: 'numeric' })}`;
-    try { await navigator.share({ title: 'Taxi maandoverzicht', text }); }
-    catch (_) {}
-  };
+  container.querySelector('#add-income').onclick = () => openIncomeModal(container);
+  container.querySelector('#export-csv').onclick = () => exportCSV(rides);
 
   if (activeShift) {
     _tickTimer = setInterval(() => updateLiveTimer(container, activeShift, rides), 1000);
@@ -203,8 +136,6 @@ function renderStats(container, rides, shifts) {
   })).sort((a, b) => b.avg - a.avg);
   const bestDay = dayAvg[0];
 
-  const avgRide = rides.reduce((s, r) => s + Number(r.amount || 0), 0) / rides.length;
-
   const totalShiftHours = shifts.filter(s => s.endTime).reduce((sum, s) => sum + (new Date(s.endTime) - new Date(s.startTime)) / 3600000, 0);
   const totalShiftEarnings = shifts.filter(s => s.endTime).reduce((sum, s) => {
     const start = new Date(s.startTime), end = new Date(s.endTime);
@@ -214,7 +145,6 @@ function renderStats(container, rides, shifts) {
 
   el.innerHTML = `
     <p>📅 Beste dag: <b>${bestDay.name}</b> <span class="muted">(gem ${fmtMoney(bestDay.avg)})</span></p>
-    <p>🚗 Gemiddelde rit: <b class="money">${fmtMoney(avgRide)}</b></p>
     <p>⏱️ Gemiddelde €/uur (alle diensten): <b class="money">${fmtMoney(avgPerHour)}</b> <span class="muted">over ${totalShiftHours.toFixed(1)}u</span></p>
   `;
 }
@@ -222,13 +152,13 @@ function renderStats(container, rides, shifts) {
 function renderRidesList(container, rides) {
   const list = container.querySelector('#rides-list');
   const recent = [...rides].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 20);
-  if (!recent.length) { list.innerHTML = '<p class="muted">Nog geen ritten.</p>'; return; }
+  if (!recent.length) { list.innerHTML = '<p class="muted">Nog geen inkomen genoteerd.</p>'; return; }
   list.innerHTML = recent.map(r => `
     <div class="list-item">
       <div>
-        <div><b class="money">${fmtMoney(r.amount)}</b> <span class="pill">${escapeHTML(r.source)}</span></div>
+        <div><b class="money">${fmtMoney(r.amount)}</b></div>
         <div class="muted" style="font-size:.8rem">
-          ${new Date(r.date).toLocaleString('nl-NL')}${r.km ? ' · ' + r.km + ' km' : ''}${r.note ? ' · ' + escapeHTML(r.note) : ''}
+          ${new Date(r.date).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })}${r.note ? ' · ' + escapeHTML(r.note) : ''}
         </div>
       </div>
       <button class="btn danger" data-del-ride="${r.id}">×</button>
@@ -238,136 +168,61 @@ function renderRidesList(container, rides) {
   });
 }
 
-function renderExpensesList(container, expenses) {
-  const list = container.querySelector('#exp-list');
-  const recent = [...expenses].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 20);
-  if (!recent.length) { list.innerHTML = '<p class="muted">Nog geen uitgaven.</p>'; return; }
-  list.innerHTML = recent.map(e => `
-    <div class="list-item">
-      <div>
-        <div><b>${fmtMoney(e.amount)}</b> <span class="pill">${escapeHTML(e.category)}</span></div>
-        <div class="muted" style="font-size:.8rem">
-          ${new Date(e.date).toLocaleString('nl-NL')}${e.note ? ' · ' + escapeHTML(e.note) : ''}
-        </div>
-      </div>
-      <button class="btn danger" data-del-exp="${e.id}">×</button>
-    </div>`).join('');
-  list.querySelectorAll('[data-del-exp]').forEach(b => {
-    b.onclick = async () => { await del('expenses', b.dataset.delExp); render(container); };
-  });
-}
-
-function openRideModal(container) {
-  openModal('Nieuwe rit', `
-    <label>Bedrag (€) *</label><input name="amount" type="number" step="0.01" required />
-    <label>Bron *</label>
-    <select name="source" required>
-      <option value="uber">Uber</option>
-      <option value="bolt">Bolt</option>
-      <option value="whatsapp">WhatsApp</option>
-    </select>
-    <label>Km (optioneel)</label><input name="km" type="number" step="0.1" />
-    <label>Notitie</label><input name="note" />
+function openIncomeModal(container) {
+  openModal('Inkomen noteren', `
+    <label>Datum</label>
+    <input name="date" type="date" required value="${ymd()}" />
+    <label>Bedrag (€) *</label>
+    <input name="amount" type="number" step="0.01" required autofocus />
+    <label>Notitie (optioneel)</label>
+    <input name="note" />
   `, async (d) => {
     const amount = parseFloat(d.amount);
     if (!isFinite(amount) || amount <= 0) throw new Error('Bedrag ongeldig');
+    const date = d.date ? new Date(d.date + 'T12:00:00').toISOString() : todayISO();
     await put('rides', {
-      id: uid(), date: todayISO(), amount,
-      source: d.source, km: d.km ? parseFloat(d.km) : null, note: d.note || null,
+      id: uid(), date, amount,
+      source: 'daily', km: null, note: d.note || null,
     });
+    ok('Inkomen genoteerd: ' + fmtMoney(amount));
     render(container);
   });
 }
 
-function openExpenseModal(container) {
-  openModal('Nieuwe uitgave', `
-    <label>Bedrag (€) *</label><input name="amount" type="number" step="0.01" required />
-    <label>Categorie *</label>
-    <select name="category" required>
-      <option value="brandstof">Brandstof</option>
-      <option value="verzekering">Verzekering</option>
-      <option value="onderhoud">Onderhoud</option>
-      <option value="overig">Overig</option>
-    </select>
-    <label>Notitie</label><input name="note" />
-  `, async (d) => {
-    const amount = parseFloat(d.amount);
-    if (!isFinite(amount) || amount <= 0) throw new Error('Bedrag ongeldig');
-    await put('expenses', { id: uid(), date: todayISO(), amount, category: d.category, note: d.note || null });
-    render(container);
-  });
-}
-
-function renderChart(container, rides, expenses) {
+function renderChart(container, rides) {
   const buckets = {};
   const now = new Date();
   for (let i = 11; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    buckets[monthKey(d)] = { in: 0, out: 0, label: d.toLocaleString('nl-NL', { month: 'short' }) };
+    buckets[monthKey(d)] = { in: 0, label: d.toLocaleString('nl-NL', { month: 'short' }) };
   }
   rides.forEach(r => { const k = monthKey(r.date); if (buckets[k]) buckets[k].in += Number(r.amount || 0); });
-  expenses.forEach(e => { const k = monthKey(e.date); if (buckets[k]) buckets[k].out += Number(e.amount || 0); });
   const entries = Object.values(buckets);
-  const max = Math.max(1, ...entries.map(b => b.in - b.out));
+  const max = Math.max(1, ...entries.map(b => b.in));
   container.querySelector('#chart').innerHTML = `
     <div class="bar-chart">
       ${entries.map(b => {
-        const net = b.in - b.out;
-        const h = Math.max(2, Math.round((Math.max(0, net) / max) * 130));
+        const h = Math.max(2, Math.round((b.in / max) * 130));
         return `<div style="display:flex;flex-direction:column;flex:1">
-          <div class="bar" style="height:${h}px" title="${b.label}: ${fmtMoney(net)}"></div>
+          <div class="bar" style="height:${h}px" title="${b.label}: ${fmtMoney(b.in)}"></div>
           <div class="bar-label">${b.label}</div>
         </div>`;
       }).join('')}
     </div>`;
 }
 
-async function importCSV(container, file) {
-  if (!file) return;
-  const text = await file.text();
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  if (!lines.length) { err('Bestand leeg'); return; }
-  const header = lines[0].toLowerCase();
-  const sep = header.includes('\t') ? '\t' : (header.includes(';') ? ';' : ',');
-  const cols = header.split(sep).map(c => c.trim().replace(/^["']|["']$/g, ''));
-  let okCount = 0, skip = 0;
-  for (let i = 1; i < lines.length; i++) {
-    const parts = lines[i].split(sep).map(p => p.trim().replace(/^["']|["']$/g, ''));
-    const get = (names) => {
-      for (const n of names) {
-        const idx = cols.indexOf(n);
-        if (idx >= 0) return parts[idx];
-      }
-      return null;
-    };
-    const amountStr = get(['amount','bedrag','fare','total','net amount','net earnings','income']);
-    const dateStr = get(['date','datum','timestamp','request time','accepted time']);
-    let source = (get(['source','platform','bron']) || '').toLowerCase();
-    if (!source) {
-      if (/uber/i.test(text)) source = 'uber';
-      else if (/bolt/i.test(text)) source = 'bolt';
-      else source = 'uber';
-    }
-    if (!['uber','bolt','whatsapp'].includes(source)) source = 'uber';
-    const amount = parseFloat((amountStr || '').replace(',', '.').replace(/[^\d.-]/g,''));
-    if (!isFinite(amount) || amount <= 0) { skip++; continue; }
-    const date = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-    await put('rides', { id: uid(), date, amount, source, km: null, note: 'CSV-import' });
-    okCount++;
-  }
-  ok(`${okCount} ritten geïmporteerd${skip ? `, ${skip} overgeslagen` : ''}`);
-  render(container);
-}
-
-function exportCSV(rides, expenses) {
-  const rows = [['type','date','amount','source_or_category','km','note']];
-  rides.forEach(r => rows.push(['rit', r.date, r.amount, r.source, r.km ?? '', (r.note||'').replace(/[\r\n,]/g,' ')]));
-  expenses.forEach(e => rows.push(['uitgave', e.date, e.amount, e.category, '', (e.note||'').replace(/[\r\n,]/g,' ')]));
+function exportCSV(rides) {
+  const rows = [['datum','bedrag','notitie']];
+  rides.forEach(r => rows.push([
+    new Date(r.date).toISOString().slice(0,10),
+    r.amount,
+    (r.note||'').replace(/[\r\n,]/g,' '),
+  ]));
   const csv = rows.map(r => r.join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'taxi-export-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.download = 'taxi-inkomen-' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
   URL.revokeObjectURL(a.href);
 }

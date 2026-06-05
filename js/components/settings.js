@@ -21,6 +21,7 @@ export async function openSettings(onClose) {
   backdrop.className = 'modal-backdrop';
   backdrop.innerHTML = `
     <div class="modal" role="dialog" aria-modal="true">
+      <button type="button" class="modal-close" id="close-settings-x" aria-label="Sluiten">×</button>
       <h2>Instellingen</h2>
 
       <label>Thema</label>
@@ -44,9 +45,6 @@ export async function openSettings(onClose) {
 
       <label>Dagelijks inkomensdoel (€)</label>
       <input id="set-goal" type="number" step="1" value="${getSetting('dailyIncomeGoal')}" />
-
-      <label>Belastingreservering (%)</label>
-      <input id="set-tax" type="number" step="1" min="0" max="100" value="${getSetting('taxReservePercent')}" />
 
       <div class="row" style="margin-top:16px">
         <button type="button" class="btn" id="save-settings">Opslaan</button>
@@ -116,6 +114,7 @@ export async function openSettings(onClose) {
 
   const close = () => { backdrop.remove(); if (onClose) onClose(); };
   backdrop.querySelector('#close-settings').onclick = close;
+  backdrop.querySelector('#close-settings-x').onclick = close;
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
 
   backdrop.querySelectorAll('[data-accent]').forEach(btn => {
@@ -138,7 +137,6 @@ export async function openSettings(onClose) {
 
   backdrop.querySelector('#save-settings').onclick = () => {
     setSetting('dailyIncomeGoal', backdrop.querySelector('#set-goal').value);
-    setSetting('taxReservePercent', backdrop.querySelector('#set-tax').value);
     ok('Opgeslagen');
     close();
   };

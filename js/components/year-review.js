@@ -40,6 +40,7 @@ export async function openYearReview() {
   backdrop.className = 'modal-backdrop';
   backdrop.innerHTML = `
     <div class="modal">
+      <button type="button" class="modal-close" id="yr-x" aria-label="Sluiten">×</button>
       <h2>📊 Jaaroverzicht ${year}</h2>
       <div class="card accent-card">
         <p class="muted" style="font-size:.85rem">Bruto inkomen</p>
@@ -70,4 +71,5 @@ export async function openYearReview() {
   document.body.appendChild(backdrop);
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
   backdrop.querySelector('#yr-close').onclick = () => backdrop.remove();
+  backdrop.querySelector('#yr-x').onclick = () => backdrop.remove();
 }

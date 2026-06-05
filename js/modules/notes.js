@@ -48,6 +48,7 @@ function openEditor(container, existing, isIdea = false) {
   editor.className = 'modal-backdrop';
   editor.innerHTML = `
     <div class="modal">
+      <button type="button" class="modal-close" id="ed-x" aria-label="Sluiten">×</button>
       <h2>${existing ? 'Bewerken' : (isIdea ? 'Nieuw idee' : 'Nieuwe notitie')}</h2>
       <label>Titel</label>
       <input id="ed-title" value="${existing ? escapeHTML(existing.title || '') : ''}" />
@@ -61,6 +62,7 @@ function openEditor(container, existing, isIdea = false) {
   document.body.appendChild(editor);
   const close = () => editor.remove();
   editor.querySelector('#ed-cancel').onclick = close;
+  editor.querySelector('#ed-x').onclick = close;
   editor.addEventListener('click', e => { if (e.target === editor) close(); });
   editor.querySelector('#ed-save').onclick = async () => {
     const title = editor.querySelector('#ed-title').value.trim();

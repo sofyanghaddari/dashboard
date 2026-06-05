@@ -3,11 +3,11 @@ export function openModal(title, bodyHTML, onSubmit) {
   backdrop.className = 'modal-backdrop';
   backdrop.innerHTML = `
     <div class="modal" role="dialog" aria-modal="true">
+      <button type="button" class="modal-close" id="modal-cancel" aria-label="Sluiten">×</button>
       <h2>${title}</h2>
       <form id="modal-form">${bodyHTML}
         <div class="row" style="margin-top:16px">
-          <button type="button" class="btn secondary" id="modal-cancel">Annuleren</button>
-          <button type="submit" class="btn">Opslaan</button>
+          <button type="submit" class="btn block">Opslaan</button>
         </div>
       </form>
     </div>`;

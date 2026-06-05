@@ -26,8 +26,6 @@ export async function render(container) {
 
   const dailyGoal = getNumber('dailyIncomeGoal');
   const goalPct = dailyGoal > 0 ? Math.min(100, Math.round(todayIncome / dailyGoal * 100)) : 0;
-  const taxPct = getNumber('taxReservePercent');
-  const monthTax = monthIncome * (taxPct / 100);
 
   const today = ymd();
   const todayHizb = hizb.some(h => h.date === today);
@@ -124,7 +122,6 @@ export async function render(container) {
           <span class="muted">(toen ${fmtMoney(lastMonthAtSamePoint)})</span>
         </p>` : ''}
       ${projectedMonth > monthIncome ? `<p class="muted" style="font-size:.85rem">🔮 Projectie einde maand: <b class="money">${fmtMoney(projectedMonth)}</b></p>` : ''}
-      ${taxPct > 0 ? `<p class="muted" style="font-size:.85rem">💰 Belasting deze maand: ${fmtMoney(monthTax)} (${taxPct}%)</p>` : ''}
     </div>
 
     <div class="card">

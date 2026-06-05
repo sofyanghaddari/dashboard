@@ -50,6 +50,7 @@ export async function openCalendar() {
         </div>`);
     }
     m.innerHTML = `
+      <button type="button" class="modal-close" id="cal-x" aria-label="Sluiten">×</button>
       <div class="cal-head">
         <button class="btn secondary" id="cal-prev">◀</button>
         <h2 style="margin:0;flex:1;text-align:center">${first.toLocaleString('nl-NL', { month: 'long', year: 'numeric' })}</h2>
@@ -69,6 +70,7 @@ export async function openCalendar() {
     m.querySelector('#cal-prev').onclick = () => { viewDate = new Date(year, month - 1, 1); renderCal(); };
     m.querySelector('#cal-next').onclick = () => { viewDate = new Date(year, month + 1, 1); renderCal(); };
     m.querySelector('#cal-close').onclick = () => backdrop.remove();
+    m.querySelector('#cal-x').onclick = () => backdrop.remove();
   };
   renderCal();
 }
