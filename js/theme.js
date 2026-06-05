@@ -8,7 +8,7 @@ const ACCENTS = {
   red:    { gold: '#ff8585', goldBright: '#ffa0a0', glow: 'rgba(255,133,133,.15)' },
 };
 
-export const THEME_PRESETS = ['graphite','midnight','slate','sterling','sage','linen','pearl','paper'];
+export const THEME_PRESETS = ['onyx','graphite','midnight','slate','sterling','espresso','ash','ivory','stone','cloud','pearl','paper'];
 
 export function applyTheme() {
   const mode = getSetting('themeMode') || 'dark';

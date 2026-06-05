@@ -5,6 +5,9 @@ import { initTheme } from './theme.js';
 import { enablePullToRefresh } from './components/pullrefresh.js';
 import { initCmdK, openSearch } from './components/cmdk.js';
 import { bindRipple, staggerIn } from './animate.js';
+import { autoHaptic } from './haptic.js';
+import { initSwipeBack } from './gestures.js';
+import { exportMonthPDF } from './pdf-export.js';
 import { openCalendar } from './components/calendar.js';
 import { openYearReview } from './components/year-review.js';
 import { lockScreen } from './lock.js';
@@ -30,6 +33,8 @@ async function bootApp() {
   register('notes', renderNotes);
   initRouter();
   bindRipple();
+  autoHaptic();
+  initSwipeBack();
   window.openCalendar = openCalendar;
   window.staggerIn = staggerIn;
   window.openYearReview = openYearReview;
@@ -52,6 +57,16 @@ async function bootApp() {
   setInterval(maybeAutoSync, 60 * 60 * 1000);
   maybeAutoExport();
   maybeShowWeeklyReview();
+  // Auto-PDF op de 1e van de maand
+  const todayStr = new Date().toISOString().slice(0,10);
+  if (localStorage.getItem('autoPdf') === '1' && new Date().getDate() === 1) {
+    const last = localStorage.getItem('lastAutoPdf');
+    if (last !== todayStr.slice(0,7)) {
+      localStorage.setItem('lastAutoPdf', todayStr.slice(0,7));
+      const prev = new Date(); prev.setMonth(prev.getMonth() - 1);
+      setTimeout(() => exportMonthPDF(prev), 2000);
+    }
+  }
   if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persisted().then(p => { if (!p) navigator.storage.persist(); });
   }

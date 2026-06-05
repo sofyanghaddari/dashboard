@@ -30,7 +30,28 @@ const SHAME = [
 ];
 
 export function pickShame() {
-  return SHAME[Math.floor(Math.random() * SHAME.length)];
+  const custom = JSON.parse(localStorage.getItem('customShame') || '[]');
+  const pool = custom.length ? custom : SHAME;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+export function getCustomShame() {
+  return JSON.parse(localStorage.getItem('customShame') || '[]');
+}
+export function setCustomShame(list) {
+  localStorage.setItem('customShame', JSON.stringify(list));
+}
+export function customMascot() {
+  return localStorage.getItem('customMascot') || null;
+}
+export function setCustomMascot(emoji) {
+  if (!emoji) localStorage.removeItem('customMascot');
+  else localStorage.setItem('customMascot', emoji);
+}
+
+function withCustom(state) {
+  const c = customMascot();
+  return c ? { ...state, e: c } : state;
 }
 
 export async function getMascotState() {
@@ -51,16 +72,15 @@ export async function getMascotState() {
   const remainingTasks = todos.filter(t => !t.done && !t.savedForLater).length;
 
   // Bepaal state
-  if (streak >= 7 && todayHizb && goalProg >= 1) return STATES[0]; // fire
-  if (todayHizb && goalProg >= 0.5) return STATES[1]; // happy
-  if (todayHizb || streak >= 1) return STATES[2]; // neutral
+  if (streak >= 7 && todayHizb && goalProg >= 1) return withCustom(STATES[0]);
+  if (todayHizb && goalProg >= 0.5) return withCustom(STATES[1]);
+  if (todayHizb || streak >= 1) return withCustom(STATES[2]);
 
-  // Brutaal als streak vandaag al voorbij is en het is na 22:00
   const yesterday = ymd(new Date(Date.now() - 86400000));
   const had2DayBreak = !doneSet.has(today) && !doneSet.has(yesterday);
-  if (had2DayBreak) return STATES[4]; // broken/shame
+  if (had2DayBreak) return withCustom(STATES[4]);
 
-  return STATES[3]; // worried
+  return withCustom(STATES[3]);
 }
 
 // Detecteer of streak vandaag verbroken is (gisteren wel, vandaag nog niet en het is laat)

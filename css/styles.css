@@ -503,6 +503,92 @@ label {
 
 /* PRESET THEMES — ingetogen, Apple-vibe */
 
+/* ONYX — pure zwart (OLED) */
+body[data-preset="onyx"] {
+  --bg: #000000;
+  --bg-elev: #0a0a0a; --bg-elev-2: #141414; --bg-elev-3: #1c1c1c;
+  --accent: #ffffff; --accent-dim: #d4d4d4;
+  --gold: #b8a16a; --gold-bright: #d0bb88; --gold-glow: rgba(184,161,106,.1);
+  --border: #1c1c1c;
+  --text: #f5f5f5; --text-dim: #888888; --text-faint: #555555;
+}
+body[data-preset="onyx"] { background: #000000; }
+body[data-preset="onyx"] .btn { color: #000; background: #ffffff; }
+body[data-preset="onyx"] .tabbar { background: rgba(0,0,0,.85); }
+
+/* ESPRESSO — warm donker bruin-zwart */
+body[data-preset="espresso"] {
+  --bg: #1a1612;
+  --bg-elev: #221c17; --bg-elev-2: #2c241e; --bg-elev-3: #382e25;
+  --accent: #c4a484; --accent-dim: #a08566;
+  --gold: #b89968; --gold-bright: #d4b78a; --gold-glow: rgba(184,153,104,.1);
+  --border: #2c241e;
+  --text: #ede6dd; --text-dim: #9a9088;
+}
+body[data-preset="espresso"] { background: #1a1612; }
+
+/* ASH — neutraal mid-grijs donker */
+body[data-preset="ash"] {
+  --bg: #222222;
+  --bg-elev: #2a2a2a; --bg-elev-2: #333333; --bg-elev-3: #3d3d3d;
+  --accent: #b0b0b0; --accent-dim: #8c8c8c;
+  --gold: #a8956b; --gold-bright: #c1ad85; --gold-glow: rgba(168,149,107,.08);
+  --border: #333333;
+  --text: #ebebeb; --text-dim: #999999;
+}
+body[data-preset="ash"] { background: #222222; }
+
+/* IVORY — warme creme licht thema */
+body[data-preset="ivory"] {
+  --bg: #fbf8f1;
+  --bg-elev: #ffffff; --bg-elev-2: #f5f1e7; --bg-elev-3: #ebe6d8;
+  --accent: #5e574a; --accent-dim: #463f33;
+  --gold: #8a7548; --gold-bright: #a8915d; --gold-glow: rgba(138,117,72,.08);
+  --border: #e0dac7; --border-soft: #ede9d8;
+  --text: #1c1815; --text-dim: #685f50; --text-faint: #9a917f;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 3px 10px rgba(0,0,0,.05);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.07);
+}
+body[data-preset="ivory"] { background: #fbf8f1; }
+body[data-preset="ivory"] .btn { color: white; }
+body[data-preset="ivory"] .btn.secondary { background: #f0eddf; color: var(--text); }
+body[data-preset="ivory"] .tabbar { background: rgba(251,248,241,.88); }
+
+/* STONE — koel licht grijs */
+body[data-preset="stone"] {
+  --bg: #ececec;
+  --bg-elev: #ffffff; --bg-elev-2: #e4e4e4; --bg-elev-3: #d8d8d8;
+  --accent: #4a4a4a; --accent-dim: #333333;
+  --gold: #877045; --gold-bright: #a08758; --gold-glow: rgba(135,112,69,.08);
+  --border: #d4d4d4; --border-soft: #e2e2e2;
+  --text: #1a1a1a; --text-dim: #6b6b6b; --text-faint: #999999;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,.05);
+  --shadow-lg: 0 6px 20px rgba(0,0,0,.07);
+}
+body[data-preset="stone"] { background: #ececec; }
+body[data-preset="stone"] .btn { color: white; }
+body[data-preset="stone"] .btn.secondary { background: #e0e0e0; color: var(--text); }
+body[data-preset="stone"] .tabbar { background: rgba(236,236,236,.88); }
+
+/* CLOUD — licht koel blauw-wit */
+body[data-preset="cloud"] {
+  --bg: #f5f7fa;
+  --bg-elev: #ffffff; --bg-elev-2: #ecf0f5; --bg-elev-3: #dde3eb;
+  --accent: #4a5568; --accent-dim: #2d3748;
+  --gold: #876b3a; --gold-bright: #a3854c; --gold-glow: rgba(135,107,58,.08);
+  --border: #d8dee5; --border-soft: #e8edf2;
+  --text: #1a202c; --text-dim: #5a6678; --text-faint: #99a3b3;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,.05);
+  --shadow-lg: 0 6px 20px rgba(0,0,0,.07);
+}
+body[data-preset="cloud"] { background: #f5f7fa; }
+body[data-preset="cloud"] .btn { color: white; }
+body[data-preset="cloud"] .btn.secondary { background: #e8edf2; color: var(--text); }
+body[data-preset="cloud"] .tabbar { background: rgba(245,247,250,.88); }
+
 /* GRAPHITE — Apple system dark (default) */
 body[data-preset="graphite"] {
   --bg: #1c1c1e;
@@ -769,6 +855,12 @@ body[data-theme="light"] .btn.secondary { background: #f2f4f7; }
   font-family: inherit;
 }
 .preset-chip.active { border-color: var(--gold); color: var(--gold); }
+.preset-onyx     { background: #000000; color: #ffffff; border-color: #1c1c1c; }
+.preset-espresso { background: #1a1612; color: #c4a484; border-color: #2c241e; }
+.preset-ash      { background: #222222; color: #b0b0b0; border-color: #333333; }
+.preset-ivory    { background: #fbf8f1; color: #5e574a; border-color: #e0dac7; }
+.preset-stone    { background: #ececec; color: #4a4a4a; border-color: #d4d4d4; }
+.preset-cloud    { background: #f5f7fa; color: #4a5568; border-color: #d8dee5; }
 .preset-graphite { background: #1c1c1e; color: #c2a76d; border-color: #38383a; }
 .preset-midnight { background: #0b0e13; color: #d4b06b; border-color: #2a3038; }
 .preset-slate    { background: #1d2228; color: #b8a87f; border-color: #313841; }
@@ -974,6 +1066,129 @@ body.is-offline .view { padding-top: 50px; }
 
 /* SETTINGS BUTTON ROW */
 .settings-btn.search-btn { font-size: 1rem; }
+
+/* iOS-style toggle switch */
+.ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 51px; height: 31px;
+  flex: 0 0 auto;
+}
+.ios-switch input { opacity: 0; width: 0; height: 0; }
+.ios-switch span {
+  position: absolute; cursor: pointer; inset: 0;
+  background: var(--bg-elev-3);
+  border-radius: 31px;
+  transition: background .25s;
+}
+.ios-switch span::before {
+  content: '';
+  position: absolute;
+  width: 27px; height: 27px;
+  left: 2px; top: 2px;
+  background: white;
+  border-radius: 50%;
+  transition: transform .25s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+.ios-switch input:checked + span { background: #34c759; }
+.ios-switch input:checked + span::before { transform: translateX(20px); }
+
+/* Dynamic Island-style top pill */
+.island {
+  position: fixed; top: 8px; left: 50%;
+  transform: translateX(-50%) translateY(-60px);
+  background: #000;
+  color: white;
+  border-radius: 999px;
+  padding: 8px 18px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: .88rem; font-weight: 500;
+  z-index: 1500;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .25s;
+  opacity: 0;
+  pointer-events: none;
+}
+.island.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.island[data-kind="ok"] { background: #1c3d22; color: #5dd49a; }
+.island-icon { font-size: 1rem; }
+
+/* Context menu (long-press) */
+.context-menu {
+  position: fixed;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  z-index: 1400;
+  box-shadow: var(--shadow-lg);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  min-width: 180px;
+  opacity: 0; transform: scale(.92);
+  transition: opacity .15s, transform .15s;
+}
+.context-menu.show { opacity: 1; transform: scale(1); }
+.ctx-item {
+  display: block; width: 100%;
+  background: none; border: 0;
+  padding: 10px 14px; text-align: left;
+  color: var(--text); font-size: .9rem;
+  cursor: pointer; border-radius: 8px;
+  font-family: inherit;
+}
+.ctx-item:hover { background: var(--bg-elev-2); }
+.ctx-item.danger { color: var(--danger); }
+
+/* Segmented control (iOS) */
+.segmented {
+  display: flex;
+  background: var(--bg-elev-2);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 0;
+  margin-bottom: 12px;
+}
+.segmented .seg {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  padding: 7px 12px;
+  font-size: .85rem; font-weight: 500;
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .2s, box-shadow .2s;
+}
+.segmented .seg.active {
+  background: var(--bg-elev);
+  box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+
+/* Multi-window desktop layout */
+@media (min-width: 1024px) {
+  .view {
+    max-width: 1100px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  body.desktop-multi .view {
+    max-width: 1400px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  body.desktop-multi .hero,
+  body.desktop-multi h1,
+  body.desktop-multi .page-title,
+  body.desktop-multi .stat-row,
+  body.desktop-multi .row {
+    grid-column: 1 / -1;
+  }
+}
 
 /* SETTINGS GROUPS (iOS-style) */
 .settings-group {

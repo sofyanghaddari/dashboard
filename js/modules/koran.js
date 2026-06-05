@@ -1,7 +1,7 @@
 import { all, put, get } from '../db.js';
 import { ymd, escapeHTML } from '../utils.js';
 import { celebrateTask } from '../components/celebrate.js';
-import { ok } from '../components/toast.js';
+import { ok, err } from '../components/toast.js';
 
 let _reminderTimer = null;
 
@@ -30,6 +30,7 @@ export async function render(container) {
     <div class="card">
       <h2>Streak</h2>
       <p><b style="font-size:2rem">${streak}</b> dag${streak===1?'':'en'} achter elkaar</p>
+      <button class="btn secondary block" id="repair-day" style="margin-top:8px">🛠️ Gemiste dag goedmaken (1x per maand)</button>
     </div>
     <div class="card">
       <h2>Laatste 30 dagen</h2>
@@ -51,6 +52,19 @@ export async function render(container) {
   container.querySelector('#check').onclick = async () => {
     await put('hizb_log', { date: today, completed: true });
     celebrateTask();
+    render(container);
+  };
+  container.querySelector('#repair-day').onclick = async () => {
+    const lastRepair = localStorage.getItem('lastStreakRepair');
+    const monthKey = new Date().toISOString().slice(0,7);
+    if (lastRepair === monthKey) { err('Deze maand al gebruikt'); return; }
+    const dateStr = prompt('Welke datum goedmaken? (YYYY-MM-DD)');
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
+    const d = new Date(dateStr);
+    if (d > new Date()) { err('Datum moet in het verleden liggen'); return; }
+    await put('hizb_log', { date: dateStr, completed: true, repaired: true });
+    localStorage.setItem('lastStreakRepair', monthKey);
+    ok(`Dag ${dateStr} goedgemaakt — gebruik tot volgende maand`);
     render(container);
   };
   container.querySelector('#save-settings').onclick = () => {

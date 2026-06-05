@@ -9,6 +9,7 @@ import { isLockEnabled, setPin } from '../lock.js';
 import { biometricAvailable, platformAuthenticatorAvailable, registerBiometric, isBiometricEnabled, disableBiometric } from '../biometric.js';
 import { exportMonthPDF } from '../pdf-export.js';
 import { openWeeklyReview } from './weekly-review.js';
+import { getCustomShame, setCustomShame, customMascot, setCustomMascot } from '../mascot.js';
 
 const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots'];
 
@@ -126,10 +127,31 @@ export async function openSettings(onClose) {
       <button type="button" class="btn secondary block" id="export-pdf" style="margin-top:8px">Print/PDF — Maandoverzicht voor administratie</button>
       <button type="button" class="btn secondary block" id="print-page" style="margin-top:8px">Print huidige pagina</button>
 
-      <label style="margin-top:14px;display:flex;align-items:center;gap:8px;text-transform:none;font-size:.9rem">
-        <input type="checkbox" id="set-auto-export" style="width:auto;margin:0" ${getSetting('autoExport')==='1'?'checked':''} />
-        Automatisch wekelijks JSON downloaden
-      </label>
+      <div class="settings-group" style="margin-top:14px">
+        <label class="settings-row" style="text-transform:none">
+          <div class="settings-row-main">
+            <div class="settings-row-title">Auto-export wekelijks (JSON)</div>
+            <div class="settings-row-sub muted">Download elke 7 dagen automatisch</div>
+          </div>
+          <span class="ios-switch"><input type="checkbox" id="set-auto-export" ${getSetting('autoExport')==='1'?'checked':''} /><span></span></span>
+        </label>
+        <label class="settings-row" style="text-transform:none">
+          <div class="settings-row-main">
+            <div class="settings-row-title">Auto-PDF maandelijks</div>
+            <div class="settings-row-sub muted">1e van de maand automatisch maandoverzicht openen</div>
+          </div>
+          <span class="ios-switch"><input type="checkbox" id="set-auto-pdf" ${getSetting('autoPdf')==='1'?'checked':''} /><span></span></span>
+        </label>
+      </div>
+
+      <hr style="border-color:var(--border);margin:20px 0" />
+
+      <h3>Personaliseren</h3>
+      <label>Mascot-emoji (eigen avatar)</label>
+      <input id="set-mascot" maxlength="4" placeholder="🦁" value="${customMascot() || ''}" />
+      <label style="margin-top:10px">Eigen shame-berichten (één per regel)</label>
+      <textarea id="set-shame" rows="4" placeholder="Schrijf je eigen brutale boodschappen…">${(getCustomShame() || []).join('\n')}</textarea>
+      <button type="button" class="btn block" id="save-pers" style="margin-top:8px">Opslaan personalisatie</button>
 
       <hr style="border-color:var(--border);margin:20px 0" />
 
@@ -284,6 +306,15 @@ export async function openSettings(onClose) {
   backdrop.querySelector('#export-pdf').onclick = () => { close(); exportMonthPDF(); };
   backdrop.querySelector('#show-weekly').onclick = () => { close(); openWeeklyReview(); };
   backdrop.querySelector('#set-auto-export').onchange = (e) => setSetting('autoExport', e.target.checked ? '1' : '0');
+  backdrop.querySelector('#set-auto-pdf').onchange = (e) => setSetting('autoPdf', e.target.checked ? '1' : '0');
+  backdrop.querySelector('#save-pers').onclick = () => {
+    const m = backdrop.querySelector('#set-mascot').value.trim();
+    const sh = backdrop.querySelector('#set-shame').value.split('\n').map(s => s.trim()).filter(Boolean);
+    setCustomMascot(m || null);
+    setCustomShame(sh);
+    ok('Opgeslagen');
+    close();
+  };
 
   // Storage info
   if (navigator.storage && navigator.storage.estimate) {
