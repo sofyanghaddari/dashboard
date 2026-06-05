@@ -1,6 +1,7 @@
 // Auto-backup naar GitHub Gist. Vereist eenmalige PAT-setup.
 import { all, put, clear } from './db.js';
 import { getSetting, setSetting } from './settings.js';
+import { encrypt, decrypt, isEncrypted } from './crypto.js';
 
 const STORES = ['rides','expenses','hizb_log','cards','goals','todos','shifts','notes','habits','habit_log','pots'];
 const FILE = 'dashboard-backup.json';
@@ -38,7 +39,9 @@ export async function syncUp() {
   const token = localStorage.getItem('ghToken');
   if (!token) throw new Error('Geen GitHub token ingesteld');
   const gistId = localStorage.getItem('ghGistId');
-  const content = await buildPayload();
+  let content = await buildPayload();
+  const encPwd = sessionStorage.getItem('ghEncPwd');
+  if (encPwd) content = await encrypt(content, encPwd);
   if (gistId) {
     await api(`/gists/${gistId}`, token, {
       method: 'PATCH',
@@ -63,8 +66,14 @@ export async function syncDown() {
   const gistId = localStorage.getItem('ghGistId');
   if (!token || !gistId) throw new Error('GitHub niet geconfigureerd');
   const gist = await api(`/gists/${gistId}`, token);
-  const content = gist.files[FILE]?.content;
+  let content = gist.files[FILE]?.content;
   if (!content) throw new Error('Geen backup in gist gevonden');
+  if (isEncrypted(content)) {
+    const pwd = sessionStorage.getItem('ghEncPwd') || prompt('Backup is versleuteld. Voer wachtwoord in:');
+    if (!pwd) throw new Error('Wachtwoord verplicht');
+    try { content = await decrypt(content, pwd); sessionStorage.setItem('ghEncPwd', pwd); }
+    catch (e) { throw new Error('Wachtwoord onjuist of bestand beschadigd'); }
+  }
   const data = JSON.parse(content);
   for (const s of STORES) {
     if (!Array.isArray(data[s])) continue;

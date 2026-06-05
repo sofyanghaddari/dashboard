@@ -6,6 +6,8 @@ import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
 import { setupGithub, syncUp, syncDown, getSyncStatus } from '../github-sync.js';
 import { isLockEnabled, setPin } from '../lock.js';
+import { exportMonthPDF } from '../pdf-export.js';
+import { openWeeklyReview } from './weekly-review.js';
 
 const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots'];
 
@@ -101,11 +103,28 @@ export async function openSettings(onClose) {
 
       <hr style="border-color:var(--border);margin:20px 0" />
 
-      <h3>💾 Lokale backup</h3>
-      <button type="button" class="btn block" id="export-data">📥 Exporteer data (JSON)</button>
-      <label for="import-data" class="btn secondary block" style="text-align:center;display:block;margin-top:8px">📤 Importeer data</label>
+      <h3>Lokale backup &amp; export</h3>
+      <button type="button" class="btn block" id="export-data">Exporteer data (JSON)</button>
+      <label for="import-data" class="btn secondary block" style="text-align:center;display:block;margin-top:8px">Importeer data</label>
       <input type="file" id="import-data" accept=".json" style="display:none" />
-      <button type="button" class="btn secondary block" id="print-page" style="margin-top:8px">🖨️ Print / PDF</button>
+      <button type="button" class="btn secondary block" id="export-pdf" style="margin-top:8px">Print/PDF — Maandoverzicht voor administratie</button>
+      <button type="button" class="btn secondary block" id="print-page" style="margin-top:8px">Print huidige pagina</button>
+
+      <label style="margin-top:14px;display:flex;align-items:center;gap:8px;text-transform:none;font-size:.9rem">
+        <input type="checkbox" id="set-auto-export" style="width:auto;margin:0" ${getSetting('autoExport')==='1'?'checked':''} />
+        Automatisch wekelijks JSON downloaden
+      </label>
+
+      <hr style="border-color:var(--border);margin:20px 0" />
+
+      <h3>Week-overzicht</h3>
+      <p class="muted" style="font-size:.85rem;margin:0 0 8px">Verschijnt automatisch elke zondagavond.</p>
+      <button type="button" class="btn block" id="show-weekly">Bekijk week-overzicht nu</button>
+
+      <hr style="border-color:var(--border);margin:20px 0" />
+
+      <h3>Opslag</h3>
+      <div id="storage-info" class="muted" style="font-size:.85rem">Laden…</div>
 
       <hr style="border-color:var(--border);margin:20px 0" />
 
@@ -198,6 +217,26 @@ export async function openSettings(onClose) {
   };
 
   backdrop.querySelector('#print-page').onclick = () => { close(); setTimeout(() => window.print(), 200); };
+  backdrop.querySelector('#export-pdf').onclick = () => { close(); exportMonthPDF(); };
+  backdrop.querySelector('#show-weekly').onclick = () => { close(); openWeeklyReview(); };
+  backdrop.querySelector('#set-auto-export').onchange = (e) => setSetting('autoExport', e.target.checked ? '1' : '0');
+
+  // Storage info
+  if (navigator.storage && navigator.storage.estimate) {
+    navigator.storage.estimate().then(async (e) => {
+      const usedMB = (e.usage / (1024*1024)).toFixed(2);
+      const quotaMB = (e.quota / (1024*1024)).toFixed(0);
+      const persistent = navigator.storage.persisted ? await navigator.storage.persisted() : false;
+      const el = backdrop.querySelector('#storage-info');
+      if (el) el.innerHTML = `
+        Gebruikt: <b>${usedMB} MB</b> van ${quotaMB} MB beschikbaar
+        <div style="font-size:.8rem;margin-top:4px">${persistent ? '🔒 Persistent (browser ruimt niet op)' : '⚠️ Niet persistent — klik om te beschermen'}</div>
+        ${!persistent && navigator.storage.persist ? '<button class="btn secondary" id="persist-btn" style="margin-top:6px">Maak persistent</button>' : ''}
+      `;
+      const pb = backdrop.querySelector('#persist-btn');
+      if (pb) pb.onclick = async () => { await navigator.storage.persist(); ok('Aangevraagd'); };
+    });
+  }
 
   backdrop.querySelector('#export-data').onclick = async () => {
     try {

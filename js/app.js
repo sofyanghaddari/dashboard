@@ -9,6 +9,8 @@ import { openCalendar } from './components/calendar.js';
 import { openYearReview } from './components/year-review.js';
 import { lockScreen } from './lock.js';
 import { maybeAutoSync } from './github-sync.js';
+import { maybeAutoExport } from './auto-export.js';
+import { maybeShowWeeklyReview } from './components/weekly-review.js';
 import { render as renderDashboard } from './modules/dashboard.js';
 import { render as renderTaxi } from './modules/taxi.js';
 import { render as renderKoran } from './modules/koran.js';
@@ -48,6 +50,11 @@ async function bootApp() {
 
   maybeAutoSync();
   setInterval(maybeAutoSync, 60 * 60 * 1000);
+  maybeAutoExport();
+  maybeShowWeeklyReview();
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persisted().then(p => { if (!p) navigator.storage.persist(); });
+  }
 
   let _deferredInstall = null;
   window.addEventListener('beforeinstallprompt', (e) => {
