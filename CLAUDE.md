@@ -152,6 +152,17 @@ docs/superpowers/
 5. Visuele themes eerst flashy (aurora/cyber/galaxy/velvet/sunset) → gebruiker vond ze **niet professioneel** → vervangen door slate/navy/bronze/charcoal/sand (behoud marble/mosque)
 6. Taxi vereenvoudigd: weg met +nieuwe-rit, +nieuwe-uitgave, source-breakdown, belasting-display — enkel **dagelijks inkomen noteren**
 7. Modals krijgen × rechtsboven (was alleen Annuleren-knop onderaan)
+8. **Shift-tracker volledig weg** + **Pomodoro weg** (gebruiker wilde ze niet)
+9. Taxi heeft nu **maandkalender-grid** waar je per dag retroactief inkomen kunt invullen (klik op dag → modal met bestaande items + add)
+10. Weer-locatie standaard **Amsterdam centrum** (52.3676, 4.9041) ipv geolocation; Schiphol-piek → Amsterdam spitsuren (07-09, 16-19, 22-02 uitgaan)
+11. **Maandelijks inkomensdoel** toegevoegd naast dagdoel
+12. Dashboard heeft **30-dagen heatmap**, trend % vs vorige maand, projectie einde maand prominent, voice-knop voor snel inkomen
+13. Pro-typografie: **serif font** (Georgia) voor grote bedragen, uppercase card-titles (.card-title class), tighter padding (14 ipv 16)
+14. **Encrypted GitHub backup** via AES-GCM + PBKDF2 (200k iter). Wachtwoord in sessionStorage tijdens sessie.
+15. **Storage-info** in settings via navigator.storage.estimate(); auto-persist op boot
+16. **Weekly review** modal verschijnt zondagavond automatisch (max 1x/dag)
+17. **Auto-export wekelijks** als optie in settings (downloadt JSON elke 7 dagen)
+18. **PDF maand-export** voor administratie/boekhouder via window.print() in nieuw venster
 
 ## Wat NIET gebouwd (en waarom)
 
@@ -160,6 +171,9 @@ docs/superpowers/
 - **Open banking** — PSD2 bureaucratie, te zwaar
 - **Multi-device QR-sync** — peer-to-peer of GitHub middleman, complex; GitHub-Gist sync biedt al cross-device
 - **App-icon badge** — PWA op iOS ondersteunt dit niet betrouwbaar
+- **Biometric / WebAuthn** — overwogen maar uitgesteld (vereist credential management, te complex voor batch); PIN volstaat
+- **Sparklines per kaart** — overwogen maar niet gebouwd: heatmap dekt visualisatie al af
+- **Background sync via service worker** — Chrome-only; weersrefresh kan gewoon op render-time
 
 ## Hoe verder
 
