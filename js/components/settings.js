@@ -46,6 +46,9 @@ export async function openSettings(onClose) {
       <label>Dagelijks inkomensdoel (€)</label>
       <input id="set-goal" type="number" step="1" value="${getSetting('dailyIncomeGoal')}" />
 
+      <label>Maandelijks inkomensdoel (€)</label>
+      <input id="set-mgoal" type="number" step="50" value="${getSetting('monthlyIncomeGoal')}" />
+
       <div class="row" style="margin-top:16px">
         <button type="button" class="btn" id="save-settings">Opslaan</button>
       </div>
@@ -137,6 +140,7 @@ export async function openSettings(onClose) {
 
   backdrop.querySelector('#save-settings').onclick = () => {
     setSetting('dailyIncomeGoal', backdrop.querySelector('#set-goal').value);
+    setSetting('monthlyIncomeGoal', backdrop.querySelector('#set-mgoal').value);
     ok('Opgeslagen');
     close();
   };

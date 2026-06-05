@@ -1,33 +1,54 @@
-import { all } from '../db.js';
-import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML } from '../utils.js';
-import { getNumber } from '../settings.js';
+import { all, put } from '../db.js';
+import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML, uid, todayISO } from '../utils.js';
+import { getNumber, getSetting } from '../settings.js';
 import { celebrateGoalHit, celebrateStreak } from '../components/celebrate.js';
-import { checkNewBadges, BADGES } from '../achievements.js';
-import { toast } from '../components/toast.js';
+import { checkNewBadges } from '../achievements.js';
+import { toast, ok, err, info } from '../components/toast.js';
 import { getWeather, codeInfo, rideOpportunities } from '../weather.js';
 import { getMascotState, shouldShame, pickShame } from '../mascot.js';
 import { quoteOfDay } from '../quotes.js';
-
-let _tickTimer = null;
+import { voiceAvailable, startVoice } from '../voice.js';
 
 export async function render(container) {
-  if (_tickTimer) { clearInterval(_tickTimer); _tickTimer = null; }
-
-  const [rides, hizb, todos, cards, goals, shifts] = await Promise.all([
-    all('rides'), all('hizb_log'), all('todos'), all('cards'), all('goals'), all('shifts'),
+  const [rides, hizb, todos, cards, goals] = await Promise.all([
+    all('rides'), all('hizb_log'), all('todos'), all('cards'), all('goals'),
   ]);
   const now = new Date();
-  const todayRides = rides.filter(r => sameDay(new Date(r.date), now));
-  const weekRides  = rides.filter(r => new Date(r.date) >= startOfWeek(now));
-  const monthRides = rides.filter(r => new Date(r.date) >= startOfMonth(now));
+  const today = ymd();
+
   const sum = (arr) => arr.reduce((s, r) => s + Number(r.amount || 0), 0);
-  const todayIncome = sum(todayRides);
-  const monthIncome = sum(monthRides);
+  const todayIncome = sum(rides.filter(r => sameDay(new Date(r.date), now)));
+  const weekIncome  = sum(rides.filter(r => new Date(r.date) >= startOfWeek(now)));
+  const monthIncome = sum(rides.filter(r => new Date(r.date) >= startOfMonth(now)));
 
   const dailyGoal = getNumber('dailyIncomeGoal');
+  const monthlyGoal = getNumber('monthlyIncomeGoal');
   const goalPct = dailyGoal > 0 ? Math.min(100, Math.round(todayIncome / dailyGoal * 100)) : 0;
+  const monthGoalPct = monthlyGoal > 0 ? Math.min(100, Math.round(monthIncome / monthlyGoal * 100)) : 0;
 
-  const today = ymd();
+  // Trend & projectie
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+  const daysIntoMonth = now.getDate();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const lastMonthAtPoint = rides.filter(r => {
+    const d = new Date(r.date);
+    return d >= lastMonthStart && d <= lastMonthEnd && d.getDate() <= daysIntoMonth;
+  }).reduce((s, r) => s + Number(r.amount || 0), 0);
+  const monthDelta = lastMonthAtPoint > 0 ? Math.round((monthIncome - lastMonthAtPoint) / lastMonthAtPoint * 100) : null;
+  const projectedMonth = daysIntoMonth > 0 ? Math.round((monthIncome / daysIntoMonth) * daysInMonth) : 0;
+
+  // 30-dagen heatmap data
+  const last30 = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now); d.setDate(d.getDate() - i);
+    const key = ymd(d);
+    const total = sum(rides.filter(r => ymd(new Date(r.date)) === key));
+    last30.push({ key, day: d.getDate(), total, weekday: d.getDay() });
+  }
+  const heatMax = Math.max(1, ...last30.map(d => d.total));
+
+  // Hizb
   const todayHizb = hizb.some(h => h.date === today);
   const doneSet = new Set(hizb.map(h => h.date));
   let streak = 0;
@@ -36,44 +57,12 @@ export async function render(container) {
 
   const dueCards = cards.filter(c => c.dueDate <= today).length;
   const topTodos = todos.filter(t => !t.done && t.priority === 'high').slice(0, 3);
-
   const totalRides = sum(rides);
   const taxiGoals = goals.filter(g => Number(g.taxiPercent) > 0 && Number(g.target) > 0);
-
-  const activeShift = shifts.find(s => !s.endTime);
-
-  // Maand-vs-vorige maand
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-  const lastMonthRides = rides.filter(r => {
-    const d = new Date(r.date);
-    return d >= lastMonthStart && d <= lastMonthEnd;
-  });
-  const lastMonthIncome = sum(lastMonthRides);
-  const daysIntoMonth = now.getDate();
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const projectedMonth = daysIntoMonth > 0 ? (monthIncome / daysIntoMonth) * daysInMonth : 0;
-  const lastMonthAtSamePoint = daysIntoMonth > 0 ? (lastMonthIncome / lastMonthEnd.getDate()) * daysIntoMonth : 0;
-  const monthDelta = lastMonthAtSamePoint > 0 ? ((monthIncome - lastMonthAtSamePoint) / lastMonthAtSamePoint) * 100 : 0;
 
   const mascot = await getMascotState();
   const shame = await shouldShame();
   const quote = quoteOfDay();
-
-  const suggestions = [];
-  if (activeShift) {
-    const shiftHours = (new Date() - new Date(activeShift.startTime)) / 3600000;
-    if (shiftHours > 10) suggestions.push('☕ Je werkt al meer dan 10 uur — even pauze?');
-  }
-  if (!todayHizb && new Date().getHours() >= 20) suggestions.push('📖 Vandaag nog geen hizb — voor je gaat slapen?');
-  const dayName = ['zo','ma','di','wo','do','vr','za'][new Date().getDay()];
-  const sameDayRides = rides.filter(r => ['zo','ma','di','wo','do','vr','za'][new Date(r.date).getDay()] === dayName);
-  if (sameDayRides.length >= 5) {
-    const avgSameDay = sameDayRides.reduce((s, r) => s + Number(r.amount || 0), 0) / new Set(sameDayRides.map(r => ymd(new Date(r.date)))).size;
-    if (avgSameDay > 0 && todayIncome < avgSameDay * 0.5 && new Date().getHours() >= 14) {
-      suggestions.push(`📊 Op ${['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'][new Date().getDay()]} verdien je gem ${fmtMoney(avgSameDay)}. Vandaag pas ${fmtMoney(todayIncome)}.`);
-    }
-  }
 
   container.innerHTML = `
     <div class="hero">
@@ -84,60 +73,74 @@ export async function render(container) {
       </div>
     </div>
 
-    ${activeShift ? `
-      <div class="card accent-card">
-        <h2>⏱️ Dienst actief</h2>
-        <p class="big-money" id="dash-shift-timer">--:--:--</p>
-        <p class="muted">Sinds ${new Date(activeShift.startTime).toLocaleTimeString('nl-NL', {hour:'2-digit',minute:'2-digit'})}</p>
-      </div>` : ''}
-
-    <div class="row" style="margin-bottom:12px">
-      <button class="btn secondary" id="open-calendar">📅 Kalender</button>
-      <button class="btn secondary" id="open-yr">📊 Jaaroverzicht</button>
+    <div class="row" style="margin-bottom:14px">
+      <button class="btn secondary" id="open-calendar">Kalender</button>
+      <button class="btn secondary" id="open-yr">Jaar</button>
+      ${voiceAvailable() ? `<button class="btn" id="quick-voice" title="Inkomen inspreken">🎙️ Stem</button>` : ''}
     </div>
 
     <div class="card" id="weather-card">
-      <h2>🌤️ Weer & ritten-radar</h2>
-      <p class="muted" id="weather-body">Laden…</p>
+      <h2 class="card-title">Weer & ritten-radar Amsterdam</h2>
+      <div id="weather-body"><p class="muted">Laden…</p></div>
     </div>
 
-    ${suggestions.length ? `
-      <div class="card suggestion-card">
-        <h2>💡 Suggesties</h2>
-        ${suggestions.map(s => `<p>${s}</p>`).join('')}
-      </div>` : ''}
-
-    <div class="card">
-      <h2>🚖 Vandaag</h2>
-      <p class="big-money">${fmtMoney(todayIncome)}</p>
+    <div class="card primary-stat">
+      <div class="stat-label">Vandaag</div>
+      <div class="big-money">${fmtMoney(todayIncome)}</div>
       ${dailyGoal > 0 ? `
-        <div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:${goalPct}%"></div></div>
-        <p class="muted" style="font-size:.85rem;margin-top:4px">${goalPct}% van doel (${fmtMoney(dailyGoal)})</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:${goalPct}%"></div></div>
+        <div class="stat-sub">${goalPct}% van dagdoel (${fmtMoney(dailyGoal)})</div>
       ` : ''}
-      <p class="muted" style="margin-top:8px">Deze week: ${fmtMoney(sum(weekRides))} · Deze maand: ${fmtMoney(monthIncome)}</p>
-      ${lastMonthIncome > 0 ? `
-        <p class="muted" style="font-size:.85rem">
-          📊 Vergeleken met vorige maand op dag ${daysIntoMonth}:
-          ${monthDelta >= 0 ? '🟢 +' : '🔴 '}${monthDelta.toFixed(0)}%
-          <span class="muted">(toen ${fmtMoney(lastMonthAtSamePoint)})</span>
-        </p>` : ''}
-      ${projectedMonth > monthIncome ? `<p class="muted" style="font-size:.85rem">🔮 Projectie einde maand: <b class="money">${fmtMoney(projectedMonth)}</b></p>` : ''}
     </div>
 
     <div class="card">
-      <h2>📖 Koran</h2>
-      <p>Vandaag: <b>${todayHizb ? 'Afgevinkt ✓' : 'Nog niet afgevinkt'}</b></p>
-      <p class="muted">Streak: ${streak} dag${streak===1?'':'en'}</p>
+      <h2 class="card-title">Deze maand</h2>
+      <div class="big-money">${fmtMoney(monthIncome)}</div>
+      ${monthlyGoal > 0 ? `
+        <div class="progress-bar"><div class="progress-fill" style="width:${monthGoalPct}%"></div></div>
+        <div class="stat-sub">${monthGoalPct}% van maanddoel (${fmtMoney(monthlyGoal)})</div>
+      ` : ''}
+      <div class="row" style="margin-top:10px;gap:18px">
+        <div>
+          <div class="stat-label">Week</div>
+          <div class="stat-value-sm">${fmtMoney(weekIncome)}</div>
+        </div>
+        <div>
+          <div class="stat-label">Projectie maand</div>
+          <div class="stat-value-sm">${fmtMoney(projectedMonth)}</div>
+        </div>
+        ${monthDelta !== null ? `<div>
+          <div class="stat-label">vs vorige maand</div>
+          <div class="stat-value-sm ${monthDelta>=0?'trend-up':'trend-down'}">${monthDelta>=0?'↑':'↓'} ${Math.abs(monthDelta)}%</div>
+        </div>` : ''}
+      </div>
     </div>
 
     <div class="card">
-      <h2>📚 Arabisch</h2>
-      <p><b>${dueCards}</b> kaart${dueCards===1?'':'en'} vandaag te leren</p>
+      <h2 class="card-title">Laatste 30 dagen</h2>
+      <div class="heatmap">
+        ${last30.map(d => {
+          const i = d.total > 0 ? Math.max(0.18, d.total / heatMax) : 0;
+          return `<div class="heat-cell" style="${i>0?`background:linear-gradient(135deg,rgba(212,176,107,${i}),rgba(212,176,107,${i*0.6}))`:''}" title="${d.key}: ${fmtMoney(d.total)}"></div>`;
+        }).join('')}
+      </div>
+      <div class="heat-legend"><span class="muted">minder</span><span class="heat-spec"></span><span class="muted">meer</span></div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Koran</h2>
+      <div>Vandaag: <b>${todayHizb ? 'afgevinkt ✓' : 'nog niet afgevinkt'}</b></div>
+      <div class="muted">Streak: ${streak} dag${streak===1?'':'en'}</div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Arabisch</h2>
+      <div><b>${dueCards}</b> kaart${dueCards===1?'':'en'} vandaag te leren</div>
     </div>
 
     ${taxiGoals.length ? `
       <div class="card">
-        <h2>🎯 Taxi-spaardoelen</h2>
+        <h2 class="card-title">Spaardoelen</h2>
         ${taxiGoals.map(g => {
           const saved = totalRides * (Number(g.taxiPercent) / 100);
           const pct = Math.min(100, Math.round(saved / Number(g.target) * 100));
@@ -151,20 +154,19 @@ export async function render(container) {
       </div>` : ''}
 
     <div class="card">
-      <h2>✅ Top prioriteiten</h2>
+      <h2 class="card-title">Top prioriteiten</h2>
       ${topTodos.length
-        ? topTodos.map(t => `<p>• ${escapeHTML(t.title)}</p>`).join('')
-        : '<p class="muted">Geen prioriteit-taken.</p>'}
+        ? topTodos.map(t => `<div>• ${escapeHTML(t.title)}</div>`).join('')
+        : '<div class="muted">Geen prioriteit-taken.</div>'}
     </div>
   `;
 
+  loadWeather(container);
   container.querySelector('#open-calendar').onclick = () => window.openCalendar && window.openCalendar();
   container.querySelector('#open-yr').onclick = () => window.openYearReview && window.openYearReview();
+  const voiceBtn = container.querySelector('#quick-voice');
+  if (voiceBtn) voiceBtn.onclick = () => quickVoiceIncome(container, voiceBtn);
 
-  // Weer ophalen + opportunities tonen
-  loadWeather(container);
-
-  // Dagdoel-viering
   if (dailyGoal > 0 && todayIncome >= dailyGoal) {
     const lastHit = localStorage.getItem('lastGoalHitDate');
     if (lastHit !== today) {
@@ -181,23 +183,26 @@ export async function render(container) {
   }
   checkNewBadges().then(newOnes => {
     newOnes.forEach((b, i) => {
-      setTimeout(() => toast(`${b.emoji} <b>Badge verdiend:</b> ${b.name}`, { type: 'ok', duration: 5000 }), 800 + i * 1200);
+      setTimeout(() => toast(`${b.emoji} <b>Badge:</b> ${b.name}`, { type: 'ok', duration: 5000 }), 800 + i * 1200);
     });
   });
+}
 
-  if (activeShift) {
-    const tick = () => {
-      const el = container.querySelector('#dash-shift-timer');
-      if (!el) return;
-      const sec = Math.floor((new Date() - new Date(activeShift.startTime)) / 1000);
-      const h = Math.floor(sec / 3600);
-      const m = Math.floor((sec % 3600) / 60);
-      const s = sec % 60;
-      el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    };
-    tick();
-    _tickTimer = setInterval(tick, 1000);
-  }
+function quickVoiceIncome(container, btn) {
+  info('Spreek bedrag, bv. "25 euro" of "vijfentwintig"');
+  btn.classList.add('listening');
+  startVoice({
+    onResult: async (text) => {
+      btn.classList.remove('listening');
+      const m = text.toLowerCase().match(/(\d+([.,]\d+)?)/);
+      const amount = m ? parseFloat(m[1].replace(',', '.')) : null;
+      if (!amount || amount <= 0) { err('Geen bedrag herkend: "' + text + '"'); return; }
+      await put('rides', { id: uid(), date: todayISO(), amount, source: 'daily', km: null, note: 'Voice: ' + text });
+      ok(`${amount.toFixed(2)} toegevoegd`);
+      render(container);
+    },
+    onError: (e) => { btn.classList.remove('listening'); err('Mislukt: ' + e); },
+  });
 }
 
 async function loadWeather(container) {
@@ -210,15 +215,14 @@ async function loadWeather(container) {
     const info = codeInfo(cur.weather_code);
     const opps = rideOpportunities(w);
     body.innerHTML = `
-      <p style="font-size:1.3rem;margin:4px 0">${info.e} ${Math.round(cur.temperature_2m)}° · ${info.d}</p>
-      <p class="muted" style="font-size:.85rem">Vandaag: ${Math.round(today.temperature_2m_min[0])}° / ${Math.round(today.temperature_2m_max[0])}° · regen ${today.precipitation_probability_max[0]}%</p>
-      ${opps.length ? `<div style="margin-top:8px">
-        <div class="muted" style="font-size:.78rem;text-transform:uppercase;letter-spacing:.04em">Kansen</div>
-        ${opps.map(o => `<p style="font-size:.9rem;margin:4px 0">${o.msg}</p>`).join('')}
+      <div style="font-size:1.35rem;margin:4px 0">${info.e} ${Math.round(cur.temperature_2m)}° · ${info.d}</div>
+      <div class="muted" style="font-size:.85rem">Vandaag: ${Math.round(today.temperature_2m_min[0])}° / ${Math.round(today.temperature_2m_max[0])}° · regen ${today.precipitation_probability_max[0]}%</div>
+      ${opps.length ? `<div style="margin-top:10px">
+        <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em">Kansen</div>
+        ${opps.map(o => `<div style="font-size:.88rem;margin:4px 0">${o.msg}</div>`).join('')}
       </div>` : ''}
-      <p style="margin-top:10px"><a href="https://www.schiphol.nl/nl/aankomsten/" target="_blank" style="color:var(--accent)">🛬 Live Schiphol-aankomsten</a></p>
     `;
   } catch (e) {
-    body.innerHTML = `<p class="muted">Weer niet beschikbaar (${e.message || e}). Geef toestemming voor locatie in je browser-instellingen.</p>`;
+    body.innerHTML = `<p class="muted">Weer niet beschikbaar.</p>`;
   }
 }

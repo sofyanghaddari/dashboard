@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v11';
+const CACHE = 'dashboard-v12';
 const ASSETS = [
   './',
   './index.html',
@@ -37,7 +37,6 @@ const ASSETS = [
   './js/modules/goals.js',
   './js/modules/todo.js',
   './js/modules/notes.js',
-  './js/components/pomodoro.js',
   './js/components/calendar.js',
   './js/components/year-review.js',
 ];

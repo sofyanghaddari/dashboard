@@ -4,7 +4,6 @@ import { openSettings } from './components/settings.js';
 import { initTheme } from './theme.js';
 import { enablePullToRefresh } from './components/pullrefresh.js';
 import { initCmdK, openSearch } from './components/cmdk.js';
-import { initPomodoro } from './components/pomodoro.js';
 import { bindRipple, staggerIn } from './animate.js';
 import { openCalendar } from './components/calendar.js';
 import { openYearReview } from './components/year-review.js';
@@ -28,7 +27,6 @@ async function bootApp() {
   register('todo', renderTodo);
   register('notes', renderNotes);
   initRouter();
-  initPomodoro();
   bindRipple();
   window.openCalendar = openCalendar;
   window.staggerIn = staggerIn;

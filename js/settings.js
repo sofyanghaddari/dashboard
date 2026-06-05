@@ -3,6 +3,7 @@ const DEFAULTS = {
   hizbReminderTime: '20:00',
   hizbStartPoint: 'Surah Al-Fath, 10 hizb',
   dailyIncomeGoal: '200',
+  monthlyIncomeGoal: '5000',
   taxReservePercent: '25',
 };
 

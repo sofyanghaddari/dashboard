@@ -18,18 +18,8 @@ export function codeInfo(c) { return CODES[c] || { e: '🌡️', d: '' }; }
 export async function getLocation() {
   const stored = localStorage.getItem('userLocation');
   if (stored) return JSON.parse(stored);
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) return reject('Geolocation niet ondersteund');
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const loc = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-        localStorage.setItem('userLocation', JSON.stringify(loc));
-        resolve(loc);
-      },
-      (e) => reject(e.message),
-      { timeout: 10000, maximumAge: 6 * 3600 * 1000 }
-    );
-  });
+  // Default: Amsterdam centrum — geen permissie nodig
+  return { lat: 52.3676, lon: 4.9041 };
 }
 
 export async function getWeather() {
@@ -45,7 +35,7 @@ export async function getWeather() {
   return data;
 }
 
-// Heuristiek: regen + drukke vlucht-uren = goede taxi-momenten
+// Heuristiek: regen + spitsuren = goede taxi-momenten (Amsterdam)
 export function rideOpportunities(weather) {
   if (!weather) return [];
   const out = [];
@@ -53,8 +43,8 @@ export function rideOpportunities(weather) {
   const hourly = weather.hourly;
   if (!hourly) return out;
 
-  // Schiphol-pieken: 06-09 ochtend, 17-21 avond
-  const flightPeaks = [[6,9],[17,21]];
+  // Amsterdam spitsuren: 07-09 ochtend, 16-19 avond, plus uitgaan 22-02
+  const peaks = [[7,9,'ochtend-spits'],[16,19,'avond-spits'],[22,26,'uitgaans-piek']];
 
   for (let i = 0; i < Math.min(48, hourly.time.length); i++) {
     const t = new Date(hourly.time[i]);
@@ -62,18 +52,28 @@ export function rideOpportunities(weather) {
     const h = t.getHours();
     const rain = hourly.precipitation_probability[i] || 0;
     const code = hourly.weather_code[i];
-    const isPeak = flightPeaks.some(([a, b]) => h >= a && h <= b);
-    if (rain >= 60 && isPeak) {
+    const peak = peaks.find(([a, b]) => {
+      if (b > 24) return h >= a || h <= b - 24;
+      return h >= a && h <= b;
+    });
+    if (rain >= 60 && peak) {
       out.push({
         time: t,
-        msg: `${codeInfo(code).e} ${dayLabel(t)} ${String(h).padStart(2,'0')}:00 — ${rain}% regen + Schiphol-piek → goede rit-tijd`,
+        msg: `${codeInfo(code).e} ${dayLabel(t)} ${String(h).padStart(2,'0')}:00 — ${rain}% regen + ${peak[2]} → goede rit-tijd in Amsterdam`,
       });
     } else if (rain >= 80) {
       out.push({ time: t, msg: `${codeInfo(code).e} ${dayLabel(t)} ${String(h).padStart(2,'0')}:00 — ${rain}% regen, kans op meer ritten` });
+    } else if (peak && [22,23,0,1].includes(h)) {
+      out.push({ time: t, msg: `${codeInfo(code).e} ${dayLabel(t)} ${String(h).padStart(2,'0')}:00 — ${peak[2]} in Amsterdam` });
     }
     if (out.length >= 3) break;
   }
   return out;
+}
+
+// Fallback default-locatie: Amsterdam
+export function defaultAmsterdam() {
+  return { lat: 52.3676, lon: 4.9041 };
 }
 
 function dayLabel(d) {
