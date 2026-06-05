@@ -62,14 +62,12 @@ export async function render(container) {
 
   const mascot = await getMascotState();
   const shame = await shouldShame();
-  const quote = quoteOfDay();
 
   container.innerHTML = `
     <div class="hero">
       <div class="mascot">${mascot.e}</div>
       <div class="hero-text">
         <div class="hero-msg">${shame ? pickShame() : escapeHTML(mascot.msg)}</div>
-        <div class="hero-quote">"${escapeHTML(quote.t)}" <span class="muted">— ${escapeHTML(quote.s)}</span></div>
       </div>
     </div>
 

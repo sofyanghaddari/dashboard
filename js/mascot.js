@@ -12,14 +12,21 @@ const STATES = [
 ];
 
 const SHAME = [
-  '🤬 Je hizb? Vergeten. Wat ben je aan het doen?',
-  '💀 Streak verloren. Excuses telt niet. Pak je Mushaf.',
-  '😤 Je bent groter dan dit. Bewijs het maar.',
-  '🥶 Koud. Letterlijk koud van jou. Open de Quran.',
-  '⚰️ Voorbije ik zou trots zijn. Huidige ik? Tja.',
-  '🪦 RIP streak. Begraven door eigen slordigheid.',
-  '😡 Anderen zitten te memoriseren, jij scrollt. Lekker bezig.',
-  '🚨 Alarm. Hizb-niveau: nul. Actie vereist.',
+  'Streak weg. Discipline weg. Wat heb je nog?',
+  'Allah ziet jou. Wat ben jij nu aan het doen?',
+  'Zwak. Punt. Geen excuses, niemand gelooft ze toch.',
+  'Anderen memoriseren. Jij scrollt. Voel de schaamte.',
+  'Vroeger had je vuur. Wat is daarmee gebeurd, lafaard?',
+  'Je verraadt jezelf. Elke dag een beetje meer.',
+  'Lui. Slordig. Vergeetachtig. Kies maar welke vandaag past.',
+  'Mensen winnen in stilte. Jij verliest in stilte.',
+  'Streak: 0. Karakter: 0. Toeval?',
+  'Je toekomstige ik kotst hierop. Stop met dit gedrag.',
+  'Excuses, excuses, excuses. Zielig, zielig, zielig.',
+  'De Mushaf staat te wachten. Jij ook — maar dan op niets.',
+  'Vandaag was je optie A: discipline. Jij koos D: niets.',
+  'Niemand respecteert iemand die zichzelf niet respecteert.',
+  'Het is niet moeilijk. Jij bent gewoon lui.',
 ];
 
 export function pickShame() {

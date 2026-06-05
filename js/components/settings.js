@@ -59,11 +59,25 @@ export async function openSettings(onClose) {
       <hr style="border-color:var(--border);margin:20px 0" />
 
       <h3>Beveiliging</h3>
-      <p class="muted" style="font-size:.85rem;margin:0 0 8px">Vergrendel app bij openen.</p>
-      <div id="bio-row" class="muted" style="font-size:.85rem;margin-bottom:8px">Face ID/Touch ID checken…</div>
-      <div class="row">
-        <button type="button" class="btn ${lockOn?'secondary':''}" id="set-pin">${lockOn ? 'Wijzig PIN' : 'PIN instellen'}</button>
-        ${lockOn ? `<button type="button" class="btn danger" id="remove-pin">PIN verwijderen</button>` : ''}
+      <p class="muted" style="font-size:.85rem;margin:0 0 12px">Vergrendel de app bij openen.</p>
+
+      <div class="settings-group">
+        <div class="settings-row" id="bio-row">
+          <div class="settings-row-main">
+            <div class="settings-row-title">Face ID / Touch ID</div>
+            <div class="settings-row-sub muted">Checken…</div>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-main">
+            <div class="settings-row-title">PIN-code</div>
+            <div class="settings-row-sub muted">${lockOn ? 'Ingesteld' : 'Niet ingesteld'}</div>
+          </div>
+          <div class="row" style="flex:0 0 auto">
+            <button type="button" class="btn secondary" id="set-pin">${lockOn ? 'Wijzig' : 'Instellen'}</button>
+            ${lockOn ? `<button type="button" class="btn danger" id="remove-pin">Verwijder</button>` : ''}
+          </div>
+        </div>
       </div>
 
       <hr style="border-color:var(--border);margin:20px 0" />
@@ -178,31 +192,48 @@ export async function openSettings(onClose) {
   (async () => {
     const row = backdrop.querySelector('#bio-row');
     if (!row) return;
-    if (!biometricAvailable()) { row.innerHTML = '<i>Face ID/Touch ID niet ondersteund op dit apparaat.</i>'; return; }
+    const sub = row.querySelector('.settings-row-sub');
+    const renderBio = (statusText, btnHTML) => {
+      sub.textContent = statusText;
+      const existing = row.querySelector('.bio-btns');
+      if (existing) existing.remove();
+      if (btnHTML) {
+        const wrap = document.createElement('div');
+        wrap.className = 'row bio-btns';
+        wrap.style.cssText = 'flex:0 0 auto';
+        wrap.innerHTML = btnHTML;
+        row.appendChild(wrap);
+      }
+    };
+
+    if (!biometricAvailable()) {
+      renderBio('Niet ondersteund door deze browser', '');
+      return;
+    }
     const avail = await platformAuthenticatorAvailable();
-    if (!avail) { row.innerHTML = '<i>Geen platform-authenticator gevonden (geen Face/Touch ID aanwezig).</i>'; return; }
-    const on = isBiometricEnabled();
-    row.innerHTML = on
-      ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-           <span>👤 Face ID/Touch ID actief</span>
-           <button class="btn danger" id="bio-off">Uitschakelen</button>
-         </div>`
-      : `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-           <span>👤 Face ID/Touch ID beschikbaar</span>
-           <button class="btn" id="bio-on">Inschakelen</button>
-         </div>`;
-    const onBtn = backdrop.querySelector('#bio-on');
-    if (onBtn) onBtn.onclick = async () => {
-      try { await registerBiometric(); ok('Face ID ingeschakeld'); close(); }
-      catch (e) { err('Mislukt: ' + (e.message || e)); }
+    if (!avail) {
+      renderBio('Geen Face ID / Touch ID gevonden op dit apparaat', '');
+      return;
+    }
+    const refresh = () => {
+      const on = isBiometricEnabled();
+      renderBio(on ? 'Actief' : 'Beschikbaar',
+        on ? `<button class="btn danger" id="bio-off">Uit</button>`
+           : `<button class="btn" id="bio-on">Inschakelen</button>`);
+      const onBtn = backdrop.querySelector('#bio-on');
+      if (onBtn) onBtn.onclick = async () => {
+        try { await registerBiometric(); ok('Face ID ingeschakeld'); refresh(); }
+        catch (e) { err('Mislukt: ' + (e.message || e)); }
+      };
+      const offBtn = backdrop.querySelector('#bio-off');
+      if (offBtn) offBtn.onclick = () => {
+        if (!confirm('Face ID uitschakelen?')) return;
+        disableBiometric();
+        ok('Uitgeschakeld');
+        refresh();
+      };
     };
-    const offBtn = backdrop.querySelector('#bio-off');
-    if (offBtn) offBtn.onclick = () => {
-      if (!confirm('Face ID uitschakelen?')) return;
-      disableBiometric();
-      ok('Uitgeschakeld');
-      close();
-    };
+    refresh();
   })();
 
   const remBtn = backdrop.querySelector('#remove-pin');
