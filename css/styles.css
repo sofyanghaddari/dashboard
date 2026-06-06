@@ -20,6 +20,7 @@
   --radius-sm: 10px;
   --tabbar-h: 68px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
   --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
   --shadow-md: 0 4px 14px rgba(0,0,0,.35);
   --shadow-lg: 0 10px 30px rgba(0,0,0,.45);
@@ -40,7 +41,7 @@ html, body {
 body { min-height: 100vh; }
 
 .view {
-  padding: 64px 18px calc(var(--tabbar-h) + var(--safe-bottom) + 20px);
+  padding: calc(64px + var(--safe-top)) 18px calc(var(--tabbar-h) + var(--safe-bottom) + 20px);
   max-width: 720px; margin: 0 auto;
   animation: fadeIn .25s ease;
 }
@@ -307,7 +308,7 @@ p { margin: 6px 0; line-height: 1.45; }
 
 /* SETTINGS GEAR (floating top right) */
 .settings-btn {
-  position: fixed; top: 14px; right: 14px;
+  position: fixed; top: calc(14px + var(--safe-top)); right: 14px;
   width: 40px; height: 40px;
   background: var(--bg-elev);
   border: 1px solid var(--border);
@@ -901,7 +902,7 @@ body[data-theme="light"] .btn.secondary { background: #f2f4f7; }
   background: var(--danger);
   color: white;
   text-align: center;
-  padding: 6px 12px;
+  padding: calc(6px + var(--safe-top)) 12px 6px;
   font-size: .85rem;
   font-weight: 600;
   z-index: 1200;
@@ -909,7 +910,7 @@ body[data-theme="light"] .btn.secondary { background: #f2f4f7; }
   transition: transform .3s ease;
 }
 body.is-offline .offline-banner { transform: none; }
-body.is-offline .view { padding-top: 50px; }
+body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
 
 /* PULL TO REFRESH */
 .pull-indicator {
@@ -1096,7 +1097,7 @@ body.is-offline .view { padding-top: 50px; }
 
 /* Dynamic Island-style top pill */
 .island {
-  position: fixed; top: 8px; left: 50%;
+  position: fixed; top: calc(8px + var(--safe-top)); left: 50%;
   transform: translateX(-50%) translateY(-60px);
   background: #000;
   color: white;
@@ -1192,7 +1193,7 @@ body.is-offline .view { padding-top: 50px; }
 
 /* SYNC PILL (top center) */
 .sync-pill {
-  position: fixed; top: 14px; left: 50%;
+  position: fixed; top: calc(14px + var(--safe-top)); left: 50%;
   transform: translateX(-50%);
   background: var(--bg-elev);
   border: 1px solid var(--border);
