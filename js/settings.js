@@ -1,5 +1,6 @@
 const DEFAULTS = {
   theme: 'dark',
+  userName: '',
   hizbReminderTime: '20:00',
   hizbStartPoint: 'Surah Al-Fath, 10 hizb',
   dailyIncomeGoal: '200',

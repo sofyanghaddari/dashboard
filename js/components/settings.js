@@ -117,216 +117,439 @@ export async function openSettings(onClose) {
   const preset = getSetting('themePreset') || 'midnight';
   const sync = getSyncStatus();
   const lockOn = isLockEnabled();
+  const userName = getSetting('userName') || '';
+  const hizbTime = getSetting('hizbReminderTime') || '20:00';
 
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
   backdrop.innerHTML = `
-    <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal settings-modal" role="dialog" aria-modal="true">
       <button type="button" class="modal-close" id="close-settings-x" aria-label="Sluiten">×</button>
       <h2>Instellingen</h2>
 
-      <label>Thema</label>
-      <select id="set-theme">
-        <option value="dark" ${themeMode==='dark'?'selected':''}>Donker</option>
-        <option value="light" ${themeMode==='light'?'selected':''}>Licht</option>
-        <option value="auto" ${themeMode==='auto'?'selected':''}>Automatisch (volgt systeem)</option>
-      </select>
-
-      <label>Accent-kleur</label>
-      <div class="accent-picker" id="accent-picker">
-        ${ACCENT_NAMES.map(name => `
-          <button type="button" class="accent-swatch accent-${name} ${name===accent?'active':''}" data-accent="${name}" aria-label="${name}"></button>
-        `).join('')}
-      </div>
-
-      <label>Sfeer / thema</label>
-      <div class="preset-picker">
-        ${THEME_PRESETS.map(p => `<button type="button" class="preset-chip preset-${p} ${p===preset?'active':''}" data-preset="${p}">${p}</button>`).join('')}
-      </div>
-
-      <label>Dichtheid</label>
-      <div class="segmented" id="density-pick">
-        <button type="button" class="seg ${(getSetting('density')||'comfortable')==='comfortable'?'active':''}" data-density="comfortable">Ruim</button>
-        <button type="button" class="seg ${getSetting('density')==='compact'?'active':''}" data-density="compact">Compact</button>
-      </div>
-
-      <label>Dagelijks inkomensdoel (€)</label>
-      <input id="set-goal" type="number" step="1" value="${getSetting('dailyIncomeGoal')}" />
-
-      <label>Maandelijks inkomensdoel (€)</label>
-      <input id="set-mgoal" type="number" step="50" value="${getSetting('monthlyIncomeGoal')}" />
-
-      <div class="row" style="margin-top:16px">
-        <button type="button" class="btn" id="save-settings">Opslaan</button>
-      </div>
-
-      <hr style="border-color:var(--border);margin:20px 0" />
-
-      <h3>Beveiliging</h3>
-      <p class="muted" style="font-size:.85rem;margin:0 0 12px">Vergrendel de app bij openen.</p>
-
-      <div class="settings-group">
-        <div class="settings-row" id="bio-row">
-          <div class="settings-row-main">
-            <div class="settings-row-title">Face ID / Touch ID</div>
-            <div class="settings-row-sub muted">Checken…</div>
+      <!-- PROFIEL -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">👤</span>
+          <div>
+            <div class="settings-section-title">Profiel</div>
+            <div class="settings-section-desc">Naam en persoonlijke stijl</div>
           </div>
         </div>
-        <div class="settings-row">
-          <div class="settings-row-main">
-            <div class="settings-row-title">PIN-code</div>
-            <div class="settings-row-sub muted">${lockOn ? 'Ingesteld' : 'Niet ingesteld'}</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Naam</div>
+              <div class="settings-row-sub muted">Hoe wil je aangesproken worden?</div>
+            </div>
+            <input id="set-username" type="text" placeholder="Bijv. Soef" value="${escapeHTML(userName)}" style="width:130px;text-align:right" />
           </div>
-          <div class="row" style="flex:0 0 auto">
-            <button type="button" class="btn secondary" id="set-pin">${lockOn ? 'Wijzig' : 'Instellen'}</button>
-            ${lockOn ? `<button type="button" class="btn danger" id="remove-pin">Verwijder</button>` : ''}
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Mascot-emoji</div>
+              <div class="settings-row-sub muted">Persoonlijke avatar in het dashboard</div>
+            </div>
+            <input id="set-mascot" maxlength="4" placeholder="🦁" value="${customMascot() || ''}" style="width:60px;text-align:center;font-size:1.2rem" />
           </div>
         </div>
-        <div class="settings-row">
-          <div class="settings-row-main">
-            <div class="settings-row-title">Niet opnieuw vragen voor</div>
-            <div class="settings-row-sub muted">Na ontgrendeling blijft de app open</div>
+        <div class="settings-group">
+          <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Motivatie-berichten</div>
+              <div class="settings-row-sub muted">Eigen berichten als je streak mist — één per regel</div>
+            </div>
+            <textarea id="set-shame" rows="3" placeholder="Schrijf je eigen motivatie-berichten…">${(getCustomShame() || []).join('\n')}</textarea>
           </div>
-          <select id="lock-grace" style="flex:0 0 auto;width:auto">
-            ${[
-              ['0','Altijd vragen'],['1','1 minuut'],['5','5 minuten'],
-              ['15','15 minuten'],['60','1 uur'],['1440','24 uur'],
-            ].map(([v,l]) => `<option value="${v}" ${getSetting('lockGraceMin')===v?'selected':''}>${l}</option>`).join('')}
-          </select>
         </div>
-        <div class="settings-row">
-          <div class="settings-row-main">
-            <div class="settings-row-title">Nu vergrendelen</div>
-            <div class="settings-row-sub muted">Vraag direct opnieuw om PIN/Face ID</div>
+        <button type="button" class="btn block" id="save-pers" style="margin-top:8px">Profiel opslaan</button>
+      </div>
+
+      <!-- WEERGAVE -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">🎨</span>
+          <div>
+            <div class="settings-section-title">Weergave</div>
+            <div class="settings-section-desc">Thema, kleuren en dichtheid</div>
           </div>
-          <button type="button" class="btn secondary" id="lock-now" style="flex:0 0 auto">Vergrendel</button>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Kleurmodus</div>
+              <div class="settings-row-sub muted">Donker, licht of volg het systeem</div>
+            </div>
+            <select id="set-theme">
+              <option value="dark" ${themeMode==='dark'?'selected':''}>Donker</option>
+              <option value="light" ${themeMode==='light'?'selected':''}>Licht</option>
+              <option value="auto" ${themeMode==='auto'?'selected':''}>Automatisch</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Dichtheid</div>
+              <div class="settings-row-sub muted">Ruimte tussen elementen</div>
+            </div>
+            <div class="segmented" id="density-pick">
+              <button type="button" class="seg ${(getSetting('density')||'comfortable')==='comfortable'?'active':''}" data-density="comfortable">Ruim</button>
+              <button type="button" class="seg ${getSetting('density')==='compact'?'active':''}" data-density="compact">Compact</button>
+            </div>
+          </div>
+          <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:10px">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Accent-kleur</div>
+              <div class="settings-row-sub muted">Hoofd-accentkleur door de hele app</div>
+            </div>
+            <div class="accent-picker" id="accent-picker">
+              ${ACCENT_NAMES.map(name => `
+                <button type="button" class="accent-swatch accent-${name} ${name===accent?'active':''}" data-accent="${name}" aria-label="${name}"></button>
+              `).join('')}
+            </div>
+          </div>
+          <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:10px">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Sfeer-thema</div>
+              <div class="settings-row-sub muted">Basisstijl van je dashboard</div>
+            </div>
+            <div class="preset-picker">
+              ${THEME_PRESETS.map(p => `<button type="button" class="preset-chip preset-${p} ${p===preset?'active':''}" data-preset="${p}">${p}</button>`).join('')}
+            </div>
+          </div>
         </div>
       </div>
 
-      <hr style="border-color:var(--border);margin:20px 0" />
-
-      <h3>☁️ GitHub auto-backup</h3>
-      <p class="muted" style="font-size:.85rem;margin:0 0 8px">
-        ${sync.enabled
-          ? `Ingeschakeld. Laatste sync: ${sync.last ? sync.last.toLocaleString('nl-NL') : 'nooit'}`
-          : `Slaat data automatisch op naar een privé-Gist. Vereist <a href="https://github.com/settings/tokens/new?scopes=gist&description=Dashboard" target="_blank" style="color:var(--accent)">GitHub token (scope: gist)</a>.`}
-      </p>
-      ${!sync.enabled ? `
-        <input id="gh-token" type="password" placeholder="GitHub Personal Access Token" />
-        <input id="gh-existing-id" placeholder="Optioneel: bestaande gist-ID plakken (voor sync met ander apparaat)" style="margin-top:6px" />
-        <button type="button" class="btn block" id="gh-setup" style="margin-top:8px">Verbind GitHub</button>
-        <p class="muted" style="font-size:.78rem;margin-top:6px">💡 Sync je tussen telefoon &amp; laptop? Plak op het tweede apparaat de gist-ID van het eerste — anders krijg je 2 aparte backups.</p>
-      ` : `
-        <div class="settings-row-sub muted" style="margin-bottom:8px">
-          ${sync.gistCount} gist${sync.gistCount===1?'':'s'} actief
-          ${sync.gistIds.map(id => `
-            <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
-              <code style="font-size:.7rem;font-family:monospace;background:var(--bg-elev-2);padding:3px 6px;border-radius:4px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${id}</code>
-              <button type="button" class="btn secondary" style="padding:4px 8px;font-size:.75rem" data-copy="${id}">📋</button>
-            </div>`).join('')}
-        </div>
-        <div class="row">
-          <button type="button" class="btn" id="gh-sync-up">⬆️ Pushen</button>
-          <button type="button" class="btn" id="gh-sync-merge">🔀 Slim mergen</button>
-        </div>
-        <button type="button" class="btn secondary block" id="gh-sync-down" style="margin-top:8px">⬇️ Volledig overschrijven met cloud</button>
-        <label class="settings-row" style="text-transform:none;margin-top:8px;padding:0">
-          <div class="settings-row-main">
-            <div class="settings-row-title">Auto-merge bij openen</div>
-            <div class="settings-row-sub muted">Haalt remote data en mergt met lokaal elke keer dat je opent</div>
+      <!-- DOELEN -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">🎯</span>
+          <div>
+            <div class="settings-section-title">Doelen</div>
+            <div class="settings-section-desc">Dagelijkse en maandelijkse inkomenstarigets</div>
           </div>
-          <span class="ios-switch"><input type="checkbox" id="set-autopull" ${getSetting('autoPullOnOpen')==='1'?'checked':''} /><span></span></span>
-        </label>
-        <button type="button" class="btn secondary block" id="gh-find" style="margin-top:8px">🔍 Vind mijn dashboard-gists (sync apparaten)</button>
-        <button type="button" class="btn secondary block" id="gh-versions" style="margin-top:8px">📜 Versie-historie bekijken</button>
-        <button type="button" class="btn secondary block" id="gh-mirror" style="margin-top:8px" ${sync.gistCount>=2?'disabled':''}>🪞 Maak nieuwe mirror-gist</button>
-        <button type="button" class="btn secondary block" id="gh-email" style="margin-top:8px">✉️ Email mezelf de backup-links</button>
-        <button type="button" class="btn danger block" id="gh-disconnect" style="margin-top:8px">Verbinding verbreken</button>
-      `}
-
-      <hr style="border-color:var(--border);margin:20px 0" />
-
-      <h3>📅 Agenda-export</h3>
-      <p class="muted" style="font-size:.85rem;margin:0 0 8px">Download .ics-bestand met al je doelen-deadlines en herhalende taken. Open in Apple Agenda / Google Agenda.</p>
-      <button type="button" class="btn block" id="export-ical">📅 Download iCal-bestand</button>
-
-      <hr style="border-color:var(--border);margin:20px 0" />
-
-      <h3>🏆 Badges (${earned.size}/${BADGES.length})</h3>
-      <div class="badge-grid">
-        ${BADGES.map(b => `
-          <div class="badge ${earned.has(b.id) ? 'earned' : 'locked'}" title="${b.desc}">
-            <div class="badge-emoji">${earned.has(b.id) ? b.emoji : '🔒'}</div>
-            <div class="badge-name">${b.name}</div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Dagelijks inkomensdoel</div>
+              <div class="settings-row-sub muted">Streefbedrag per werkdag</div>
+            </div>
+            <div class="settings-euro">
+              <span>€</span>
+              <input id="set-goal" type="number" step="1" min="0" value="${getSetting('dailyIncomeGoal')}" />
+            </div>
           </div>
-        `).join('')}
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Maandelijks inkomensdoel</div>
+              <div class="settings-row-sub muted">Streefbedrag per maand</div>
+            </div>
+            <div class="settings-euro">
+              <span>€</span>
+              <input id="set-mgoal" type="number" step="50" min="0" value="${getSetting('monthlyIncomeGoal')}" />
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn block" id="save-settings" style="margin-top:8px">Doelen opslaan</button>
       </div>
 
-      <hr style="border-color:var(--border);margin:20px 0" />
-
-      <h3>Lokale backup &amp; export</h3>
-      <button type="button" class="btn block" id="export-data">Exporteer data (JSON)</button>
-      <label for="import-data" class="btn secondary block" style="text-align:center;display:block;margin-top:8px">Importeer data</label>
-      <input type="file" id="import-data" accept=".json" style="display:none" />
-      <button type="button" class="btn secondary block" id="export-pdf" style="margin-top:8px">Print/PDF — Maandoverzicht voor administratie</button>
-      <button type="button" class="btn secondary block" id="print-page" style="margin-top:8px">Print huidige pagina</button>
-
-      <div class="settings-group" style="margin-top:14px">
-        <label class="settings-row" style="text-transform:none">
-          <div class="settings-row-main">
-            <div class="settings-row-title">Auto-export wekelijks (JSON)</div>
-            <div class="settings-row-sub muted">Download elke 7 dagen automatisch</div>
+      <!-- HERINNERINGEN -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">🔔</span>
+          <div>
+            <div class="settings-section-title">Herinneringen</div>
+            <div class="settings-section-desc">Dagelijkse herinneringen en overzichten</div>
           </div>
-          <span class="ios-switch"><input type="checkbox" id="set-auto-export" ${getSetting('autoExport')==='1'?'checked':''} /><span></span></span>
-        </label>
-        <label class="settings-row" style="text-transform:none">
-          <div class="settings-row-main">
-            <div class="settings-row-title">Auto-PDF maandelijks</div>
-            <div class="settings-row-sub muted">1e van de maand automatisch maandoverzicht openen</div>
-          </div>
-          <span class="ios-switch"><input type="checkbox" id="set-auto-pdf" ${getSetting('autoPdf')==='1'?'checked':''} /><span></span></span>
-        </label>
-      </div>
-
-      <hr style="border-color:var(--border);margin:20px 0" />
-
-      <h3>Personaliseren</h3>
-      <label>Mascot-emoji (eigen avatar)</label>
-      <input id="set-mascot" maxlength="4" placeholder="🦁" value="${customMascot() || ''}" />
-      <label style="margin-top:10px">Eigen shame-berichten (één per regel)</label>
-      <textarea id="set-shame" rows="4" placeholder="Schrijf je eigen brutale boodschappen…">${(getCustomShame() || []).join('\n')}</textarea>
-      <button type="button" class="btn block" id="save-pers" style="margin-top:8px">Opslaan personalisatie</button>
-
-      <hr style="border-color:var(--border);margin:20px 0" />
-
-      <h3>Week-overzicht</h3>
-      <p class="muted" style="font-size:.85rem;margin:0 0 8px">Verschijnt automatisch elke zondagavond.</p>
-      <button type="button" class="btn block" id="show-weekly">Bekijk week-overzicht nu</button>
-
-      <hr style="border-color:var(--border);margin:20px 0" />
-
-      <h3>Opslag &amp; offline</h3>
-      <div class="settings-group">
-        <div class="settings-row">
-          <div class="settings-row-main">
-            <div class="settings-row-title">Offline-modus</div>
-            <div class="settings-row-sub muted">Werkt zonder internet zodra geïnstalleerd op homescreen</div>
-          </div>
-          <span style="color:var(--ok);font-weight:600">✓ Klaar</span>
         </div>
-        <div class="settings-row" id="online-status">
-          <div class="settings-row-main">
-            <div class="settings-row-title">Verbinding nu</div>
-            <div class="settings-row-sub muted">${navigator.onLine ? 'Online' : 'Offline'}</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Hizb-herinnering</div>
+              <div class="settings-row-sub muted">Tijdstip voor dagelijkse Koran-notificatie</div>
+            </div>
+            <input id="set-hizb-time" type="time" value="${hizbTime}" />
           </div>
-          <span>${navigator.onLine ? '🟢' : '🔴'}</span>
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Week-overzicht</div>
+              <div class="settings-row-sub muted">Verschijnt automatisch elke zondagavond</div>
+            </div>
+            <button type="button" class="btn secondary" id="show-weekly" style="flex-shrink:0">Bekijk nu</button>
+          </div>
         </div>
       </div>
-      <div id="storage-info" class="muted" style="font-size:.85rem;margin-top:8px">Laden…</div>
 
-      <hr style="border-color:var(--border);margin:20px 0" />
+      <!-- BEVEILIGING -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">🔒</span>
+          <div>
+            <div class="settings-section-title">Beveiliging</div>
+            <div class="settings-section-desc">Vergrendel de app met PIN of biometrie</div>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row" id="bio-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Face ID / Touch ID</div>
+              <div class="settings-row-sub muted">Checken…</div>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">PIN-code</div>
+              <div class="settings-row-sub muted">${lockOn ? 'Actief · 4 tot 6 cijfers' : 'Niet ingesteld'}</div>
+            </div>
+            <div class="row" style="flex-shrink:0;gap:6px">
+              <button type="button" class="btn secondary" id="set-pin">${lockOn ? 'Wijzigen' : 'Instellen'}</button>
+              ${lockOn ? `<button type="button" class="btn danger" id="remove-pin">Verwijder</button>` : ''}
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Automatisch vergrendelen na</div>
+              <div class="settings-row-sub muted">App blijft open na ontgrendeling</div>
+            </div>
+            <select id="lock-grace">
+              ${[
+                ['0','Altijd vragen'],['1','1 minuut'],['5','5 minuten'],
+                ['15','15 minuten'],['60','1 uur'],['1440','24 uur'],
+              ].map(([v,l]) => `<option value="${v}" ${getSetting('lockGraceMin')===v?'selected':''}>${l}</option>`).join('')}
+            </select>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Nu vergrendelen</div>
+              <div class="settings-row-sub muted">Vraag direct opnieuw om authenticatie</div>
+            </div>
+            <button type="button" class="btn secondary" id="lock-now" style="flex-shrink:0">Vergrendel</button>
+          </div>
+        </div>
+      </div>
 
-      <div class="row">
+      <!-- SYNCHRONISATIE -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">☁️</span>
+          <div>
+            <div class="settings-section-title">Synchronisatie</div>
+            <div class="settings-section-desc">
+              ${sync.enabled
+                ? `Actief · Laatste sync: ${sync.last ? sync.last.toLocaleString('nl-NL') : 'Nooit'}`
+                : 'Automatisch back-uppen naar privé GitHub Gist'}
+            </div>
+          </div>
+        </div>
+        ${!sync.enabled ? `
+          <div class="settings-group">
+            <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
+              <div class="settings-row-main">
+                <div class="settings-row-title">GitHub Personal Access Token</div>
+                <div class="settings-row-sub muted">
+                  Vereist scope: <code>gist</code> —
+                  <a href="https://github.com/settings/tokens/new?scopes=gist&description=Dashboard" target="_blank" style="color:var(--accent)">token aanmaken</a>
+                </div>
+              </div>
+              <input id="gh-token" type="password" placeholder="ghp_…" />
+            </div>
+            <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
+              <div class="settings-row-main">
+                <div class="settings-row-title">Bestaande Gist-ID (optioneel)</div>
+                <div class="settings-row-sub muted">Sync je tussen telefoon en laptop? Plak hier de ID van je eerste apparaat</div>
+              </div>
+              <input id="gh-existing-id" placeholder="abc123…" />
+            </div>
+          </div>
+          <button type="button" class="btn block" id="gh-setup" style="margin-top:8px">Verbind met GitHub</button>
+          <p class="muted" style="font-size:.76rem;margin-top:8px;padding:0 2px">💡 Zonder bestaande ID wordt automatisch een nieuwe gist aangemaakt.</p>
+        ` : `
+          <div class="settings-group">
+            <div class="settings-row">
+              <div class="settings-row-main">
+                <div class="settings-row-title">Status</div>
+                <div class="settings-row-sub muted">${sync.gistCount} gist${sync.gistCount===1?'':'s'} actief</div>
+              </div>
+              <div class="row" style="flex-shrink:0;gap:6px">
+                <button type="button" class="btn" id="gh-sync-up">Pushen</button>
+                <button type="button" class="btn secondary" id="gh-sync-merge">Mergen</button>
+              </div>
+            </div>
+            ${sync.gistIds.map(id => `
+              <div class="settings-row">
+                <code style="font-size:.72rem;font-family:monospace;color:var(--text-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${id}</code>
+                <button type="button" class="btn secondary" style="flex-shrink:0;padding:5px 10px;font-size:.78rem" data-copy="${id}">Kopieer</button>
+              </div>
+            `).join('')}
+            <label class="settings-row" style="text-transform:none">
+              <div class="settings-row-main">
+                <div class="settings-row-title">Auto-merge bij openen</div>
+                <div class="settings-row-sub muted">Remote data ophalen en mergen bij elk openen</div>
+              </div>
+              <span class="ios-switch"><input type="checkbox" id="set-autopull" ${getSetting('autoPullOnOpen')==='1'?'checked':''} /><span></span></span>
+            </label>
+          </div>
+          <div class="settings-group">
+            <div class="settings-row">
+              <div class="settings-row-main">
+                <div class="settings-row-title">Zoek mijn gists</div>
+                <div class="settings-row-sub muted">Meerdere apparaten? Kies de juiste gist</div>
+              </div>
+              <button type="button" class="btn secondary" id="gh-find" style="flex-shrink:0">Zoeken</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-main">
+                <div class="settings-row-title">Versie-historie</div>
+                <div class="settings-row-sub muted">Herstel een eerdere backup (30 versies bewaard)</div>
+              </div>
+              <button type="button" class="btn secondary" id="gh-versions" style="flex-shrink:0">Bekijk</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-main">
+                <div class="settings-row-title">Mirror-gist aanmaken</div>
+                <div class="settings-row-sub muted">Extra redundantie via tweede gist</div>
+              </div>
+              <button type="button" class="btn secondary" id="gh-mirror" style="flex-shrink:0" ${sync.gistCount>=2?'disabled':''}>Aanmaken</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-main">
+                <div class="settings-row-title">Email backup-links</div>
+                <div class="settings-row-sub muted">Stuur jezelf de gist-ID's ter bewaring</div>
+              </div>
+              <button type="button" class="btn secondary" id="gh-email" style="flex-shrink:0">Verstuur</button>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-row">
+              <div class="settings-row-main">
+                <div class="settings-row-title">Cloud ophalen</div>
+                <div class="settings-row-sub muted">Lokale data volledig vervangen door cloud-versie</div>
+              </div>
+              <button type="button" class="btn secondary" id="gh-sync-down" style="flex-shrink:0">Overschrijven</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-main">
+                <div class="settings-row-title">Verbinding verbreken</div>
+                <div class="settings-row-sub muted">Gists op GitHub blijven bestaan</div>
+              </div>
+              <button type="button" class="btn danger" id="gh-disconnect" style="flex-shrink:0">Verbreken</button>
+            </div>
+          </div>
+        `}
+      </div>
+
+      <!-- DATA & EXPORT -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">📦</span>
+          <div>
+            <div class="settings-section-title">Data &amp; Export</div>
+            <div class="settings-section-desc">Importeer, exporteer en print je gegevens</div>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Exporteer als JSON</div>
+              <div class="settings-row-sub muted">Volledige lokale backup van alle data</div>
+            </div>
+            <button type="button" class="btn secondary" id="export-data" style="flex-shrink:0">Exporteer</button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Importeer JSON</div>
+              <div class="settings-row-sub muted">Laad een eerdere backup in (overschrijft huidige data)</div>
+            </div>
+            <label for="import-data" class="btn secondary" style="flex-shrink:0;cursor:pointer">Importeer</label>
+            <input type="file" id="import-data" accept=".json" style="display:none" />
+          </div>
+          <label class="settings-row" style="text-transform:none">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Auto-export wekelijks</div>
+              <div class="settings-row-sub muted">Elke 7 dagen automatisch een JSON backup downloaden</div>
+            </div>
+            <span class="ios-switch"><input type="checkbox" id="set-auto-export" ${getSetting('autoExport')==='1'?'checked':''} /><span></span></span>
+          </label>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">PDF maandoverzicht</div>
+              <div class="settings-row-sub muted">Printbaar overzicht voor boekhouder of administratie</div>
+            </div>
+            <button type="button" class="btn secondary" id="export-pdf" style="flex-shrink:0">Exporteer</button>
+          </div>
+          <label class="settings-row" style="text-transform:none">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Auto-PDF maandelijks</div>
+              <div class="settings-row-sub muted">Elke 1e van de maand automatisch maandoverzicht openen</div>
+            </div>
+            <span class="ios-switch"><input type="checkbox" id="set-auto-pdf" ${getSetting('autoPdf')==='1'?'checked':''} /><span></span></span>
+          </label>
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Agenda-export (iCal)</div>
+              <div class="settings-row-sub muted">Deadlines en taken naar Apple/Google Agenda</div>
+            </div>
+            <button type="button" class="btn secondary" id="export-ical" style="flex-shrink:0">Download</button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Print huidige pagina</div>
+              <div class="settings-row-sub muted">Stuur de huidige weergave naar de printer</div>
+            </div>
+            <button type="button" class="btn secondary" id="print-page" style="flex-shrink:0">Print</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BADGES -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">🏆</span>
+          <div>
+            <div class="settings-section-title">Badges</div>
+            <div class="settings-section-desc">${earned.size} van ${BADGES.length} behaald</div>
+          </div>
+        </div>
+        <div class="badge-grid">
+          ${BADGES.map(b => `
+            <div class="badge ${earned.has(b.id) ? 'earned' : 'locked'}" title="${b.desc}">
+              <div class="badge-emoji">${earned.has(b.id) ? b.emoji : '🔒'}</div>
+              <div class="badge-name">${b.name}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- OPSLAG & VERBINDING -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">📊</span>
+          <div>
+            <div class="settings-section-title">Opslag &amp; Verbinding</div>
+            <div class="settings-section-desc">Apparaatstatus en offline-bescherming</div>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Offline-modus</div>
+              <div class="settings-row-sub muted">Volledig bruikbaar zonder internet na installatie</div>
+            </div>
+            <span style="color:var(--ok);font-weight:600;font-size:.88rem;flex-shrink:0">✓ Actief</span>
+          </div>
+          <div class="settings-row" id="online-status">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Verbinding</div>
+              <div class="settings-row-sub muted">${navigator.onLine ? 'Online' : 'Offline'}</div>
+            </div>
+            <span style="flex-shrink:0">${navigator.onLine ? '🟢' : '🔴'}</span>
+          </div>
+        </div>
+        <div id="storage-info" class="muted" style="font-size:.82rem;margin-top:8px;padding:0 2px">Opslag laden…</div>
+      </div>
+
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
         <button type="button" class="btn secondary" id="close-settings">Sluiten</button>
       </div>
     </div>`;
@@ -337,6 +560,7 @@ export async function openSettings(onClose) {
   backdrop.querySelector('#close-settings-x').onclick = close;
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
 
+  // Weergave
   backdrop.querySelectorAll('[data-accent]').forEach(btn => {
     btn.onclick = () => {
       setAccent(btn.dataset.accent);
@@ -344,9 +568,7 @@ export async function openSettings(onClose) {
       btn.classList.add('active');
     };
   });
-
   backdrop.querySelector('#set-theme').onchange = (e) => setThemeMode(e.target.value);
-
   backdrop.querySelectorAll('[data-preset]').forEach(btn => {
     btn.onclick = () => {
       setPreset(btn.dataset.preset);
@@ -354,7 +576,6 @@ export async function openSettings(onClose) {
       btn.classList.add('active');
     };
   });
-
   backdrop.querySelectorAll('[data-density]').forEach(btn => {
     btn.onclick = () => {
       setDensity(btn.dataset.density);
@@ -363,13 +584,35 @@ export async function openSettings(onClose) {
     };
   });
 
+  // Doelen
   backdrop.querySelector('#save-settings').onclick = () => {
     setSetting('dailyIncomeGoal', backdrop.querySelector('#set-goal').value);
     setSetting('monthlyIncomeGoal', backdrop.querySelector('#set-mgoal').value);
-    ok('Opgeslagen');
-    close();
+    ok('Doelen opgeslagen');
   };
 
+  // Herinneringen
+  backdrop.querySelector('#set-hizb-time').onchange = (e) => {
+    setSetting('hizbReminderTime', e.target.value);
+    ok('Herinnering bijgewerkt');
+  };
+  backdrop.querySelector('#show-weekly').onclick = () => { close(); openWeeklyReview(); };
+
+  // Profiel
+  backdrop.querySelector('#set-username').onblur = (e) => {
+    setSetting('userName', e.target.value.trim());
+  };
+  backdrop.querySelector('#save-pers').onclick = () => {
+    const name = backdrop.querySelector('#set-username').value.trim();
+    const m = backdrop.querySelector('#set-mascot').value.trim();
+    const sh = backdrop.querySelector('#set-shame').value.split('\n').map(s => s.trim()).filter(Boolean);
+    if (name) setSetting('userName', name);
+    setCustomMascot(m || null);
+    setCustomShame(sh);
+    ok('Profiel opgeslagen');
+  };
+
+  // Beveiliging
   backdrop.querySelector('#set-pin').onclick = async () => {
     const pin = prompt('Kies een 4-6 cijferige PIN:');
     if (!pin) return;
@@ -378,6 +621,7 @@ export async function openSettings(onClose) {
     ok('PIN ingesteld');
     close();
   };
+
   // Biometric init
   (async () => {
     const row = backdrop.querySelector('#bio-row');
@@ -390,7 +634,7 @@ export async function openSettings(onClose) {
       if (btnHTML) {
         const wrap = document.createElement('div');
         wrap.className = 'row bio-btns';
-        wrap.style.cssText = 'flex:0 0 auto';
+        wrap.style.cssText = 'flex-shrink:0';
         wrap.innerHTML = btnHTML;
         row.appendChild(wrap);
       }
@@ -402,13 +646,13 @@ export async function openSettings(onClose) {
     }
     const avail = await platformAuthenticatorAvailable();
     if (!avail) {
-      renderBio('Geen Face ID / Touch ID gevonden op dit apparaat', '');
+      renderBio('Geen Face ID / Touch ID gevonden', '');
       return;
     }
     const refresh = () => {
       const on = isBiometricEnabled();
       renderBio(on ? 'Actief' : 'Beschikbaar',
-        on ? `<button class="btn danger" id="bio-off">Uit</button>`
+        on ? `<button class="btn danger" id="bio-off">Uitschakelen</button>`
            : `<button class="btn" id="bio-on">Inschakelen</button>`);
       const onBtn = backdrop.querySelector('#bio-on');
       if (onBtn) onBtn.onclick = async () => {
@@ -437,6 +681,7 @@ export async function openSettings(onClose) {
     close();
   };
 
+  // Synchronisatie
   const ghSetupBtn = backdrop.querySelector('#gh-setup');
   if (ghSetupBtn) ghSetupBtn.onclick = async () => {
     const token = backdrop.querySelector('#gh-token').value.trim();
@@ -488,10 +733,9 @@ export async function openSettings(onClose) {
       }
     };
   });
-
   const ghDisc = backdrop.querySelector('#gh-disconnect');
   if (ghDisc) ghDisc.onclick = () => {
-    if (!confirm('GitHub-verbinding verbreken? Je gists blijven op github bestaan.')) return;
+    if (!confirm('GitHub-verbinding verbreken? Je gists blijven op GitHub bestaan.')) return;
     setupGithub('');
     ok('Verbinding verbroken');
     close();
@@ -507,24 +751,15 @@ export async function openSettings(onClose) {
   const ghVer = backdrop.querySelector('#gh-versions');
   if (ghVer) ghVer.onclick = () => { close(); openVersionPicker(); };
 
+  // Data & Export
   backdrop.querySelector('#export-ical').onclick = async () => {
     try { await exportICal(); ok('iCal gedownload'); }
     catch (e) { err(e.message); }
   };
-
   backdrop.querySelector('#print-page').onclick = () => { close(); setTimeout(() => window.print(), 200); };
   backdrop.querySelector('#export-pdf').onclick = () => { close(); exportMonthPDF(); };
-  backdrop.querySelector('#show-weekly').onclick = () => { close(); openWeeklyReview(); };
   backdrop.querySelector('#set-auto-export').onchange = (e) => setSetting('autoExport', e.target.checked ? '1' : '0');
   backdrop.querySelector('#set-auto-pdf').onchange = (e) => setSetting('autoPdf', e.target.checked ? '1' : '0');
-  backdrop.querySelector('#save-pers').onclick = () => {
-    const m = backdrop.querySelector('#set-mascot').value.trim();
-    const sh = backdrop.querySelector('#set-shame').value.split('\n').map(s => s.trim()).filter(Boolean);
-    setCustomMascot(m || null);
-    setCustomShame(sh);
-    ok('Opgeslagen');
-    close();
-  };
 
   // Online/offline live updates
   const onlineRow = backdrop.querySelector('#online-status');
@@ -539,7 +774,7 @@ export async function openSettings(onClose) {
     window.addEventListener('offline', updateOnline);
   }
 
-  // Storage info
+  // Opslag info
   if (navigator.storage && navigator.storage.estimate) {
     navigator.storage.estimate().then(async (e) => {
       const usedMB = (e.usage / (1024*1024)).toFixed(2);
@@ -548,8 +783,8 @@ export async function openSettings(onClose) {
       const el = backdrop.querySelector('#storage-info');
       if (el) el.innerHTML = `
         Gebruikt: <b>${usedMB} MB</b> van ${quotaMB} MB beschikbaar
-        <div style="font-size:.8rem;margin-top:4px">${persistent ? '🔒 Persistent (browser ruimt niet op)' : '⚠️ Niet persistent — klik om te beschermen'}</div>
-        ${!persistent && navigator.storage.persist ? '<button class="btn secondary" id="persist-btn" style="margin-top:6px">Maak persistent</button>' : ''}
+        <div style="margin-top:4px">${persistent ? '🔒 Persistent — browser ruimt niet automatisch op' : '⚠️ Niet persistent — klik hieronder om te beschermen'}</div>
+        ${!persistent && navigator.storage.persist ? '<button class="btn secondary" id="persist-btn" style="margin-top:8px">Maak opslag persistent</button>' : ''}
       `;
       const pb = backdrop.querySelector('#persist-btn');
       if (pb) pb.onclick = async () => { await navigator.storage.persist(); ok('Aangevraagd'); };
