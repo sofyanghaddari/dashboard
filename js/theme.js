@@ -21,6 +21,7 @@ export function applyTheme() {
   }
   document.body.dataset.theme = actual;
   document.body.dataset.preset = preset;
+  document.body.dataset.density = getSetting('density') || 'comfortable';
 
   const a = ACCENTS[accent] || ACCENTS.gold;
   document.documentElement.style.setProperty('--gold', a.gold);
@@ -29,6 +30,7 @@ export function applyTheme() {
 }
 
 export function setPreset(preset) { setSetting('themePreset', preset); applyTheme(); }
+export function setDensity(d) { setSetting('density', d); applyTheme(); }
 
 export function initTheme() {
   applyTheme();

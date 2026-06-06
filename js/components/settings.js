@@ -1,6 +1,6 @@
 import { all, put, clear } from '../db.js';
 import { getSetting, setSetting } from '../settings.js';
-import { setThemeMode, setAccent, ACCENT_NAMES, setPreset, THEME_PRESETS } from '../theme.js';
+import { setThemeMode, setAccent, ACCENT_NAMES, setPreset, THEME_PRESETS, setDensity } from '../theme.js';
 import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
@@ -45,6 +45,12 @@ export async function openSettings(onClose) {
       <label>Sfeer / thema</label>
       <div class="preset-picker">
         ${THEME_PRESETS.map(p => `<button type="button" class="preset-chip preset-${p} ${p===preset?'active':''}" data-preset="${p}">${p}</button>`).join('')}
+      </div>
+
+      <label>Dichtheid</label>
+      <div class="segmented" id="density-pick">
+        <button type="button" class="seg ${(getSetting('density')||'comfortable')==='comfortable'?'active':''}" data-density="comfortable">Ruim</button>
+        <button type="button" class="seg ${getSetting('density')==='compact'?'active':''}" data-density="compact">Compact</button>
       </div>
 
       <label>Dagelijks inkomensdoel (€)</label>
@@ -180,8 +186,24 @@ export async function openSettings(onClose) {
 
       <hr style="border-color:var(--border);margin:20px 0" />
 
-      <h3>Opslag</h3>
-      <div id="storage-info" class="muted" style="font-size:.85rem">Laden…</div>
+      <h3>Opslag &amp; offline</h3>
+      <div class="settings-group">
+        <div class="settings-row">
+          <div class="settings-row-main">
+            <div class="settings-row-title">Offline-modus</div>
+            <div class="settings-row-sub muted">Werkt zonder internet zodra geïnstalleerd op homescreen</div>
+          </div>
+          <span style="color:var(--ok);font-weight:600">✓ Klaar</span>
+        </div>
+        <div class="settings-row" id="online-status">
+          <div class="settings-row-main">
+            <div class="settings-row-title">Verbinding nu</div>
+            <div class="settings-row-sub muted">${navigator.onLine ? 'Online' : 'Offline'}</div>
+          </div>
+          <span>${navigator.onLine ? '🟢' : '🔴'}</span>
+        </div>
+      </div>
+      <div id="storage-info" class="muted" style="font-size:.85rem;margin-top:8px">Laden…</div>
 
       <hr style="border-color:var(--border);margin:20px 0" />
 
@@ -210,6 +232,14 @@ export async function openSettings(onClose) {
     btn.onclick = () => {
       setPreset(btn.dataset.preset);
       backdrop.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+    };
+  });
+
+  backdrop.querySelectorAll('[data-density]').forEach(btn => {
+    btn.onclick = () => {
+      setDensity(btn.dataset.density);
+      backdrop.querySelectorAll('#density-pick .seg').forEach(s => s.classList.remove('active'));
       btn.classList.add('active');
     };
   });

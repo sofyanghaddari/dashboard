@@ -8,6 +8,7 @@ import { bindRipple, staggerIn } from './animate.js';
 import { autoHaptic } from './haptic.js';
 import { initSwipeBack } from './gestures.js';
 import { exportMonthPDF } from './pdf-export.js';
+import { updateBadge } from './app-badge.js';
 import { openCalendar } from './components/calendar.js';
 import { openYearReview } from './components/year-review.js';
 import { lockScreen } from './lock.js';
@@ -57,6 +58,8 @@ async function bootApp() {
   setInterval(maybeAutoSync, 60 * 60 * 1000);
   maybeAutoExport();
   maybeShowWeeklyReview();
+  updateBadge();
+  setInterval(updateBadge, 5 * 60 * 1000);
   // Auto-PDF op de 1e van de maand
   const todayStr = new Date().toISOString().slice(0,10);
   if (localStorage.getItem('autoPdf') === '1' && new Date().getDate() === 1) {
@@ -93,8 +96,13 @@ async function bootApp() {
   }
 }
 
+function dismissSplash() {
+  const s = document.getElementById('splash');
+  if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 500); }
+}
+
 async function main() {
   initTheme();
-  lockScreen(bootApp);
+  lockScreen(async () => { await bootApp(); setTimeout(dismissSplash, 200); });
 }
 main();

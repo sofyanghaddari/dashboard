@@ -8,6 +8,7 @@ import { getWeather, codeInfo, rideOpportunities } from '../weather.js';
 import { getMascotState, shouldShame, pickShame } from '../mascot.js';
 import { quoteOfDay } from '../quotes.js';
 import { voiceAvailable, startVoice } from '../voice.js';
+import { detectInsights, goalFeasibility, goalTrajectoryPath } from '../insights.js';
 
 export async function render(container) {
   const [rides, hizb, todos, cards, goals] = await Promise.all([
@@ -62,6 +63,12 @@ export async function render(container) {
 
   const mascot = await getMascotState();
   const shame = await shouldShame();
+  const insights = detectInsights(rides, hizb);
+  const feas = goalFeasibility(monthIncome, monthlyGoal);
+  const traj = monthlyGoal > 0 ? goalTrajectoryPath(rides, monthlyGoal) : null;
+
+  // Empty state-detectie
+  const isEmpty = rides.length === 0 && todos.length === 0 && cards.length === 0;
 
   container.innerHTML = `
     <div class="hero">
@@ -98,6 +105,21 @@ export async function render(container) {
         <div class="progress-bar"><div class="progress-fill" style="width:${monthGoalPct}%"></div></div>
         <div class="stat-sub">${monthGoalPct}% van maanddoel (${fmtMoney(monthlyGoal)})</div>
       ` : ''}
+      ${traj ? `
+        <svg viewBox="0 0 ${traj.width} ${traj.height}" style="width:100%;height:${traj.height}px;margin-top:10px" preserveAspectRatio="none">
+          <path d="${traj.idealPath}" stroke="var(--text-dim)" stroke-width="1" stroke-dasharray="3,3" fill="none" opacity=".6"/>
+          <path d="${traj.actualPath}" stroke="var(--gold)" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+        <div class="muted" style="font-size:.7rem;display:flex;justify-content:space-between;margin-top:-4px"><span>dag 1</span><span>--- doellijn · ━━ werkelijk</span><span>dag ${daysInMonth}</span></div>
+      ` : ''}
+      ${feas && !feas.reached ? `
+        <div class="card feasibility ${feas.onTrack ? 'on-track' : 'off-track'}" style="margin-top:12px;padding:10px 12px">
+          ${feas.onTrack
+            ? `<div><b>Op koers</b> — projectie: ${fmtMoney(feas.projectedFinal)} (${Math.round((feas.projectedFinal/monthlyGoal-1)*100)}% boven doel)</div>
+               ${feas.daysNeeded && feas.daysNeeded < feas.daysLeft ? `<div class="muted" style="font-size:.8rem;margin-top:2px">Doel haal je over ~${feas.daysNeeded} dagen in dit tempo</div>` : ''}`
+            : `<div><b>Tekort</b> — projectie: ${fmtMoney(feas.projectedFinal)} <span class="muted">(€${Math.round(feas.shortage)} tekort)</span></div>
+               <div class="muted" style="font-size:.8rem;margin-top:2px">Nodig per resterende dag: <b>${fmtMoney(feas.dailyNeeded)}</b> (jij doet nu ${fmtMoney(feas.currentDaily)}/dag)</div>`}
+        </div>` : ''}
       <div class="row" style="margin-top:10px;gap:18px">
         <div>
           <div class="stat-label">Week</div>
@@ -113,6 +135,18 @@ export async function render(container) {
         </div>` : ''}
       </div>
     </div>
+
+    ${insights.length ? `
+      <div class="card">
+        <h2 class="card-title">Patronen</h2>
+        ${insights.map(i => `<div class="insight-row"><span class="insight-icon">${i.icon}</span><span>${i.text}</span></div>`).join('')}
+      </div>` : ''}
+
+    ${isEmpty ? `
+      <div class="card empty-cta">
+        <h3>Welkom 👋</h3>
+        <p class="muted">Begin met je eerste inkomen, hizb of taak. Tik op de tabs onderaan.</p>
+      </div>` : ''}
 
     <div class="card">
       <h2 class="card-title">Laatste 30 dagen</h2>

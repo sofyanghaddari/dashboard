@@ -1190,6 +1190,67 @@ body.is-offline .view { padding-top: 50px; }
   }
 }
 
+/* INSIGHTS */
+.insight-row {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-soft, var(--border));
+  font-size: .9rem;
+  line-height: 1.4;
+}
+.insight-row:last-child { border-bottom: none; }
+.insight-icon { font-size: 1.1rem; flex: 0 0 auto; }
+
+/* FEASIBILITY */
+.feasibility {
+  border-radius: 8px;
+  border-width: 1px;
+}
+.feasibility.on-track {
+  background: rgba(93,212,154,.08);
+  border-color: rgba(93,212,154,.3);
+}
+.feasibility.off-track {
+  background: rgba(255,107,112,.06);
+  border-color: rgba(255,107,112,.25);
+}
+
+/* EMPTY STATE CTA */
+.empty-cta {
+  text-align: center;
+  padding: 28px 16px;
+}
+.empty-cta h3 { font-size: 1.05rem; margin-bottom: 6px; }
+.empty-cta p { font-size: .9rem; margin: 0; }
+
+/* DENSITY: COMPACT */
+body[data-density="compact"] .card { padding: 10px 12px; margin-bottom: 8px; }
+body[data-density="compact"] .big-money { font-size: 1.7rem; }
+body[data-density="compact"] h1, body[data-density="compact"] .page-title { font-size: 1.35rem; margin-bottom: 10px; }
+body[data-density="compact"] .stat-value { font-size: 1rem; }
+body[data-density="compact"] .view { padding-top: 56px; }
+body[data-density="compact"] .hero { padding: 12px 14px; margin-bottom: 10px; }
+body[data-density="compact"] .mascot { font-size: 2rem; }
+
+/* SPLASH (eerste paint zonder FOUC) */
+.splash {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity .4s;
+}
+.splash.hide { opacity: 0; pointer-events: none; }
+.splash-icon { font-size: 3.5rem; }
+.splash-name {
+  font-family: 'Georgia', serif;
+  font-size: 1.4rem;
+  color: var(--gold);
+  letter-spacing: -.02em;
+}
+
 /* SETTINGS GROUPS (iOS-style) */
 .settings-group {
   background: var(--bg-elev);

@@ -6,9 +6,17 @@
   <meta name="theme-color" content="#111418" />
   <title>Dashboard</title>
   <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Dashboard" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body data-theme="dark">
+  <div id="splash" class="splash">
+    <div class="splash-icon">✦</div>
+    <div class="splash-name">Dashboard</div>
+  </div>
   <div id="offline-banner" class="offline-banner">📡 Geen verbinding — werkt offline</div>
   <button id="search-btn" class="settings-btn search-btn" aria-label="Zoeken" onclick="window.openCmdK && window.openCmdK()">🔍</button>
   <button id="settings-btn" class="settings-btn" aria-label="Instellingen">⚙️</button>

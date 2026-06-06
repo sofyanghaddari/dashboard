@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v17';
+const CACHE = 'dashboard-v18';
 const ASSETS = [
   './',
   './index.html',
@@ -28,6 +28,8 @@ const ASSETS = [
   './js/gestures.js',
   './js/longpress.js',
   './js/components/island.js',
+  './js/insights.js',
+  './js/app-badge.js',
   './js/auto-export.js',
   './js/pdf-export.js',
   './js/components/weekly-review.js',
