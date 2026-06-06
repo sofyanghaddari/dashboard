@@ -1,5 +1,6 @@
 const routes = {};
 let currentView = null;
+let renderToken = 0;
 
 export function register(name, renderFn) { routes[name] = renderFn; }
 
@@ -12,8 +13,16 @@ export async function navigate(name) {
   });
   currentView = route;
   location.hash = '#' + route;
-  await routes[route](view);
-  if (window.staggerIn) window.staggerIn(view);
+  const token = ++renderToken;
+  try {
+    await routes[route](view);
+    if (token !== renderToken) return; // navigated away during async render
+    if (window.staggerIn) window.staggerIn(view);
+  } catch (err) {
+    if (token !== renderToken) return;
+    console.error('Render error in tab:', err);
+    view.innerHTML = `<div class="card" style="margin:1rem"><p>Er ging iets mis bij het laden. Probeer opnieuw.</p></div>`;
+  }
 }
 
 export function currentRoute() { return currentView; }

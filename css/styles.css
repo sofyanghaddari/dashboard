@@ -386,6 +386,11 @@ label {
   .tab { font-size: 1.05rem; }
   .tab span { font-size: .54rem; letter-spacing: 0; }
 }
+/* iPhone SE (375px) — further reduce or hide tab labels to prevent clipping */
+@media (max-width: 375px) {
+  .tab { font-size: 1rem; padding: 0 1px; }
+  .tab span { font-size: 0; line-height: 0; overflow: hidden; height: 0; margin: 0; }
+}
 .tab.active { color: var(--gold); }
 .tab.active::before {
   content: '';
@@ -463,10 +468,20 @@ label {
   border-radius: 20px 20px 0 0;
   padding: 20px 18px calc(20px + var(--safe-bottom));
   max-height: 90vh; overflow-y: auto;
+  /* Smooth momentum scrolling on iOS when keyboard is open */
+  -webkit-overflow-scrolling: touch;
   border-top: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
   animation: slideUp .3s cubic-bezier(.4,0,.2,1);
   position: relative;
+}
+/* Modal footer buttons stay visible when iOS keyboard pushes viewport up */
+.modal-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-elev);
+  padding-top: 12px;
+  margin-top: 8px;
 }
 .modal h2:first-child, .modal > h2:first-of-type { padding-right: 44px; }
 .modal-close {
@@ -902,7 +917,10 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
 
 /* PULL TO REFRESH */
 .pull-indicator {
-  position: fixed; top: 0; left: 50%;
+  position: fixed;
+  /* Offset by Dynamic Island / notch height so indicator appears below it */
+  top: env(safe-area-inset-top, 0px);
+  left: 50%;
   width: 40px; height: 40px;
   margin-left: -20px;
   background: var(--bg-elev);
@@ -1022,6 +1040,10 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
   cursor: pointer;
   position: relative;
   transition: transform .15s ease, background .2s ease;
+  /* iOS tap target: minimum 44px per Apple HIG */
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .income-cell:active { transform: scale(.93); }
 .income-cell.has-income { border: 1px solid rgba(212,176,107,.3); }
@@ -1046,6 +1068,11 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
   border-radius: 3px;
   background: var(--bg-elev-2);
   border: 1px solid var(--border-soft);
+  /* iOS tap target: 44px minimum per Apple HIG */
+  min-height: 44px;
+  min-width: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .heat-legend { display: flex; align-items: center; gap: 8px; font-size: .68rem; }
 .heat-spec {
@@ -1474,6 +1501,24 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 }
 .settings-euro input { width: 80px; text-align: right; }
 
+/* HABIT CHAIN VISUAL HIERARCHY */
+/* Applied to cards rendered as chained habits (goals.js uses margin-left:24px inline).
+   .habit-chain-child can be added to JS-rendered chained habit cards for the full effect. */
+.habit-chain-child {
+  border-left: 2px solid var(--accent, #6ec9ff);
+  padding-left: 12px;
+  margin-left: 16px !important;
+}
+/* Fallback: any .card with explicit margin-left set gets a subtle left accent line
+   via a CSS-only approach — the ↳ arrow in the JS output already signals chaining,
+   so we reinforce it with a left border on the card itself when inside a chain context */
+.hab-chain-wrap { position: relative; }
+.hab-chain-wrap + .hab-chain-wrap .card,
+.hab-chain-child {
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
+}
+
 /* HABITS */
 .hab-check {
   width: 36px; height: 36px;
@@ -1553,6 +1598,11 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   padding: 4px;
   display: flex; flex-direction: column; justify-content: space-between;
   font-size: .8rem;
+  /* iOS tap target: minimum 44px per Apple HIG */
+  min-height: 44px;
+  min-width: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .cal-cell.today { background: linear-gradient(135deg, var(--gold-glow), var(--bg-elev)); border: 1px solid var(--gold); }
 .cal-day { font-weight: 600; }

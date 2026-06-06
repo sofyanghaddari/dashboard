@@ -19,8 +19,28 @@ export async function render(container) {
   const reminderTime = localStorage.getItem('hizbReminderTime') || '20:00';
   const startPoint = localStorage.getItem('hizbStartPoint') || 'Surah Al-Fath, 10 hizb';
 
+  const notifPerm = ('Notification' in window) ? Notification.permission : 'unsupported';
+  let notifHTML;
+  if (notifPerm === 'granted') {
+    notifHTML = `<p class="muted" style="margin-top:8px;font-size:.9rem">Notificaties aan ✓</p>`;
+  } else if (notifPerm === 'denied') {
+    notifHTML = `<p class="muted" style="margin-top:8px;font-size:.85rem">ℹ️ Notificaties geweigerd. Ga naar Instellingen → Safari → Notificaties om dit toe te staan.</p>`;
+  } else if (notifPerm === 'default') {
+    notifHTML = `<button class="btn secondary block" id="enable-notif" style="margin-top:8px">Notificaties inschakelen</button>`;
+  } else {
+    notifHTML = `<p class="muted" style="margin-top:8px;font-size:.85rem">Notificaties niet ondersteund in deze browser.</p>`;
+  }
+
+  const emptyState = log.length === 0 ? `
+    <div class="empty-state" style="text-align:center;padding:2rem">
+      <div style="font-size:2rem">📖</div>
+      <p>Begin je hizb-streak vandaag!</p>
+      <p style="opacity:0.6;font-size:14px">Vink je dagelijkse hizb af en bouw een streak op.</p>
+    </div>` : '';
+
   container.innerHTML = `
     <h1>Koran</h1>
+    ${emptyState}
     <div class="card">
       <h2>Vandaag</h2>
       <p class="muted">${escapeHTML(startPoint)}</p>
@@ -44,7 +64,7 @@ export async function render(container) {
       <label>Startpunt</label>
       <input id="start" value="${escapeHTML(startPoint)}" />
       <button class="btn block" id="save-settings" style="margin-top:8px">Opslaan</button>
-      <button class="btn secondary block" id="enable-notif" style="margin-top:8px">Notificaties inschakelen</button>
+      ${notifHTML}
     </div>
   `;
 
@@ -57,8 +77,10 @@ export async function render(container) {
   };
   container.querySelector('#repair-day').onclick = async () => {
     const lastRepair = localStorage.getItem('lastStreakRepair');
-    const monthKey = new Date().toISOString().slice(0,7);
-    if (lastRepair === monthKey) { err('Deze maand al gebruikt'); return; }
+    const now = new Date();
+    // Key includes year so Dec 31 → Jan 1 doesn't reset prematurely
+    const repairMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    if (lastRepair === repairMonthKey) { err('Deze maand al gebruikt'); return; }
     openModal('Gemiste dag goedmaken', `
       <p class="muted" style="font-size:.88rem;margin:0 0 12px">Kies de dag die je wilt goedmaken. Dit kan slechts één keer per maand.</p>
       <label>Datum *</label>
@@ -66,8 +88,14 @@ export async function render(container) {
     `, async (d) => {
       if (!d.date) throw new Error('Kies een datum');
       if (d.date > ymd()) throw new Error('Datum moet in het verleden liggen');
+      // Guard: repaired date must be in a PREVIOUS calendar month AND within last 31 days
+      const repairDate = new Date(d.date + 'T12:00:00');
+      const isSameMonth = repairDate.getFullYear() === now.getFullYear() && repairDate.getMonth() === now.getMonth();
+      if (isSameMonth) throw new Error('Je kunt alleen een dag uit een vorige maand goedmaken');
+      const msAgo = now - repairDate;
+      if (msAgo > 31 * 24 * 60 * 60 * 1000) throw new Error('Datum is meer dan 31 dagen geleden — te oud om goed te maken');
       await put('hizb_log', { date: d.date, completed: true, repaired: true });
-      localStorage.setItem('lastStreakRepair', monthKey);
+      localStorage.setItem('lastStreakRepair', repairMonthKey);
       ok(`Dag ${d.date} goedgemaakt — gebruik tot volgende maand`);
       render(container);
     });
@@ -78,12 +106,17 @@ export async function render(container) {
     scheduleReminder();
     ok('Opgeslagen');
   };
-  container.querySelector('#enable-notif').onclick = async () => {
-    if (!('Notification' in window)) { ok('Notificaties niet ondersteund'); return; }
-    const res = await Notification.requestPermission();
-    ok('Status: ' + res);
-    if (res === 'granted') scheduleReminder();
-  };
+  const enableBtn = container.querySelector('#enable-notif');
+  if (enableBtn) {
+    enableBtn.onclick = async () => {
+      if (!('Notification' in window)) { ok('Notificaties niet ondersteund'); return; }
+      const res = await Notification.requestPermission();
+      if (res === 'granted') { ok('Notificaties ingeschakeld ✓'); scheduleReminder(); }
+      else if (res === 'denied') { ok('Notificaties geweigerd — pas aan via Instellingen → Safari'); }
+      else { ok('Notificaties niet ingeschakeld'); }
+      render(container);
+    };
+  }
 
   scheduleReminder();
 }
@@ -115,4 +148,23 @@ function scheduleReminder() {
     new Notification('Koran herinnering', { body: 'Tijd voor je dagelijkse hizb.' });
     scheduleReminder();
   }, ms);
+  // Inform the service worker so it can fire a notification when the app is closed.
+  // The SW checks localStorage on fetch/activate — storing the time is sufficient.
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SCHEDULE_HIZB_REMINDER',
+      time: t,
+    });
+  }
+}
+
+export function registerHizbPushReminder(time) {
+  if (time) localStorage.setItem('hizbReminderTime', time);
+  if (!('Notification' in window)) return Promise.resolve('unsupported');
+  if (Notification.permission === 'granted') { scheduleReminder(); return Promise.resolve('granted'); }
+  if (Notification.permission === 'denied') return Promise.resolve('denied');
+  return Notification.requestPermission().then(res => {
+    if (res === 'granted') scheduleReminder();
+    return res;
+  });
 }

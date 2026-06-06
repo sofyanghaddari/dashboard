@@ -8,6 +8,9 @@ import { getWeather, codeInfo, rideOpportunities } from '../weather.js';
 import { getMascotState, shouldShame, pickShame } from '../mascot.js';
 import { detectInsights, goalFeasibility, goalTrajectoryPath } from '../insights.js';
 
+// AbortController voor weerfetch — voorkomt meerdere gelijktijdige requests
+let weatherAbortCtrl = null;
+
 export async function render(container) {
   const [rides, hizb, todos, cards, goals] = await Promise.all([
     all('rides'), all('hizb_log'), all('todos'), all('cards'), all('goals'),
@@ -48,12 +51,36 @@ export async function render(container) {
   }
   const heatMax = Math.max(1, ...last30.map(d => d.total));
 
-  // Hizb
+  // Hizb — streak met localStorage-cache (max 5 min TTL)
   const todayHizb = hizb.some(h => h.date === today);
   const doneSet = new Set(hizb.map(h => h.date));
   let streak = 0;
-  const cur = new Date();
-  while (doneSet.has(ymd(cur))) { streak++; cur.setDate(cur.getDate() - 1); }
+  {
+    const STREAK_TTL = 5 * 60_000;
+    const lastEntry = hizb.length > 0 ? hizb[hizb.length - 1].date : '';
+    let fromCache = false;
+    try {
+      const raw = localStorage.getItem('streakCache');
+      if (raw) {
+        const sc = JSON.parse(raw);
+        if (
+          sc.logLength === hizb.length &&
+          sc.lastEntry === lastEntry &&
+          Date.now() - sc.ts < STREAK_TTL
+        ) {
+          streak = sc.streak;
+          fromCache = true;
+        }
+      }
+    } catch (_) {}
+    if (!fromCache) {
+      const cur = new Date();
+      while (doneSet.has(ymd(cur))) { streak++; cur.setDate(cur.getDate() - 1); }
+      try {
+        localStorage.setItem('streakCache', JSON.stringify({ ts: Date.now(), streak, logLength: hizb.length, lastEntry }));
+      } catch (_) {}
+    }
+  }
 
   const dueCards = cards.filter(c => c.dueDate <= today).length;
   const openTodos = todos.filter(t => !t.done);
@@ -64,7 +91,32 @@ export async function render(container) {
 
   const mascot = await getMascotState();
   const shame = await shouldShame();
-  const insights = detectInsights(rides, hizb);
+
+  // Insights met localStorage-memoization (10 min TTL)
+  const INSIGHTS_TTL = 600_000;
+  let insights = [];
+  {
+    let fromCache = false;
+    try {
+      const raw = localStorage.getItem('insightsCache');
+      if (raw) {
+        const ic = JSON.parse(raw);
+        if (
+          ic.rideCount === rides.length &&
+          Date.now() - ic.ts < INSIGHTS_TTL
+        ) {
+          insights = ic.data;
+          fromCache = true;
+        }
+      }
+    } catch (_) {}
+    if (!fromCache) {
+      insights = detectInsights(rides, hizb);
+      try {
+        localStorage.setItem('insightsCache', JSON.stringify({ ts: Date.now(), data: insights, rideCount: rides.length }));
+      } catch (_) {}
+    }
+  }
   const feas = goalFeasibility(monthIncome, monthlyGoal);
   const traj = monthlyGoal > 0 ? goalTrajectoryPath(rides, monthlyGoal) : null;
 
@@ -376,8 +428,14 @@ function dagTip({ rides, hizb, todos, todayHizb, todayIncome, dailyGoal, monthIn
 async function loadWeather(container) {
   const body = container.querySelector('#weather-body');
   if (!body) return;
+
+  // Abort eventuele vorige weerfetch
+  if (weatherAbortCtrl) weatherAbortCtrl.abort();
+  weatherAbortCtrl = new AbortController();
+  const signal = weatherAbortCtrl.signal;
+
   try {
-    const w = await getWeather();
+    const w = await getWeather(signal);
     const cur = w.current;
     const today = w.daily;
     const info = codeInfo(cur.weather_code);
@@ -391,6 +449,7 @@ async function loadWeather(container) {
       </div>` : ''}
     `;
   } catch (e) {
+    if (e && e.name === 'AbortError') return; // vorige fetch geannuleerd — geen foutmelding tonen
     body.innerHTML = `<p class="muted">Weerdata niet beschikbaar.</p>`;
   }
 }

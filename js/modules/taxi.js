@@ -71,6 +71,22 @@ export async function render(container) {
   renderGrid(container, year, month, byDate);
   renderChart(container, rides);
 
+  // Empty state: shown when there are no rides at all
+  if (rides.length === 0) {
+    const emptyEl = document.createElement('div');
+    emptyEl.innerHTML = `
+      <div class="empty-state" style="text-align:center;padding:2rem">
+        <div style="font-size:2rem">🚖</div>
+        <p>Nog geen inkomsten genoteerd.</p>
+        <button class="btn btn-primary" id="firstIncomeBtn">+ Eerste inkomen noteren</button>
+      </div>`;
+    // Insert before the calendar card
+    const calCard = container.querySelector('.cal-card');
+    calCard.parentNode.insertBefore(emptyEl.firstElementChild, calCard);
+    container.querySelector('#firstIncomeBtn').onclick = () =>
+      openDayModal(container, ymd(now), byDate[ymd(now)]);
+  }
+
   container.querySelector('#mon-prev').onclick = () => {
     const d = new Date(year, month - 1, 1);
     container.dataset.taxiMonth = d.toISOString();

@@ -9,12 +9,37 @@ const DEFAULTS = {
   lockGraceMin: '5',
 };
 
+// Sleutels die in sessionStorage worden bewaard (verdwijnen bij afsluiten browser-tab)
+const SESSION_KEYS = new Set(['ghToken', 'ghEncPwd']);
+
+/**
+ * Eénmalige migratie: verplaats gevoelige keys van localStorage naar sessionStorage.
+ * Wordt aangeroepen bij app-start.
+ */
+export function migrateSessionKeys() {
+  for (const key of SESSION_KEYS) {
+    const val = localStorage.getItem(key);
+    if (val !== null) {
+      sessionStorage.setItem(key, val);
+      localStorage.removeItem(key);
+    }
+  }
+}
+
+function _storage(key) {
+  return SESSION_KEYS.has(key) ? sessionStorage : localStorage;
+}
+
 export function getSetting(key) {
-  return localStorage.getItem(key) ?? DEFAULTS[key] ?? '';
+  return _storage(key).getItem(key) ?? DEFAULTS[key] ?? '';
 }
 
 export function setSetting(key, value) {
-  localStorage.setItem(key, value);
+  _storage(key).setItem(key, value);
+}
+
+export function removeSetting(key) {
+  _storage(key).removeItem(key);
 }
 
 export function getNumber(key) {

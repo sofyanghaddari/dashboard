@@ -95,6 +95,12 @@ function renderSection(container, sel, items, totalRides) {
     };
   });
   el.querySelectorAll('[data-progress]').forEach(input => {
+    // Update label instantly while dragging (no DB write)
+    input.oninput = () => {
+      const label = input.previousElementSibling;
+      if (label) label.innerHTML = `Voortgang: <b>${input.value}%</b>`;
+    };
+    // Save to DB only when user releases the slider
     input.onchange = async () => {
       const g = items.find(x => x.id === input.dataset.progress);
       await put('goals', { ...g, progress: parseInt(input.value, 10) });

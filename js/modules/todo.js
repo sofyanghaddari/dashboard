@@ -97,6 +97,20 @@ export async function render(container) {
     quick.value = '';
     render(container);
   };
+  if (quick) {
+    quick.addEventListener('focus', () => {
+      setTimeout(() => {
+        quick.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300); // wait for iOS keyboard animation
+    });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        if (document.activeElement === quick) {
+          quick.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
+  }
   container.querySelector('#tab-active').onclick = () => { container.dataset.todoView = 'active'; render(container); };
   container.querySelector('#tab-later').onclick = () => { container.dataset.todoView = 'later'; render(container); };
   container.querySelector('#tab-archive').onclick = () => { container.dataset.todoView = 'archive'; render(container); };

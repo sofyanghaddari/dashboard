@@ -14,6 +14,7 @@ import { openCalendar } from './components/calendar.js';
 import { openYearReview } from './components/year-review.js';
 import { lockScreen } from './lock.js';
 import { maybeAutoSync, maybeAutoPullOnOpen } from './github-sync.js';
+import { migrateSessionKeys } from './settings.js';
 import { initSyncPill, refresh as refreshSyncPill } from './components/sync-pill.js';
 import { maybeAutoExport } from './auto-export.js';
 import { maybeShowWeeklyReview } from './components/weekly-review.js';
@@ -26,6 +27,7 @@ import { render as renderTodo } from './modules/todo.js';
 import { render as renderNotes } from './modules/notes.js';
 
 async function bootApp() {
+  migrateSessionKeys(); // Verplaats ghToken e.d. van localStorage naar sessionStorage
   await openDB();
   register('dashboard', renderDashboard);
   register('taxi', renderTaxi);
@@ -83,25 +85,76 @@ async function bootApp() {
     navigator.storage.persisted().then(p => { if (!p) navigator.storage.persist(); });
   }
 
+  const _appStartTime = Date.now();
   let _deferredInstall = null;
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     _deferredInstall = e;
-    const btn = document.createElement('button');
-    btn.className = 'btn';
-    btn.textContent = 'App installeren';
-    btn.style.cssText = 'position:fixed;top:8px;left:8px;z-index:30';
-    btn.onclick = async () => {
-      btn.remove();
-      _deferredInstall.prompt();
-      await _deferredInstall.userChoice;
-      _deferredInstall = null;
-    };
-    document.body.appendChild(btn);
+    const elapsed = Date.now() - _appStartTime;
+    const delay = Math.max(0, 8000 - elapsed);
+    setTimeout(() => {
+      if (!_deferredInstall) return; // al gebruikt of afgewezen
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.id = 'install-btn';
+      btn.textContent = 'App installeren';
+      btn.style.cssText = 'position:fixed;top:8px;left:8px;z-index:30';
+      btn.onclick = async () => {
+        btn.remove();
+        _deferredInstall.prompt();
+        await _deferredInstall.userChoice;
+        _deferredInstall = null;
+      };
+      document.body.appendChild(btn);
+    }, delay);
   });
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js').catch(err => console.warn('SW error', err));
+    navigator.serviceWorker.register('./service-worker.js').then(reg => {
+      // Luister naar SW-berichten (bijv. SW_UPDATED)
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data?.type === 'SW_UPDATED') {
+          _showUpdateBanner(reg);
+        }
+      });
+      // Als er al een wachtende SW is bij registratie
+      if (reg.waiting) {
+        _showUpdateBanner(reg);
+      }
+      // Nieuwe SW geïnstalleerd terwijl pagina open is
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            _showUpdateBanner(reg);
+          }
+        });
+      });
+    }).catch(err => console.warn('SW error', err));
+  }
+
+  function _showUpdateBanner(reg) {
+    if (document.getElementById('sw-update-banner')) return; // al zichtbaar
+    const banner = document.createElement('div');
+    banner.id = 'sw-update-banner';
+    banner.style.cssText = [
+      'position:fixed','bottom:80px','left:50%','transform:translateX(-50%)',
+      'background:var(--card)','border:1px solid var(--accent)','border-radius:12px',
+      'padding:12px 16px','z-index:9999','display:flex','align-items:center',
+      'gap:12px','box-shadow:0 4px 20px rgba(0,0,0,.35)','max-width:calc(100vw - 32px)',
+      'font-size:.93rem'
+    ].join(';');
+    banner.innerHTML = `
+      <span>Nieuwe versie beschikbaar</span>
+      <button class="btn" style="padding:6px 14px;font-size:.88rem" id="sw-reload-btn">Herladen</button>
+    `;
+    document.body.appendChild(banner);
+    banner.querySelector('#sw-reload-btn').onclick = () => {
+      const sw = reg.waiting || (reg.active);
+      if (sw) sw.postMessage({ type: 'SKIP_WAITING' });
+      window.location.reload();
+    };
   }
 }
 

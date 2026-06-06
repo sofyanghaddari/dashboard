@@ -32,7 +32,16 @@ export async function render(container) {
       .filter(c => !f || c.front.toLowerCase().includes(f) || c.back.toLowerCase().includes(f))
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
       .slice(0, 200);
-    if (!items.length) { list.innerHTML = '<p class="muted">Geen kaarten.</p>'; return; }
+    if (!items.length) {
+      list.innerHTML = cards.length === 0
+        ? `<div class="empty-state" style="text-align:center;padding:2rem">
+             <div style="font-size:2rem">📚</div>
+             <p>Nog geen Arabische kaarten.</p>
+             <p style="opacity:0.6;font-size:14px">Importeer kaarten via CSV of voeg er handmatig een toe.</p>
+           </div>`
+        : '<p class="muted">Geen overeenkomsten gevonden.</p>';
+      return;
+    }
     list.innerHTML = items.map(c => `
       <div class="list-item">
         <div>
@@ -78,17 +87,30 @@ function openCardModal(container, existing) {
 async function importCSV(container, file) {
   if (!file) return;
   const text = await file.text();
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  let ok = 0, skip = 0;
-  for (const line of lines) {
-    const parts = line.includes('\t') ? line.split('\t') : line.split(',');
-    const [front, back, note] = parts.map(p => (p || '').trim());
-    if (!front || !back) { skip++; continue; }
+  const rawLines = text.split(/\r?\n/).filter(l => l.trim());
+  if (!rawLines.length) { toastErr('Leeg bestand — niets geïmporteerd'); return; }
+
+  // Detect delimiter from first non-empty line
+  const firstLine = rawLines[0];
+  const delim = firstLine.includes('\t') ? '\t' : ',';
+
+  let imported = 0, skipped = 0;
+  for (const line of rawLines) {
+    const parts = line.split(delim).map(p => (p || '').trim());
+    if (parts.length < 2) { skipped++; continue; }
+    const [front, back, note] = parts;
+    if (!front || !back) { skipped++; continue; }
     await put('cards', newCard(front, back, note || null));
-    ok++;
+    imported++;
   }
-  if (skip > 0) toastErr(`${ok} geïmporteerd, ${skip} overgeslagen (geen voor- of achterkant)`);
-  else toastOk(`${ok} kaart${ok !== 1 ? 'en' : ''} geïmporteerd`);
+
+  if (imported === 0) {
+    toastErr('Geen geldige kaarten gevonden. Verwacht formaat: voor[tab]achterkant');
+  } else if (skipped > 0) {
+    toastErr(`${imported} kaarten geïmporteerd, ${skipped} overgeslagen`);
+  } else {
+    toastOk(`${imported} kaart${imported !== 1 ? 'en' : ''} geïmporteerd`);
+  }
   render(container);
 }
 

@@ -1,6 +1,6 @@
 // Auto-backup naar GitHub Gist met versie-historie, multi-gist en restore.
 import { all, put, clear } from './db.js';
-import { getSetting, setSetting } from './settings.js';
+import { getSetting, setSetting, removeSetting } from './settings.js';
 import { encrypt, decrypt, isEncrypted } from './crypto.js';
 
 function askPassword() {
@@ -87,7 +87,7 @@ function snapshotFilename() {
 }
 
 export async function syncUp() {
-  const token = localStorage.getItem('ghToken');
+  const token = getSetting('ghToken');
   if (!token) throw new Error('Geen GitHub token ingesteld');
   let content = await buildPayload();
   const encPwd = sessionStorage.getItem('ghEncPwd');
@@ -130,10 +130,30 @@ export async function syncUp() {
     }
   }
   setSetting('lastGhSync', new Date().toISOString());
+
+  // Registreer Background Sync als fallback (werkt offline → herstart zodra online)
+  _registerBackgroundSync();
+}
+
+function _registerBackgroundSync() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.ready.then(reg => {
+    if (!reg.sync) return; // Browser ondersteunt Background Sync niet
+    reg.sync.register('github-sync').catch(err => console.warn('Background sync registratie mislukt', err));
+  }).catch(() => {});
+}
+
+// Luister naar SW-berichten die een sync-poging triggeren (bijv. na background sync event)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'BACKGROUND_SYNC_TRIGGER') {
+      maybeAutoSync().catch(err => console.warn('Background sync trigger mislukt', err));
+    }
+  });
 }
 
 async function fetchPayload(specificFile = LATEST_FILE) {
-  const token = localStorage.getItem('ghToken');
+  const token = getSetting('ghToken');
   const ids = getGistIds();
   if (!token || !ids.length) throw new Error('GitHub niet geconfigureerd');
   let content = null;
@@ -259,7 +279,7 @@ function pickWinner(store, local, remote) {
 }
 
 export async function listVersions() {
-  const token = localStorage.getItem('ghToken');
+  const token = getSetting('ghToken');
   const ids = getGistIds();
   if (!token || !ids.length) return [];
   const seen = new Set();
@@ -281,7 +301,7 @@ export async function listVersions() {
 }
 
 export function getSyncStatus() {
-  const token = localStorage.getItem('ghToken');
+  const token = getSetting('ghToken');
   const ids = getGistIds();
   const last = getSetting('lastGhSync');
   return {
@@ -294,12 +314,12 @@ export function getSyncStatus() {
 
 export function setupGithub(token, gistId = '') {
   if (!token) {
-    localStorage.removeItem('ghToken');
+    removeSetting('ghToken');
     localStorage.removeItem('ghGistId');
     localStorage.removeItem('ghGistIds');
     return;
   }
-  localStorage.setItem('ghToken', token);
+  setSetting('ghToken', token);
   if (gistId) setGistIds([gistId]);
 }
 
@@ -317,7 +337,7 @@ export function removeGist(gistId) {
 
 // Lijst alle dashboard-gerelateerde gists van de gebruiker
 export async function findMyGists() {
-  const token = localStorage.getItem('ghToken');
+  const token = getSetting('ghToken');
   if (!token) throw new Error('Geen token');
   const all = await api('/gists?per_page=100', token);
   return all
@@ -362,7 +382,7 @@ export async function maybeAutoPullOnOpen() {
 }
 
 export async function createSecondaryGist() {
-  const token = localStorage.getItem('ghToken');
+  const token = getSetting('ghToken');
   if (!token) throw new Error('Geen token');
   let content = await buildPayload();
   const encPwd = sessionStorage.getItem('ghEncPwd');

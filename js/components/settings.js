@@ -159,6 +159,8 @@ export async function openSettings(onClose) {
               <div class="settings-row-sub muted">Eigen berichten als je streak mist — één per regel</div>
             </div>
             <textarea id="set-shame" rows="3" placeholder="Schrijf je eigen motivatie-berichten…">${(getCustomShame() || []).join('\n')}</textarea>
+            <button type="button" class="btn secondary" id="previewShameBtn" style="margin-top:6px;font-size:.82rem;align-self:flex-start">Bekijk willekeurig bericht</button>
+            <div id="shamePreview" style="margin-top:8px;padding:8px;background:var(--bg2);border-radius:6px;font-size:13px;display:none;color:var(--text);line-height:1.4"></div>
           </div>
         </div>
         <button type="button" class="btn block" id="save-pers" style="margin-top:8px">Profiel opslaan</button>
@@ -551,6 +553,7 @@ export async function openSettings(onClose) {
 
       <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
         <button type="button" class="btn secondary" id="close-settings">Sluiten</button>
+        <div style="margin-top:10px"><span style="opacity:0.4;font-size:11px">dashboard-v32</span></div>
       </div>
     </div>`;
   document.body.appendChild(backdrop);
@@ -610,6 +613,18 @@ export async function openSettings(onClose) {
     setCustomMascot(m || null);
     setCustomShame(sh);
     ok('Profiel opgeslagen');
+  };
+
+  // Shame preview
+  backdrop.querySelector('#previewShameBtn').onclick = () => {
+    const textarea = backdrop.querySelector('#set-shame');
+    const lines = textarea.value.split('\n').map(s => s.trim()).filter(Boolean);
+    const pool = lines.length ? lines : (getCustomShame() || []);
+    const preview = backdrop.querySelector('#shamePreview');
+    if (!pool.length) { preview.textContent = 'Geen berichten ingesteld.'; preview.style.display = 'block'; return; }
+    const msg = pool[Math.floor(Math.random() * pool.length)];
+    preview.textContent = msg;
+    preview.style.display = 'block';
   };
 
   // Beveiliging
@@ -780,6 +795,18 @@ export async function openSettings(onClose) {
     window.addEventListener('online', updateOnline);
     window.addEventListener('offline', updateOnline);
   }
+
+  // Sync buttons disabled when offline
+  const syncBtns = backdrop.querySelectorAll('#gh-setup, #gh-sync-up, #gh-sync-merge, #gh-sync-down, #gh-mirror, #gh-email, #gh-find, #gh-versions');
+  const updateSyncBtns = () => {
+    syncBtns.forEach(btn => {
+      btn.disabled = !navigator.onLine;
+      btn.title = !navigator.onLine ? 'Geen internetverbinding' : '';
+    });
+  };
+  updateSyncBtns();
+  window.addEventListener('online', updateSyncBtns);
+  window.addEventListener('offline', updateSyncBtns);
 
   // Opslag info
   if (navigator.storage && navigator.storage.estimate) {
