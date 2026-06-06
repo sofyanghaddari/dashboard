@@ -213,13 +213,13 @@ h3 { font-size: .9rem; color: var(--text); }
 
 p { margin: 6px 0; line-height: 1.45; }
 
-/* CARDS — tighter, more pro */
+/* CARDS */
 .card {
   background: var(--bg-elev);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
@@ -243,7 +243,7 @@ p { margin: 6px 0; line-height: 1.45; }
 .trend-up { color: var(--ok); }
 .trend-down { color: var(--danger); }
 .stat-sub { font-size: .75rem; color: var(--text-dim); margin-top: 4px; }
-.primary-stat { padding: 16px; }
+.primary-stat { padding: 20px; }
 .primary-stat .stat-label { font-size: .72rem; }
 .primary-stat .big-money { margin: 4px 0 10px; }
 .card:hover { box-shadow: var(--shadow-md); }
@@ -272,12 +272,12 @@ p { margin: 6px 0; line-height: 1.45; }
   font-weight: 600;
 }
 .big-money {
-  font-size: 2rem;
+  font-size: 2.5rem;
   color: var(--gold-bright);
   font-weight: 600;
-  letter-spacing: -.025em;
+  letter-spacing: -.03em;
   font-variant-numeric: tabular-nums;
-  margin: 6px 0 4px;
+  margin: 6px 0 6px;
   text-shadow: 0 0 24px var(--gold-glow);
   font-family: 'Georgia', 'Times New Roman', serif;
 }
@@ -1256,14 +1256,171 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
 .empty-cta h3 { font-size: 1.05rem; margin-bottom: 6px; }
 .empty-cta p { font-size: .9rem; margin: 0; }
 
+/* DAGSTART KAART */
+.dagstart-card {
+  background: linear-gradient(135deg, var(--bg-elev-2) 0%, var(--bg-elev) 100%);
+  padding: 20px;
+}
+.dagstart-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.dagstart-greeting {
+  font-size: 1.45rem;
+  font-weight: 650;
+  letter-spacing: -.025em;
+  color: var(--text);
+  line-height: 1.2;
+}
+.dagstart-date {
+  font-size: .83rem;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+.dagstart-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.dagstart-stat {
+  background: var(--bg-elev-3);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.dagstart-stat-val {
+  font-size: 1.1rem;
+  font-weight: 650;
+  color: var(--gold);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.dagstart-stat-lbl {
+  font-size: .64rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--text-dim);
+  font-weight: 600;
+  margin-top: 3px;
+}
+.mascot-sm {
+  font-size: 2.2rem;
+  flex-shrink: 0;
+  animation: mascotBob 3s ease-in-out infinite;
+}
+
+/* SNELLE ACTIES */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.quick-action-btn {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+  font-size: .88rem;
+  font-weight: 500;
+  text-align: left;
+  transition: transform var(--transition), background var(--transition), border-color var(--transition), box-shadow var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.quick-action-btn:hover { background: var(--bg-elev-2); border-color: var(--bg-elev-3); box-shadow: var(--shadow-md); }
+.quick-action-btn:active { transform: scale(.97); }
+.quick-action-icon {
+  font-size: 1.25rem;
+  width: 38px; height: 38px;
+  background: var(--bg-elev-2);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.quick-action-label {
+  line-height: 1.3;
+  font-size: .88rem;
+}
+.quick-action-sub {
+  display: block;
+  font-size: .72rem;
+  color: var(--text-dim);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* TIP VAN DE DAG */
+.tip-card {
+  background: linear-gradient(135deg, rgba(212,176,107,.07) 0%, var(--bg-elev) 70%);
+  border-color: rgba(212,176,107,.22);
+}
+.tip-content {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+}
+.tip-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.tip-title {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.tip-text {
+  font-size: .9rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* TODO PREVIEW ITEMS IN DASHBOARD */
+.todo-preview-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-soft, var(--border));
+}
+.todo-preview-item:last-child { border-bottom: none; }
+.todo-priority-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--danger);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
 /* DENSITY: COMPACT */
 body[data-density="compact"] .card { padding: 10px 12px; margin-bottom: 8px; }
-body[data-density="compact"] .big-money { font-size: 1.7rem; }
+body[data-density="compact"] .big-money { font-size: 1.8rem; }
 body[data-density="compact"] h1, body[data-density="compact"] .page-title { font-size: 1.35rem; margin-bottom: 10px; }
 body[data-density="compact"] .stat-value { font-size: 1rem; }
 body[data-density="compact"] .view { padding-top: 56px; }
 body[data-density="compact"] .hero { padding: 12px 14px; margin-bottom: 10px; }
 body[data-density="compact"] .mascot { font-size: 2rem; }
+body[data-density="compact"] .dagstart-card { padding: 14px; }
+body[data-density="compact"] .dagstart-greeting { font-size: 1.2rem; }
+body[data-density="compact"] .dagstart-stat { padding: 8px 6px; }
+body[data-density="compact"] .dagstart-stat-val { font-size: .95rem; }
+body[data-density="compact"] .quick-action-btn { padding: 10px 10px; }
+body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; font-size: 1.1rem; border-radius: 7px; }
 
 /* SPLASH (eerste paint zonder FOUC) */
 .splash {
