@@ -162,7 +162,11 @@ export async function openSettings(onClose) {
       ` : `
         <div class="settings-row-sub muted" style="margin-bottom:8px">
           ${sync.gistCount} gist${sync.gistCount===1?'':'s'} actief
-          ${sync.gistIds.map(id => `<div style="font-size:.75rem;font-family:monospace;margin-top:2px">${id.slice(0,12)}…</div>`).join('')}
+          ${sync.gistIds.map(id => `
+            <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+              <code style="font-size:.7rem;font-family:monospace;background:var(--bg-elev-2);padding:3px 6px;border-radius:4px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${id}</code>
+              <button type="button" class="btn secondary" style="padding:4px 8px;font-size:.75rem" data-copy="${id}">📋</button>
+            </div>`).join('')}
         </div>
         <div class="row">
           <button type="button" class="btn" id="gh-sync-up">⬆️ Pushen</button>
@@ -407,6 +411,17 @@ export async function openSettings(onClose) {
   };
   const autoPull = backdrop.querySelector('#set-autopull');
   if (autoPull) autoPull.onchange = (e) => setSetting('autoPullOnOpen', e.target.checked ? '1' : '0');
+  backdrop.querySelectorAll('[data-copy]').forEach(b => {
+    b.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(b.dataset.copy);
+        ok('Gist-ID gekopieerd — plak in email/Notes');
+      } catch (_) {
+        prompt('Kopieer dit:', b.dataset.copy);
+      }
+    };
+  });
+
   const ghDisc = backdrop.querySelector('#gh-disconnect');
   if (ghDisc) ghDisc.onclick = () => {
     if (!confirm('GitHub-verbinding verbreken? Je gists blijven op github bestaan.')) return;
