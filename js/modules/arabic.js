@@ -2,6 +2,7 @@ import { all, put, del } from '../db.js';
 import { openModal } from '../components/modal.js';
 import { newCard, review } from '../srs.js';
 import { ymd, escapeHTML } from '../utils.js';
+import { ok as toastOk, err as toastErr } from '../components/toast.js';
 
 export async function render(container) {
   const cards = await all('cards');
@@ -86,7 +87,8 @@ async function importCSV(container, file) {
     await put('cards', newCard(front, back, note || null));
     ok++;
   }
-  alert(`${ok} geïmporteerd, ${skip} overgeslagen`);
+  if (skip > 0) toastErr(`${ok} geïmporteerd, ${skip} overgeslagen (geen voor- of achterkant)`);
+  else toastOk(`${ok} kaart${ok !== 1 ? 'en' : ''} geïmporteerd`);
   render(container);
 }
 

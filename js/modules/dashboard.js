@@ -1,6 +1,6 @@
 import { all } from '../db.js';
 import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML } from '../utils.js';
-import { getNumber } from '../settings.js';
+import { getNumber, getSetting } from '../settings.js';
 import { celebrateGoalHit, celebrateStreak } from '../components/celebrate.js';
 import { checkNewBadges } from '../achievements.js';
 import { toast } from '../components/toast.js';
@@ -72,6 +72,7 @@ export async function render(container) {
 
   // Begroeting & datum
   const uur = now.getHours();
+  const userName = getSetting('userName') || 'Sofyan';
   const begroeting = uur < 12 ? 'Goedemorgen' : uur < 18 ? 'Goedemiddag' : 'Goedenavond';
   const dagNamen = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
   const maandNamen = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
@@ -83,7 +84,7 @@ export async function render(container) {
     <div class="card dagstart-card">
       <div class="dagstart-top">
         <div>
-          <div class="dagstart-greeting">${begroeting}, Sofyan</div>
+          <div class="dagstart-greeting">${begroeting}, ${escapeHTML(userName)}</div>
           <div class="dagstart-date">${datumStr}</div>
         </div>
         <div class="mascot-sm" title="${escapeHTML(mascot.msg)}">${mascot.e}</div>

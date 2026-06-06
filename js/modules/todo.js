@@ -124,7 +124,7 @@ function applyFilters(items, filter, tagFilter) {
   const today = ymd();
   const weekStart = startOfWeek();
   if (filter === 'today') {
-    res = res.filter(t => !t.dueDate || t.dueDate === today);
+    res = res.filter(t => t.dueDate && t.dueDate <= today);
   } else if (filter === 'week') {
     res = res.filter(t => t.dueDate && new Date(t.dueDate) >= weekStart && new Date(t.dueDate) <= addDays(weekStart, 6));
   }

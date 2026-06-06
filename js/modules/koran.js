@@ -1,4 +1,5 @@
 import { all, put, get } from '../db.js';
+import { openModal } from '../components/modal.js';
 import { ymd, escapeHTML } from '../utils.js';
 import { celebrateTask } from '../components/celebrate.js';
 import { ok, err } from '../components/toast.js';
@@ -58,14 +59,18 @@ export async function render(container) {
     const lastRepair = localStorage.getItem('lastStreakRepair');
     const monthKey = new Date().toISOString().slice(0,7);
     if (lastRepair === monthKey) { err('Deze maand al gebruikt'); return; }
-    const dateStr = prompt('Welke datum goedmaken? (YYYY-MM-DD)');
-    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
-    const d = new Date(dateStr);
-    if (d > new Date()) { err('Datum moet in het verleden liggen'); return; }
-    await put('hizb_log', { date: dateStr, completed: true, repaired: true });
-    localStorage.setItem('lastStreakRepair', monthKey);
-    ok(`Dag ${dateStr} goedgemaakt — gebruik tot volgende maand`);
-    render(container);
+    openModal('Gemiste dag goedmaken', `
+      <p class="muted" style="font-size:.88rem;margin:0 0 12px">Kies de dag die je wilt goedmaken. Dit kan slechts één keer per maand.</p>
+      <label>Datum *</label>
+      <input name="date" type="date" required max="${ymd()}" />
+    `, async (d) => {
+      if (!d.date) throw new Error('Kies een datum');
+      if (d.date > ymd()) throw new Error('Datum moet in het verleden liggen');
+      await put('hizb_log', { date: d.date, completed: true, repaired: true });
+      localStorage.setItem('lastStreakRepair', monthKey);
+      ok(`Dag ${d.date} goedgemaakt — gebruik tot volgende maand`);
+      render(container);
+    });
   };
   container.querySelector('#save-settings').onclick = () => {
     localStorage.setItem('hizbReminderTime', container.querySelector('#reminder').value);

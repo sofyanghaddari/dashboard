@@ -1,5 +1,7 @@
 import { all, put, clear } from '../db.js';
+import { escapeHTML } from '../utils.js';
 import { getSetting, setSetting } from '../settings.js';
+import { openModal } from './modal.js';
 import { setThemeMode, setAccent, ACCENT_NAMES, setPreset, THEME_PRESETS, setDensity } from '../theme.js';
 import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
@@ -65,8 +67,6 @@ export async function openGistPicker() {
     backdrop.querySelector('#gp-list').innerHTML = `<p class="muted">Fout: ${e.message}</p>`;
   }
 }
-
-function escapeHTML(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
 
 export async function openVersionPicker() {
   const backdrop = document.createElement('div');
@@ -224,7 +224,7 @@ export async function openSettings(onClose) {
           <span class="settings-section-icon">🎯</span>
           <div>
             <div class="settings-section-title">Doelen</div>
-            <div class="settings-section-desc">Dagelijkse en maandelijkse inkomenstarigets</div>
+            <div class="settings-section-desc">Dagelijkse en maandelijkse inkomenstargets</div>
           </div>
         </div>
         <div class="settings-group">
@@ -613,13 +613,20 @@ export async function openSettings(onClose) {
   };
 
   // Beveiliging
-  backdrop.querySelector('#set-pin').onclick = async () => {
-    const pin = prompt('Kies een 4-6 cijferige PIN:');
-    if (!pin) return;
-    if (!/^\d{4,6}$/.test(pin)) { err('PIN moet 4-6 cijfers zijn'); return; }
-    await setPin(pin);
-    ok('PIN ingesteld');
-    close();
+  backdrop.querySelector('#set-pin').onclick = () => {
+    openModal(isLockEnabled() ? 'PIN wijzigen' : 'PIN instellen', `
+      <p class="muted" style="font-size:.88rem;margin:0 0 12px">Kies een 4 tot 6 cijferige pincode.</p>
+      <label>Pincode *</label>
+      <input name="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••" required autofocus />
+      <label>Herhaal pincode *</label>
+      <input name="pin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••" required />
+    `, async (d) => {
+      if (!/^\d{4,6}$/.test(d.pin)) throw new Error('PIN moet 4-6 cijfers zijn');
+      if (d.pin !== d.pin2) throw new Error('Pincodes komen niet overeen');
+      await setPin(d.pin);
+      ok('PIN ingesteld');
+      close();
+    });
   };
 
   // Biometric init

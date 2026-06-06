@@ -22,7 +22,14 @@ export function openModal(title, bodyHTML, onSubmit) {
       await onSubmit(data);
       close();
     } catch (err) {
-      alert('Opslaan mislukt: ' + (err.message || err));
+      let errEl = e.target.querySelector('.modal-form-err');
+      if (!errEl) {
+        errEl = document.createElement('p');
+        errEl.className = 'modal-form-err';
+        errEl.style.cssText = 'color:var(--danger);margin:8px 0 0;font-size:.88rem';
+        e.target.querySelector('.row').before(errEl);
+      }
+      errEl.textContent = err.message || 'Er is iets misgegaan';
     }
   };
   return close;

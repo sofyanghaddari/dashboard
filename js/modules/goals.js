@@ -212,23 +212,33 @@ function renderPots(container, pots) {
       </div>`;
   }).join('');
   el.querySelectorAll('[data-pot-add]').forEach(b => {
-    b.onclick = async () => {
-      const amt = parseFloat(prompt('Toevoegen (€):'));
-      if (!isFinite(amt) || amt <= 0) return;
+    b.onclick = () => {
       const p = pots.find(x => x.id === b.dataset.potAdd);
-      await put('pots', { ...p, current: Number(p.current || 0) + amt });
-      ok('Toegevoegd');
-      render(container);
+      openModal(`Toevoegen — ${escapeHTML(p.name)}`, `
+        <label>Bedrag (€) *</label>
+        <input name="amount" type="number" step="0.01" min="0.01" inputmode="decimal" required autofocus />
+      `, async (d) => {
+        const amt = parseFloat(d.amount);
+        if (!isFinite(amt) || amt <= 0) throw new Error('Bedrag moet groter dan 0 zijn');
+        await put('pots', { ...p, current: Number(p.current || 0) + amt });
+        ok(`€${amt.toFixed(2)} toegevoegd aan ${p.name}`);
+        render(container);
+      });
     };
   });
   el.querySelectorAll('[data-pot-sub]').forEach(b => {
-    b.onclick = async () => {
-      const amt = parseFloat(prompt('Afhalen (€):'));
-      if (!isFinite(amt) || amt <= 0) return;
+    b.onclick = () => {
       const p = pots.find(x => x.id === b.dataset.potSub);
-      await put('pots', { ...p, current: Math.max(0, Number(p.current || 0) - amt) });
-      ok('Afgehaald');
-      render(container);
+      openModal(`Afhalen — ${escapeHTML(p.name)}`, `
+        <label>Bedrag (€) *</label>
+        <input name="amount" type="number" step="0.01" min="0.01" inputmode="decimal" required autofocus />
+      `, async (d) => {
+        const amt = parseFloat(d.amount);
+        if (!isFinite(amt) || amt <= 0) throw new Error('Bedrag moet groter dan 0 zijn');
+        await put('pots', { ...p, current: Math.max(0, Number(p.current || 0) - amt) });
+        ok(`€${amt.toFixed(2)} afgehaald van ${p.name}`);
+        render(container);
+      });
     };
   });
   el.querySelectorAll('[data-pot-del]').forEach(b => {

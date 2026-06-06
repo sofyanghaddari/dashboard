@@ -188,14 +188,6 @@ body[data-preset="mosque"]::after {
   100% { opacity: 1; transform: none; }
 }
 
-/* POMODORO TIME PULSE */
-.pomo-time {
-  animation: pomoTick 1s ease-in-out infinite;
-}
-@keyframes pomoTick {
-  0%,100% { transform: scale(1); }
-  50%     { transform: scale(1.03); }
-}
 
 h1, h2, h3 { margin: 0 0 12px; letter-spacing: -.015em; font-weight: 600; }
 h1 { font-size: 1.65rem; letter-spacing: -.025em; font-weight: 650; }
@@ -260,10 +252,6 @@ p { margin: 6px 0; line-height: 1.45; }
   pointer-events: none;
 }
 
-.shift-card {
-  background: linear-gradient(135deg, rgba(212,176,107,.06) 0%, var(--bg-elev) 60%);
-  border-color: rgba(212,176,107,.2);
-}
 
 /* TYPOGRAPHY HIGHLIGHTS */
 .money {

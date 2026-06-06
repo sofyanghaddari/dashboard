@@ -3,6 +3,34 @@ import { all, put, clear } from './db.js';
 import { getSetting, setSetting } from './settings.js';
 import { encrypt, decrypt, isEncrypted } from './crypto.js';
 
+function askPassword() {
+  return new Promise((resolve, reject) => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    backdrop.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true">
+        <button type="button" class="modal-close" id="pw-x" aria-label="Sluiten">×</button>
+        <h2>Backup is versleuteld</h2>
+        <form id="pw-form">
+          <label>Wachtwoord</label>
+          <input name="pwd" type="password" autocomplete="current-password" required autofocus />
+          <p id="pw-err" style="color:var(--danger);font-size:.88rem;min-height:1em;margin:6px 0 0"></p>
+          <div class="row" style="margin-top:16px">
+            <button type="submit" class="btn block">Ontgrendelen</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(backdrop);
+    const close = (val) => { backdrop.remove(); resolve(val); };
+    backdrop.querySelector('#pw-x').onclick = () => close(null);
+    backdrop.addEventListener('click', e => { if (e.target === backdrop) close(null); });
+    backdrop.querySelector('#pw-form').onsubmit = e => {
+      e.preventDefault();
+      close(new FormData(e.target).get('pwd'));
+    };
+  });
+}
+
 const STORES = ['rides','expenses','hizb_log','cards','goals','todos','shifts','notes','habits','habit_log','pots'];
 const LATEST_FILE = 'dashboard-backup.json';
 const KEEP_VERSIONS = 30;
@@ -118,7 +146,7 @@ async function fetchPayload(specificFile = LATEST_FILE) {
   }
   if (!content) throw new Error('Geen backup gevonden');
   if (isEncrypted(content)) {
-    const pwd = sessionStorage.getItem('ghEncPwd') || prompt('Backup is versleuteld. Voer wachtwoord in:');
+    const pwd = sessionStorage.getItem('ghEncPwd') || await askPassword();
     if (!pwd) throw new Error('Wachtwoord verplicht');
     try { content = await decrypt(content, pwd); sessionStorage.setItem('ghEncPwd', pwd); }
     catch (e) { throw new Error('Wachtwoord onjuist of bestand beschadigd'); }
