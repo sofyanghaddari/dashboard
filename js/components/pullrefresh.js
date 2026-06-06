@@ -4,6 +4,8 @@ export function enablePullToRefresh(onRefresh) {
   const indicator = document.createElement('div');
   indicator.className = 'pull-indicator';
   indicator.innerHTML = '↓';
+  // CSS positions the indicator at top: env(safe-area-inset-top, 0px) so it clears the
+  // Dynamic Island. The JS translateY offsets from that baseline: -60px = hidden, 0+ = visible.
   document.body.appendChild(indicator);
 
   document.addEventListener('touchstart', (e) => {

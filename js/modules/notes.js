@@ -18,7 +18,14 @@ export async function render(container) {
   `;
 
   const list = container.querySelector('#notes-list');
-  if (!filtered.length) { list.innerHTML = '<p class="muted">Niets hier.</p>'; }
+  if (!filtered.length) {
+    list.innerHTML = `
+      <div class="empty-state" style="text-align:center;padding:2rem">
+        <div style="font-size:2rem">📝</div>
+        <p>Nog geen ${view === 'ideas' ? 'ideeën' : 'notities'}.</p>
+        <p style="opacity:0.6;font-size:14px">Tap + om je eerste ${view === 'ideas' ? 'idee' : 'notitie'} toe te voegen.</p>
+      </div>`;
+  }
   else {
     const sorted = [...filtered].sort((a,b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
     list.innerHTML = sorted.map(n => `
