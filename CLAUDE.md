@@ -1,4 +1,4 @@
-# Personal Dashboard — Project Memory
+# Sofyan's First App — Project Memory
 
 > Geheugen-document. Lees dit eerst als je verder gaat met dit project.
 

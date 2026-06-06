@@ -1,5 +1,5 @@
 // Face ID / Touch ID via WebAuthn platform authenticator
-const RP_NAME = 'Dashboard';
+const RP_NAME = "Sofyan's First App";
 
 export function biometricAvailable() {
   return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create);

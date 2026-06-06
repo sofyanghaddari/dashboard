@@ -63,7 +63,7 @@ export async function exportMonthPDF(date = new Date()) {
         </tr>`).join('')}
       </tbody>
     </table>` : ''}
-    <div class="footer">Personal Dashboard · Sofyan Ghaddari</div>
+    <div class="footer">Sofyan's First App · Sofyan Ghaddari</div>
     <script>setTimeout(() => window.print(), 400);</script>
   </body></html>`;
 
