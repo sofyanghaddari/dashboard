@@ -12,7 +12,8 @@ import { updateBadge } from './app-badge.js';
 import { openCalendar } from './components/calendar.js';
 import { openYearReview } from './components/year-review.js';
 import { lockScreen } from './lock.js';
-import { maybeAutoSync } from './github-sync.js';
+import { maybeAutoSync, maybeAutoPullOnOpen } from './github-sync.js';
+import { initSyncPill, refresh as refreshSyncPill } from './components/sync-pill.js';
 import { maybeAutoExport } from './auto-export.js';
 import { maybeShowWeeklyReview } from './components/weekly-review.js';
 import { render as renderDashboard } from './modules/dashboard.js';
@@ -54,7 +55,12 @@ async function bootApp() {
   initCmdK();
   window.openCmdK = openSearch;
 
-  maybeAutoSync();
+  initSyncPill();
+  // Probeer eerst remote te mergen, dan auto-up
+  maybeAutoPullOnOpen().then(merged => {
+    if (merged) { refreshSyncPill(); navigate(currentRoute() || 'dashboard'); }
+    maybeAutoSync();
+  });
   setInterval(maybeAutoSync, 60 * 60 * 1000);
   maybeAutoExport();
   maybeShowWeeklyReview();

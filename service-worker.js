@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v19';
+const CACHE = 'dashboard-v20';
 const ASSETS = [
   './',
   './index.html',
@@ -30,6 +30,7 @@ const ASSETS = [
   './js/components/island.js',
   './js/insights.js',
   './js/app-badge.js',
+  './js/components/sync-pill.js',
   './js/auto-export.js',
   './js/pdf-export.js',
   './js/components/weekly-review.js',

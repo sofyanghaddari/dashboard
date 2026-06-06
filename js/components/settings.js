@@ -4,7 +4,7 @@ import { setThemeMode, setAccent, ACCENT_NAMES, setPreset, THEME_PRESETS, setDen
 import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
-import { setupGithub, syncUp, syncDown, getSyncStatus, listVersions, createSecondaryGist, removeGist, emailGistLink } from '../github-sync.js';
+import { setupGithub, syncUp, syncDown, syncMerge, getSyncStatus, listVersions, createSecondaryGist, removeGist, emailGistLink } from '../github-sync.js';
 import { isLockEnabled, setPin, clearUnlock } from '../lock.js';
 import { biometricAvailable, platformAuthenticatorAvailable, registerBiometric, isBiometricEnabled, disableBiometric } from '../biometric.js';
 import { exportMonthPDF } from '../pdf-export.js';
@@ -165,9 +165,17 @@ export async function openSettings(onClose) {
           ${sync.gistIds.map(id => `<div style="font-size:.75rem;font-family:monospace;margin-top:2px">${id.slice(0,12)}…</div>`).join('')}
         </div>
         <div class="row">
-          <button type="button" class="btn" id="gh-sync-up">⬆️ Nu synchroniseren</button>
-          <button type="button" class="btn secondary" id="gh-sync-down">⬇️ Ophalen</button>
+          <button type="button" class="btn" id="gh-sync-up">⬆️ Pushen</button>
+          <button type="button" class="btn" id="gh-sync-merge">🔀 Slim mergen</button>
         </div>
+        <button type="button" class="btn secondary block" id="gh-sync-down" style="margin-top:8px">⬇️ Volledig overschrijven met cloud</button>
+        <label class="settings-row" style="text-transform:none;margin-top:8px;padding:0">
+          <div class="settings-row-main">
+            <div class="settings-row-title">Auto-merge bij openen</div>
+            <div class="settings-row-sub muted">Haalt remote data en mergt met lokaal elke keer dat je opent</div>
+          </div>
+          <span class="ios-switch"><input type="checkbox" id="set-autopull" ${getSetting('autoPullOnOpen')==='1'?'checked':''} /><span></span></span>
+        </label>
         <button type="button" class="btn secondary block" id="gh-versions" style="margin-top:8px">📜 Versie-historie bekijken</button>
         <button type="button" class="btn secondary block" id="gh-mirror" style="margin-top:8px" ${sync.gistCount>=2?'disabled':''}>🪞 Voeg tweede gist toe (extra backup)</button>
         <button type="button" class="btn secondary block" id="gh-email" style="margin-top:8px">✉️ Email mezelf de backup-links</button>
@@ -389,6 +397,16 @@ export async function openSettings(onClose) {
     try { await syncDown(); ok('Opgehaald'); setTimeout(() => location.reload(), 500); }
     catch (e) { err(e.message); }
   };
+  const ghMerge = backdrop.querySelector('#gh-sync-merge');
+  if (ghMerge) ghMerge.onclick = async () => {
+    try {
+      const r = await syncMerge();
+      ok(`Gemerged: ${r.added} nieuw, ${r.updated} bijgewerkt`);
+      setTimeout(() => location.reload(), 500);
+    } catch (e) { err(e.message); }
+  };
+  const autoPull = backdrop.querySelector('#set-autopull');
+  if (autoPull) autoPull.onchange = (e) => setSetting('autoPullOnOpen', e.target.checked ? '1' : '0');
   const ghDisc = backdrop.querySelector('#gh-disconnect');
   if (ghDisc) ghDisc.onclick = () => {
     if (!confirm('GitHub-verbinding verbreken? Je gists blijven op github bestaan.')) return;

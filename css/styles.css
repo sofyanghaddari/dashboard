@@ -1190,6 +1190,38 @@ body.is-offline .view { padding-top: 50px; }
   }
 }
 
+/* SYNC PILL (top center) */
+.sync-pill {
+  position: fixed; top: 14px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: .72rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer;
+  z-index: 14;
+  box-shadow: var(--shadow-sm);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  font-family: inherit;
+  transition: background .2s;
+}
+.sync-pill:active { transform: translateX(-50%) scale(.96); }
+.sync-pill[data-state="busy"] { color: var(--accent); }
+.sync-pill[data-state="offline"] { color: var(--danger); }
+.sync-pill[data-state="err"] { color: var(--danger); border-color: var(--danger); }
+.sync-spin { display: inline-block; animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+
+/* Zorg dat sync-pill niet botst met search/settings */
+@media (max-width: 480px) {
+  .sync-pill { font-size: .68rem; padding: 5px 10px; }
+}
+
 /* INSIGHTS */
 .insight-row {
   display: flex; gap: 10px; align-items: flex-start;
