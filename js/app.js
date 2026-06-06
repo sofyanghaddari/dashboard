@@ -1,4 +1,5 @@
-import { openDB } from './db.js';
+import { openDB, onWrite } from './db.js';
+import { initRealtimeSync, scheduleAutoPush } from './auto-realtime-sync.js';
 import { register, initRouter, navigate, currentRoute } from './router.js';
 import { openSettings } from './components/settings.js';
 import { initTheme } from './theme.js';
@@ -56,6 +57,8 @@ async function bootApp() {
   window.openCmdK = openSearch;
 
   initSyncPill();
+  initRealtimeSync();
+  onWrite(scheduleAutoPush);
   // Probeer eerst remote te mergen, dan auto-up
   maybeAutoPullOnOpen().then(merged => {
     if (merged) { refreshSyncPill(); navigate(currentRoute() || 'dashboard'); }

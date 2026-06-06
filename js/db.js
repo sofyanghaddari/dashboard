@@ -46,9 +46,35 @@ function p(req) {
   });
 }
 
-export async function put(store, value) { return p((await tx(store, 'readwrite')).put(value)); }
-export async function add(store, value) { return p((await tx(store, 'readwrite')).add(value)); }
+let _onWrite = null;
+export function onWrite(cb) { _onWrite = cb; }
+
+function injectUpdatedAt(value) {
+  // Object-spread om mutatie van caller-object te vermijden
+  return { ...value, _updatedAt: Date.now() };
+}
+
+export async function put(store, value) {
+  const v = injectUpdatedAt(value);
+  const res = await p((await tx(store, 'readwrite')).put(v));
+  if (_onWrite) _onWrite();
+  return res;
+}
+export async function add(store, value) {
+  const v = injectUpdatedAt(value);
+  const res = await p((await tx(store, 'readwrite')).add(v));
+  if (_onWrite) _onWrite();
+  return res;
+}
 export async function get(store, key)   { return p((await tx(store)).get(key)); }
-export async function del(store, key)   { return p((await tx(store, 'readwrite')).delete(key)); }
+export async function del(store, key)   {
+  const res = await p((await tx(store, 'readwrite')).delete(key));
+  if (_onWrite) _onWrite();
+  return res;
+}
 export async function all(store)        { return p((await tx(store)).getAll()); }
-export async function clear(store)      { return p((await tx(store, 'readwrite')).clear()); }
+export async function clear(store)      {
+  const res = await p((await tx(store, 'readwrite')).clear());
+  if (_onWrite) _onWrite();
+  return res;
+}

@@ -187,12 +187,18 @@ function tsField(item, fields) {
 }
 
 function pickWinner(store, local, remote) {
-  // Per-store conflict resolution
+  // Universeel: _updatedAt wint altijd (gezet bij elke schrijf-actie)
+  const lUpd = Number(local._updatedAt || 0);
+  const rUpd = Number(remote._updatedAt || 0);
+  if (lUpd > 0 || rUpd > 0) {
+    if (rUpd > lUpd) return remote;
+    if (lUpd > rUpd) return local;
+  }
+  // Fallback per-store
   switch (store) {
     case 'rides':
     case 'expenses':
     case 'shifts':
-      // Vergelijk op datum/startTime — nieuwste wint (mocht iets bewerkt zijn)
       return tsField(remote, ['date','startTime','endTime']) > tsField(local, ['date','startTime','endTime']) ? remote : local;
     case 'hizb_log':
       return remote;
