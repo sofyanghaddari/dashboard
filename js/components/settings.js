@@ -4,7 +4,7 @@ import { setThemeMode, setAccent, ACCENT_NAMES, setPreset, THEME_PRESETS, setDen
 import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
-import { setupGithub, syncUp, syncDown, getSyncStatus } from '../github-sync.js';
+import { setupGithub, syncUp, syncDown, getSyncStatus, listVersions, createSecondaryGist, removeGist, emailGistLink } from '../github-sync.js';
 import { isLockEnabled, setPin, clearUnlock } from '../lock.js';
 import { biometricAvailable, platformAuthenticatorAvailable, registerBiometric, isBiometricEnabled, disableBiometric } from '../biometric.js';
 import { exportMonthPDF } from '../pdf-export.js';
@@ -12,6 +12,48 @@ import { openWeeklyReview } from './weekly-review.js';
 import { getCustomShame, setCustomShame, customMascot, setCustomMascot } from '../mascot.js';
 
 const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots'];
+
+export async function openVersionPicker() {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal">
+      <button type="button" class="modal-close" id="vp-x" aria-label="Sluiten">×</button>
+      <h2>Backup-versies</h2>
+      <p class="muted" style="font-size:.85rem">Kies een eerdere backup om naar terug te gaan. Laatste 30 versies worden bewaard.</p>
+      <div id="vp-list" style="margin-top:12px">Laden…</div>
+    </div>`;
+  document.body.appendChild(backdrop);
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+  backdrop.querySelector('#vp-x').onclick = () => backdrop.remove();
+
+  try {
+    const versions = await listVersions();
+    const list = backdrop.querySelector('#vp-list');
+    if (!versions.length) { list.innerHTML = '<p class="muted">Geen versies gevonden.</p>'; return; }
+    list.innerHTML = '<div class="list">' + versions.map((v, i) => `
+      <div class="list-item">
+        <div>
+          <b>${v.date ? v.date.toLocaleString('nl-NL') : v.filename}</b>
+          <div class="muted" style="font-size:.75rem">${(v.size/1024).toFixed(1)} KB · ${v.filename}</div>
+        </div>
+        <button class="btn" data-restore="${v.filename}">Herstel</button>
+      </div>
+    `).join('') + '</div>';
+    list.querySelectorAll('[data-restore]').forEach(b => {
+      b.onclick = async () => {
+        if (!confirm(`Backup van ${b.previousElementSibling.querySelector('b').textContent} herstellen? Huidige data wordt overschreven.`)) return;
+        try {
+          await syncDown(b.dataset.restore);
+          ok('Hersteld. Pagina ververst.');
+          setTimeout(() => location.reload(), 500);
+        } catch (e) { err(e.message); }
+      };
+    });
+  } catch (e) {
+    backdrop.querySelector('#vp-list').innerHTML = `<p class="muted">Fout: ${e.message}</p>`;
+  }
+}
 
 export async function openSettings(onClose) {
   const earned = await computeEarnedBadges();
@@ -118,10 +160,17 @@ export async function openSettings(onClose) {
         <input id="gh-token" type="password" placeholder="GitHub Personal Access Token" />
         <button type="button" class="btn block" id="gh-setup" style="margin-top:8px">Verbind GitHub</button>
       ` : `
+        <div class="settings-row-sub muted" style="margin-bottom:8px">
+          ${sync.gistCount} gist${sync.gistCount===1?'':'s'} actief
+          ${sync.gistIds.map(id => `<div style="font-size:.75rem;font-family:monospace;margin-top:2px">${id.slice(0,12)}…</div>`).join('')}
+        </div>
         <div class="row">
           <button type="button" class="btn" id="gh-sync-up">⬆️ Nu synchroniseren</button>
           <button type="button" class="btn secondary" id="gh-sync-down">⬇️ Ophalen</button>
         </div>
+        <button type="button" class="btn secondary block" id="gh-versions" style="margin-top:8px">📜 Versie-historie bekijken</button>
+        <button type="button" class="btn secondary block" id="gh-mirror" style="margin-top:8px" ${sync.gistCount>=2?'disabled':''}>🪞 Voeg tweede gist toe (extra backup)</button>
+        <button type="button" class="btn secondary block" id="gh-email" style="margin-top:8px">✉️ Email mezelf de backup-links</button>
         <button type="button" class="btn danger block" id="gh-disconnect" style="margin-top:8px">Verbinding verbreken</button>
       `}
 
@@ -342,12 +391,21 @@ export async function openSettings(onClose) {
   };
   const ghDisc = backdrop.querySelector('#gh-disconnect');
   if (ghDisc) ghDisc.onclick = () => {
-    if (!confirm('GitHub-verbinding verbreken?')) return;
+    if (!confirm('GitHub-verbinding verbreken? Je gists blijven op github bestaan.')) return;
     setupGithub('');
-    localStorage.removeItem('ghGistId');
     ok('Verbinding verbroken');
     close();
   };
+  const ghMirror = backdrop.querySelector('#gh-mirror');
+  if (ghMirror) ghMirror.onclick = async () => {
+    if (!confirm('Tweede gist aanmaken voor extra backup-redundantie?')) return;
+    try { const id = await createSecondaryGist(); ok('Mirror aangemaakt: ' + id.slice(0,8) + '…'); close(); }
+    catch (e) { err(e.message); }
+  };
+  const ghEmail = backdrop.querySelector('#gh-email');
+  if (ghEmail) ghEmail.onclick = () => { emailGistLink(); };
+  const ghVer = backdrop.querySelector('#gh-versions');
+  if (ghVer) ghVer.onclick = () => { close(); openVersionPicker(); };
 
   backdrop.querySelector('#export-ical').onclick = async () => {
     try { await exportICal(); ok('iCal gedownload'); }
@@ -367,6 +425,19 @@ export async function openSettings(onClose) {
     ok('Opgeslagen');
     close();
   };
+
+  // Online/offline live updates
+  const onlineRow = backdrop.querySelector('#online-status');
+  if (onlineRow) {
+    const updateOnline = () => {
+      const sub = onlineRow.querySelector('.settings-row-sub');
+      const icon = onlineRow.querySelector('span:last-child');
+      if (sub) sub.textContent = navigator.onLine ? 'Online' : 'Offline';
+      if (icon) icon.textContent = navigator.onLine ? '🟢' : '🔴';
+    };
+    window.addEventListener('online', updateOnline);
+    window.addEventListener('offline', updateOnline);
+  }
 
   // Storage info
   if (navigator.storage && navigator.storage.estimate) {
