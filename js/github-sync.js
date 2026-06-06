@@ -281,6 +281,35 @@ export function removeGist(gistId) {
   setGistIds(ids);
 }
 
+// Lijst alle dashboard-gerelateerde gists van de gebruiker
+export async function findMyGists() {
+  const token = localStorage.getItem('ghToken');
+  if (!token) throw new Error('Geen token');
+  const all = await api('/gists?per_page=100', token);
+  return all
+    .filter(g => /dashboard/i.test(g.description || '') || Object.keys(g.files).some(f => f === LATEST_FILE || f.startsWith('backup-')))
+    .map(g => ({
+      id: g.id,
+      description: g.description || '(geen omschrijving)',
+      created_at: g.created_at,
+      updated_at: g.updated_at,
+      files: Object.keys(g.files),
+      isCurrent: getGistIds().includes(g.id),
+    }));
+}
+
+// Wissel huidige gist-ID voor opgegeven ID (zonder nieuwe aanmaken)
+export function useExistingGist(gistId) {
+  if (!gistId) throw new Error('Geen gist-ID');
+  setGistIds([gistId]);
+}
+
+// Voeg bestaande gist-ID toe als secundaire
+export function useExistingAsSecondary(gistId) {
+  if (!gistId) throw new Error('Geen gist-ID');
+  addSecondaryGist(gistId);
+}
+
 export async function maybeAutoSync() {
   const status = getSyncStatus();
   if (!status.enabled) return;

@@ -4,7 +4,7 @@ import { setThemeMode, setAccent, ACCENT_NAMES, setPreset, THEME_PRESETS, setDen
 import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
-import { setupGithub, syncUp, syncDown, syncMerge, getSyncStatus, listVersions, createSecondaryGist, removeGist, emailGistLink } from '../github-sync.js';
+import { setupGithub, syncUp, syncDown, syncMerge, getSyncStatus, listVersions, createSecondaryGist, removeGist, emailGistLink, findMyGists, useExistingGist } from '../github-sync.js';
 import { isLockEnabled, setPin, clearUnlock } from '../lock.js';
 import { biometricAvailable, platformAuthenticatorAvailable, registerBiometric, isBiometricEnabled, disableBiometric } from '../biometric.js';
 import { exportMonthPDF } from '../pdf-export.js';
@@ -12,6 +12,61 @@ import { openWeeklyReview } from './weekly-review.js';
 import { getCustomShame, setCustomShame, customMascot, setCustomMascot } from '../mascot.js';
 
 const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots'];
+
+export async function openGistPicker() {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal">
+      <button type="button" class="modal-close" id="gp-x" aria-label="Sluiten">×</button>
+      <h2>Mijn dashboard-gists</h2>
+      <p class="muted" style="font-size:.85rem">Heb je per ongeluk meerdere gists aangemaakt (1 op laptop, 1 op telefoon)? Kies hier degene die je wilt gebruiken — beide apparaten gaan dan naar dezelfde data.</p>
+      <div id="gp-list" style="margin-top:12px">Laden…</div>
+    </div>`;
+  document.body.appendChild(backdrop);
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+  backdrop.querySelector('#gp-x').onclick = () => backdrop.remove();
+
+  try {
+    const gists = await findMyGists();
+    const list = backdrop.querySelector('#gp-list');
+    if (!gists.length) { list.innerHTML = '<p class="muted">Geen dashboard-gists gevonden in jouw account.</p>'; return; }
+    list.innerHTML = '<div class="list">' + gists.map(g => `
+      <div class="list-item">
+        <div style="flex:1;min-width:0">
+          <b>${escapeHTML(g.description)} ${g.isCurrent ? '<span class="pill" style="background:var(--ok);color:#000">huidig</span>' : ''}</b>
+          <div class="muted" style="font-size:.75rem;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.id}</div>
+          <div class="muted" style="font-size:.72rem;margin-top:2px">${g.files.length} bestand${g.files.length===1?'':'en'} · laatst aangepast ${new Date(g.updated_at).toLocaleDateString('nl-NL')}</div>
+        </div>
+        <div class="row" style="flex:0 0 auto;gap:4px">
+          ${g.isCurrent ? '' : `<button class="btn" data-use="${g.id}">Gebruik deze</button>`}
+          <button class="btn secondary" data-copy-id="${g.id}">📋</button>
+        </div>
+      </div>
+    `).join('') + '</div>';
+    list.querySelectorAll('[data-use]').forEach(b => {
+      b.onclick = async () => {
+        if (!confirm('Wissel naar deze gist? Eerst auto-merge zodat je niets verliest.')) return;
+        try {
+          useExistingGist(b.dataset.use);
+          await syncMerge();
+          ok('Verbonden + gemerged');
+          setTimeout(() => location.reload(), 500);
+        } catch (e) { err(e.message); }
+      };
+    });
+    list.querySelectorAll('[data-copy-id]').forEach(b => {
+      b.onclick = async () => {
+        try { await navigator.clipboard.writeText(b.dataset.copyId); ok('Gist-ID gekopieerd'); }
+        catch (_) { prompt('Kopieer:', b.dataset.copyId); }
+      };
+    });
+  } catch (e) {
+    backdrop.querySelector('#gp-list').innerHTML = `<p class="muted">Fout: ${e.message}</p>`;
+  }
+}
+
+function escapeHTML(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
 
 export async function openVersionPicker() {
   const backdrop = document.createElement('div');
@@ -158,7 +213,9 @@ export async function openSettings(onClose) {
       </p>
       ${!sync.enabled ? `
         <input id="gh-token" type="password" placeholder="GitHub Personal Access Token" />
+        <input id="gh-existing-id" placeholder="Optioneel: bestaande gist-ID plakken (voor sync met ander apparaat)" style="margin-top:6px" />
         <button type="button" class="btn block" id="gh-setup" style="margin-top:8px">Verbind GitHub</button>
+        <p class="muted" style="font-size:.78rem;margin-top:6px">💡 Sync je tussen telefoon &amp; laptop? Plak op het tweede apparaat de gist-ID van het eerste — anders krijg je 2 aparte backups.</p>
       ` : `
         <div class="settings-row-sub muted" style="margin-bottom:8px">
           ${sync.gistCount} gist${sync.gistCount===1?'':'s'} actief
@@ -180,8 +237,9 @@ export async function openSettings(onClose) {
           </div>
           <span class="ios-switch"><input type="checkbox" id="set-autopull" ${getSetting('autoPullOnOpen')==='1'?'checked':''} /><span></span></span>
         </label>
+        <button type="button" class="btn secondary block" id="gh-find" style="margin-top:8px">🔍 Vind mijn dashboard-gists (sync apparaten)</button>
         <button type="button" class="btn secondary block" id="gh-versions" style="margin-top:8px">📜 Versie-historie bekijken</button>
-        <button type="button" class="btn secondary block" id="gh-mirror" style="margin-top:8px" ${sync.gistCount>=2?'disabled':''}>🪞 Voeg tweede gist toe (extra backup)</button>
+        <button type="button" class="btn secondary block" id="gh-mirror" style="margin-top:8px" ${sync.gistCount>=2?'disabled':''}>🪞 Maak nieuwe mirror-gist</button>
         <button type="button" class="btn secondary block" id="gh-email" style="margin-top:8px">✉️ Email mezelf de backup-links</button>
         <button type="button" class="btn danger block" id="gh-disconnect" style="margin-top:8px">Verbinding verbreken</button>
       `}
@@ -382,14 +440,23 @@ export async function openSettings(onClose) {
   const ghSetupBtn = backdrop.querySelector('#gh-setup');
   if (ghSetupBtn) ghSetupBtn.onclick = async () => {
     const token = backdrop.querySelector('#gh-token').value.trim();
+    const existingId = backdrop.querySelector('#gh-existing-id').value.trim();
     if (!token) { err('Geen token ingevuld'); return; }
-    setupGithub(token);
+    setupGithub(token, existingId);
     try {
-      await syncUp();
-      ok('Verbonden + eerste backup gemaakt');
-      close();
+      if (existingId) {
+        await syncMerge();
+        ok('Verbonden met bestaande gist + gemerged');
+      } else {
+        await syncUp();
+        ok('Verbonden + eerste backup gemaakt');
+      }
+      setTimeout(() => location.reload(), 400);
     } catch (e) { err('Mislukt: ' + e.message); setupGithub(''); }
   };
+
+  const ghFind = backdrop.querySelector('#gh-find');
+  if (ghFind) ghFind.onclick = async () => { close(); openGistPicker(); };
   const ghUp = backdrop.querySelector('#gh-sync-up');
   if (ghUp) ghUp.onclick = async () => {
     try { await syncUp(); ok('Gesynchroniseerd'); close(); }
