@@ -66,6 +66,7 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
   margin: 0; padding: 0;
+  overflow-x: hidden;
   background: var(--bg);
   background-image: var(--bg-grad);
   background-attachment: fixed;
@@ -1141,9 +1142,6 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
   border-radius: 3px;
   background: var(--bg-elev-2);
   border: 1px solid var(--border-soft);
-  /* iOS tap target: 44px minimum per Apple HIG */
-  min-height: 44px;
-  min-width: 44px;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -1692,9 +1690,7 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   padding: 4px;
   display: flex; flex-direction: column; justify-content: space-between;
   font-size: .8rem;
-  /* iOS tap target: minimum 44px per Apple HIG */
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 40px;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
