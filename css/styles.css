@@ -1566,6 +1566,7 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   z-index: 9999;
   opacity: 1;
   transition: opacity .5s cubic-bezier(.4,0,.2,1);
+  perspective: 1200px;
 }
 .splash.hide { opacity: 0; pointer-events: none; }
 .splash-icon {
@@ -1574,9 +1575,26 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   text-shadow: 0 0 40px var(--gold-glow-strong), 0 0 80px var(--gold-glow);
   animation: splashIconIn .6s var(--spring) both;
 }
+.splash-star {
+  animation: starFlyIn 1.2s cubic-bezier(.34,.1,.68,1) both !important;
+  filter: drop-shadow(0 0 60px var(--gold-glow-strong));
+}
 @keyframes splashIconIn {
   from { transform: scale(.4) rotate(-20deg); opacity: 0; }
   to   { transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes starFlyIn {
+  0% {
+    transform: translate3d(0, -120vh, -800px) scale(0.1) rotateX(90deg) rotateZ(-45deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1) rotateX(0) rotateZ(0);
+    opacity: 1;
+  }
 }
 .splash-name {
   font-family: 'Georgia', serif;
