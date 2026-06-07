@@ -762,6 +762,23 @@ body[data-preset="paper"] .tabbar { background: rgba(255,255,255,.95); }
 body[data-preset="paper"] .btn { color: white; }
 body[data-preset="paper"] .btn.secondary { background: #f0f0f0; color: var(--text); border-color: #e0e0e0; }
 
+/* DAYLIGHT — warm dag-thema, Linear/Notion-stijl */
+body[data-preset="daylight"] {
+  --bg: #f8f7f4;
+  --bg-elev: #ffffff; --bg-elev-2: #f0efe9; --bg-elev-3: #e8e6e0;
+  --accent: #2c2c2c; --accent-dim: #444444;
+  --gold: #8a7856; --gold-bright: #a39168; --gold-glow: rgba(138,120,86,.1);
+  --border: #e8e6e1; --border-soft: #f0eee9;
+  --text: #1a1a1a; --text-dim: #6b6b6b; --text-faint: #a0a0a0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.05);
+  --shadow-md: 0 2px 8px rgba(0,0,0,.07);
+  --shadow-lg: 0 6px 20px rgba(0,0,0,.08);
+}
+body[data-preset="daylight"] { background: #f8f7f4; background-attachment: fixed; }
+body[data-preset="daylight"] .tabbar { background: rgba(248,247,244,.9); }
+body[data-preset="daylight"] .btn { color: white; }
+body[data-preset="daylight"] .btn.secondary { background: #eceae4; color: var(--text); border-color: #e0ddd8; }
+
 /* MARBLE — luxe zwart + goud filigraan */
 body[data-preset="marble"] {
   --bg: #0d0a05;
@@ -3055,6 +3072,9 @@ body[data-preset="concrete"] .btn.secondary { background: #d0d0d0; color: var(--
 .weginfo-road.work { background: var(--bg-elev-2); color: var(--text-dim); border: 1px solid var(--border); }
 .weginfo-item-road { font-weight: 600; font-size: .83rem; color: var(--text); }
 .weginfo-item-info { font-size: .8rem; color: var(--text-dim); margin-top: 2px; }
+.weginfo-validity { font-size: .72rem; color: var(--text-faint); font-weight: 400; margin-left: 4px; }
+.weginfo-meta { font-size: .75rem; color: var(--text-faint); margin-bottom: 8px; }
+.weginfo-meta-link { color: var(--accent); text-decoration: none; }
 .weginfo-clear {
   font-size: .85rem;
   color: var(--ok);

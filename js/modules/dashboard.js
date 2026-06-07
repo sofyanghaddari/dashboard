@@ -484,7 +484,7 @@ function hadithWidget() {
     { ar: 'تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ صَدَقَةٌ', nl: 'Glimlachen naar je broeder is een daad van liefdadigheid.', bron: 'Jami at-Tirmidhi 1956' },
     { ar: 'لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ، إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ', nl: 'De sterkste man is niet degene die anderen verslaat, maar degene die zichzelf beheerst in woede.', bron: 'Sahih al-Bukhari 6114' },
     { ar: 'مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ طَرِيقًا إِلَى الْجَنَّةِ', nl: 'Wie een pad bewandelt op zoek naar kennis, Allah maakt voor hem een pad naar het Paradijs.', bron: 'Sahih Muslim 2699' },
-    { ar: 'إِنَّ اللَّهَ يُحِبُّ إِذَا عَمِلَ أَحَدُكُمْ عَمَلًا أَنْ يُتْقِنَهُ', nl: 'Allah houdt van iemand die wanneer hij iets doet, het met toewijding doet.', bron: 'al-Bayhaqi' },
+    { ar: 'إِنَّ اللَّهَ يُحِبُّ إِذَا عَمِلَ أَحَدُكُمْ عَمَلًا أَنْ يُتْقِنَهُ', nl: 'Allah houdt ervan dat wanneer iemand iets doet, hij het met toewijding en vakmanschap uitvoert.', bron: 'al-Bayhaqi, Shu\'ab al-Iman 5312' },
     { ar: 'لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ', nl: 'Geen van jullie gelooft waarlijk totdat hij voor zijn broeder wil wat hij voor zichzelf wil.', bron: 'Sahih al-Bukhari 13' },
     { ar: 'مَنْ أَصْبَحَ مِنْكُمْ آمِنًا فِي سِرْبِهِ مُعَافًى فِي جَسَدِهِ عِنْدَهُ قُوتُ يَوْمِهِ فَكَأَنَّمَا حِيزَتْ لَهُ الدُّنْيَا', nl: 'Degene die \'s ochtends wakker wordt met een veilig huis, een gezond lichaam en voedsel voor die dag, is als iemand die de hele wereld heeft verkregen.', bron: 'Jami at-Tirmidhi 2346' },
     { ar: 'كُنْ فِي الدُّنْيَا كَأَنَّكَ غَرِيبٌ أَوْ عَابِرُ سَبِيلٍ', nl: 'Wees in de wereld als een vreemdeling of een reiziger.', bron: 'Sahih al-Bukhari 6416' },
@@ -502,14 +502,14 @@ function hadithWidget() {
     { ar: 'لَا يَشْكُرُ اللَّهَ مَنْ لَا يَشْكُرُ النَّاسَ', nl: 'Wie niet dankbaar is aan mensen, is niet dankbaar aan Allah.', bron: 'Abu Dawud 4811' },
     { ar: 'خَيْرُ النَّاسِ أَنْفَعُهُمْ لِلنَّاسِ', nl: 'Het beste van de mensen is degene die het meest nuttig is voor anderen.', bron: 'al-Mu\'jam al-Awsat' },
     { ar: 'اجْتَمِعُوا عَلَى طَعَامِكُمْ وَاذْكُرُوا اسْمَ اللَّهِ عَلَيْهِ يُبَارَكْ لَكُمْ فِيهِ', nl: 'Eet samen en noem de naam van Allah; er zal zegen in zijn.', bron: 'Abu Dawud 3764' },
-    { ar: 'مَا نَقَصَتْ صَدَقَةٌ مِنْ مَالٍ وَمَا زَادَ اللَّهُ عَبْدًا بِعَفْوٍ إِلَّا عِزًّا', nl: 'Vergeving is een van de beste eigenschappen van de gelovige.', bron: 'Sahih Muslim 2588' },
+    { ar: 'مَا نَقَصَتْ صَدَقَةٌ مِنْ مَالٍ وَمَا زَادَ اللَّهُ عَبْدًا بِعَفْوٍ إِلَّا عِزًّا', nl: 'Liefdadigheid vermindert het bezit niet, en Allah verhoogt de eer van degene die vergeeft.', bron: 'Sahih Muslim 2588' },
     { ar: 'مَا يُصِيبُ الْمُسْلِمَ مِنْ نَصَبٍ وَلَا وَصَبٍ وَلَا هَمٍّ وَلَا حُزْنٍ وَلَا أَذًى وَلَا غَمٍّ حَتَّى الشَّوْكَةِ يُشَاكُهَا إِلَّا كَفَّرَ اللَّهُ بِهَا مِنْ خَطَايَاهُ', nl: 'Geen ziekte treft een moslim zonder dat Allah daarmee zonden vergeeft.', bron: 'Sahih al-Bukhari 5641' },
     { ar: 'اعْمَلُوا وَسَدِّدُوا وَقَارِبُوا وَاعْلَمُوا أَنَّهُ لَنْ يُنْجِيَ أَحَدَكُمْ عَمَلُهُ', nl: 'Doe goede daden, en weet dat geen van jullie door zijn daden gered wordt — maar door de genade van Allah.', bron: 'Sahih al-Bukhari 6467' },
     { ar: 'مَنْ يُرِدِ اللَّهُ بِهِ خَيْرًا يُفَقِّهْهُ فِي الدِّينِ', nl: 'Allah schenkt kennis aan wie Hij wil. Wie kennis krijgt, heeft een groot goed gekregen.', bron: 'Sahih al-Bukhari 73' },
     { ar: 'الْمَرْءُ عَلَى دِينِ خَلِيلِهِ فَلْيَنْظُرْ أَحَدُكُمْ مَنْ يُخَالِلُ', nl: 'De mens is op het geloof van zijn vrienden — kijk dus met wie je omgaat.', bron: 'Abu Dawud 4833' },
     { ar: 'وَمَنْ يَتَّقِ اللَّهَ يَجْعَلْ لَهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ', nl: 'Wie Allah vreest, voor hem maakt Allah een uitweg en voorziet hem van waar hij het niet verwacht.', bron: 'Qur\'an 65:2-3' },
     { ar: 'أَحَبُّ الأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ', nl: 'Kleine consistente daden zijn geliefder bij Allah dan grote maar sporadische daden.', bron: 'Sahih al-Bukhari 6465' },
-    { ar: 'الرَّاحِمُونَ يَرْحَمُهُمُ الرَّحْمَنُ، ارْحَمُوا مَنْ فِي الأَرْضِ يَرْحَمْكُمْ مَنْ فِي السَّمَاءِ', nl: 'De barmhartigste mensen worden het meest begenadigd. Wees barmhartig voor wie op aarde is.', bron: 'Jami at-Tirmidhi 1924' },
+    { ar: 'إِنَّ مِنْ أَكْمَلِ الْمُؤْمِنِينَ إِيمَانًا أَحْسَنُهُمْ خُلُقًا وَأَلْطَفُهُمْ بِأَهْلِهِ', nl: 'De meest volmaakte gelovige qua geloof is degene met het beste karakter en de zachtste omgang met zijn gezin.', bron: 'Jami at-Tirmidhi 2612' },
   ];
   const today = new Date();
   const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
@@ -564,7 +564,7 @@ function woordWidget(now) {
     { w: 'reciprook', def: 'Wederzijds en gelijkwaardig; van beide kanten gelijkelijk geldend.', tip: '"Reciprocare" = heen en terug bewegen — gelijke uitwisseling.' },
     { w: 'subsidiair', def: 'Als aanvulling dienend; van ondergeschikt of bijkomend belang.', tip: '"Subsidium" = hulp van achteren. Je staat klaar als steun.' },
     { w: 'tangentieel', def: 'Slechts zijdelings rakend aan het onderwerp; niet centraal.', tip: '"Tangere" = raken. Een tangens raakt de cirkel slechts licht.' },
-    { w: 'unanim', def: 'Eenstemmig; met volledige instemming van iedereen.', tip: '"Una" = één, "anima" = geest. Iedereen spreekt met één stem.' },
+    { w: 'unaniem', def: 'Eenstemmig; met volledige instemming van iedereen.', tip: '"Una" = één, "anima" = geest. Iedereen spreekt met één stem.' },
     { w: 'verbatim', def: 'Woord voor woord geciteerd; letterlijk overgenomen.', tip: '"Verba" = woorden in het Latijn. Je herhaalt elke letter precies.' },
     { w: 'aforisme', def: 'Kernachtige uitspraak die een waarheid bondig formuleert.', tip: '"Aphorismós" = afgrenzen. Een aforisme begrenst een gedachte scherp.' },
     { w: 'apathisch', def: 'Gevoelsloos en onverschillig; zonder energie of betrokkenheid.', tip: '"A" = zonder, "pathos" = gevoel. Geen gevoel, geen reactie.' },
@@ -574,12 +574,12 @@ function woordWidget(now) {
     { w: 'faceteus', def: 'Geestig en humoristisch; speels in toon maar soms ongepast.', tip: '"Facetus" = elegant in het Latijn. Geestig maar soms te vrijpostig.' },
     { w: 'gregair', def: 'Sociaal en houdend van gezelschap; van nature op groep gericht.', tip: '"Grex" = kudde in het Latijn. Een gregair persoon zoekt de kudde.' },
     { w: 'inherent', def: 'Van nature aanwezig; onlosmakelijk verbonden met iets.', tip: '"Inhaerere" = vast zitten aan. Het zit er ingebakken in.' },
-    { w: 'judicieux', def: 'Verstandig en met goed oordeel; wijs en beoordelingsvaardig.', tip: '"Judex" = rechter. Je oordeelt slim, als een goede rechter.' },
+    { w: 'oordeelkundig', def: 'Verstandig en met goed beoordelingsvermogen; wijs in oordelen.', tip: '"Oordeel" + "kundig" — je hebt de kunst van het goed beoordelen in de vingers.' },
     { w: 'kaleidoscopisch', def: 'Snel en kleurrijk wisselend beeld; veelzijdig en gevarieerd.', tip: '"Kalos" = mooi, "skopos" = kijker. Je kijkt naar eindeloze mooi variaties.' },
     { w: 'lacune', def: 'Leemte of ontbrekend deel; gat in kennis of completeness.', tip: '"Lacuna" = kuil in het Latijn. Er ontbreekt een stuk.' },
     { w: 'malafide', def: 'Kwader trouw; handelend met slechte bedoelingen.', tip: '"Mala" = slecht, "fide" = geloof. Je handelt met slechte bedoeling.' },
-    { w: 'nominatief', def: 'Enkel in naam aanwezig; slechts als titel, zonder echte inhoud.', tip: '"Nomen" = naam. Je bent slechts bij naam aanwezig.' },
-    { w: 'oblivious', def: 'Vergeetachtig of onbewust van de omgeving; niet oplettend.', tip: '"Oblivio" = vergetelheid. Je bent je nauwelijks bewust van wat er is.' },
+    { w: 'nominaal', def: 'Enkel in naam aanwezig; slechts als titel, zonder echte inhoud of macht.', tip: '"Nomen" = naam in het Latijn. Je draagt de titel maar niet de realiteit.' },
+    { w: 'onbewust', def: 'Zonder bewustzijn van wat er gebeurt; niet lettend op de omgeving.', tip: 'Het tegendeel van bewust — je handelt of leeft zonder het te beseffen.' },
     { w: 'pedant', def: 'Overmatig nadruk leggend op regels en formaliteiten; schoolmeesterachtig.', tip: '"Pédant" in het Frans = schoolmeester. Regels boven begrip.' },
     { w: 'quintessentieel', def: 'De kern of het meest wezenlijke element van iets vertegenwoordigend.', tip: '"Quinta essentia" = het vijfde element — de puurste vorm van iets.' },
     { w: 'reprimande', def: 'Officiële berisping of terechtwijzing; formeel verwijt.', tip: '"Reprimere" = terugdrukken. Je wordt teruggeduwd in je plek.' },
@@ -603,27 +603,33 @@ function woordWidget(now) {
 }
 
 function wegWidget() {
-  const m = new Date().getMonth();
-  const h = new Date().getHours();
-  const isZomer = m >= 4 && m <= 8;
+  const now2 = new Date();
+  const h = now2.getHours();
   const isNacht = h >= 22 || h < 6;
-  const isDiWo  = [2, 3].includes(new Date().getDay());
+  const isDiWo  = [2, 3].includes(now2.getDay());
 
-  // Only A-wegen, Ring, and named tunnels around Amsterdam
+  // Sluitingsdatum A9: maandag 8 juni 2026 05:00
+  const a9Einde = new Date('2026-06-08T05:00:00');
+  const a9Actief = now2 < a9Einde;
+
   const items = [
-    ...(isZomer ? [
-      { road: 'A10 Zuid', label: 'Omrijden nodig', info: 'Intensieve werkzaamheden Ring Zuid t/m september — gebruik A9 of A2 als alternatief.', type: 'detour' },
-    ] : []),
-    { road: 'Coentunnel', label: 'Werkzaamheden', info: `Rijstrookversmalling 22:00–06:00 richting west.${isNacht ? ' Nu actief.' : ''}`, type: 'work' },
-    { road: 'IJ-tunnel', label: isDiWo && isNacht ? 'Gesloten' : 'Werkzaamheden', info: `Nachtsluiting di/wo 23:00–05:00.${isDiWo && isNacht ? ' Nu gesloten — gebruik Piet Heintunnel.' : ''}`, type: isDiWo && isNacht ? 'closed' : 'work' },
-    { road: 'A4', label: 'Schipholroute', info: 'Geen bekende afsluitingen.', type: 'ok' },
-    { road: 'A9', label: 'Amstelveen/Badhoevedorp', info: 'Geen bekende afsluitingen.', type: 'ok' },
-    { road: 'A1', label: 'Richting Almere', info: 'Geen bekende afsluitingen.', type: 'ok' },
-    { road: 'A2', label: 'Richting Utrecht', info: 'Geen bekende afsluitingen.', type: 'ok' },
+    ...(a9Actief ? [{
+      road: 'A9',
+      label: 'Gesloten',
+      info: 'Beide richtingen gesloten tussen knooppunt Badhoevedorp en Holendrecht. Omleiding via A2, A10 en A4. Extra reistijd 10–30 min.',
+      type: 'closed',
+      geldigTm: '8 juni 05:00',
+    }] : []),
+    { road: 'Coentunnel', label: 'Werkzaamheden', info: `Nachtelijke werkzaamheden — één rijstrook dicht.${isNacht ? ' Controleer actuele situatie.' : ''}`, type: 'work' },
+    { road: 'IJ-tunnel', label: isDiWo && isNacht ? 'Gesloten' : 'Werkzaamheden', info: `Periodieke nachtsluitingen.${isDiWo && isNacht ? ' Nu mogelijk gesloten — gebruik Piet Heintunnel.' : ' Controleer actueel.'}`, type: isDiWo && isNacht ? 'closed' : 'work' },
+    { road: 'A10', label: 'Werkzaamheden', info: 'Onderhoudswerkzaamheden diverse trajecten zomer 2026. Controleer actueel.', type: 'work' },
+    { road: 'A1', label: 'OK', info: 'Geen grote afsluitingen.', type: 'ok' },
+    { road: 'A2', label: 'OK', info: 'Geen grote afsluitingen.', type: 'ok' },
+    { road: 'A4', label: 'OK', info: 'Geen grote afsluitingen.', type: 'ok' },
   ];
 
-  const hasBig = items.some(i => i.type === 'closed' || i.type === 'detour');
-  const bigItems  = items.filter(i => i.type === 'closed' || i.type === 'detour');
+  const hasBig = items.some(i => i.type === 'closed');
+  const bigItems  = items.filter(i => i.type === 'closed');
   const workItems = items.filter(i => i.type === 'work');
   const okItems   = items.filter(i => i.type === 'ok');
 
@@ -633,7 +639,7 @@ function wegWidget() {
     <div class="weginfo-item">
       <span class="weginfo-road ${item.type}">${labelFor[item.type]}</span>
       <div>
-        <div class="weginfo-item-road">${escapeHTML(item.road)}</div>
+        <div class="weginfo-item-road">${escapeHTML(item.road)}${item.geldigTm ? ` <span class="weginfo-validity">t/m ${escapeHTML(item.geldigTm)}</span>` : ''}</div>
         <div class="weginfo-item-info">${escapeHTML(item.info)}</div>
       </div>
     </div>`;
@@ -641,13 +647,11 @@ function wegWidget() {
   return `
     <div class="card weginfo-card">
       <h2 class="card-title">Weginfo Amsterdam</h2>
+      <div class="weginfo-meta">Bijgewerkt: 7 juni 2026 &nbsp;·&nbsp; <a href="https://www.anwb.nl/verkeer/amsterdam" target="_blank" rel="noopener" class="weginfo-meta-link">actuele info ANWB →</a></div>
       ${!hasBig ? `<div class="weginfo-clear">Geen grote afsluitingen op de snelwegen rondom Amsterdam</div>` : ''}
       ${bigItems.map(row).join('')}
       ${workItems.length ? `<details class="weginfo-details"><summary>Werkzaamheden (${workItems.length})</summary>${workItems.map(row).join('')}</details>` : ''}
       ${okItems.length ? `<details class="weginfo-details"><summary>Overige snelwegen (${okItems.length})</summary>${okItems.map(row).join('')}</details>` : ''}
-      <a class="weginfo-link" href="https://www.anwb.nl/verkeer/omleidingen/amsterdam" target="_blank" rel="noopener">
-        Actuele info ANWB →
-      </a>
     </div>`;
 }
 

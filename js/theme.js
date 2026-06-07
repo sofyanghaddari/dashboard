@@ -15,7 +15,7 @@ const ACCENTS = {
 export const THEME_PRESETS = [
   'onyx','graphite','midnight','slate','sterling','espresso','ash',
   'obsidian','chalk','concrete',
-  'ivory','stone','cloud','pearl','paper','linen',
+  'daylight','ivory','stone','cloud','pearl','paper','linen',
 ];
 
 export function applyTheme() {
