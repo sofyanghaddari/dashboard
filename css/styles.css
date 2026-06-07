@@ -3050,6 +3050,31 @@ body[data-preset="concrete"] .btn.secondary { background: #d0d0d0; color: var(--
 }
 .weginfo-road.ok { background: var(--ok); color: #001a08; }
 .weginfo-road.warn { background: #f4a42e; color: #1a0800; }
+.weginfo-road.closed { background: var(--danger); color: white; }
+.weginfo-road.detour { background: #e07d0a; color: white; }
+.weginfo-road.work { background: var(--bg-elev-2); color: var(--text-dim); border: 1px solid var(--border); }
+.weginfo-item-road { font-weight: 600; font-size: .83rem; color: var(--text); }
+.weginfo-item-info { font-size: .8rem; color: var(--text-dim); margin-top: 2px; }
+.weginfo-clear {
+  font-size: .85rem;
+  color: var(--ok);
+  font-weight: 500;
+  padding: 4px 0 8px;
+}
+.weginfo-details {
+  margin-top: 4px;
+}
+.weginfo-details summary {
+  font-size: .78rem;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 4px 0;
+  list-style: none;
+  user-select: none;
+}
+.weginfo-details summary::-webkit-details-marker { display: none; }
+.weginfo-details summary::before { content: '▸ '; font-size: .7rem; }
+.weginfo-details[open] summary::before { content: '▾ '; }
 .weginfo-link {
   display: inline-flex;
   align-items: center;

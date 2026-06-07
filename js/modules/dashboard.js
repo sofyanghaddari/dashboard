@@ -165,7 +165,6 @@ export async function render(container) {
           <div class="dagstart-greeting">${begroeting}, ${escapeHTML(userName)}</div>
           <div class="dagstart-date">${datumStr}</div>
         </div>
-        <div class="mascot-sm" title="${escapeHTML(mascot.msg)}">${mascot.e}</div>
       </div>
       <div class="dagstart-stats">
         <div class="dagstart-stat">
@@ -481,36 +480,36 @@ function getTip({ rides, hizb, todos, todayHizb, todayIncome, dailyGoal, monthIn
 
 function hadithWidget() {
   const HADITHS = [
-    { nl: 'Spreek goed of zwijg.', bron: 'Sahih al-Bukhari 6018' },
-    { nl: 'Glimlachen naar je broeder is een daad van liefdadigheid.', bron: 'Jami at-Tirmidhi 1956' },
-    { nl: 'De sterkste man is niet degene die anderen verslaat, maar degene die zichzelf beheerst in woede.', bron: 'Sahih al-Bukhari 6114' },
-    { nl: 'Wie een pad bewandelt op zoek naar kennis, Allah maakt voor hem een pad naar het Paradijs.', bron: 'Sahih Muslim 2699' },
-    { nl: 'Allah houdt van iemand die wanneer hij iets doet, het met toewijding doet.', bron: 'al-Bayhaqi' },
-    { nl: 'Geen van jullie gelooft waarlijk totdat hij voor zijn broeder wil wat hij voor zichzelf wil.', bron: 'Sahih al-Bukhari 13' },
-    { nl: 'Degene die \'s ochtends wakker wordt met een veilig huis, een gezond lichaam en voedsel voor die dag, is als iemand die de hele wereld heeft verkregen.', bron: 'Jami at-Tirmidhi 2346' },
-    { nl: 'Wees in de wereld als een vreemdeling of een reiziger.', bron: 'Sahih al-Bukhari 6416' },
-    { nl: 'Dankbaarheid aan mensen is dankbaarheid aan Allah.', bron: 'Jami at-Tirmidhi 1954' },
-    { nl: 'Schaad niet en laat je niet schaden.', bron: 'Ibn Majah 2340' },
-    { nl: 'Vertrouw op Allah, maar bind ook je kameel vast.', bron: 'Jami at-Tirmidhi 2517' },
-    { nl: 'De beste van jullie zijn degenen die de Koran leren en anderen onderwijzen.', bron: 'Sahih al-Bukhari 5027' },
-    { nl: 'Maak het makkelijk en maak het niet moeilijk; breng goed nieuws en sla mensen niet af.', bron: 'Sahih al-Bukhari 69' },
-    { nl: 'Wie zwijgt is gered.', bron: 'Jami at-Tirmidhi 2501' },
-    { nl: 'Allah heeft meelij met degenen die meelij tonen aan anderen.', bron: 'Jami at-Tirmidhi 1924' },
-    { nl: 'Betaal de arbeider zijn loon voordat zijn zweet opdroogt.', bron: 'Ibn Majah 2443' },
-    { nl: 'De sterke gelovige is beter en meer geliefd bij Allah dan de zwakke gelovige — en in beide is er goed.', bron: 'Sahih Muslim 2664' },
-    { nl: 'Bid tot Allah met de zekerheid dat Hij zal antwoorden.', bron: 'Jami at-Tirmidhi 3479' },
-    { nl: 'Allah is zacht en houdt van zachtheid in alle zaken.', bron: 'Sahih al-Bukhari 6528' },
-    { nl: 'Wie niet dankbaar is aan mensen, is niet dankbaar aan Allah.', bron: 'Abu Dawud 4811' },
-    { nl: 'Het beste van de mensen is degene die het meest nuttig is voor anderen.', bron: 'al-Mu\'jam al-Awsat' },
-    { nl: 'Eet samen en noem de naam van Allah; er zal zegen in zijn.', bron: 'Abu Dawud 3764' },
-    { nl: 'Vergeving is een van de beste eigenschappen van de gelovige.', bron: 'Sahih Muslim 2588' },
-    { nl: 'Geen ziekte treft een moslim zonder dat Allah daarmee zonden vergeeft.', bron: 'Sahih al-Bukhari 5641' },
-    { nl: 'Doe goede daden, en weet dat geen van jullie door zijn daden gered wordt — maar door de genade van Allah.', bron: 'Sahih al-Bukhari 6467' },
-    { nl: 'Allah schenkt kennis aan wie Hij wil. Wie kennis krijgt, heeft een groot goed gekregen.', bron: 'Sahih al-Bukhari 73' },
-    { nl: 'De mens is op het geloof van zijn vrienden — kijk dus met wie je omgaat.', bron: 'Abu Dawud 4833' },
-    { nl: 'Wie Allah vreest, voor hem maakt Allah een uitweg en voorziet hem van waar hij het niet verwacht.', bron: 'Qur\'an 65:2-3' },
-    { nl: 'Kleine consistente daden zijn geliefder bij Allah dan grote maar sporadische daden.', bron: 'Sahih al-Bukhari 6465' },
-    { nl: 'De barmhartigste mensen worden het meest begenadigd. Wees barmhartig voor wie op aarde is.', bron: 'Jami at-Tirmidhi 1924' },
+    { ar: 'مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ', nl: 'Spreek goed of zwijg.', bron: 'Sahih al-Bukhari 6018' },
+    { ar: 'تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ صَدَقَةٌ', nl: 'Glimlachen naar je broeder is een daad van liefdadigheid.', bron: 'Jami at-Tirmidhi 1956' },
+    { ar: 'لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ، إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ', nl: 'De sterkste man is niet degene die anderen verslaat, maar degene die zichzelf beheerst in woede.', bron: 'Sahih al-Bukhari 6114' },
+    { ar: 'مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ طَرِيقًا إِلَى الْجَنَّةِ', nl: 'Wie een pad bewandelt op zoek naar kennis, Allah maakt voor hem een pad naar het Paradijs.', bron: 'Sahih Muslim 2699' },
+    { ar: 'إِنَّ اللَّهَ يُحِبُّ إِذَا عَمِلَ أَحَدُكُمْ عَمَلًا أَنْ يُتْقِنَهُ', nl: 'Allah houdt van iemand die wanneer hij iets doet, het met toewijding doet.', bron: 'al-Bayhaqi' },
+    { ar: 'لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ', nl: 'Geen van jullie gelooft waarlijk totdat hij voor zijn broeder wil wat hij voor zichzelf wil.', bron: 'Sahih al-Bukhari 13' },
+    { ar: 'مَنْ أَصْبَحَ مِنْكُمْ آمِنًا فِي سِرْبِهِ مُعَافًى فِي جَسَدِهِ عِنْدَهُ قُوتُ يَوْمِهِ فَكَأَنَّمَا حِيزَتْ لَهُ الدُّنْيَا', nl: 'Degene die \'s ochtends wakker wordt met een veilig huis, een gezond lichaam en voedsel voor die dag, is als iemand die de hele wereld heeft verkregen.', bron: 'Jami at-Tirmidhi 2346' },
+    { ar: 'كُنْ فِي الدُّنْيَا كَأَنَّكَ غَرِيبٌ أَوْ عَابِرُ سَبِيلٍ', nl: 'Wees in de wereld als een vreemdeling of een reiziger.', bron: 'Sahih al-Bukhari 6416' },
+    { ar: 'مَنْ لَمْ يَشْكُرِ النَّاسَ لَمْ يَشْكُرِ اللَّهَ', nl: 'Dankbaarheid aan mensen is dankbaarheid aan Allah.', bron: 'Jami at-Tirmidhi 1954' },
+    { ar: 'لَا ضَرَرَ وَلَا ضِرَارَ', nl: 'Schaad niet en laat je niet schaden.', bron: 'Ibn Majah 2340' },
+    { ar: 'اعْقِلْهَا وَتَوَكَّلْ', nl: 'Vertrouw op Allah, maar bind ook je kameel vast.', bron: 'Jami at-Tirmidhi 2517' },
+    { ar: 'خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ', nl: 'De beste van jullie zijn degenen die de Koran leren en anderen onderwijzen.', bron: 'Sahih al-Bukhari 5027' },
+    { ar: 'يَسِّرُوا وَلَا تُعَسِّرُوا وَبَشِّرُوا وَلَا تُنَفِّرُوا', nl: 'Maak het makkelijk en maak het niet moeilijk; breng goed nieuws en sla mensen niet af.', bron: 'Sahih al-Bukhari 69' },
+    { ar: 'مَنْ صَمَتَ نَجَا', nl: 'Wie zwijgt is gered.', bron: 'Jami at-Tirmidhi 2501' },
+    { ar: 'الرَّاحِمُونَ يَرْحَمُهُمُ الرَّحْمَنُ، ارْحَمُوا مَنْ فِي الأَرْضِ يَرْحَمْكُمْ مَنْ فِي السَّمَاءِ', nl: 'Allah heeft meelij met degenen die meelij tonen aan anderen.', bron: 'Jami at-Tirmidhi 1924' },
+    { ar: 'أَعْطُوا الأَجِيرَ أَجْرَهُ قَبْلَ أَنْ يَجِفَّ عَرَقُهُ', nl: 'Betaal de arbeider zijn loon voordat zijn zweet opdroogt.', bron: 'Ibn Majah 2443' },
+    { ar: 'الْمُؤْمِنُ الْقَوِيُّ خَيْرٌ وَأَحَبُّ إِلَى اللَّهِ مِنَ الْمُؤْمِنِ الضَّعِيفِ وَفِي كُلٍّ خَيْرٌ', nl: 'De sterke gelovige is beter en meer geliefd bij Allah dan de zwakke gelovige — en in beide is er goed.', bron: 'Sahih Muslim 2664' },
+    { ar: 'ادْعُوا اللَّهَ وَأَنْتُمْ مُوقِنُونَ بِالإِجَابَةِ', nl: 'Bid tot Allah met de zekerheid dat Hij zal antwoorden.', bron: 'Jami at-Tirmidhi 3479' },
+    { ar: 'إِنَّ اللَّهَ رَفِيقٌ يُحِبُّ الرِّفْقَ فِي الأَمْرِ كُلِّهِ', nl: 'Allah is zacht en houdt van zachtheid in alle zaken.', bron: 'Sahih al-Bukhari 6528' },
+    { ar: 'لَا يَشْكُرُ اللَّهَ مَنْ لَا يَشْكُرُ النَّاسَ', nl: 'Wie niet dankbaar is aan mensen, is niet dankbaar aan Allah.', bron: 'Abu Dawud 4811' },
+    { ar: 'خَيْرُ النَّاسِ أَنْفَعُهُمْ لِلنَّاسِ', nl: 'Het beste van de mensen is degene die het meest nuttig is voor anderen.', bron: 'al-Mu\'jam al-Awsat' },
+    { ar: 'اجْتَمِعُوا عَلَى طَعَامِكُمْ وَاذْكُرُوا اسْمَ اللَّهِ عَلَيْهِ يُبَارَكْ لَكُمْ فِيهِ', nl: 'Eet samen en noem de naam van Allah; er zal zegen in zijn.', bron: 'Abu Dawud 3764' },
+    { ar: 'مَا نَقَصَتْ صَدَقَةٌ مِنْ مَالٍ وَمَا زَادَ اللَّهُ عَبْدًا بِعَفْوٍ إِلَّا عِزًّا', nl: 'Vergeving is een van de beste eigenschappen van de gelovige.', bron: 'Sahih Muslim 2588' },
+    { ar: 'مَا يُصِيبُ الْمُسْلِمَ مِنْ نَصَبٍ وَلَا وَصَبٍ وَلَا هَمٍّ وَلَا حُزْنٍ وَلَا أَذًى وَلَا غَمٍّ حَتَّى الشَّوْكَةِ يُشَاكُهَا إِلَّا كَفَّرَ اللَّهُ بِهَا مِنْ خَطَايَاهُ', nl: 'Geen ziekte treft een moslim zonder dat Allah daarmee zonden vergeeft.', bron: 'Sahih al-Bukhari 5641' },
+    { ar: 'اعْمَلُوا وَسَدِّدُوا وَقَارِبُوا وَاعْلَمُوا أَنَّهُ لَنْ يُنْجِيَ أَحَدَكُمْ عَمَلُهُ', nl: 'Doe goede daden, en weet dat geen van jullie door zijn daden gered wordt — maar door de genade van Allah.', bron: 'Sahih al-Bukhari 6467' },
+    { ar: 'مَنْ يُرِدِ اللَّهُ بِهِ خَيْرًا يُفَقِّهْهُ فِي الدِّينِ', nl: 'Allah schenkt kennis aan wie Hij wil. Wie kennis krijgt, heeft een groot goed gekregen.', bron: 'Sahih al-Bukhari 73' },
+    { ar: 'الْمَرْءُ عَلَى دِينِ خَلِيلِهِ فَلْيَنْظُرْ أَحَدُكُمْ مَنْ يُخَالِلُ', nl: 'De mens is op het geloof van zijn vrienden — kijk dus met wie je omgaat.', bron: 'Abu Dawud 4833' },
+    { ar: 'وَمَنْ يَتَّقِ اللَّهَ يَجْعَلْ لَهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ', nl: 'Wie Allah vreest, voor hem maakt Allah een uitweg en voorziet hem van waar hij het niet verwacht.', bron: 'Qur\'an 65:2-3' },
+    { ar: 'أَحَبُّ الأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ', nl: 'Kleine consistente daden zijn geliefder bij Allah dan grote maar sporadische daden.', bron: 'Sahih al-Bukhari 6465' },
+    { ar: 'الرَّاحِمُونَ يَرْحَمُهُمُ الرَّحْمَنُ، ارْحَمُوا مَنْ فِي الأَرْضِ يَرْحَمْكُمْ مَنْ فِي السَّمَاءِ', nl: 'De barmhartigste mensen worden het meest begenadigd. Wees barmhartig voor wie op aarde is.', bron: 'Jami at-Tirmidhi 1924' },
   ];
   const today = new Date();
   const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
@@ -518,6 +517,7 @@ function hadithWidget() {
   return `
     <div class="card hadith-card">
       <h2 class="card-title">Hadith van de dag</h2>
+      <div class="hadith-arabic">${h.ar}</div>
       <div class="hadith-text">${escapeHTML(h.nl)}</div>
       <div class="hadith-source">${escapeHTML(h.bron)}</div>
     </div>`;
@@ -540,7 +540,7 @@ function woordWidget(now) {
     { w: 'arbitrair', def: 'Op willekeur gebaseerd; zonder logische of vaste regel.', tip: '"Arbiter" is een rechter die ook willekeurig kan beslissen.' },
     { w: 'bevlogen', def: 'Sterk geïnspireerd en enthousiast; gedreven door passie.', tip: 'Bevlogen = vliegen van enthousiasme, de lucht in.' },
     { w: 'diffuus', def: 'Wazig en verspreid; zonder duidelijke focus of begrenzing.', tip: 'Diffuus licht verspreidt zich alle kanten op — geen bundel.' },
-    { w: 'emininent', def: 'Vooraanstaand en uitstekend in zijn vakgebied of positie.', tip: '"Emineren" = boven anderen uitsteken, letterlijk en figuurlijk.' },
+    { w: 'eminent', def: 'Vooraanstaand en uitstekend in zijn vakgebied of positie.', tip: '"Emineren" = boven anderen uitsteken, letterlijk en figuurlijk.' },
     { w: 'fatalistisch', def: 'Gelovend dat alles onvermijdelijk is; berusting in het lot.', tip: '"Fata" = lot in het Latijn. De fatalist laat het lot beslissen.' },
     { w: 'hachelijk', def: 'Gevaarlijk en precair; een situatie met grote risico\'s.', tip: 'Je hangt aan een "haak" — je situatie is onzeker en benard.' },
     { w: 'intuïtief', def: 'Op gevoel geleid; zonder bewuste redenering tot een conclusie.', tip: '"Tueri" = bewaken in het Latijn. Je bewaakt iets zonder het te zien.' },
@@ -603,24 +603,48 @@ function woordWidget(now) {
 }
 
 function wegWidget() {
-  const A10_WEST = new Date().getMonth() >= 4 && new Date().getMonth() <= 8; // mei-aug
+  const m = new Date().getMonth();
+  const h = new Date().getHours();
+  const isZomer = m >= 4 && m <= 8;
+  const isNacht = h >= 22 || h < 6;
+  const isDiWo  = [2, 3].includes(new Date().getDay());
+
+  // Only A-wegen, Ring, and named tunnels around Amsterdam
   const items = [
-    { road: 'A10', label: 'Coentunnel', info: 'Werkzaamheden nacht 22:00-06:00. Rijstrookversmalling richting west.', type: 'warn' },
-    { road: 'S108', label: 'Wibautstraat', info: 'Rioolwerkzaamheden. Gebruik Amstel of Weesperstraat als alternatief.', type: 'warn' },
-    { road: 'A10', label: 'Ring Zuid', info: A10_WEST ? 'Intensieve werkzaamheden tot september. Vermijd spitsuur.' : 'Normaal rijden mogelijk.', type: A10_WEST ? 'warn' : 'ok' },
-    { road: 'IJ-tnl', label: 'IJtunnel', info: 'Nachtsluiting di/wo 23:00-05:00. Gebruik Noord-Zuidlijn als alternatief.', type: 'warn' },
+    ...(isZomer ? [
+      { road: 'A10 Zuid', label: 'Omrijden nodig', info: 'Intensieve werkzaamheden Ring Zuid t/m september — gebruik A9 of A2 als alternatief.', type: 'detour' },
+    ] : []),
+    { road: 'Coentunnel', label: 'Werkzaamheden', info: `Rijstrookversmalling 22:00–06:00 richting west.${isNacht ? ' Nu actief.' : ''}`, type: 'work' },
+    { road: 'IJ-tunnel', label: isDiWo && isNacht ? 'Gesloten' : 'Werkzaamheden', info: `Nachtsluiting di/wo 23:00–05:00.${isDiWo && isNacht ? ' Nu gesloten — gebruik Piet Heintunnel.' : ''}`, type: isDiWo && isNacht ? 'closed' : 'work' },
+    { road: 'A4', label: 'Schipholroute', info: 'Geen bekende afsluitingen.', type: 'ok' },
+    { road: 'A9', label: 'Amstelveen/Badhoevedorp', info: 'Geen bekende afsluitingen.', type: 'ok' },
+    { road: 'A1', label: 'Richting Almere', info: 'Geen bekende afsluitingen.', type: 'ok' },
+    { road: 'A2', label: 'Richting Utrecht', info: 'Geen bekende afsluitingen.', type: 'ok' },
   ];
+
+  const hasBig = items.some(i => i.type === 'closed' || i.type === 'detour');
+  const bigItems  = items.filter(i => i.type === 'closed' || i.type === 'detour');
+  const workItems = items.filter(i => i.type === 'work');
+  const okItems   = items.filter(i => i.type === 'ok');
+
+  const labelFor = { closed: 'Gesloten', detour: 'Omrijden', work: 'Werkzaamheden', ok: 'OK' };
+
+  const row = item => `
+    <div class="weginfo-item">
+      <span class="weginfo-road ${item.type}">${labelFor[item.type]}</span>
+      <div>
+        <div class="weginfo-item-road">${escapeHTML(item.road)}</div>
+        <div class="weginfo-item-info">${escapeHTML(item.info)}</div>
+      </div>
+    </div>`;
+
   return `
     <div class="card weginfo-card">
       <h2 class="card-title">Weginfo Amsterdam</h2>
-      ${items.map(item => `
-        <div class="weginfo-item">
-          <span class="weginfo-road ${item.type}">${escapeHTML(item.road)}</span>
-          <div>
-            <div style="font-weight:600;font-size:.83rem;color:var(--text)">${escapeHTML(item.label)}</div>
-            <div style="font-size:.8rem;color:var(--text-dim);margin-top:2px">${escapeHTML(item.info)}</div>
-          </div>
-        </div>`).join('')}
+      ${!hasBig ? `<div class="weginfo-clear">Geen grote afsluitingen op de snelwegen rondom Amsterdam</div>` : ''}
+      ${bigItems.map(row).join('')}
+      ${workItems.length ? `<details class="weginfo-details"><summary>Werkzaamheden (${workItems.length})</summary>${workItems.map(row).join('')}</details>` : ''}
+      ${okItems.length ? `<details class="weginfo-details"><summary>Overige snelwegen (${okItems.length})</summary>${okItems.map(row).join('')}</details>` : ''}
       <a class="weginfo-link" href="https://www.anwb.nl/verkeer/omleidingen/amsterdam" target="_blank" rel="noopener">
         Actuele info ANWB →
       </a>
