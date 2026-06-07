@@ -323,6 +323,32 @@ p { margin: 6px 0; line-height: 1.5; }
   line-height: 1;
 }
 
+/* Privacy blur */
+.blurred-amount {
+  filter: blur(8px);
+  user-select: none;
+  transition: filter 0.3s ease;
+}
+.blurred-amount.revealed {
+  filter: none;
+}
+.privacy-toggle {
+  background: none;
+  border: none;
+  color: var(--gold);
+  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  opacity: .6;
+  transition: opacity 0.2s;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.privacy-toggle:hover { opacity: 1; }
+.privacy-toggle svg { width: 15px; height: 15px; }
+
 /* BUTTONS */
 .btn {
   background: var(--accent);

@@ -1,4 +1,5 @@
 import { all, put, del } from '../db.js';
+import { initPrivacyToggle } from '../privacy.js';
 import { openModal } from '../components/modal.js';
 import { uid, fmtMoney, escapeHTML, ymd, startOfWeek, startOfMonth, monthKey } from '../utils.js';
 import { getNumber } from '../settings.js';
@@ -45,15 +46,18 @@ export async function render(container) {
 
     <!-- INCOME HERO (vandaag) -->
     <div class="income-hero">
-      <div class="income-hero-label">Vandaag verdiend</div>
-      <div class="income-hero-amount">${fmtMoney(todayIncome)}</div>
+      <div class="income-hero-label" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Vandaag verdiend</span>
+        <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
+      </div>
+      <div class="income-hero-amount blurred-amount">${fmtMoney(todayIncome)}</div>
       ${dailyGoal > 0 ? `
         <div class="income-hero-progress">
           <div class="progress-bar"><div class="progress-fill" style="width:${goalPct}%"></div></div>
         </div>
         <div class="income-hero-meta">
           <span>${goalPct}% van dagdoel</span>
-          <span>Doel: ${fmtMoney(dailyGoal)}</span>
+          <span>Doel: <span class="blurred-amount">${fmtMoney(dailyGoal)}</span></span>
         </div>
       ` : ''}
     </div>
@@ -62,16 +66,16 @@ export async function render(container) {
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">Week</div>
-        <div class="kpi-value">${fmtMoney(weekIncome)}</div>
+        <div class="kpi-value blurred-amount">${fmtMoney(weekIncome)}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Maand</div>
-        <div class="kpi-value">${fmtMoney(monthIncome)}</div>
+        <div class="kpi-value blurred-amount">${fmtMoney(monthIncome)}</div>
         ${trendPct !== null ? `<div class="kpi-trend ${trendPct>=0?'up':'down'}">${trendPct>=0?'↑':'↓'}${Math.abs(trendPct)}% vs vorige</div>` : ''}
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Verwacht</div>
-        <div class="kpi-value">${fmtMoney(projectedMonth)}</div>
+        <div class="kpi-value blurred-amount">${fmtMoney(projectedMonth)}</div>
       </div>
     </div>
 
@@ -129,6 +133,7 @@ export async function render(container) {
   };
   container.querySelector('#quick-today').onclick = () => openDayModal(container, ymd(now), byDate[ymd(now)]);
   container.querySelector('#export-csv').onclick = () => exportCSV(rides);
+  initPrivacyToggle(container);
 }
 
 function renderGrid(container, year, month, byDate) {
@@ -162,7 +167,7 @@ function renderGrid(container, year, month, byDate) {
       <div class="income-cell ${isToday ? 'today' : ''} ${total > 0 ? 'has-income' : ''}"
            style="${bg}" data-day="${key}">
         <div class="cal-day">${d}</div>
-        ${total > 0 ? `<div class="cal-amt">${fmtMoneyCompact(total)}</div>` : ''}
+        ${total > 0 ? `<div class="cal-amt blurred-amount">${fmtMoneyCompact(total)}</div>` : ''}
       </div>`);
   }
 

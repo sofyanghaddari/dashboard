@@ -7,6 +7,7 @@ import { toast } from '../components/toast.js';
 import { getWeather, codeInfo, rideOpportunities } from '../weather.js';
 import { getMascotState, shouldShame, pickShame } from '../mascot.js';
 import { detectInsights, goalFeasibility, goalTrajectoryPath } from '../insights.js';
+import { initPrivacyToggle } from '../privacy.js';
 
 let weatherAbortCtrl = null;
 
@@ -168,7 +169,7 @@ export async function render(container) {
       </div>
       <div class="dagstart-stats">
         <div class="dagstart-stat">
-          <div class="dagstart-stat-val">${fmtMoney(todayIncome)}</div>
+          <div class="dagstart-stat-val blurred-amount">${fmtMoney(todayIncome)}</div>
           <div class="dagstart-stat-lbl">Vandaag</div>
         </div>
         <div class="dagstart-stat">
@@ -234,15 +235,18 @@ export async function render(container) {
 
     <!-- INKOMEN VANDAAG -->
     <div class="income-hero">
-      <div class="income-hero-label">Inkomen vandaag</div>
-      <div class="income-hero-amount big-money">${fmtMoney(todayIncome)}</div>
+      <div class="income-hero-label" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Inkomen vandaag</span>
+        <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
+      </div>
+      <div class="income-hero-amount big-money blurred-amount">${fmtMoney(todayIncome)}</div>
       ${dailyGoal > 0 ? `
         <div class="income-hero-progress">
           <div class="progress-bar"><div class="progress-fill" style="width:${goalPct}%"></div></div>
         </div>
         <div class="income-hero-meta">
           <span>${goalPct}% van dagdoel</span>
-          <span>Doel: <span class="money">${fmtMoney(dailyGoal)}</span></span>
+          <span>Doel: <span class="money blurred-amount">${fmtMoney(dailyGoal)}</span></span>
         </div>
       ` : ''}
     </div>
@@ -250,18 +254,18 @@ export async function render(container) {
     <!-- MAANDOVERZICHT -->
     <div class="card">
       <h2 class="card-title">Maand — ${maandNamen[now.getMonth()]} ${now.getFullYear()}</h2>
-      <div class="big-money">${fmtMoney(monthIncome)}</div>
+      <div class="big-money blurred-amount">${fmtMoney(monthIncome)}</div>
       ${monthlyGoal > 0 ? `
         <div class="progress-bar" style="margin-bottom:8px"><div class="progress-fill" style="width:${monthGoalPct}%"></div></div>
       ` : ''}
       <div class="kpi-grid" style="margin-bottom:${traj?'12px':'0'}">
         <div class="kpi-card">
           <div class="kpi-label">Week</div>
-          <div class="kpi-value">${fmtMoney(weekIncome)}</div>
+          <div class="kpi-value blurred-amount">${fmtMoney(weekIncome)}</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Verwacht</div>
-          <div class="kpi-value">${fmtMoney(projectedMonth)}</div>
+          <div class="kpi-value blurred-amount">${fmtMoney(projectedMonth)}</div>
         </div>
         ${monthDelta !== null ? `<div class="kpi-card">
           <div class="kpi-label">Vs vorige</div>
@@ -278,10 +282,10 @@ export async function render(container) {
       ${feas && !feas.reached ? `
         <div class="card feasibility ${feas.onTrack ? 'on-track' : 'off-track'}" style="margin-top:12px;padding:12px 14px">
           ${feas.onTrack
-            ? `<div style="font-weight:600;font-size:.9rem">Op koers — verwacht: ${fmtMoney(feas.projectedFinal)}</div>
+            ? `<div style="font-weight:600;font-size:.9rem">Op koers — verwacht: <span class="blurred-amount">${fmtMoney(feas.projectedFinal)}</span></div>
                ${feas.daysNeeded && feas.daysNeeded < feas.daysLeft ? `<div class="muted" style="font-size:.8rem;margin-top:3px">Doel bereikt over ~${feas.daysNeeded} dagen in dit tempo</div>` : ''}`
-            : `<div style="font-weight:600;font-size:.9rem">Achter — verwacht: ${fmtMoney(feas.projectedFinal)} <span class="muted">(€${Math.round(feas.shortage)} tekort)</span></div>
-               <div class="muted" style="font-size:.8rem;margin-top:3px">Benodigd per dag: <b>${fmtMoney(feas.dailyNeeded)}</b> · huidig: ${fmtMoney(feas.currentDaily)}/dag</div>`}
+            : `<div style="font-weight:600;font-size:.9rem">Achter — verwacht: <span class="blurred-amount">${fmtMoney(feas.projectedFinal)}</span> <span class="muted">(<span class="blurred-amount">€${Math.round(feas.shortage)}</span> tekort)</span></div>
+               <div class="muted" style="font-size:.8rem;margin-top:3px">Benodigd per dag: <b class="blurred-amount">${fmtMoney(feas.dailyNeeded)}</b> · huidig: <span class="blurred-amount">${fmtMoney(feas.currentDaily)}</span>/dag</div>`}
         </div>` : ''}
     </div>
 
@@ -335,7 +339,7 @@ export async function render(container) {
               <b style="font-size:.95rem">${escapeHTML(g.title)}</b>
               <span class="muted" style="font-size:.8rem">${pct}%</span>
             </div>
-            <div class="muted" style="font-size:.8rem;margin-bottom:6px">${fmtMoney(saved)} van ${fmtMoney(Number(g.target))}${remaining>0?` · nog ${fmtMoney(remaining)}`:' · behaald 🎉'}</div>
+            <div class="muted" style="font-size:.8rem;margin-bottom:6px"><span class="blurred-amount">${fmtMoney(saved)}</span> van <span class="blurred-amount">${fmtMoney(Number(g.target))}</span>${remaining>0?` · nog <span class="blurred-amount">${fmtMoney(remaining)}</span>`:' · behaald 🎉'}</div>
             <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
           </div>`;
       }).join('')}
@@ -415,6 +419,7 @@ export async function render(container) {
       setTimeout(() => toast(`${b.emoji} <b>Badge:</b> ${b.name}`, { type: 'ok', duration: 5000 }), 800 + i * 1200);
     });
   });
+  initPrivacyToggle(container);
 }
 
 const TIP_POOL = [
