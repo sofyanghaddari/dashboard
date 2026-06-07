@@ -84,11 +84,11 @@ export async function render(container) {
     </div>
 
     <div id="tab-custom" style="display:none">
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="btn secondary" id="add-card" style="flex:1">+ Nieuwe kaart</button>
-        <label for="import-csv" class="btn secondary" style="flex:1;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center">↑ CSV importeren</label>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="btn secondary" id="add-card" style="flex:1;min-width:140px">+ Nieuwe kaart</button>
+        <label for="import-csv" class="btn secondary" style="flex:1;min-width:140px;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center">↑ CSV</label>
         <input type="file" id="import-csv" accept=".csv,.tsv,.txt" style="display:none" />
-        <label for="import-pdf" class="btn secondary" style="flex:1;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center">↑ PDF importeren</label>
+        <label for="import-pdf" class="btn secondary" style="flex:1;min-width:140px;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center">↑ PDF</label>
         <input type="file" id="import-pdf" accept=".pdf" style="display:none" />
       </div>
       <div id="custom-list"></div>
