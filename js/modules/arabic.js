@@ -29,7 +29,7 @@ export async function render(container) {
     </div>
 
     <div class="arabic-start-card">
-      <h2>${due.length > 0 ? `${due.length} kaart${due.length === 1 ? '' : 'en'} klaar` : 'Alles up-to-date 🎉'}</h2>
+      <h2>${due.length > 0 ? `${due.length} kaart${due.length === 1 ? '' : 'en'} klaar` : 'Alles up-to-date'}</h2>
       <p>${due.length > 0 ? 'Herhaal vandaag je Arabische woordenschat' : 'Kom morgen terug voor nieuwe herhalingen'}</p>
       <button class="btn block" id="start" ${due.length === 0 ? 'disabled' : ''} style="max-width:280px;margin:0 auto">
         ${due.length > 0 ? `▶ Start sessie (${due.length})` : 'Niets te herhalen'}

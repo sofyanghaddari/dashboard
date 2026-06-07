@@ -35,7 +35,7 @@ export async function render(container) {
     <div id="habits-list"></div>
 
     <div class="section-header">
-      <h2>🏺 Spaarpotjes</h2>
+      <h2>Spaarpotjes</h2>
       <button class="section-add-btn" id="add-pot">+ Potje</button>
     </div>
     <div id="pots-list"></div>

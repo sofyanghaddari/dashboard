@@ -56,7 +56,7 @@ export async function render(container) {
     ` : ''}
 
     <div class="quick-add-wrap">
-      <input id="quick-add" placeholder="⚡ Snel toevoegen: 'morgen 10:00 APK'" />
+      <input id="quick-add" placeholder="Snel toevoegen: 'morgen 10:00 APK'" />
       <span class="quick-add-enter">↵</span>
     </div>
 

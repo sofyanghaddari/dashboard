@@ -8,7 +8,7 @@ const STATES = [
   { id: 'happy',   e: '🦁', msg: 'Lekker bezig vandaag.' },
   { id: 'neutral', e: '😌', msg: 'Rustige dag. Even doorpakken?' },
   { id: 'worried', e: '🤨', msg: 'Hmm. Iets vergeten?' },
-  { id: 'broken',  e: '💀', msg: 'Streak: GONE. Wat ben je aan het doen?' },
+  { id: 'broken',  e: '😔', msg: 'Streak kwijt. Morgen opnieuw beginnen.' },
 ];
 
 const SHAME = [
