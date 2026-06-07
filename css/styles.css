@@ -2462,10 +2462,11 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .hizb-check-btn:hover { background: rgba(93,212,154,.12); border-color: rgba(93,212,154,.5); }
 .hizb-check-btn:active { transform: scale(.98); }
 .hizb-check-btn.done {
-  background: rgba(93,212,154,.15);
-  border-color: rgba(93,212,154,.4);
+  background: rgba(93,212,154,.12);
+  border-color: rgba(93,212,154,.35);
   cursor: default;
-  opacity: .8;
+  opacity: .75;
+  pointer-events: none;
 }
 
 /* ── INCOME CALENDAR ──────────────────────────── */
@@ -2527,11 +2528,13 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   border: 1px solid transparent;
   transition: transform .15s ease, background .2s ease, border-color .15s;
   min-height: 48px;
+  min-width: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 2px;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  overflow: hidden;
 }
 .income-cell:active { transform: scale(.93); }
 .income-cell.today { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(110,201,255,.2) inset; }

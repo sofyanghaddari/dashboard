@@ -81,8 +81,8 @@ export async function render(container) {
 
       <!-- AFVINK KNOP -->
       ${todayRec
-        ? `<div class="hizb-check-btn done" role="status">✓ Hizb afgevinkt voor vandaag</div>`
-        : `<button class="hizb-check-btn" id="check">📖 Afvinken voor vandaag</button>`}
+        ? `<button class="hizb-check-btn done" disabled type="button">✓ Hizb afgevinkt voor vandaag</button>`
+        : `<button class="hizb-check-btn" id="check" type="button">📖 Afvinken voor vandaag</button>`}
 
       <p class="muted" style="font-size:.8rem;text-align:center;margin:12px 0 0">${escapeHTML(startPoint)}</p>
     </div>
