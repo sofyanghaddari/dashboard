@@ -8,206 +8,235 @@ import { undoable } from '../components/undo.js';
 import { logActivity } from '../activity.js';
 import { parseTaskInput } from '../nlp.js';
 
-const LABELS = { high: 'Prioriteit', medium: 'Medium', waiting: 'Waiting' };
+const BUCKET_META = {
+  high:    { label: 'Prioriteit', dot: 'bucket-dot-high' },
+  medium:  { label: 'Medium',     dot: 'bucket-dot-medium' },
+  waiting: { label: 'Wachtend',   dot: 'bucket-dot-waiting' },
+};
 
 export async function render(container) {
   const todos = await all('todos');
-  const view = container.dataset.todoView || 'active';
-  const filter = container.dataset.todoFilter || 'all';
-  const tagFilter = container.dataset.todoTag || '';
-  const bulkMode = container.dataset.todoBulk === '1';
+  const view      = container.dataset.todoView   || 'active';
+  const filter    = container.dataset.todoFilter || 'all';
+  const tagFilter = container.dataset.todoTag    || '';
+  const bulkMode  = container.dataset.todoBulk   === '1';
 
-  const active = todos.filter(t => !t.done && !t.savedForLater);
-  const later = todos.filter(t => !t.done && t.savedForLater);
+  const active   = todos.filter(t => !t.done && !t.savedForLater);
+  const later    = todos.filter(t => !t.done && t.savedForLater);
   const archived = todos.filter(t => t.done);
 
   const allTags = [...new Set(todos.flatMap(t => t.tags || []))].sort();
 
   container.innerHTML = `
     <h1>To-do</h1>
-    <div class="row">
-      <button class="btn ${view==='active'?'':'secondary'}" id="tab-active">Actief (${active.length})</button>
-      <button class="btn ${view==='later'?'':'secondary'}" id="tab-later">🔖 Later (${later.length})</button>
-      <button class="btn ${view==='archive'?'':'secondary'}" id="tab-archive">Klaar (${archived.length})</button>
+
+    <div class="todo-seg">
+      <button class="todo-seg-btn ${view==='active' ?'active':''}" id="tab-active">
+        Actief <span style="opacity:.6">${active.length}</span>
+      </button>
+      <button class="todo-seg-btn ${view==='later'  ?'active':''}" id="tab-later">
+        🔖 Later <span style="opacity:.6">${later.length}</span>
+      </button>
+      <button class="todo-seg-btn ${view==='archive'?'active':''}" id="tab-archive">
+        Klaar <span style="opacity:.6">${archived.length}</span>
+      </button>
     </div>
 
     ${view === 'active' ? `
-      <div class="row" style="margin-top:8px">
-        <button class="btn ${filter==='all'?'':'secondary'}" data-filter="all">Alle</button>
-        <button class="btn ${filter==='today'?'':'secondary'}" data-filter="today">Vandaag</button>
-        <button class="btn ${filter==='week'?'':'secondary'}" data-filter="week">Week</button>
+      <div class="todo-filters">
+        <button class="filter-chip ${filter==='all'  ?'active':''}" data-filter="all">Alle</button>
+        <button class="filter-chip ${filter==='today'?'active':''}" data-filter="today">Vandaag</button>
+        <button class="filter-chip ${filter==='week' ?'active':''}" data-filter="week">Deze week</button>
       </div>
       ${allTags.length ? `
-        <div class="tag-row">
+        <div class="tag-row" style="margin-bottom:12px">
           <span class="pill ${tagFilter===''?'active':''}" data-tag="">alle</span>
           ${allTags.map(t => `<span class="pill ${tagFilter===t?'active':''}" data-tag="${escapeHTML(t)}">#${escapeHTML(t)}</span>`).join('')}
         </div>` : ''}
     ` : ''}
 
-    <input id="quick-add" placeholder="⚡ Snel toevoegen: 'morgen 10:00 APK' of 'elke maandag tanken'" style="margin-top:8px" />
-    <button class="btn block" id="add" style="margin-top:8px">+ Nieuwe taak (gedetailleerd)</button>
-    ${view === 'active' ? `<button class="btn secondary block" id="bulk-toggle" style="margin-top:8px">${bulkMode ? 'Bulk-modus uit' : '☑️ Bulk-selectie'}</button>` : ''}
+    <div class="quick-add-wrap">
+      <input id="quick-add" placeholder="⚡ Snel toevoegen: 'morgen 10:00 APK'" />
+      <span class="quick-add-enter">↵</span>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn secondary" id="add" style="flex:1">+ Gedetailleerd</button>
+      ${view === 'active' ? `<button class="btn secondary" id="bulk-toggle" style="flex:0 0 auto;padding:12px 14px">${bulkMode ? '✕ Bulk uit' : '☑ Selecteren'}</button>` : ''}
+    </div>
+
     ${bulkMode ? `
-      <div class="row" style="margin-top:8px" id="bulk-bar">
-        <button class="btn secondary" id="bulk-done">✓ Markeer klaar</button>
-        <button class="btn danger" id="bulk-del">× Verwijder</button>
+      <div class="row" style="margin-bottom:14px">
+        <button class="btn secondary" id="bulk-done">✓ Klaar</button>
+        <button class="btn danger" id="bulk-del">✕ Verwijder</button>
       </div>` : ''}
-    <div id="todo-body" style="margin-top:16px"></div>
+
+    <div id="todo-body"></div>
   `;
 
   let displayed;
-  if (view === 'active') displayed = applyFilters(active, filter, tagFilter);
+  if (view === 'active')   displayed = applyFilters(active, filter, tagFilter);
   else if (view === 'later') displayed = later;
-  else displayed = archived;
+  else                      displayed = archived;
 
   const body = container.querySelector('#todo-body');
+
   if (view === 'active') {
-    body.innerHTML = ['high','medium','waiting'].map(p => `
-      <h2>${LABELS[p]}</h2>
-      <div class="list" data-bucket="${p}"></div>
-    `).join('');
-    for (const p of ['high','medium','waiting']) {
+    body.innerHTML = ['high', 'medium', 'waiting'].map(p => {
+      const items = displayed.filter(t => t.priority === p);
+      const m = BUCKET_META[p];
+      return `
+        <div class="bucket-section">
+          <div class="bucket-hd">
+            <span class="bucket-dot ${m.dot}"></span>
+            <span class="bucket-lbl">${m.label}</span>
+            <span class="bucket-cnt">${items.length}</span>
+          </div>
+          <div class="task-list" data-bucket="${p}"></div>
+        </div>`;
+    }).join('');
+    for (const p of ['high', 'medium', 'waiting']) {
       renderBucket(container, p, displayed.filter(t => t.priority === p), bulkMode);
     }
   } else if (view === 'later') {
-    body.innerHTML = `<div class="list" data-bucket="later"></div>`;
+    body.innerHTML = `<div class="task-list" data-bucket="later"></div>`;
     renderLater(container, displayed);
   } else {
-    body.innerHTML = `<div class="list" data-bucket="archive"></div>`;
+    body.innerHTML = `<div id="archive-list"></div>`;
     renderArchive(container, displayed);
   }
 
+  // ── Events ───────────────────────────────────────────────
   container.querySelector('#add').onclick = () => openTodoModal(container);
 
   const quick = container.querySelector('#quick-add');
-  if (quick) quick.onkeydown = async (e) => {
-    if (e.key !== 'Enter' || !quick.value.trim()) return;
-    const parsed = parseTaskInput(quick.value);
-    if (!parsed.title) return;
-    await put('todos', {
-      id: uid(), title: parsed.title,
-      note: null, priority: parsed.priority,
-      done: false, savedForLater: false,
-      dueDate: parsed.dueDate, recurring: parsed.recurring,
-      tags: [], subtasks: [],
-      createdAt: new Date().toISOString(),
-    });
-    logActivity('task-quick', parsed.title);
-    ok('Toegevoegd: ' + parsed.title);
-    quick.value = '';
-    render(container);
-  };
   if (quick) {
+    quick.onkeydown = async (e) => {
+      if (e.key !== 'Enter' || !quick.value.trim()) return;
+      const parsed = parseTaskInput(quick.value);
+      if (!parsed.title) return;
+      await put('todos', {
+        id: uid(), title: parsed.title,
+        note: null, priority: parsed.priority,
+        done: false, savedForLater: false,
+        dueDate: parsed.dueDate, recurring: parsed.recurring,
+        tags: [], subtasks: [],
+        createdAt: new Date().toISOString(),
+      });
+      logActivity('task-quick', parsed.title);
+      ok('Toegevoegd: ' + parsed.title);
+      quick.value = '';
+      render(container);
+    };
     quick.addEventListener('focus', () => {
-      setTimeout(() => {
-        quick.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 300); // wait for iOS keyboard animation
+      setTimeout(() => quick.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
     });
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', () => {
-        if (document.activeElement === quick) {
+        if (document.activeElement === quick)
           quick.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
       });
     }
   }
-  container.querySelector('#tab-active').onclick = () => { container.dataset.todoView = 'active'; render(container); };
-  container.querySelector('#tab-later').onclick = () => { container.dataset.todoView = 'later'; render(container); };
+
+  container.querySelector('#tab-active').onclick  = () => { container.dataset.todoView = 'active';  render(container); };
+  container.querySelector('#tab-later').onclick   = () => { container.dataset.todoView = 'later';   render(container); };
   container.querySelector('#tab-archive').onclick = () => { container.dataset.todoView = 'archive'; render(container); };
 
-  container.querySelectorAll('[data-filter]').forEach(b => {
-    b.onclick = () => { container.dataset.todoFilter = b.dataset.filter; render(container); };
-  });
-  container.querySelectorAll('[data-tag]').forEach(el => {
-    el.onclick = () => { container.dataset.todoTag = el.dataset.tag; render(container); };
-  });
+  container.querySelectorAll('[data-filter]').forEach(b =>
+    b.onclick = () => { container.dataset.todoFilter = b.dataset.filter; render(container); });
+  container.querySelectorAll('[data-tag]').forEach(el =>
+    el.onclick = () => { container.dataset.todoTag = el.dataset.tag; render(container); });
 
   const bulkBtn = container.querySelector('#bulk-toggle');
-  if (bulkBtn) bulkBtn.onclick = () => {
-    container.dataset.todoBulk = bulkMode ? '' : '1';
-    render(container);
-  };
+  if (bulkBtn) bulkBtn.onclick = () => { container.dataset.todoBulk = bulkMode ? '' : '1'; render(container); };
   if (bulkMode) {
     container.querySelector('#bulk-done').onclick = () => bulkAction(container, displayed, 'done');
-    container.querySelector('#bulk-del').onclick = () => bulkAction(container, displayed, 'del');
+    container.querySelector('#bulk-del').onclick  = () => bulkAction(container, displayed, 'del');
   }
 }
 
+// ── Helpers ───────────────────────────────────────────────
+
 function applyFilters(items, filter, tagFilter) {
-  let res = items;
-  const today = ymd();
+  const today     = ymd();
   const weekStart = startOfWeek();
-  if (filter === 'today') {
+  let res = items;
+  if (filter === 'today')
     res = res.filter(t => t.dueDate && t.dueDate <= today);
-  } else if (filter === 'week') {
+  else if (filter === 'week')
     res = res.filter(t => t.dueDate && new Date(t.dueDate) >= weekStart && new Date(t.dueDate) <= addDays(weekStart, 6));
-  }
   if (tagFilter) res = res.filter(t => (t.tags || []).includes(tagFilter));
   return res;
 }
 
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
 
-async function bulkAction(container, items, action) {
-  const checked = [...container.querySelectorAll('[data-bulk]:checked')].map(c => c.dataset.bulk);
-  if (!checked.length) { ok('Niets geselecteerd'); return; }
-  if (action === 'done') {
-    for (const id of checked) {
-      const t = items.find(x => x.id === id);
-      if (t) await put('todos', { ...t, done: true, completedAt: new Date().toISOString() });
-    }
-    logActivity('bulk-done', `${checked.length} taken klaar`);
-    ok(`${checked.length} klaar`);
-  } else if (action === 'del') {
-    const backups = checked.map(id => items.find(x => x.id === id)).filter(Boolean);
-    for (const id of checked) await del('todos', id);
-    logActivity('bulk-del', `${checked.length} taken verwijderd`);
-    undoable(`${checked.length} verwijderd`, async () => {
-      for (const b of backups) await put('todos', b);
-      render(container);
-    });
-  }
-  container.dataset.todoBulk = '';
-  render(container);
+function dueDateBadge(dueDate) {
+  if (!dueDate) return null;
+  const today    = ymd();
+  const tomorrow = ymd(new Date(Date.now() + 86400000));
+  if (dueDate < today)    return { label: `⚠ ${dueDate}`, cls: 'task-badge-overdue' };
+  if (dueDate === today)  return { label: '📅 Vandaag',   cls: 'task-badge-today' };
+  if (dueDate === tomorrow) return { label: '📅 Morgen',  cls: 'task-badge-date' };
+  return { label: `📅 ${dueDate}`, cls: 'task-badge-date' };
 }
 
-async function completeTask(container, item) {
-  const updated = { ...item, done: true, completedAt: new Date().toISOString() };
-  await put('todos', updated);
-  logActivity('task-done', item.title);
-  celebrateTask();
+function taskCard(t, bulkMode) {
+  const subs    = t.subtasks || [];
+  const subDone = subs.filter(s => s.done).length;
+  const badge   = dueDateBadge(t.dueDate);
+  const tagsHTML = (t.tags || []).map(tag =>
+    `<span class="task-badge">#${escapeHTML(tag)}</span>`).join('');
 
-  // Herhalende taak → nieuwe instantie aanmaken
-  if (item.recurring) {
-    const next = { ...item, id: uid(), done: false, completedAt: null, createdAt: new Date().toISOString() };
-    if (item.recurring === 'daily') next.dueDate = addDaysISO(item.dueDate || ymd(), 1);
-    else if (item.recurring === 'weekly') next.dueDate = addDaysISO(item.dueDate || ymd(), 7);
-    await put('todos', next);
-  }
+  const metaBadges = [
+    badge ? `<span class="task-badge ${badge.cls}">${badge.label}</span>` : '',
+    t.recurring ? `<span class="task-badge">🔁 ${t.recurring}</span>` : '',
+    tagsHTML,
+  ].filter(Boolean).join('');
 
-  // Alles-af viering
-  const todos = await all('todos');
-  const remaining = todos.filter(t => !t.done && !t.savedForLater);
-  if (remaining.length === 0) {
-    const today = ymd();
-    const lastBig = localStorage.getItem('lastAllDoneCelebrate');
-    if (lastBig !== today) {
-      localStorage.setItem('lastAllDoneCelebrate', today);
-      setTimeout(() => celebrateAllDone(), 600);
-    }
-  }
-  render(container);
-}
+  const subHTML = subs.length ? `
+    <div class="task-sub-mini">
+      <div class="task-sub-bar"><div class="task-sub-fill" style="width:${Math.round(subDone/subs.length*100)}%"></div></div>
+      <span class="task-sub-txt">${subDone}/${subs.length}</span>
+    </div>` : '';
 
-function addDaysISO(yyyymmdd, n) {
-  const d = new Date(yyyymmdd); d.setDate(d.getDate() + n);
-  return ymd(d);
+  const subtaskExpanded = subs.length ? `
+    <div class="subtasks" style="margin-top:8px">
+      ${subs.map((s, i) => `
+        <label class="subtask">
+          <input type="checkbox" data-sub="${t.id}:${i}" ${s.done ? 'checked' : ''} />
+          <span>${escapeHTML(s.title)}</span>
+        </label>`).join('')}
+    </div>` : '';
+
+  return `
+    <div class="task-card" data-id="${t.id}" data-priority="${t.priority}">
+      ${bulkMode
+        ? `<input type="checkbox" data-bulk="${t.id}" style="width:22px;height:22px;min-width:22px;margin-top:1px" />`
+        : `<button class="task-chk" data-check="${t.id}" aria-label="Afvinken"></button>`}
+      <div class="task-body">
+        <div class="task-title">${escapeHTML(t.title)}</div>
+        ${t.note ? `<div class="task-note">${escapeHTML(t.note)}</div>` : ''}
+        ${metaBadges ? `<div class="task-meta">${metaBadges}</div>` : ''}
+        ${subHTML}
+        ${subtaskExpanded}
+      </div>
+      <div class="task-actions">
+        <button class="task-btn" data-later="${t.id}" title="Bewaar voor later">🔖</button>
+        <button class="task-btn" data-edit="${t.id}" title="Bewerken">✎</button>
+        ${bulkMode ? '' : `<button class="task-btn del" data-del="${t.id}" title="Verwijderen">✕</button>`}
+      </div>
+    </div>`;
 }
 
 function renderBucket(container, p, items, bulkMode) {
   const el = container.querySelector(`[data-bucket="${p}"]`);
-  if (!items.length) { el.innerHTML = '<p class="muted">Geen taken.</p>'; return; }
-  el.innerHTML = items.map(t => taskRow(t, bulkMode)).join('');
+  if (!items.length) {
+    el.innerHTML = `<div class="todo-empty">Geen taken in deze categorie</div>`;
+    return;
+  }
+  el.innerHTML = items.map(t => taskCard(t, bulkMode)).join('');
   bindRowEvents(container, el, items);
   if (!bulkMode) {
     enableSwipeDelete(el, async (id) => {
@@ -219,37 +248,10 @@ function renderBucket(container, p, items, bulkMode) {
   }
 }
 
-function taskRow(t, bulkMode) {
-  const sub = (t.subtasks || []);
-  const subDone = sub.filter(s => s.done).length;
-  const tagsHTML = (t.tags || []).map(tag => `<span class="pill">#${escapeHTML(tag)}</span>`).join(' ');
-  return `
-    <div class="list-item" data-id="${t.id}">
-      ${bulkMode
-        ? `<input type="checkbox" data-bulk="${t.id}" style="width:auto;margin-right:10px" />`
-        : `<input type="checkbox" data-check="${t.id}" style="width:auto;margin-right:10px" />`}
-      <div style="flex:1;min-width:0">
-        <div>${escapeHTML(t.title)}${t.recurring ? ` <span class="pill">🔁 ${t.recurring}</span>` : ''}${t.dueDate ? ` <span class="pill">📅 ${t.dueDate}</span>` : ''}</div>
-        ${t.note ? `<div class="muted" style="font-size:.8rem">${escapeHTML(t.note)}</div>` : ''}
-        ${tagsHTML ? `<div style="margin-top:4px">${tagsHTML}</div>` : ''}
-        ${sub.length ? `
-          <div class="subtasks">
-            <div class="muted" style="font-size:.78rem;margin:6px 0 4px">Subtaken (${subDone}/${sub.length})</div>
-            ${sub.map((s, i) => `<label class="subtask"><input type="checkbox" data-sub="${t.id}:${i}" ${s.done?'checked':''}/> <span>${escapeHTML(s.title)}</span></label>`).join('')}
-          </div>` : ''}
-      </div>
-      <div class="row" style="flex:0 0 auto;gap:4px">
-        <button class="btn secondary" data-later="${t.id}" title="Mark voor later">🔖</button>
-        <button class="btn secondary" data-edit="${t.id}">✎</button>
-        ${bulkMode ? '' : `<button class="btn danger" data-del="${t.id}">×</button>`}
-      </div>
-    </div>`;
-}
-
 function bindRowEvents(container, el, items) {
-  el.querySelectorAll('[data-check]').forEach(cb => {
-    cb.onchange = async () => {
-      const t = items.find(x => x.id === cb.dataset.check);
+  el.querySelectorAll('[data-check]').forEach(btn => {
+    btn.onclick = async () => {
+      const t = items.find(x => x.id === btn.dataset.check);
       if (t) await completeTask(container, t);
     };
   });
@@ -295,35 +297,106 @@ function bindRowEvents(container, el, items) {
 
 function renderLater(container, items) {
   const el = container.querySelector('[data-bucket="later"]');
-  if (!items.length) { el.innerHTML = '<p class="muted">Niets bewaard voor later.</p>'; return; }
-  el.innerHTML = items.map(t => taskRow(t, false)).join('');
+  if (!items.length) {
+    el.innerHTML = `<div class="todo-empty" style="padding:32px">
+      <div style="font-size:1.8rem;margin-bottom:8px">🔖</div>
+      <div style="font-weight:600;margin-bottom:4px">Niets bewaard voor later</div>
+      <div style="font-size:.84rem;color:var(--text-dim)">Tap 🔖 op een taak om hem hier te parkeren</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = items.map(t => taskCard(t, false)).join('');
   bindRowEvents(container, el, items);
 }
 
 function renderArchive(container, items) {
-  const el = container.querySelector('[data-bucket="archive"]');
-  if (!items.length) { el.innerHTML = '<p class="muted">Niets afgerond.</p>'; return; }
-  el.innerHTML = items.map(t => `
-    <div class="list-item" data-id="${t.id}">
-      <div style="flex:1">
-        <div style="text-decoration:line-through">${escapeHTML(t.title)}</div>
-        <div class="muted" style="font-size:.8rem">${LABELS[t.priority]}${t.completedAt ? ' · ' + new Date(t.completedAt).toLocaleDateString('nl-NL') : ''}</div>
+  const el = container.querySelector('#archive-list');
+  if (!items.length) {
+    el.innerHTML = `<div class="todo-empty" style="padding:32px">
+      <div style="font-size:1.8rem;margin-bottom:8px">✅</div>
+      <div style="font-weight:600;margin-bottom:4px">Nog niets afgerond</div>
+      <div style="font-size:.84rem;color:var(--text-dim)">Voltooide taken verschijnen hier</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div class="task-list">` + items.map(t => `
+    <div class="task-card task-card-done" data-id="${t.id}" data-priority="${t.priority || 'medium'}">
+      <div style="width:22px;height:22px;min-width:22px;border-radius:6px;background:var(--ok);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:white;flex-shrink:0;margin-top:1px">✓</div>
+      <div class="task-body">
+        <div class="task-title">${escapeHTML(t.title)}</div>
+        <div class="task-meta">
+          <span class="task-badge" style="color:var(--ok);border-color:rgba(93,212,154,.2)">
+            Klaar ${t.completedAt ? '· ' + new Date(t.completedAt).toLocaleDateString('nl-NL') : ''}
+          </span>
+        </div>
       </div>
-      <div class="row" style="flex:0 0 auto;gap:4px">
-        <button class="btn secondary" data-restore="${t.id}">↺</button>
-        <button class="btn danger" data-del="${t.id}">×</button>
+      <div class="task-actions">
+        <button class="task-btn" data-restore="${t.id}" title="Herstellen">↺</button>
+        <button class="task-btn del" data-del="${t.id}" title="Verwijderen">✕</button>
       </div>
-    </div>`).join('');
+    </div>`).join('') + `</div>`;
+
   el.querySelectorAll('[data-restore]').forEach(b => {
     b.onclick = async () => {
       const t = items.find(x => x.id === b.dataset.restore);
-      await put('todos', { ...t, done: false });
+      await put('todos', { ...t, done: false, completedAt: null });
       render(container);
     };
   });
   el.querySelectorAll('[data-del]').forEach(b => {
     b.onclick = async () => { await del('todos', b.dataset.del); render(container); };
   });
+}
+
+async function completeTask(container, item) {
+  await put('todos', { ...item, done: true, completedAt: new Date().toISOString() });
+  logActivity('task-done', item.title);
+  celebrateTask();
+
+  if (item.recurring) {
+    const next = { ...item, id: uid(), done: false, completedAt: null, createdAt: new Date().toISOString() };
+    if (item.recurring === 'daily')  next.dueDate = addDaysISO(item.dueDate || ymd(), 1);
+    if (item.recurring === 'weekly') next.dueDate = addDaysISO(item.dueDate || ymd(), 7);
+    await put('todos', next);
+  }
+
+  const remaining = (await all('todos')).filter(t => !t.done && !t.savedForLater);
+  if (remaining.length === 0) {
+    const today = ymd();
+    const lastBig = localStorage.getItem('lastAllDoneCelebrate');
+    if (lastBig !== today) {
+      localStorage.setItem('lastAllDoneCelebrate', today);
+      setTimeout(() => celebrateAllDone(), 600);
+    }
+  }
+  render(container);
+}
+
+function addDaysISO(yyyymmdd, n) {
+  const d = new Date(yyyymmdd); d.setDate(d.getDate() + n); return ymd(d);
+}
+
+async function bulkAction(container, items, action) {
+  const checked = [...container.querySelectorAll('[data-bulk]:checked')].map(c => c.dataset.bulk);
+  if (!checked.length) { ok('Niets geselecteerd'); return; }
+  if (action === 'done') {
+    for (const id of checked) {
+      const t = items.find(x => x.id === id);
+      if (t) await put('todos', { ...t, done: true, completedAt: new Date().toISOString() });
+    }
+    logActivity('bulk-done', `${checked.length} taken klaar`);
+    ok(`${checked.length} klaar`);
+  } else {
+    const backups = checked.map(id => items.find(x => x.id === id)).filter(Boolean);
+    for (const id of checked) await del('todos', id);
+    logActivity('bulk-del', `${checked.length} taken verwijderd`);
+    undoable(`${checked.length} verwijderd`, async () => {
+      for (const b of backups) await put('todos', b);
+      render(container);
+    });
+  }
+  container.dataset.todoBulk = '';
+  render(container);
 }
 
 function openTodoModal(container, existing = null) {
@@ -334,16 +407,16 @@ function openTodoModal(container, existing = null) {
     <label>Notitie</label><textarea name="note" rows="2">${existing?.note ? escapeHTML(existing.note) : ''}</textarea>
     <label>Prioriteit</label>
     <select name="priority">
-      <option value="high" ${existing?.priority==='high'?'selected':''}>Prioriteit</option>
-      <option value="medium" ${existing?.priority==='medium'?'selected':''}>Medium</option>
-      <option value="waiting" ${existing?.priority==='waiting'?'selected':''}>Waiting</option>
+      <option value="high"    ${existing?.priority==='high'   ?'selected':''}>Prioriteit</option>
+      <option value="medium"  ${existing?.priority==='medium' ?'selected':''}>Medium</option>
+      <option value="waiting" ${existing?.priority==='waiting'?'selected':''}>Wachtend</option>
     </select>
     <label>Datum (optioneel)</label>
     <input name="dueDate" type="date" value="${existing?.dueDate || ''}" />
     <label>Herhalend (optioneel)</label>
     <select name="recurring">
       <option value="">Niet herhalend</option>
-      <option value="daily" ${existing?.recurring==='daily'?'selected':''}>Dagelijks</option>
+      <option value="daily"  ${existing?.recurring==='daily' ?'selected':''}>Dagelijks</option>
       <option value="weekly" ${existing?.recurring==='weekly'?'selected':''}>Wekelijks</option>
     </select>
     <label>Tags (komma-gescheiden)</label>
@@ -354,19 +427,16 @@ function openTodoModal(container, existing = null) {
     if (!d.title) throw new Error('Titel verplicht');
     const tagsArr = (d.tags || '').split(',').map(s => s.trim()).filter(Boolean);
     const subsArr = (d.subtasks || '').split('\n').map(s => s.trim()).filter(Boolean).map(title => {
-      const existingSub = existing?.subtasks?.find(s => s.title === title);
-      return existingSub || { title, done: false };
+      const ex = existing?.subtasks?.find(s => s.title === title);
+      return ex || { title, done: false };
     });
     const base = existing || { id: uid(), done: false, createdAt: new Date().toISOString() };
     await put('todos', {
       ...base,
-      title: d.title,
-      note: d.note || null,
+      title: d.title, note: d.note || null,
       priority: d.priority,
-      dueDate: d.dueDate || null,
-      recurring: d.recurring || null,
-      tags: tagsArr,
-      subtasks: subsArr,
+      dueDate: d.dueDate || null, recurring: d.recurring || null,
+      tags: tagsArr, subtasks: subsArr,
       savedForLater: base.savedForLater || false,
     });
     logActivity(existing ? 'task-edit' : 'task-add', d.title);
