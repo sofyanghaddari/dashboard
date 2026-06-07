@@ -88,6 +88,8 @@ export async function render(container) {
         <button class="btn secondary" id="add-card" style="flex:1">+ Nieuwe kaart</button>
         <label for="import-csv" class="btn secondary" style="flex:1;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center">↑ CSV importeren</label>
         <input type="file" id="import-csv" accept=".csv,.tsv,.txt" style="display:none" />
+        <label for="import-pdf" class="btn secondary" style="flex:1;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center">↑ PDF importeren</label>
+        <input type="file" id="import-pdf" accept=".pdf" style="display:none" />
       </div>
       <div id="custom-list"></div>
     </div>
@@ -208,6 +210,7 @@ function bindOverviewEvents(container, today, settings, userCards, sessionInfo) 
   // Eigen kaarten
   container.querySelector('#add-card').onclick = () => openCardModal(container, null);
   container.querySelector('#import-csv').onchange = (e) => importCSV(container, e.target.files[0]);
+  container.querySelector('#import-pdf').onchange = (e) => importPDF(container, e.target.files[0]);
 }
 
 // ── Sessie wachtrij bouwen ────────────────────────────────────
@@ -529,6 +532,67 @@ async function importCSV(container, file) {
   else if (skipped > 0) toastErr(`${imported} geïmporteerd, ${skipped} overgeslagen`);
   else toastOk(`${imported} kaart${imported !== 1 ? 'en' : ''} geïmporteerd`);
   render(container);
+}
+
+async function importPDF(container, file) {
+  if (!file) return;
+  try {
+    // Laad PDF.js van CDN
+    if (!window.pdfjsLib) {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      document.head.appendChild(script);
+      await new Promise(resolve => script.onload = resolve);
+    }
+
+    const pdfjsLib = window.pdfjsLib;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+
+    let imported = 0;
+    const wordsAdded = new Set();
+
+    // Extract text from all pages
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const text = await page.getTextContent();
+      const pageText = text.items.map(item => item.str).join(' ');
+
+      // Simple pattern: Arabic word + English translation
+      // Detecteer lijnen met Arabisch (Unicode range) en Engels
+      const lines = pageText.split('\n');
+      for (let j = 0; j < lines.length - 1; j++) {
+        const line = lines[j].trim();
+        const nextLine = lines[j + 1].trim();
+
+        // Check if current line has Arabic and next line has English
+        if (hasArabic(line) && hasEnglish(nextLine) && line.length > 1) {
+          const key = line + '|' + nextLine;
+          if (!wordsAdded.has(key)) {
+            wordsAdded.add(key);
+            await put('cards', newCard(line, nextLine, null));
+            imported++;
+          }
+        }
+      }
+    }
+
+    if (imported === 0) toastErr('Geen woorden gevonden in PDF');
+    else toastOk(`${imported} kaart${imported !== 1 ? 'en' : ''} geïmporteerd uit PDF`);
+    render(container);
+  } catch (e) {
+    toastErr('Fout bij lezen PDF: ' + e.message);
+  }
+}
+
+function hasArabic(str) {
+  return /[؀-ۿ]/.test(str);
+}
+
+function hasEnglish(str) {
+  return /[a-zA-Z]/.test(str) && str.length > 2;
 }
 
 // ── Hulpfuncties ──────────────────────────────────────────────
