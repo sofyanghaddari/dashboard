@@ -12,6 +12,7 @@ import { biometricAvailable, platformAuthenticatorAvailable, registerBiometric, 
 import { exportMonthPDF } from '../pdf-export.js';
 import { openWeeklyReview } from './weekly-review.js';
 import { getCustomShame, setCustomShame, customMascot, setCustomMascot } from '../mascot.js';
+import { getArabicSettings, saveArabicSettings, resetAllProgress as resetArabicProgress, DEFAULT_ARABIC_SETTINGS } from '../modules/arabic-srs.js';
 
 const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots'];
 
@@ -119,6 +120,7 @@ export async function openSettings(onClose) {
   const lockOn = isLockEnabled();
   const userName = getSetting('userName') || '';
   const hizbTime = getSetting('hizbReminderTime') || '20:00';
+  const arabicSettings = getArabicSettings();
 
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
@@ -279,6 +281,106 @@ export async function openSettings(onClose) {
             <button type="button" class="btn secondary" id="show-weekly" style="flex-shrink:0">Bekijk nu</button>
           </div>
         </div>
+      </div>
+
+      <!-- ARABISCH LEREN -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">📚</span>
+          <div>
+            <div class="settings-section-title">Arabisch leren</div>
+            <div class="settings-section-desc">Spaced repetition — dagelijkse dosering en weergave</div>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Nieuwe kaarten per dag</div>
+              <div class="settings-row-sub muted">Hoeveel nieuwe woorden je dagelijks leert</div>
+            </div>
+            <div class="row" style="gap:10px;align-items:center">
+              <input type="range" id="set-ar-new" min="5" max="50" step="1" value="${arabicSettings.newCardsPerDay}" style="flex:1">
+              <span id="set-ar-new-val" style="min-width:36px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">${arabicSettings.newCardsPerDay}</span>
+            </div>
+          </div>
+          <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Review-limiet per dag</div>
+              <div class="settings-row-sub muted">Maximum herhalingen per sessie</div>
+            </div>
+            <div class="row" style="gap:10px;align-items:center">
+              <input type="range" id="set-ar-review" min="20" max="200" step="5" value="${arabicSettings.reviewLimitPerDay}" style="flex:1">
+              <span id="set-ar-review-val" style="min-width:36px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">${arabicSettings.reviewLimitPerDay}</span>
+            </div>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-row" style="text-transform:none">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Arabisch → Nederlands</div>
+              <div class="settings-row-sub muted">Arabisch zien, Nederlands beantwoorden</div>
+            </div>
+            <span class="ios-switch"><input type="checkbox" id="set-ar-ar-nl" ${arabicSettings.directionArNl ? 'checked' : ''} /><span></span></span>
+          </label>
+          <label class="settings-row" style="text-transform:none">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Nederlands → Arabisch</div>
+              <div class="settings-row-sub muted">Nederlands zien, Arabisch beantwoorden</div>
+            </div>
+            <span class="ios-switch"><input type="checkbox" id="set-ar-nl-ar" ${arabicSettings.directionNlAr ? 'checked' : ''} /><span></span></span>
+          </label>
+          <label class="settings-row" style="text-transform:none">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Transliteratie op voorkant</div>
+              <div class="settings-row-sub muted">Uitspraak direct tonen (makkelijker)</div>
+            </div>
+            <span class="ios-switch"><input type="checkbox" id="set-ar-translit" ${arabicSettings.showTranslitFront ? 'checked' : ''} /><span></span></span>
+          </label>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Startvolgorde</div>
+              <div class="settings-row-sub muted">Welke kaarten verschijnen eerst</div>
+            </div>
+            <select id="set-ar-order">
+              <option value="mixed" ${arabicSettings.startOrder === 'mixed' ? 'selected' : ''}>Gemengd</option>
+              <option value="new-first" ${arabicSettings.startOrder === 'new-first' ? 'selected' : ''}>Nieuw eerst</option>
+              <option value="review-first" ${arabicSettings.startOrder === 'review-first' ? 'selected' : ''}>Review eerst</option>
+            </select>
+          </div>
+          <label class="settings-row" style="text-transform:none">
+            <div class="settings-row-main">
+              <div class="settings-row-title">3D flip-animatie</div>
+              <div class="settings-row-sub muted">Kaart draait om bij tonen antwoord</div>
+            </div>
+            <span class="ios-switch"><input type="checkbox" id="set-ar-flip" ${arabicSettings.flipAnimation ? 'checked' : ''} /><span></span></span>
+          </label>
+          <label class="settings-row" style="text-transform:none">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Woordtype badge</div>
+              <div class="settings-row-sub muted">Werkwoord / zelfstandig naamwoord tonen</div>
+            </div>
+            <span class="ios-switch"><input type="checkbox" id="set-ar-badge" ${arabicSettings.showTypeBadge ? 'checked' : ''} /><span></span></span>
+          </label>
+          <label class="settings-row" style="text-transform:none">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Lesnummer tonen</div>
+              <div class="settings-row-sub muted">Les 1, 2, 3… naast het woord</div>
+            </div>
+            <span class="ios-switch"><input type="checkbox" id="set-ar-lesson" ${arabicSettings.showLessonNumber ? 'checked' : ''} /><span></span></span>
+          </label>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Reset alle voortgang</div>
+              <div class="settings-row-sub muted">Alle SRS-data wissen, opnieuw beginnen</div>
+            </div>
+            <button type="button" class="btn danger" id="ar-reset-all" style="flex-shrink:0">Reset</button>
+          </div>
+        </div>
+        <button type="button" class="btn block" id="save-ar-settings" style="margin-top:8px">Arabisch opslaan</button>
       </div>
 
       <!-- BEVEILIGING -->
@@ -600,6 +702,37 @@ export async function openSettings(onClose) {
     ok('Herinnering bijgewerkt');
   };
   backdrop.querySelector('#show-weekly').onclick = () => { close(); openWeeklyReview(); };
+
+  // Arabisch leren
+  const arNewSlider = backdrop.querySelector('#set-ar-new');
+  const arNewVal = backdrop.querySelector('#set-ar-new-val');
+  if (arNewSlider) arNewSlider.oninput = () => { arNewVal.textContent = arNewSlider.value; };
+  const arRevSlider = backdrop.querySelector('#set-ar-review');
+  const arRevVal = backdrop.querySelector('#set-ar-review-val');
+  if (arRevSlider) arRevSlider.oninput = () => { arRevVal.textContent = arRevSlider.value; };
+
+  backdrop.querySelector('#save-ar-settings').onclick = () => {
+    const current = getArabicSettings();
+    saveArabicSettings({
+      ...current,
+      newCardsPerDay: parseInt(backdrop.querySelector('#set-ar-new').value),
+      reviewLimitPerDay: parseInt(backdrop.querySelector('#set-ar-review').value),
+      directionArNl: backdrop.querySelector('#set-ar-ar-nl').checked,
+      directionNlAr: backdrop.querySelector('#set-ar-nl-ar').checked,
+      showTranslitFront: backdrop.querySelector('#set-ar-translit').checked,
+      startOrder: backdrop.querySelector('#set-ar-order').value,
+      flipAnimation: backdrop.querySelector('#set-ar-flip').checked,
+      showTypeBadge: backdrop.querySelector('#set-ar-badge').checked,
+      showLessonNumber: backdrop.querySelector('#set-ar-lesson').checked,
+    });
+    ok('Arabisch-instellingen opgeslagen');
+  };
+
+  backdrop.querySelector('#ar-reset-all').onclick = () => {
+    if (!confirm('Alle Arabisch SRS-voortgang wissen? Je begint opnieuw. Dit kan niet ongedaan worden gemaakt.')) return;
+    resetArabicProgress();
+    ok('Voortgang gewist');
+  };
 
   // Profiel
   backdrop.querySelector('#set-username').onblur = (e) => {

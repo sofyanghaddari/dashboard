@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v39';
+const CACHE = 'dashboard-v40';
 const ASSETS = [
   './',
   './index.html',
@@ -47,11 +47,13 @@ const ASSETS = [
   './js/modules/taxi.js',
   './js/modules/koran.js',
   './js/modules/arabic.js',
+  './js/modules/arabic-srs.js',
   './js/modules/goals.js',
   './js/modules/todo.js',
   './js/modules/notes.js',
   './js/components/calendar.js',
   './js/components/year-review.js',
+  './js/data/arabic-words.js',
 ];
 
 self.addEventListener('install', (e) => {
