@@ -536,63 +536,49 @@ async function importCSV(container, file) {
 
 async function importPDF(container, file) {
   if (!file) return;
+  if (!window.pdfjsLib) { toastErr('PDF-bibliotheek laadt...'); return; }
+
   try {
-    // Laad PDF.js van CDN
-    if (!window.pdfjsLib) {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-      document.head.appendChild(script);
-      await new Promise(resolve => script.onload = resolve);
-    }
-
-    const pdfjsLib = window.pdfjsLib;
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
 
     let imported = 0;
     const wordsAdded = new Set();
 
-    // Extract text from all pages
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const text = await page.getTextContent();
-      const pageText = text.items.map(item => item.str).join(' ');
+      const items = text.items.filter(item => item.str.trim());
 
-      // Simple pattern: Arabic word + English translation
-      // Detecteer lijnen met Arabisch (Unicode range) en Engels
-      const lines = pageText.split('\n');
-      for (let j = 0; j < lines.length - 1; j++) {
-        const line = lines[j].trim();
-        const nextLine = lines[j + 1].trim();
+      for (let j = 0; j < items.length - 1; j++) {
+        const front = items[j].str.trim();
+        const back = items[j + 1].str.trim();
 
-        // Check if current line has Arabic and next line has English
-        if (hasArabic(line) && hasEnglish(nextLine) && line.length > 1) {
-          const key = line + '|' + nextLine;
+        if (isArabic(front) && isEnglish(back) && front.length > 1 && back.length > 2) {
+          const key = front + '|' + back;
           if (!wordsAdded.has(key)) {
             wordsAdded.add(key);
-            await put('cards', newCard(line, nextLine, null));
+            await put('cards', newCard(front, back, null));
             imported++;
           }
         }
       }
     }
 
-    if (imported === 0) toastErr('Geen woorden gevonden in PDF');
-    else toastOk(`${imported} kaart${imported !== 1 ? 'en' : ''} geïmporteerd uit PDF`);
+    if (imported === 0) toastErr('Geen woorden gevonden in PDF. Controleer het formaat.');
+    else toastOk(`✓ ${imported} kaart${imported !== 1 ? 'en' : ''} geïmporteerd`);
     render(container);
   } catch (e) {
-    toastErr('Fout bij lezen PDF: ' + e.message);
+    toastErr('PDF-fout: ' + e.message);
   }
 }
 
-function hasArabic(str) {
+function isArabic(str) {
   return /[؀-ۿ]/.test(str);
 }
 
-function hasEnglish(str) {
-  return /[a-zA-Z]/.test(str) && str.length > 2;
+function isEnglish(str) {
+  return /[a-zA-Z]/.test(str);
 }
 
 // ── Hulpfuncties ──────────────────────────────────────────────
