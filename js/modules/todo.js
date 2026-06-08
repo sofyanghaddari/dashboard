@@ -7,6 +7,7 @@ import { enableSwipeDelete } from '../components/swipe.js';
 import { undoable } from '../components/undo.js';
 import { logActivity } from '../activity.js';
 import { parseTaskInput } from '../nlp.js';
+import { scheduleTaskNotification, cancelTaskNotification, requestNotificationPermission } from '../notifications.js';
 
 const BUCKET_META = {
   high:    { label: 'Prioriteit', dot: 'bucket-dot-high' },
@@ -176,10 +177,11 @@ function dueDateBadge(dueDate) {
   if (!dueDate) return null;
   const today    = ymd();
   const tomorrow = ymd(new Date(Date.now() + 86400000));
-  if (dueDate < today)    return { label: `⚠ ${dueDate}`, cls: 'task-badge-overdue' };
-  if (dueDate === today)  return { label: '📅 Vandaag',   cls: 'task-badge-today' };
-  if (dueDate === tomorrow) return { label: '📅 Morgen',  cls: 'task-badge-date' };
-  return { label: `📅 ${dueDate}`, cls: 'task-badge-date' };
+  const bell = dueDate <= today ? '🔔' : '🔔';
+  if (dueDate < today)    return { label: `${bell} ⚠ ${dueDate}`, cls: 'task-badge-overdue' };
+  if (dueDate === today)  return { label: `${bell} Vandaag`,       cls: 'task-badge-today' };
+  if (dueDate === tomorrow) return { label: `${bell} Morgen`,      cls: 'task-badge-date' };
+  return { label: `${bell} ${dueDate}`, cls: 'task-badge-date' };
 }
 
 function taskCard(t, bulkMode) {
@@ -260,6 +262,7 @@ function bindRowEvents(container, el, items) {
       e.stopPropagation();
       const id = b.dataset.del;
       const t = items.find(x => x.id === id);
+      cancelTaskNotification(id);
       await del('todos', id);
       logActivity('task-del', t ? t.title : id);
       undoable('Taak verwijderd', async () => { if (t) await put('todos', t); render(container); });
@@ -431,14 +434,27 @@ function openTodoModal(container, existing = null) {
       return ex || { title, done: false };
     });
     const base = existing || { id: uid(), done: false, createdAt: new Date().toISOString() };
-    await put('todos', {
+    const saved = {
       ...base,
       title: d.title, note: d.note || null,
       priority: d.priority,
       dueDate: d.dueDate || null, recurring: d.recurring || null,
       tags: tagsArr, subtasks: subsArr,
       savedForLater: base.savedForLater || false,
-    });
+    };
+    await put('todos', saved);
+    // Handle notifications
+    if (d.dueDate && localStorage.getItem('taskNotifications') !== '0') {
+      if ('Notification' in window && Notification.permission === 'default') {
+        requestNotificationPermission().then(perm => {
+          if (perm === 'granted') scheduleTaskNotification(saved);
+        });
+      } else {
+        scheduleTaskNotification(saved);
+      }
+    } else if (!d.dueDate && existing?.dueDate) {
+      cancelTaskNotification(saved.id);
+    }
     logActivity(existing ? 'task-edit' : 'task-add', d.title);
     ok(existing ? 'Bijgewerkt' : 'Toegevoegd');
     render(container);

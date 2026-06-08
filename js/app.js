@@ -18,6 +18,7 @@ import { migrateSessionKeys } from './settings.js';
 import { initSyncPill, refresh as refreshSyncPill } from './components/sync-pill.js';
 import { maybeAutoExport } from './auto-export.js';
 import { maybeShowWeeklyReview } from './components/weekly-review.js';
+import { checkPendingNotifications } from './notifications.js';
 import { render as renderDashboard } from './modules/dashboard.js';
 import { render as renderTaxi } from './modules/taxi.js';
 import { render as renderKoran } from './modules/koran.js';
@@ -25,6 +26,8 @@ import { render as renderArabic } from './modules/arabic.js';
 import { render as renderGoals } from './modules/goals.js';
 import { render as renderTodo } from './modules/todo.js';
 import { render as renderNotes } from './modules/notes.js';
+import { render as renderAgenda } from './modules/agenda.js';
+import { render as renderStats } from './modules/stats.js';
 
 async function bootApp() {
   migrateSessionKeys(); // Verplaats ghToken e.d. van localStorage naar sessionStorage
@@ -36,6 +39,8 @@ async function bootApp() {
   register('goals', renderGoals);
   register('todo', renderTodo);
   register('notes', renderNotes);
+  register('agenda', renderAgenda);
+  register('stats', renderStats);
   initRouter();
   initAutoTheme();
   bindRipple();
@@ -70,6 +75,7 @@ async function bootApp() {
   setInterval(maybeAutoSync, 60 * 60 * 1000);
   maybeAutoExport();
   maybeShowWeeklyReview();
+  checkPendingNotifications();
   updateBadge();
   setInterval(updateBadge, 5 * 60 * 1000);
   // Auto-PDF op de 1e van de maand
