@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v44';
+const CACHE = 'dashboard-v45';
 const ASSETS = [
   './',
   './index.html',

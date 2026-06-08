@@ -78,8 +78,8 @@ function popMessage(text, size = 'task') {
 }
 
 // Lichte confetti zonder library
-function confettiMini() { fireConfetti(40, 1500); }
-function confettiBig() { fireConfetti(120, 2400); }
+export function confettiMini() { fireConfetti(40, 1500); }
+export function confettiBig() { fireConfetti(120, 2400); }
 
 function fireConfetti(count, duration) {
   const canvas = ensureCanvas();

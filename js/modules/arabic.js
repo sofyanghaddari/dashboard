@@ -4,6 +4,9 @@ import { newCard, review as reviewUserCard } from '../srs.js';
 import { ymd, escapeHTML } from '../utils.js';
 import { ok as toastOk, err as toastErr } from '../components/toast.js';
 import { ARABIC_WORDS, TYPE_LABELS, TYPE_FILTER_OPTIONS } from '../data/arabic-words.js';
+import { confettiMini, confettiBig } from '../components/celebrate.js';
+import { countUp } from '../animate.js';
+import * as haptic from '../haptic.js';
 import {
   getCardSrs, updateCardSrs, isCardNew, isCardDue,
   getTodayData, saveTodayData, resetAllProgress,
@@ -394,6 +397,7 @@ function startSession(container, queue, settings) {
       const revealBtn = container.querySelector('#reveal-btn');
       revealBtn.onclick = () => {
         revealed = true;
+        haptic.light();
         if (useFlip) {
           flashcard.classList.add('flipped');
           setTimeout(() => showCard(), 0); // re-render alleen de knoppen
@@ -407,6 +411,7 @@ function startSession(container, queue, settings) {
       container.querySelectorAll('[data-grade]').forEach(btn => {
         btn.onclick = async () => {
           const grade = parseInt(btn.dataset.grade);
+          grade >= 4 ? haptic.success() : grade <= 1 ? haptic.err() : haptic.tap();
           await gradeCard(c, grade, todayData, settings);
           grades.push({ id: c.id, grade });
           idx++;
@@ -462,27 +467,40 @@ function gradeInterval(card, grade) {
 }
 
 // ── Afronden sessie ───────────────────────────────────────────
+const SRS_PERFECT_MSG = ['🏆 Vlekkeloos! Je bent een machine.', '🌟 100% — koninklijk gedaan.', '🦁 Geen enkele fout. Leeuwenwerk.', '🔥 Perfect! Je staat in lichterlaaie.'];
+const SRS_GREAT_MSG   = ['💪 Sterk gedaan, door op deze weg!', '🎯 Lekker bezig, bijna foutloos.', '⚡ Goeie sessie, kampioen.'];
+const SRS_OK_MSG      = ['📈 Elke herhaling telt. Door!', '🌱 Stap voor stap groei je.', '👏 Netjes — morgen weer scherper.'];
+const SRS_LOW_MSG     = ['💡 Niet erg, herhaling is de sleutel.', '🤝 Morgen pak je ze terug.', '🧠 Het brein leert juist van fouten.'];
+function srsPick(a) { return a[Math.floor(Math.random() * a.length)]; }
+
 function showCompletion(container, grades, total) {
   const correct = grades.filter(g => g.grade >= 3).length;
   const again = grades.filter(g => g.grade < 3).length;
+  const score = total > 0 ? Math.round(correct / total * 100) : 0;
+
+  let icon, msg;
+  if (score === 100)     { icon = '🏆'; msg = srsPick(SRS_PERFECT_MSG); }
+  else if (score >= 80)  { icon = '🌟'; msg = srsPick(SRS_GREAT_MSG); }
+  else if (score >= 50)  { icon = '👍'; msg = srsPick(SRS_OK_MSG); }
+  else                   { icon = '🌱'; msg = srsPick(SRS_LOW_MSG); }
 
   container.innerHTML = `
     <div class="srs-completion">
-      <div class="srs-completion-icon">🎉</div>
+      <div class="srs-completion-icon">${icon}</div>
       <h2>Sessie klaar!</h2>
-      <p class="muted">${total} kaart${total === 1 ? '' : 'en'} herhaald</p>
+      <p class="muted">${msg}</p>
 
       <div class="srs-completion-stats">
         <div class="srs-comp-stat">
-          <div class="srs-comp-val ok">${correct}</div>
+          <div class="srs-comp-val ok" data-countup="${correct}">0</div>
           <div class="srs-comp-lbl">Goed</div>
         </div>
         <div class="srs-comp-stat">
-          <div class="srs-comp-val ${again > 0 ? 'danger' : ''}">${again}</div>
+          <div class="srs-comp-val ${again > 0 ? 'danger' : ''}" data-countup="${again}">0</div>
           <div class="srs-comp-lbl">Opnieuw</div>
         </div>
         <div class="srs-comp-stat">
-          <div class="srs-comp-val">${total > 0 ? Math.round(correct / total * 100) : 0}%</div>
+          <div class="srs-comp-val" data-countup="${score}" data-suffix="%">0</div>
           <div class="srs-comp-lbl">Score</div>
         </div>
       </div>
@@ -490,6 +508,25 @@ function showCompletion(container, grades, total) {
       <button class="btn block" id="back-overview" style="max-width:260px;margin:0 auto">Terug naar overzicht</button>
     </div>
   `;
+
+  // Tellende eindcijfers
+  container.querySelectorAll('[data-countup]').forEach(el => {
+    const to = parseInt(el.dataset.countup);
+    const suffix = el.dataset.suffix || '';
+    countUp(el, to, { duration: 900, prefix: '', decimals: 0, suffix });
+  });
+
+  // Viering naar prestatie
+  if (score === 100 && total > 0) {
+    haptic.success();
+    confettiBig();
+    setTimeout(() => confettiBig(), 400);
+  } else if (score >= 80) {
+    haptic.success();
+    confettiMini();
+  } else {
+    haptic.light();
+  }
 
   container.querySelector('#back-overview').onclick = () => render(container);
 }

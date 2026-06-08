@@ -1,15 +1,15 @@
 // Tel-animaties voor getallen
 export function countUp(element, to, opts = {}) {
-  const { duration = 800, prefix = '€ ', decimals = 2 } = opts;
+  const { duration = 800, prefix = '€ ', suffix = '', decimals = 2 } = opts;
   const start = performance.now();
   const from = 0;
   const ease = (t) => 1 - Math.pow(1 - t, 3);
   function step(now) {
     const t = Math.min(1, (now - start) / duration);
     const v = from + (to - from) * ease(t);
-    element.textContent = prefix + v.toFixed(decimals);
+    element.textContent = prefix + v.toFixed(decimals) + suffix;
     if (t < 1) requestAnimationFrame(step);
-    else element.textContent = prefix + to.toFixed(decimals);
+    else element.textContent = prefix + to.toFixed(decimals) + suffix;
   }
   requestAnimationFrame(step);
 }
