@@ -31,21 +31,33 @@ export function getCardSrs(id) {
   return getSrsStore()[id] || null;
 }
 
-// SM-2 algoritme — grade: 1=Again, 2=Moeilijk, 4=Goed, 5=Perfect
+// Anki-achtige planning — grade: 1=Again, 2=Moeilijk, 4=Goed, 5=Perfect
+// Again/Moeilijk komen ook dezelfde sessie terug (geregeld in de sessie-loop);
+// deze functie bepaalt de volgende dag-planning als je stopt of het goed doet.
 export function updateCardSrs(id, grade) {
   const store = getSrsStore();
   const existing = store[id] || { interval: 1, easeFactor: 2.5, repetitions: 0 };
   let { interval, easeFactor, repetitions } = existing;
 
-  if (grade >= 3) {
-    if (repetitions === 0) interval = 1;
-    else if (repetitions === 1) interval = 6;
-    else interval = Math.round(interval * easeFactor);
-    easeFactor = Math.max(1.3, easeFactor + 0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02));
-    repetitions++;
-  } else {
+  if (grade === 1) {            // Again — terug deze sessie, anders morgen
     repetitions = 0;
     interval = 1;
+    easeFactor = Math.max(1.3, easeFactor - 0.2);
+  } else if (grade === 2) {     // Moeilijk — iets later deze sessie, kleine dag-stap
+    if (repetitions === 0) interval = 1;
+    else interval = Math.max(1, Math.round(interval * 1.2));
+    easeFactor = Math.max(1.3, easeFactor - 0.15);
+  } else if (grade === 4) {     // Goed — later, maar niet veel later
+    if (repetitions === 0) interval = 3;
+    else if (repetitions === 1) interval = 7;
+    else interval = Math.round(interval * easeFactor);
+    repetitions++;
+  } else {                      // Perfect — duidelijk later (makkelijk woord)
+    if (repetitions === 0) interval = 7;
+    else if (repetitions === 1) interval = 16;
+    else interval = Math.round(interval * easeFactor * 1.3);
+    easeFactor = easeFactor + 0.15;
+    repetitions++;
   }
 
   const nextDate = new Date();

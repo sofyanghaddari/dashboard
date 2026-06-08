@@ -2,7 +2,7 @@ import { all, put, clear } from '../db.js';
 import { escapeHTML } from '../utils.js';
 import { getSetting, setSetting } from '../settings.js';
 import { openModal } from './modal.js';
-import { setThemeMode, setAccent, ACCENT_NAMES, setPreset, THEME_PRESETS, setDensity } from '../theme.js';
+import { setThemeMode, setAccent, ACCENT_NAMES, setPreset, THEME_PRESETS, setDensity, PRESET_DOT_COLORS } from '../theme.js';
 import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
@@ -216,9 +216,16 @@ export async function openSettings(onClose) {
               <div class="settings-row-sub muted">Basisstijl van je dashboard</div>
             </div>
             <div class="preset-picker">
-              ${THEME_PRESETS.map(p => `<button type="button" class="preset-chip preset-${p} ${p===preset?'active':''}" data-preset="${p}">${p}</button>`).join('')}
+              ${THEME_PRESETS.map(p => `<button type="button" class="preset-chip preset-${p} ${p===preset?'active':''}" data-preset="${p}">${p}<span class="preset-dot" style="background:${PRESET_DOT_COLORS[p]||'currentColor'}"></span></button>`).join('')}
             </div>
           </div>
+          <label class="settings-row" style="text-transform:none;margin-top:4px">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Automatisch dag/nacht</div>
+              <div class="settings-row-sub muted">06:00–20:00 licht (daylight) · 20:00–06:00 jouw donkere thema</div>
+            </div>
+            <span class="ios-switch"><input type="checkbox" id="set-auto-theme" ${getSetting('autoTheme') !== '0' ? 'checked' : ''} /><span></span></span>
+          </label>
         </div>
       </div>
 
@@ -674,6 +681,9 @@ export async function openSettings(onClose) {
     };
   });
   backdrop.querySelector('#set-theme').onchange = (e) => setThemeMode(e.target.value);
+  backdrop.querySelector('#set-auto-theme').onchange = (e) => {
+    setSetting('autoTheme', e.target.checked ? '1' : '0');
+  };
   backdrop.querySelectorAll('[data-preset]').forEach(btn => {
     btn.onclick = () => {
       setPreset(btn.dataset.preset);

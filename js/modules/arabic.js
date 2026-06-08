@@ -33,6 +33,8 @@ export async function render(container) {
   // Bouw sessie-wachtrij voor preview
   const sessionInfo = buildSessionQueue(settings, today, userCards);
 
+  const writingStats = getWritingStats(today);
+
   container.innerHTML = `
     <h1>Arabisch</h1>
 
@@ -71,6 +73,7 @@ export async function render(container) {
     <div class="srs-tab-bar" id="srs-tabs">
       <button class="srs-tab active" data-tab="words">Woorden (${ARABIC_WORDS.length})</button>
       <button class="srs-tab" data-tab="custom">Eigen kaarten (${userCards.length})</button>
+      <button class="srs-tab" data-tab="writing">Schrijven (${writingStats.due})</button>
     </div>
 
     <div id="tab-words">
@@ -96,10 +99,15 @@ export async function render(container) {
       </div>
       <div id="custom-list"></div>
     </div>
+
+    <div id="tab-writing" style="display:none">
+      <div id="writing-overview"></div>
+    </div>
   `;
 
   renderWordList(container, today, settings, '');
   renderCustomList(container, userCards, today);
+  renderWritingOverview(container.querySelector('#writing-overview'), container, today);
   bindOverviewEvents(container, today, settings, userCards, sessionInfo);
 }
 
@@ -191,8 +199,9 @@ function bindOverviewEvents(container, today, settings, userCards, sessionInfo) 
     tab.onclick = () => {
       container.querySelectorAll('.srs-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      container.querySelector('#tab-words').style.display = tab.dataset.tab === 'words' ? '' : 'none';
-      container.querySelector('#tab-custom').style.display = tab.dataset.tab === 'custom' ? '' : 'none';
+      container.querySelector('#tab-words').style.display   = tab.dataset.tab === 'words'   ? '' : 'none';
+      container.querySelector('#tab-custom').style.display  = tab.dataset.tab === 'custom'  ? '' : 'none';
+      container.querySelector('#tab-writing').style.display = tab.dataset.tab === 'writing' ? '' : 'none';
     };
   });
 
@@ -651,4 +660,256 @@ function formatDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+}
+
+// ── Schrijfoefeningen ─────────────────────────────────────────────────────
+const WRITING_SRS_KEY = 'arabic_writing_srs';
+
+// ~25 moeilijk te schrijven woorden, geselecteerd op spellingsvalkuilen
+const WRITING_WORDS = [
+  // ع (ain) — beginners schrijven dit als ه
+  { id: 'w013', arabic: 'عَرَفَ',   dutch: 'hij wist/kende',      hint: '<strong>ع</strong> is een keelklank — niet ه (gewone H). Voel het knijpen achterin je keel.' },
+  { id: 'w016', arabic: 'عَمِلَ',   dutch: 'hij werkte',           hint: '<strong>ع</strong> begint met een licht keel-knijpje. Let op de volgorde: ع م ل' },
+  { id: 'w037', arabic: 'عِلْمٌ',   dutch: 'kennis',               hint: '<strong>ع</strong> + لْم — ain altijd met dat keel-gevoel, dan sukun op لْ' },
+  { id: 'w064', arabic: 'عَظِيمٌ', dutch: 'geweldig/groots',      hint: '<strong>ع</strong> + ظ (zwaar tha) + lange <strong>ي</strong> — drie aparte klanken' },
+  { id: 'w068', arabic: 'عَلَى',   dutch: 'op',                   hint: '<strong>ع</strong> + ل + <strong>ى</strong> (alef maqsura, niet ا!)' },
+  { id: 'w069', arabic: 'عَنْ',    dutch: 'over/van',             hint: '<strong>ع</strong> + نْ — korte ain, dan sukun op noen' },
+  // ح (ha) vs ه (he)
+  { id: 'w062', arabic: 'حَسَنٌ',  dutch: 'goed/mooi',            hint: '<strong>ح</strong> = uit de borst blazen. Niet ه (gewone zachte H).' },
+  { id: 'w083', arabic: 'نَحْنُ',  dutch: 'wij',                  hint: 'ن + <strong>ح</strong> + ن — de H in het midden is ح (borst-H)' },
+  { id: 'w010', arabic: 'فَتَحَ',  dutch: 'hij opende',           hint: 'ف ت <strong>ح</strong> — eindigt op ح, niet op ه' },
+  // ق (qaf) vs ك (kaf)
+  { id: 'w002', arabic: 'قَرَأَ',  dutch: 'hij las',              hint: '<strong>ق</strong> = diepe K van achterin de keel. Niet ك (gewone K).' },
+  { id: 'w036', arabic: 'قُرْآنٌ', dutch: 'Koran',                hint: '<strong>ق</strong> + رْ + <strong>آن</strong> — alef madda (آ = lange A met hamza)' },
+  // Hamza-varianten
+  { id: 'w040', arabic: 'أُسْتَاذٌ', dutch: 'leraar',             hint: '<strong>أ</strong> = hamza boven alef (dhamma). Let op: ا (lange A) in het midden.' },
+  { id: 'w067', arabic: 'إِلَى',   dutch: 'naar/tot',             hint: '<strong>إ</strong> = hamza ónder alef (kasra). Eindigt op ى (alef maqsura).' },
+  { id: 'w015', arabic: 'رَأَى',   dutch: 'hij zag',              hint: 'ر + <strong>أ</strong> (hamza op alef) + ى — three letters only' },
+  { id: 'w004', arabic: 'جَاءَ',   dutch: 'hij kwam',             hint: 'ج + ا (lange A) + <strong>ء</strong> (losstaande hamza) + ه? Nee: de ه is er niet!' },
+  { id: 'w031', arabic: 'مَاءٌ',   dutch: 'water',                hint: 'م + <strong>آء</strong> — alef madda (آ) gevolgd door losstaande hamza (ء)' },
+  // Lange klinkers
+  { id: 'w038', arabic: 'دِينٌ',   dutch: 'religie/godsdienst',   hint: 'دِ + <strong>ي</strong> = lange ī — de ya is een lange klinker, geen medeklinker hier' },
+  { id: 'w046', arabic: 'صَلَاةٌ', dutch: 'gebed',                hint: 'ص + ل + <strong>ا</strong> (lange A) + <strong>ة</strong> (ta marbuta)' },
+  { id: 'w050', arabic: 'سَاعَةٌ', dutch: 'uur/horloge',          hint: 'س + <strong>ا</strong> (lang A) + <strong>ع</strong> (ain!) + ة — vergeet ain niet' },
+  // Shadda (verdubbelde letter)
+  { id: 'w043', arabic: 'أُمٌّ',   dutch: 'moeder',               hint: '<strong>أ</strong> + <strong>مّ</strong> — shadda op miem = dubbele M, maar je schrijft het maar één keer' },
+  { id: 'w028', arabic: 'كُرْسِيٌّ', dutch: 'stoel',              hint: 'كُرْسِ + <strong>يّ</strong> — shadda op ya aan het eind + tanwin dhamma' },
+  // Gemengde valkuilen
+  { id: 'kd_n002', arabic: 'وُضُوء', dutch: 'ritueel wassen (wudu)', hint: 'و + ضُ + <strong>و</strong> (lange ū) + <strong>ء</strong> (losstaande hamza aan het eind)' },
+  { id: 'kd_n013', arabic: 'نِعْمَة', dutch: 'gunst/genade',       hint: 'ن + <strong>عْ</strong> (sukun-ain) + م + ة — ain in het midden, makkelijk gemist' },
+  { id: 'kd_n022', arabic: 'تَقْوَى', dutch: 'vroomheid',          hint: 'ت + <strong>قْ</strong> (sukun-qaf) + و + <strong>ى</strong> (alef maqsura — eindigt niet op ا!)' },
+  { id: 'kd_n028', arabic: 'حُجَّة',  dutch: 'bewijs/argument',    hint: '<strong>حُ</strong> (borst-H!) + <strong>جَّ</strong> (shadda op jim) + ة' },
+];
+
+function getWritingSrs() {
+  try { return JSON.parse(localStorage.getItem(WRITING_SRS_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveWritingSrs(data) { localStorage.setItem(WRITING_SRS_KEY, JSON.stringify(data)); }
+
+function writingCardDue(id, today) {
+  const s = getWritingSrs()[id];
+  if (!s) return true; // nieuw = altijd doen
+  return s.nextReview <= today;
+}
+
+function updateWritingSrs(id, grade) {
+  const store = getWritingSrs();
+  const cur = store[id] || { interval: 1, easeFactor: 2.5, repetitions: 0 };
+  let { interval, easeFactor, repetitions } = cur;
+  if (grade === 1) { repetitions = 0; interval = 1; easeFactor = Math.max(1.3, easeFactor - 0.2); }
+  else if (grade === 3) { interval = repetitions === 0 ? 2 : Math.round(interval * 1.4); repetitions++; easeFactor = Math.max(1.3, easeFactor - 0.05); }
+  else { interval = repetitions === 0 ? 4 : Math.round(interval * easeFactor); repetitions++; easeFactor += 0.1; }
+  const next = new Date(); next.setDate(next.getDate() + interval);
+  store[id] = { interval, easeFactor, repetitions, nextReview: next.toISOString().split('T')[0] };
+  saveWritingSrs(store);
+}
+
+function getWritingStats(today) {
+  const due = WRITING_WORDS.filter(w => writingCardDue(w.id, today)).length;
+  const store = getWritingSrs();
+  const learned = Object.values(store).filter(s => s.repetitions >= 3).length;
+  return { due, learned, total: WRITING_WORDS.length };
+}
+
+function stripDiacritics(str) {
+  return str.replace(/[ؐ-ًؚ-ٰٟۖ-ۜ۟-۪ۤۧۨ-ۭ]/g, '');
+}
+
+function charCompare(typed, correct) {
+  const t = stripDiacritics(typed.trim());
+  const c = stripDiacritics(correct.trim());
+  const maxLen = Math.max(t.length, c.length);
+  const result = [];
+  for (let i = 0; i < maxLen; i++) {
+    if (i >= t.length)    result.push({ char: c[i], state: 'miss' });
+    else if (i >= c.length) result.push({ char: t[i], state: 'err' });
+    else if (t[i] === c[i]) result.push({ char: c[i], state: 'ok' });
+    else                    result.push({ char: c[i], state: 'err' });
+  }
+  const errors = result.filter(r => r.state !== 'ok').length;
+  return { result, errors };
+}
+
+function renderWritingOverview(el, container, today) {
+  if (!el) return;
+  const stats = getWritingStats(today);
+  const dueWords = WRITING_WORDS.filter(w => writingCardDue(w.id, today));
+
+  el.innerHTML = `
+    <div class="writing-stats-grid">
+      <div class="writing-stat">
+        <div class="writing-stat-val ${stats.due > 0 ? 'accent' : ''}" style="${stats.due > 0 ? 'color:var(--accent)' : ''}">${stats.due}</div>
+        <div class="writing-stat-lbl">Te oefenen</div>
+      </div>
+      <div class="writing-stat">
+        <div class="writing-stat-val ok" style="color:var(--ok)">${stats.learned}</div>
+        <div class="writing-stat-lbl">Beheerst</div>
+      </div>
+      <div class="writing-stat">
+        <div class="writing-stat-val">${stats.total}</div>
+        <div class="writing-stat-lbl">Totaal</div>
+      </div>
+    </div>
+    <button class="btn block" id="start-writing" ${dueWords.length === 0 ? 'disabled' : ''} style="margin-bottom:16px;max-width:280px;margin-left:auto;margin-right:auto">
+      ${dueWords.length > 0 ? `✍️ Schrijfoefening starten (${dueWords.length})` : 'Niets te oefenen vandaag'}
+    </button>
+    <p class="muted" style="font-size:.82rem;text-align:center;margin-bottom:16px">
+      Typ het Arabische woord bij de Nederlandse betekenis.<br>Diacritische tekens (harakat) worden genegeerd bij de beoordeling.
+    </p>
+    <div style="font-size:.8rem;color:var(--text-faint);text-align:center">
+      ${WRITING_WORDS.map(w => {
+        const s = getWritingSrs()[w.id];
+        const done = s && s.repetitions >= 3;
+        return `<span style="margin:2px;display:inline-block;opacity:${done?1:.35}" title="${w.dutch}">${w.arabic.replace(/[ؐ-ٟ]/g,'')}</span>`;
+      }).join('')}
+    </div>
+  `;
+
+  const startBtn = el.querySelector('#start-writing');
+  if (startBtn && !startBtn.disabled) {
+    startBtn.onclick = () => startWritingSession(container, dueWords, today);
+  }
+}
+
+function startWritingSession(container, words, today) {
+  let idx = 0;
+  const results = [];
+
+  const showWord = () => {
+    if (idx >= words.length) {
+      showWritingCompletion(container, results, today);
+      return;
+    }
+    const w = words[idx];
+    container.innerHTML = `
+      <div class="srs-session-header">
+        <button class="btn secondary" id="wr-stop" style="padding:6px 12px;font-size:.82rem">✕ Stoppen</button>
+        <div class="srs-progress-info">${idx + 1} / ${words.length}</div>
+        <div style="width:60px"></div>
+      </div>
+      <div class="progress-bar" style="margin-bottom:20px">
+        <div class="progress-fill" style="width:${Math.round(idx/words.length*100)}%;transition:width .4s"></div>
+      </div>
+      <div class="writing-prompt">
+        <div class="writing-prompt-dutch">${escapeHTML(w.dutch)}</div>
+        <div class="writing-prompt-hint">Typ het Arabische woord</div>
+        <input class="writing-input" id="wr-input" type="text" dir="rtl" lang="ar"
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+               placeholder="اكتب هنا…" />
+      </div>
+      <button class="btn block" id="wr-check" style="max-width:240px;margin:0 auto">Controleer</button>
+      <div id="wr-result" style="margin-top:12px"></div>
+    `;
+
+    container.querySelector('#wr-stop').onclick = () => render(container);
+    const input = container.querySelector('#wr-input');
+    const checkBtn = container.querySelector('#wr-check');
+    const resultEl = container.querySelector('#wr-result');
+
+    let checked = false;
+
+    const doCheck = () => {
+      if (checked) return;
+      checked = true;
+      const typed = input.value;
+      const { result, errors } = charCompare(typed, w.arabic);
+      const grade = errors === 0 ? 5 : errors <= 2 ? 3 : 1;
+
+      input.classList.add(errors === 0 ? 'correct-border' : 'wrong-border');
+
+      const charsHtml = result.map(r =>
+        `<span class="wr-char ${r.state}">${r.char}</span>`
+      ).join('');
+
+      const gradeLabel = errors === 0
+        ? `<span style="color:var(--ok);font-weight:600">✓ Perfect!</span>`
+        : errors <= 2
+        ? `<span style="color:#f59e0b;font-weight:600">△ Bijna (${errors} fout${errors>1?'en':''})</span>`
+        : `<span style="color:var(--danger);font-weight:600">✗ Fout (${errors} fouten)</span>`;
+
+      resultEl.innerHTML = `
+        <div class="writing-result">
+          <div style="margin-bottom:6px;font-size:.85rem">${gradeLabel}</div>
+          <div class="writing-result-chars">${charsHtml}</div>
+          <div style="font-size:.8rem;color:var(--text-faint);margin-bottom:4px">Correct: <span style="font-family:'Amiri','Scheherazade New',Georgia,serif;font-size:1.1rem;color:var(--text);direction:rtl">${w.arabic}</span></div>
+          ${errors > 0 ? `<div class="writing-hint-box">${w.hint}</div>` : ''}
+        </div>
+        <button class="btn block" id="wr-next" style="max-width:240px;margin:12px auto 0">Volgende →</button>
+      `;
+
+      haptic[errors === 0 ? 'success' : errors <= 2 ? 'light' : 'err']();
+      updateWritingSrs(w.id, grade);
+      results.push({ id: w.id, errors });
+
+      resultEl.querySelector('#wr-next').onclick = () => {
+        idx++;
+        showWord();
+      };
+      checkBtn.style.display = 'none';
+    };
+
+    checkBtn.onclick = doCheck;
+    input.onkeydown = e => { if (e.key === 'Enter') doCheck(); };
+    setTimeout(() => input.focus(), 100);
+  };
+
+  showWord();
+}
+
+function showWritingCompletion(container, results, today) {
+  const total   = results.length;
+  const perfect = results.filter(r => r.errors === 0).length;
+  const close   = results.filter(r => r.errors > 0 && r.errors <= 2).length;
+  const wrong   = results.filter(r => r.errors > 2).length;
+  const score   = total > 0 ? Math.round(perfect / total * 100) : 0;
+
+  container.innerHTML = `
+    <div class="srs-completion">
+      <div class="srs-completion-icon">${score === 100 ? '✍️' : score >= 60 ? '📝' : '✏️'}</div>
+      <h2>Schrijfoefening klaar!</h2>
+      <p class="muted">${score === 100 ? 'Elke letter perfect! Je spelling is scherp.' : score >= 60 ? 'Goed gedaan, je hebt de meeste woorden goed.' : 'Herhaling is de sleutel — morgen weer scherper.'}</p>
+      <div class="srs-completion-stats">
+        <div class="srs-comp-stat">
+          <div class="srs-comp-val ok" style="color:var(--ok)">${perfect}</div>
+          <div class="srs-comp-lbl">Perfect</div>
+        </div>
+        <div class="srs-comp-stat">
+          <div class="srs-comp-val" style="color:#f59e0b">${close}</div>
+          <div class="srs-comp-lbl">Bijna</div>
+        </div>
+        <div class="srs-comp-stat">
+          <div class="srs-comp-val ${wrong>0?'danger':''}" style="${wrong>0?'color:var(--danger)':''}">${wrong}</div>
+          <div class="srs-comp-lbl">Fout</div>
+        </div>
+      </div>
+      <button class="btn block" id="wr-done" style="max-width:260px;margin:0 auto">Terug naar overzicht</button>
+    </div>
+  `;
+
+  if (score === 100 && total > 0) { haptic.success(); confettiBig(); }
+  else if (score >= 60) { haptic.success(); confettiMini(); }
+  else haptic.light();
+
+  container.querySelector('#wr-done').onclick = () => render(container);
 }

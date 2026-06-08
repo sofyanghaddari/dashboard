@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v45';
+const CACHE = 'dashboard-v46';
 const ASSETS = [
   './',
   './index.html',
@@ -15,6 +15,7 @@ const ASSETS = [
   './js/activity.js',
   './js/nlp.js',
   './js/voice.js',
+  './js/privacy.js',
   './js/lock.js',
   './js/github-sync.js',
   './js/export-ical.js',
@@ -150,6 +151,26 @@ self.addEventListener('notificationclick', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+
+  // Stale-while-revalidate voor API-calls (weer, externe data)
+  const isExternal = url.origin !== self.location.origin;
+  if (isExternal) {
+    e.respondWith(
+      caches.open(CACHE).then(cache =>
+        cache.match(e.request).then(cached => {
+          const fetchPromise = fetch(e.request).then(resp => {
+            if (resp && resp.ok) { try { cache.put(e.request, resp.clone()); } catch (_) {} }
+            return resp;
+          }).catch(() => cached);
+          return cached || fetchPromise;
+        })
+      )
+    );
+    return;
+  }
+
+  // Cache-first voor eigen assets
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request).then(resp => {
       const copy = resp.clone();

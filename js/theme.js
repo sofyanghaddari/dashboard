@@ -18,6 +18,17 @@ export const THEME_PRESETS = [
   'daylight','ivory','stone','cloud','pearl','paper','linen',
 ];
 
+// Preset accent-dot kleuren voor preview in instellingen
+export const PRESET_DOT_COLORS = {
+  onyx: '#ffffff', graphite: '#c2a76d', midnight: '#d4b06b', slate: '#b8a87f',
+  sterling: '#b8aa8a', espresso: '#c4a484', ash: '#b0b0b0', obsidian: '#4a9eff',
+  chalk: '#444444', concrete: '#2d4a6b',
+  daylight: '#c17d2a', ivory: '#8b7355', stone: '#44546a', cloud: '#3d6fa8',
+  pearl: '#0071e3', paper: '#2d3748', linen: '#6b5f4b',
+};
+
+const LIGHT_PRESETS = new Set(['daylight','ivory','stone','cloud','pearl','paper','linen','chalk','concrete']);
+
 export function applyTheme() {
   const mode = getSetting('themeMode') || 'dark';
   const accent = getSetting('accentColor') || 'gold';
@@ -37,7 +48,36 @@ export function applyTheme() {
   document.documentElement.style.setProperty('--gold-glow', a.glow);
 }
 
-export function setPreset(preset) { setSetting('themePreset', preset); applyTheme(); }
+function _todayStr() { return new Date().toISOString().split('T')[0]; }
+
+function _applyAutoTheme() {
+  if (getSetting('autoTheme') === '0') return;
+  if (getSetting('autoThemeOverride') === _todayStr()) return;
+
+  const hour = new Date().getHours();
+  const isDay = hour >= 6 && hour < 20;
+  if (isDay) {
+    setSetting('themeMode', 'light');
+    setSetting('themePreset', 'daylight');
+  } else {
+    setSetting('themeMode', 'dark');
+    setSetting('themePreset', getSetting('autoThemeDarkPreset') || 'midnight');
+  }
+  applyTheme();
+}
+
+export function initAutoTheme() {
+  _applyAutoTheme();
+  setInterval(_applyAutoTheme, 15 * 60 * 1000);
+}
+
+export function setPreset(preset) {
+  setSetting('autoThemeOverride', _todayStr()); // gebruiker overschrijft vandaag
+  if (!LIGHT_PRESETS.has(preset)) setSetting('autoThemeDarkPreset', preset);
+  setSetting('themePreset', preset);
+  applyTheme();
+}
+
 export function setDensity(d) { setSetting('density', d); applyTheme(); }
 
 export function initTheme() {
@@ -49,6 +89,10 @@ export function initTheme() {
   }
 }
 
-export function setThemeMode(mode) { setSetting('themeMode', mode); applyTheme(); }
+export function setThemeMode(mode) {
+  setSetting('autoThemeOverride', _todayStr());
+  setSetting('themeMode', mode);
+  applyTheme();
+}
 export function setAccent(accent) { setSetting('accentColor', accent); applyTheme(); }
 export const ACCENT_NAMES = Object.keys(ACCENTS);

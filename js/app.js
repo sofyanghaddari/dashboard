@@ -2,7 +2,7 @@ import { openDB, onWrite } from './db.js';
 import { initRealtimeSync, scheduleAutoPush } from './auto-realtime-sync.js';
 import { register, initRouter, navigate, currentRoute } from './router.js';
 import { openSettings } from './components/settings.js';
-import { initTheme } from './theme.js';
+import { initTheme, initAutoTheme } from './theme.js';
 import { enablePullToRefresh } from './components/pullrefresh.js';
 import { initCmdK, openSearch } from './components/cmdk.js';
 import { bindRipple, staggerIn } from './animate.js';
@@ -37,6 +37,7 @@ async function bootApp() {
   register('todo', renderTodo);
   register('notes', renderNotes);
   initRouter();
+  initAutoTheme();
   bindRipple();
   autoHaptic();
   initSwipeBack();

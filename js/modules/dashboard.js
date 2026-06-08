@@ -66,6 +66,18 @@ export async function render(container) {
   const dailyGoal   = getNumber('dailyIncomeGoal');
   const monthlyGoal = getNumber('monthlyIncomeGoal');
   const goalPct      = dailyGoal > 0 ? Math.min(100, Math.round(todayIncome / dailyGoal * 100)) : 0;
+
+  // Netto vandaag berekenen via taxiExpenses
+  let dailyCost = 0;
+  try {
+    const expenses = JSON.parse(localStorage.getItem('taxiExpenses') || '[]');
+    const monthly = expenses.reduce((s, e) => {
+      const a = Number(e.amount) || 0;
+      return s + (e.frequency === 'weekly' ? a * (52 / 12) : a);
+    }, 0);
+    dailyCost = monthly / 30;
+  } catch (_) {}
+  const nettoToday = todayIncome - dailyCost;
   const monthGoalPct = monthlyGoal > 0 ? Math.min(100, Math.round(monthIncome / monthlyGoal * 100)) : 0;
 
   const daysInMonth   = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -171,6 +183,7 @@ export async function render(container) {
         <div class="dagstart-stat">
           <div class="dagstart-stat-val blurred-amount">${fmtMoney(todayIncome)}</div>
           <div class="dagstart-stat-lbl">Vandaag</div>
+          ${dailyCost > 0 ? `<div class="dagstart-stat-netto blurred-amount" style="color:${nettoToday>=0?'var(--ok)':'var(--danger)'}">netto ${fmtMoney(nettoToday)}</div>` : ''}
         </div>
         <div class="dagstart-stat">
           <div class="dagstart-stat-val" style="color:${todayHizb ? 'var(--ok)' : 'var(--text-faint)'}">${todayHizb ? '✓' : '–'}</div>
