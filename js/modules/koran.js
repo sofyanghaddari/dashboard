@@ -3,24 +3,21 @@ import { openModal } from '../components/modal.js';
 import { ymd, escapeHTML } from '../utils.js';
 import { celebrateTask } from '../components/celebrate.js';
 import { ok, err } from '../components/toast.js';
-import { SURAS } from '../data/suras.js';
+import { HIZBS } from '../data/hizbs.js';
 
 let _reminderTimer = null;
 const CIRCUMFERENCE = 2 * Math.PI * 50;
 
-// ── Soera progress helpers ──────────────────────────────────────────────────
-function getSoeraProgress() {
-  try { return JSON.parse(localStorage.getItem('soera_progress') || '{}'); }
+// ── Hizb voortgang helpers ──────────────────────────────────────────────────
+function getHizbVoortgang() {
+  try { return JSON.parse(localStorage.getItem('hizb_voortgang') || '{}'); }
   catch { return {}; }
 }
-function saveSoeraProgress(p) {
-  localStorage.setItem('soera_progress', JSON.stringify(p));
-}
-function setSoeraStatus(n, status) {
-  const p = getSoeraProgress();
-  if (status === null) delete p[n];
-  else p[n] = status;
-  saveSoeraProgress(p);
+function toggleHizbVoortgang(n) {
+  const v = getHizbVoortgang();
+  if (v[n]) delete v[n]; else v[n] = true;
+  localStorage.setItem('hizb_voortgang', JSON.stringify(v));
+  return !!v[n];
 }
 
 export async function render(container) {
@@ -267,158 +264,83 @@ async function renderHizb(container) {
   scheduleReminder();
 }
 
-// ── SOERA'S TAB ───────────────────────────────────────────────────────────────
+// ── HIZB VOORTGANGSKAART ──────────────────────────────────────────────────────
 function renderSoeras(container) {
-  const progress  = getSoeraProgress();
-  const groupByJuz = container.dataset.koranSoeraGroup === '1';
-  const search    = container.dataset.koranSoeraSearch || '';
-
-  const readCount = Object.values(progress).filter(v => v === 'read' || v === 'memorized').length;
-  const memCount  = Object.values(progress).filter(v => v === 'memorized').length;
-  const totalRead = readCount;
-
-  let filtered = SURAS;
-  if (search) {
-    const q = search.toLowerCase();
-    filtered = SURAS.filter(s =>
-      s.tl.toLowerCase().includes(q) ||
-      s.nl.toLowerCase().includes(q) ||
-      s.ar.includes(q) ||
-      String(s.n).includes(q)
-    );
-  }
+  const voortgang = getHizbVoortgang();
+  const doneCount = Object.keys(voortgang).length;
+  const pct = Math.round(doneCount / 60 * 100);
 
   const el = container.querySelector('#koran-content');
   el.innerHTML = `
     <!-- VOORTGANGSBALK -->
-    <div class="card" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
-        <h2 class="card-title" style="margin:0">Voortgang</h2>
-        <span style="font-size:.8rem;color:var(--text-dim)">${totalRead}/114 gelezen</span>
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+        <h2 class="card-title" style="margin:0">Koran voortgang</h2>
+        <span style="font-size:.88rem;color:var(--text-dim);font-weight:600">${doneCount}/60 hizbs</span>
       </div>
       <div class="soera-progress-bar-wrap">
-        <div class="soera-progress-read" style="width:${(readCount/114*100).toFixed(1)}%"></div>
-        <div class="soera-progress-mem" style="width:${(memCount/114*100).toFixed(1)}%"></div>
+        <div class="soera-progress-read" style="width:${pct}%"></div>
       </div>
-      <div style="display:flex;gap:14px;margin-top:8px;font-size:.75rem;color:var(--text-dim)">
-        <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--accent);margin-right:4px;vertical-align:middle"></span>Gelezen (${readCount})</span>
-        <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--ok);margin-right:4px;vertical-align:middle"></span>Gememoriseerd (${memCount})</span>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:.75rem;color:var(--text-faint)">
+        <span>${pct}% voltooid</span>
+        <span>${60 - doneCount} hizbs resterend</span>
       </div>
     </div>
 
-    <!-- ZOEK + GROEPEER -->
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <input id="soera-search" placeholder="Zoek soera..." value="${escapeHTML(search)}" style="flex:1" />
-      <button class="btn secondary ${groupByJuz ? '' : 'active'}" id="toggle-group" style="padding:10px 12px;font-size:.82rem;white-space:nowrap">
-        ${groupByJuz ? '📋 Per juz' : '🔢 Alles'}
-      </button>
-    </div>
-
-    <!-- SOERA GRID -->
-    <div id="soera-grid"></div>
-
-    <!-- DETAIL KAARTJE -->
-    <div id="soera-detail" style="display:none"></div>
+    <!-- HIZB LIJST -->
+    <div class="hizb-voortgang-list" id="hv-list"></div>
   `;
 
-  // Search binding
-  const searchInput = el.querySelector('#soera-search');
-  let searchTimer;
-  searchInput.oninput = () => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      container.dataset.koranSoeraSearch = searchInput.value;
-      renderSoeras(container);
-    }, 250);
-  };
-
-  el.querySelector('#toggle-group').onclick = () => {
-    container.dataset.koranSoeraGroup = groupByJuz ? '0' : '1';
-    renderSoeras(container);
-  };
-
-  const grid = el.querySelector('#soera-grid');
-  if (groupByJuz && !search) {
-    renderSoerasByJuz(grid, filtered, progress, container, el);
-  } else {
-    renderSoerasFlat(grid, filtered, progress, container, el);
-  }
+  renderHizbList(el.querySelector('#hv-list'), voortgang, container);
 }
 
-function renderSoerasFlat(grid, suras, progress, container, el) {
-  grid.innerHTML = `<div class="soera-grid">${suras.map(s => soeraBlock(s, progress)).join('')}</div>`;
-  bindSoeraClicks(grid, container, el, progress);
-}
+function renderHizbList(listEl, voortgang, container) {
+  let currentJuz = null;
+  let html = '';
 
-function renderSoerasByJuz(grid, suras, progress, container, el) {
-  const byJuz = {};
-  suras.forEach(s => { if (!byJuz[s.juz]) byJuz[s.juz] = []; byJuz[s.juz].push(s); });
-  grid.innerHTML = Object.keys(byJuz).sort((a,b) => +a - +b).map(j => `
-    <div style="margin-bottom:16px">
-      <div class="card-title" style="margin-bottom:8px;font-size:.7rem;color:var(--text-faint)">Juz ${j}</div>
-      <div class="soera-grid">${byJuz[j].map(s => soeraBlock(s, progress)).join('')}</div>
-    </div>
-  `).join('');
-  bindSoeraClicks(grid, container, el, progress);
-}
+  HIZBS.forEach(h => {
+    if (h.juz !== currentJuz) {
+      currentJuz = h.juz;
+      html += `<div class="hv-juz-header">Juz ${h.juz}</div>`;
+    }
+    const done = !!voortgang[h.n];
+    const partsHTML = h.parts.map(p =>
+      `<span class="hv-part ${done ? 'done' : ''}">${p.tl}${p.v ? ` <span class="hv-verses">${p.v}</span>` : ''}</span>`
+    ).join('');
 
-function soeraBlock(s, progress) {
-  const status = progress[s.n] || null;
-  const cls = status === 'memorized' ? 'soera-blk memorized'
-             : status === 'read'     ? 'soera-blk read'
-             : 'soera-blk';
-  return `<div class="${cls}" data-sn="${s.n}" title="${s.tl}">
-    <span class="soera-num">${s.n}</span>
-  </div>`;
-}
-
-function bindSoeraClicks(grid, container, el, progress) {
-  grid.querySelectorAll('[data-sn]').forEach(blk => {
-    blk.onclick = () => {
-      const n = +blk.dataset.sn;
-      const s = SURAS[n - 1];
-      showSoeraDetail(el, s, progress, container);
-    };
-  });
-}
-
-function showSoeraDetail(el, s, progress, container) {
-  const status = progress[s.n] || null;
-  const detail = el.querySelector('#soera-detail');
-  detail.style.display = 'block';
-  detail.innerHTML = `
-    <div class="card soera-detail-card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-        <div>
-          <div style="font-size:1.6rem;font-family:serif;direction:rtl;margin-bottom:4px">${s.ar}</div>
-          <div style="font-weight:700;font-size:1rem">${s.tl}</div>
-          <div style="font-size:.84rem;color:var(--text-dim)">${s.nl}</div>
+    html += `
+      <div class="hv-card ${done ? 'done' : ''}" data-hn="${h.n}">
+        <div class="hv-left">
+          <div class="hv-num">Hizb ${h.n}</div>
+          <div class="hv-parts">${partsHTML}</div>
         </div>
-        <button class="task-btn" id="close-detail" style="font-size:1rem;padding:6px">✕</button>
-      </div>
-      <div style="display:flex;gap:12px;margin-bottom:14px;font-size:.82rem;color:var(--text-dim)">
-        <span>Soera ${s.n}</span><span>•</span>
-        <span>${s.ay} ayaat</span><span>•</span>
-        <span>Juz ${s.juz}</span>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn soera-status-btn ${status===null?'active':''}" data-set="null" style="flex:1;font-size:.82rem">Niet begonnen</button>
-        <button class="btn soera-status-btn ${status==='read'?'active':''}" data-set="read" style="flex:1;font-size:.82rem;background:${status==='read'?'var(--accent)':''}">Gelezen</button>
-        <button class="btn soera-status-btn ${status==='memorized'?'active':''}" data-set="memorized" style="flex:1;font-size:.82rem;background:${status==='memorized'?'var(--ok)':''}">Gememoriseerd</button>
-      </div>
-    </div>
-  `;
-  detail.querySelector('#close-detail').onclick = () => { detail.style.display = 'none'; };
-  detail.querySelectorAll('[data-set]').forEach(btn => {
-    btn.onclick = () => {
-      const v = btn.dataset.set === 'null' ? null : btn.dataset.set;
-      setSoeraStatus(s.n, v);
-      ok(v === null ? 'Status verwijderd' : v === 'read' ? '📖 Gemarkeerd als gelezen' : '⭐ Gememoriseerd!');
+        <button class="hv-check ${done ? 'done' : ''}" data-hn="${h.n}" aria-label="${done ? 'Markering verwijderen' : 'Markeer als gelezen'}">
+          ${done ? '✓' : ''}
+        </button>
+      </div>`;
+  });
+
+  listEl.innerHTML = html;
+
+  listEl.querySelectorAll('.hv-check').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const n = +btn.dataset.hn;
+      const nowDone = toggleHizbVoortgang(n);
+      ok(nowDone ? `✓ Hizb ${n} gelezen` : `Hizb ${n} verwijderd`);
       renderSoeras(container);
-      detail.style.display = 'none';
     };
   });
-  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Also tap anywhere on card
+  listEl.querySelectorAll('.hv-card').forEach(card => {
+    card.onclick = () => {
+      const n = +card.dataset.hn;
+      const nowDone = toggleHizbVoortgang(n);
+      ok(nowDone ? `✓ Hizb ${n} gelezen` : `Hizb ${n} verwijderd`);
+      renderSoeras(container);
+    };
+  });
 }
 
 // ── Calendar rendering ────────────────────────────────────────────────────────
