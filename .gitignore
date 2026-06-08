@@ -4,3 +4,5 @@ node_modules/
 .vscode/
 .idea/
 .superpowers/
+.claude/nocache_server.py
+.worktrees
