@@ -3302,3 +3302,143 @@ body[data-preset="concrete"] .btn.secondary { background: #d0d0d0; color: var(--
   border-radius: 6px;
   border: 1px solid var(--border);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ✦ ARABISCH — LUXE UPGRADE (animaties, glans, glow)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Stat-kaarten: glas, lift, gloed */
+.srs-stats-grid .srs-stat {
+  position: relative; overflow: hidden;
+  background: linear-gradient(160deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  transition: transform .35s var(--spring), box-shadow .35s ease, border-color .35s ease;
+  animation: srsStatIn .5s var(--ease-out) both;
+}
+.srs-stats-grid .srs-stat:nth-child(1) { animation-delay: .04s; }
+.srs-stats-grid .srs-stat:nth-child(2) { animation-delay: .10s; }
+.srs-stats-grid .srs-stat:nth-child(3) { animation-delay: .16s; }
+.srs-stats-grid .srs-stat:nth-child(4) { animation-delay: .22s; }
+.srs-stats-grid .srs-stat::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.07) 50%, transparent 70%);
+  transform: translateX(-120%); transition: none;
+}
+.srs-stats-grid .srs-stat:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(0,0,0,.28);
+  border-color: var(--gold);
+}
+.srs-stats-grid .srs-stat:hover::after { animation: srsShine .8s ease; }
+.srs-stat-val { transition: text-shadow .3s ease; }
+.srs-stat-val.accent { text-shadow: 0 0 18px var(--gold-glow, rgba(110,201,255,.4)); }
+@keyframes srsStatIn { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes srsShine { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
+
+/* Start-sessie kaart: luxe goud-gradient + glans-sweep */
+.arabic-start-card {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.04);
+  animation: srsStatIn .5s var(--ease-out) .12s both;
+}
+.arabic-start-card::before {
+  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, var(--gold-glow, rgba(212,176,107,.12)) 0%, transparent 55%);
+  opacity: .5; pointer-events: none; animation: srsGlowPulse 4s ease-in-out infinite;
+}
+@keyframes srsGlowPulse { 0%,100% { opacity: .25; transform: scale(.9); } 50% { opacity: .55; transform: scale(1.05); } }
+.arabic-start-card h2 { position: relative; z-index: 1; }
+.arabic-start-card p { position: relative; z-index: 1; }
+.arabic-start-card .btn { position: relative; z-index: 1; }
+#start-session:not([disabled]) {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--gold, var(--accent)) 100%);
+  box-shadow: 0 6px 20px rgba(110,201,255,.3); border: none;
+  transition: transform .25s var(--spring), box-shadow .3s ease;
+}
+#start-session:not([disabled]):hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(110,201,255,.42); }
+#start-session:not([disabled]):active { transform: scale(.97); }
+
+/* Woordrijen: stagger-entree, hover-slide, goud Arabisch */
+.srs-word-row {
+  transition: transform .25s var(--spring), border-color .25s ease, box-shadow .25s ease, background .25s ease;
+  animation: srsRowIn .4s var(--ease-out) both;
+}
+#word-list .srs-word-row:nth-child(1) { animation-delay: .02s; }
+#word-list .srs-word-row:nth-child(2) { animation-delay: .05s; }
+#word-list .srs-word-row:nth-child(3) { animation-delay: .08s; }
+#word-list .srs-word-row:nth-child(4) { animation-delay: .11s; }
+#word-list .srs-word-row:nth-child(5) { animation-delay: .14s; }
+#word-list .srs-word-row:nth-child(6) { animation-delay: .17s; }
+#word-list .srs-word-row:nth-child(7) { animation-delay: .20s; }
+#word-list .srs-word-row:nth-child(8) { animation-delay: .23s; }
+.srs-word-row:hover {
+  transform: translateX(4px);
+  border-color: var(--gold);
+  box-shadow: -3px 0 0 0 var(--gold), 0 4px 14px rgba(0,0,0,.2);
+  background: var(--bg-elev-2);
+}
+.srs-word-arabic {
+  background: linear-gradient(135deg, var(--gold, var(--accent)), var(--accent));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: filter .3s ease;
+}
+.srs-word-row:hover .srs-word-arabic { filter: drop-shadow(0 0 10px var(--gold-glow, rgba(212,176,107,.5))); }
+@keyframes srsRowIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Flashcard: zachte entree + luxe gloed + groot Arabisch met glow */
+.srs-flashcard { animation: srsCardIn .5s var(--spring) both; }
+.srs-flashcard-front, .srs-flashcard-back {
+  background: linear-gradient(160deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.srs-flashcard-front { border-color: var(--border); }
+.srs-flashcard .arabic-text {
+  text-shadow: 0 0 30px var(--gold-glow, rgba(212,176,107,.35));
+  animation: srsArabicGlow 3s ease-in-out infinite;
+}
+@keyframes srsArabicGlow {
+  0%,100% { text-shadow: 0 0 24px rgba(212,176,107,.25); }
+  50%     { text-shadow: 0 0 40px rgba(212,176,107,.5); }
+}
+@keyframes srsCardIn { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+
+/* Beoordeel-knoppen: rijker, met hover-lift + glow */
+.srs-grade-btn {
+  position: relative; overflow: hidden;
+  transition: transform .22s var(--spring), box-shadow .25s ease, opacity .2s ease;
+}
+.srs-grade-btn:hover { transform: translateY(-2px); }
+.srs-grade-again:hover   { box-shadow: 0 6px 18px rgba(255,107,112,.3); }
+.srs-grade-hard:hover    { box-shadow: 0 6px 18px rgba(0,0,0,.28); }
+.srs-grade-good:hover    { box-shadow: 0 6px 18px rgba(110,201,255,.3); }
+.srs-grade-perfect:hover { box-shadow: 0 6px 18px rgba(93,212,154,.32); }
+.srs-grade-perfect .grade-icon { animation: srsStarTwinkle 1.6s ease-in-out infinite; }
+@keyframes srsStarTwinkle { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25) rotate(12deg); opacity: .85; } }
+
+/* Tab-onderstreping: vloeiend goud */
+.srs-tab.active { text-shadow: 0 0 12px var(--gold-glow, rgba(110,201,255,.3)); }
+
+/* Voltooiing: feestelijke entree + tellende stats */
+.srs-completion { animation: srsCardIn .5s var(--spring) both; }
+.srs-completion-icon { animation: srsTrophyPop .7s var(--spring) both, srsFloat 3s ease-in-out 1s infinite; display: inline-block; }
+@keyframes srsTrophyPop { 0% { transform: scale(0) rotate(-30deg); opacity: 0; } 60% { transform: scale(1.3) rotate(8deg); } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes srsFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.srs-comp-val { animation: srsStatIn .5s var(--ease-out) .25s both; }
+
+/* Import-knoppen: subtiele hover-lift */
+label[for="import-csv"], label[for="import-pdf"], #add-card {
+  transition: transform .22s var(--spring), border-color .25s ease, box-shadow .25s ease;
+}
+label[for="import-csv"]:hover, label[for="import-pdf"]:hover, #add-card:hover {
+  transform: translateY(-2px); border-color: var(--gold);
+  box-shadow: 0 6px 16px rgba(0,0,0,.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .srs-stats-grid .srs-stat, .arabic-start-card, .srs-word-row, .srs-flashcard,
+  .srs-completion, .srs-completion-icon, .srs-comp-val, .srs-stat-val,
+  .arabic-start-card::before, .srs-flashcard .arabic-text, .srs-grade-perfect .grade-icon {
+    animation: none !important;
+  }
+}
