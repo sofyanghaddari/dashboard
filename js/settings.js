@@ -9,20 +9,28 @@ const DEFAULTS = {
   lockGraceMin: '5',
 };
 
-// Sleutels die in sessionStorage worden bewaard (verdwijnen bij afsluiten browser-tab)
-const SESSION_KEYS = new Set(['ghToken', 'ghEncPwd']);
+// Niets staat nog sessie-only: zowel de PAT (ghToken) als het encryptie-wachtwoord
+// (ghEncPwd) worden nu persistent in localStorage bewaard, zodat ze niet bij elke
+// herstart verdwijnen (dat dwong tot telkens opnieuw invoeren én was een hoofdoorzaak
+// van het aanmaken van nieuwe gists). Gebruik een fine-grained token met alléén
+// Gist-permissie; de app-lock (PIN/Face ID) beschermt de toegang tot het toestel.
+const SESSION_KEYS = new Set();
+
+// Keys die vroeger in sessionStorage zaten en nu persistent moeten worden.
+const PROMOTE_KEYS = ['ghToken', 'ghEncPwd'];
 
 /**
- * Eénmalige migratie: verplaats gevoelige keys van localStorage naar sessionStorage.
  * Wordt aangeroepen bij app-start.
+ * Promoveert bestaande sessie-waarden (token, encryptie-wachtwoord) éénmalig naar
+ * localStorage, zodat gebruikers die nog op de oude opslag zaten niets kwijtraken.
  */
 export function migrateSessionKeys() {
-  for (const key of SESSION_KEYS) {
-    const val = localStorage.getItem(key);
-    if (val !== null) {
-      sessionStorage.setItem(key, val);
-      localStorage.removeItem(key);
+  for (const key of PROMOTE_KEYS) {
+    const sessVal = sessionStorage.getItem(key);
+    if (sessVal && !localStorage.getItem(key)) {
+      localStorage.setItem(key, sessVal);
     }
+    sessionStorage.removeItem(key);
   }
 }
 

@@ -1,6 +1,9 @@
 import { getSetting, setSetting } from './settings.js';
 
 const ACCENTS = {
+  // Warm taupe — het enige accent van het "stille luxe" systeem (donker + licht variant)
+  taupe:    { gold: '#bfb09a', goldBright: '#d4c6b0', glow: 'rgba(138,126,111,.18)',
+              goldLight: '#8a7e6f', goldBrightLight: '#a3957d', glowLight: 'rgba(138,126,111,.14)' },
   gold:     { gold: '#d4b06b', goldBright: '#e8c785', glow: 'rgba(212,176,107,.15)' },
   blue:     { gold: '#6ec9ff', goldBright: '#9dd9ff', glow: 'rgba(110,201,255,.15)' },
   green:    { gold: '#5dd49a', goldBright: '#7fe8b3', glow: 'rgba(93,212,154,.15)' },
@@ -31,7 +34,7 @@ const LIGHT_PRESETS = new Set(['daylight','ivory','stone','cloud','pearl','paper
 
 export function applyTheme() {
   const mode = getSetting('themeMode') || 'dark';
-  const accent = getSetting('accentColor') || 'gold';
+  const accent = getSetting('accentColor') || 'taupe';
   const preset = getSetting('themePreset') || 'midnight';
 
   let actual = mode;
@@ -42,10 +45,12 @@ export function applyTheme() {
   document.body.dataset.preset = preset;
   document.body.dataset.density = getSetting('density') || 'comfortable';
 
-  const a = ACCENTS[accent] || ACCENTS.gold;
-  document.documentElement.style.setProperty('--gold', a.gold);
-  document.documentElement.style.setProperty('--gold-bright', a.goldBright);
-  document.documentElement.style.setProperty('--gold-glow', a.glow);
+  // Accent (money/glow) volgt licht/donker zodat het op beide leesbaar blijft.
+  const a = ACCENTS[accent] || ACCENTS.taupe;
+  const isLight = actual === 'light';
+  document.documentElement.style.setProperty('--gold', isLight && a.goldLight ? a.goldLight : a.gold);
+  document.documentElement.style.setProperty('--gold-bright', isLight && a.goldBrightLight ? a.goldBrightLight : a.goldBright);
+  document.documentElement.style.setProperty('--gold-glow', isLight && a.glowLight ? a.glowLight : a.glow);
 }
 
 function _todayStr() { return new Date().toISOString().split('T')[0]; }
@@ -81,6 +86,17 @@ export function setPreset(preset) {
 export function setDensity(d) { setSetting('density', d); applyTheme(); }
 
 export function initTheme() {
+  // Eenmalige overgang naar het warm-neutrale systeem: taupe accent + een nette
+  // warm-donkere modus als standaard (gebruiker kan dit later aanpassen in
+  // instellingen). De automatische dag/nacht-wissel zetten we uit zodat de app
+  // niet ongevraagd naar licht springt.
+  if (!localStorage.getItem('warmAccentV1')) {
+    setSetting('accentColor', 'taupe');
+    setSetting('themeMode', 'dark');
+    setSetting('themePreset', 'midnight');
+    setSetting('autoTheme', '0');
+    localStorage.setItem('warmAccentV1', '1');
+  }
   applyTheme();
   if (window.matchMedia) {
     window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {

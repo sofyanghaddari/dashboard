@@ -15,11 +15,24 @@ function getExpenses() {
 function saveExpenses(list) {
   localStorage.setItem(EXPENSES_KEY, JSON.stringify(list));
 }
+// Terugkerende maandkosten (maandelijks + wekelijks omgerekend). Eenmalige
+// kosten tellen NIET mee in het terugkerende totaal / de dagelijkse break-even.
 function calcMonthlyTotal(expenses) {
   return expenses.reduce((s, e) => {
     const amt = Number(e.amount) || 0;
     if (e.frequency === 'weekly') return s + amt * (52 / 12);
+    if (e.frequency === 'eenmalig') return s; // eenmalig telt niet mee als vaste last
     return s + amt; // monthly default
+  }, 0);
+}
+
+// Som van eenmalige kosten die in de opgegeven maand vallen.
+function calcOneTimeThisMonth(expenses, now = new Date()) {
+  const mk = monthKey(now);
+  return expenses.reduce((s, e) => {
+    if (e.frequency !== 'eenmalig') return s;
+    if (!e.date || monthKey(new Date(e.date)) !== mk) return s;
+    return s + (Number(e.amount) || 0);
   }, 0);
 }
 
@@ -66,9 +79,11 @@ export async function render(container) {
 
   const expenses = getExpenses();
   const monthlyExpenses = calcMonthlyTotal(expenses);
+  const oneTimeThisMonth = calcOneTimeThisMonth(expenses, now);
+  const totalCostThisMonth = monthlyExpenses + oneTimeThisMonth;
   const dailyBreakEven  = monthlyExpenses > 0 ? Math.round(monthlyExpenses / 30 * 100) / 100 : 0;
-  const monthNetto      = monthIncome - monthlyExpenses;
-  const costRatioPct    = monthIncome > 0 ? Math.min(100, Math.round(monthlyExpenses / monthIncome * 100)) : (monthlyExpenses > 0 ? 100 : 0);
+  const monthNetto      = monthIncome - totalCostThisMonth;
+  const costRatioPct    = monthIncome > 0 ? Math.min(100, Math.round(totalCostThisMonth / monthIncome * 100)) : (totalCostThisMonth > 0 ? 100 : 0);
   const todayNetto      = todayIncome - dailyBreakEven;
 
   container.innerHTML = `
@@ -94,7 +109,7 @@ export async function render(container) {
     renderOverview(content, container, {
       todayIncome, weekIncome, monthIncome, projectedMonth,
       dailyGoal, goalPct, monthlyGoal,
-      monthlyExpenses, dailyBreakEven, monthNetto, costRatioPct, todayNetto,
+      monthlyExpenses, oneTimeThisMonth, totalCostThisMonth, dailyBreakEven, monthNetto, costRatioPct, todayNetto,
       expenses, rides, now, daysIntoMonth, daysInMonth, byDate,
     });
     checkBreakEven(todayIncome, expenses);
@@ -110,7 +125,7 @@ export async function render(container) {
 // ─── OVERZICHT TAB ────────────────────────────────────────────────────────
 function renderOverview(content, container, d) {
   const { todayIncome, weekIncome, monthIncome, projectedMonth,
-    dailyGoal, goalPct, monthlyGoal, monthlyExpenses, dailyBreakEven,
+    dailyGoal, goalPct, monthlyGoal, monthlyExpenses, oneTimeThisMonth, totalCostThisMonth, dailyBreakEven,
     monthNetto, costRatioPct, todayNetto, expenses, rides, now, daysIntoMonth, daysInMonth, byDate } = d;
 
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -162,17 +177,23 @@ function renderOverview(content, container, d) {
     </div>
 
     <!-- NETTO OVERZICHT (alleen als kosten ingesteld) -->
-    ${monthlyExpenses > 0 ? `
+    ${totalCostThisMonth > 0 ? `
     <div class="netto-hero card">
       <h2 class="card-title">Netto overzicht — ${new Date().toLocaleString('nl-NL', { month: 'long' })}</h2>
       <div class="netto-row">
         <span class="netto-label">Bruto inkomen</span>
         <span class="netto-value gold blurred-amount">${fmtMoney(monthIncome)}</span>
       </div>
+      ${monthlyExpenses > 0 ? `
       <div class="netto-row">
-        <span class="netto-label">Maandkosten</span>
+        <span class="netto-label">Vaste maandkosten</span>
         <span class="netto-value negative">- ${fmtMoney(monthlyExpenses)}</span>
-      </div>
+      </div>` : ''}
+      ${oneTimeThisMonth > 0 ? `
+      <div class="netto-row">
+        <span class="netto-label">Eenmalig deze maand</span>
+        <span class="netto-value negative">- ${fmtMoney(oneTimeThisMonth)}</span>
+      </div>` : ''}
       <div class="netto-row netto-total-row">
         <span class="netto-label">Netto inkomen</span>
         <span class="netto-value ${monthNetto >= 0 ? 'positive' : 'negative'} blurred-amount">${fmtMoney(monthNetto)}</span>
@@ -182,7 +203,7 @@ function renderOverview(content, container, d) {
       </div>
       <div class="cost-ratio-meta">
         <span>Kosten zijn ${costRatioPct}% van bruto</span>
-        <span>Per dag: ${fmtMoney(dailyBreakEven)}</span>
+        ${dailyBreakEven > 0 ? `<span>Break-even/dag: ${fmtMoney(dailyBreakEven)}</span>` : ''}
       </div>
     </div>
     ` : `
@@ -253,6 +274,8 @@ function renderRitten(content, container, year, month, byDate, rides, now) {
 // ─── KOSTEN TAB ───────────────────────────────────────────────────────────
 function renderKosten(content, container, expenses) {
   const monthly = calcMonthlyTotal(expenses);
+  const oneTime = calcOneTimeThisMonth(expenses);
+  const freqLabel = (f) => f === 'weekly' ? '/week' : f === 'eenmalig' ? 'eenmalig' : '/maand';
 
   const PRESETS = [
     { name: 'Brandstof', amount: 600, frequency: 'monthly' },
@@ -267,6 +290,7 @@ function renderKosten(content, container, expenses) {
       <h2 class="card-title">Totaal maandkosten</h2>
       <div style="font-size:1.6rem;font-family:Georgia,serif;font-weight:700;color:var(--danger);margin:6px 0 2px">${fmtMoney(monthly)}<span style="font-size:.9rem;font-weight:400;color:var(--text-faint)">/maand</span></div>
       <div style="font-size:.82rem;color:var(--text-faint)">Break-even per dag: <b style="color:var(--text)">${fmtMoney(monthly / 30)}</b></div>
+      ${oneTime > 0 ? `<div style="font-size:.82rem;color:var(--text-faint);margin-top:6px;padding-top:6px;border-top:1px solid var(--border-soft)">Eenmalig deze maand: <b style="color:var(--text)">${fmtMoney(oneTime)}</b></div>` : ''}
     </div>
 
     <div class="expense-list" id="expense-list">
@@ -275,7 +299,7 @@ function renderKosten(content, container, expenses) {
           <div class="expense-item-name">${escapeHTML(e.name)}</div>
           <div>
             <span class="expense-item-amount">${fmtMoney(e.amount)}</span>
-            <span class="expense-item-freq">${e.frequency === 'weekly' ? '/week' : '/maand'}</span>
+            <span class="expense-item-freq">${freqLabel(e.frequency)}${e.frequency === 'eenmalig' && e.date ? ' · ' + new Date(e.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : ''}</span>
           </div>
           <button class="expense-item-del" data-del="${e.id}" title="Verwijder">×</button>
         </div>`).join('') : `<p class="muted" style="text-align:center;font-size:.875rem;padding:10px 0">Nog geen kosten ingesteld</p>`}
@@ -300,6 +324,7 @@ function renderKosten(content, container, expenses) {
       <div class="segmented" style="margin-bottom:12px">
         <button type="button" class="seg active" data-freq="monthly">Per maand</button>
         <button type="button" class="seg" data-freq="weekly">Per week</button>
+        <button type="button" class="seg" data-freq="eenmalig">Eenmalig</button>
       </div>
       <button class="btn block" id="save-expense">Toevoegen</button>
     </div>
@@ -341,7 +366,9 @@ function renderKosten(content, container, expenses) {
     if (!name) { content.querySelector('#exp-name').focus(); return; }
     if (!isFinite(amount) || amount <= 0) { content.querySelector('#exp-amount').focus(); return; }
     const list = getExpenses();
-    list.push({ id: uid(), name, amount, frequency: selectedFreq });
+    const item = { id: uid(), name, amount, frequency: selectedFreq };
+    if (selectedFreq === 'eenmalig') item.date = ymd(new Date()); // koppel aan de huidige maand
+    list.push(item);
     saveExpenses(list);
     render(container);
   };

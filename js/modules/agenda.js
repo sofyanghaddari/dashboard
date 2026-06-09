@@ -149,6 +149,14 @@ function renderGrid(container, dates, focusDay, events, rides, isMobileMode) {
     };
   });
 
+  // Tap anywhere in an empty cell to add (mobile has no hover for the + button)
+  grid.querySelectorAll('.agenda-cell').forEach(cell => {
+    cell.onclick = (e) => {
+      if (e.target.closest('.agenda-chip')) return; // editing handled by chip
+      openEventForm(container, { date: cell.dataset.date, hour: +cell.dataset.hour }, events);
+    };
+  });
+
   // Bind event chips (click to edit)
   grid.querySelectorAll('.agenda-chip').forEach(chip => {
     chip.onclick = (e) => {
@@ -157,6 +165,15 @@ function renderGrid(container, dates, focusDay, events, rides, isMobileMode) {
       if (ev) openEventForm(container, ev, events, true);
     };
   });
+
+  // Quiet hint when the visible day has nothing planned yet
+  const hasEvents = visibleDates.some(d => events.some(e => e.date === d));
+  if (!hasEvents) {
+    grid.insertAdjacentHTML('afterbegin', `<div class="day-empty-hint">
+      <b>Nog niets gepland</b>
+      <span>Tik op een tijdvak om een blok toe te voegen.</span>
+    </div>`);
+  }
 }
 
 function eventChip(ev) {

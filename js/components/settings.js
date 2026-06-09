@@ -472,7 +472,7 @@ export async function openSettings(onClose) {
             </div>
           </div>
           <button type="button" class="btn block" id="gh-setup" style="margin-top:8px">Verbind met GitHub</button>
-          <p class="muted" style="font-size:.76rem;margin-top:8px;padding:0 2px">💡 Zonder bestaande ID wordt automatisch een nieuwe gist aangemaakt.</p>
+          <p class="muted" style="font-size:.76rem;margin-top:8px;padding:0 2px">💡 Zonder ID hergebruikt de app je bestaande dashboard-gist als die er is; alleen als er écht geen bestaat wordt er één aangemaakt.</p>
         ` : `
           <div class="settings-group">
             <div class="settings-row">

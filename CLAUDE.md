@@ -13,11 +13,12 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=3), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: v24)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: v51)
 - Web App Manifest met shortcuts voor installeerbaarheid
 - Open-Meteo voor weer (geen API key, default Amsterdam centrum 52.3676, 4.9041)
 - GitHub Gist API voor encrypted auto-sync met versie-historie
 - Web Crypto API voor AES-GCM versleuteling (PBKDF2 200k iter)
+- Motion One (lokaal gevendord in `js/vendor/motion.min.js`, geen build/CDN) voor subtiele scroll-in reveals via `js/motion.js` — respecteert prefers-reduced-motion
 - WebAuthn voor Face ID/Touch ID
 - Web Speech API voor voice-input
 - Vibration API voor haptic feedback
@@ -31,7 +32,7 @@ Lokaal: `/Users/soef/claude code`
 - gh CLI staat in `~/bin/gh`, auth al ingesteld (user: sofyanghaddari)
 - Bij elke commit van static assets: bump `CACHE` versie in `service-worker.js`
 
-## Modules (7 tabs)
+## Modules (9 tabs)
 
 1. **🏠 Dashboard** — hero (mascot + shame), weer-radar Amsterdam (spitsuren ipv Schiphol), kalender+jaaroverzicht knoppen, voice-knop, vandaag/maand-stats, goal-trajectory SVG, doel-haalbaarheid kaart, patroon-insights, 30-dagen heatmap, koran/arabic/spaardoelen kaarten, top-prioriteit-taken, empty CTA bij lege data
 2. **🚖 Taxi** — vereenvoudigd: alleen "+ Inkomen vandaag noteren" + maandkalender-grid waarop je per dag retroactief inkomen invult (klik dag → modal met items + add), CSV-export, jaarverloop bar-chart. **Geen** shift-tracker, source-breakdown, uitgaven of belasting-reserve meer
@@ -40,6 +41,8 @@ Lokaal: `/Users/soef/claude code`
 5. **🎯 Doelen** — lange/korte termijn met taxi-koppeling (% per rit + streefbedrag), gewoontes met chains + 14-dagen-strip, spaarpotjes (Bunq-style met current/target)
 6. **✅ To-do** — prioriteit/medium/waiting, smart filters (vandaag/week), tags, subtaken, herhalend, bulk-modus, undo, mark-for-later, quick-NL-input ("morgen 10:00 APK")
 7. **📝 Notities** — notities + ideeën sub-tabs, lichte markdown
+8. **🗓 Week** (`agenda.js`) — week-tijdrooster 06:00–24:00, dag-selector met dag-inkomen, blokken per categorie; tik een leeg tijdvak om te plannen (werkt op mobiel, geen hover nodig). Events in localStorage (`agenda_events`)
+9. **📊 Stats** (`stats.js`) — inkomen-inzichten met 7d/30d/90d/Alles filter, totalen + per-week bar-chart (WIP, serif titel)
 
 ## Globale features
 
@@ -119,7 +122,11 @@ js/
   theme.js                       — dark/light/auto + accent + preset + density
   achievements.js                — 12 badges berekening
   activity.js                    — silent activity log (max 200)
-  animate.js                     — countUp, staggerIn, bindRipple
+  animate.js                     — countUp, (legacy) staggerIn, bindRipple
+  motion.js                      — Motion One wiring: revealView() scroll-in reveals (window.staggerIn wijst hiernaar)
+  vendor/motion.min.js           — lokaal gevendorde Motion One (offline-safe, in SW-cache)
+  notifications.js               — browser-notificaties voor taken met deadline
+  privacy.js                     — blur-toggle voor bedragen op dashboard
   weather.js                     — open-meteo + Amsterdam spitsuur-heuristiek
   mascot.js                      — reactieve mascot + 15 shame messages + customisatie
   quotes.js                      — quote of the day (niet meer getoond in hero)
@@ -147,6 +154,13 @@ js/
     goals.js                     — doelen + habits chains + spaarpotjes
     todo.js                      — taken met smart filters
     notes.js                     — notes + ideas
+    agenda.js                    — Week-tijdrooster (events in localStorage)
+    stats.js                     — inkomen-inzichten + per-week bar-chart
+    arabic-srs.js                — SRS-sessie helper voor arabic
+  data/
+    arabic-words.js              — Arabische woordenlijst
+    hizbs.js                     — hizb-indeling (koran voortgangskaart)
+    suras.js                     — ⚠️ DEAD: 114 suras, niet meer geïmporteerd (oude soera-grid)
   components/
     modal.js                     — basis modal met × close button
     settings.js                  — ⚙️ modal (groot, alle settings)
@@ -237,6 +251,19 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 ## Recente beslissingen (chronologisch, meest recent boven)
 
+-1. **Warm-neutraal kleursysteem + content/feature-ronde (juni 2026):**
+   - **Kleuren:** warm-neutraal "stille luxe" palet als CSS-tokens. Gekozen aanpak: app blijft **donker** (default), met een warm-donkere basis afgeleid van het opgegeven licht-palet; één accent = **taupe** (`#8a7e6f` licht / `#bfb09a` donker). `:root` retuned (default/midnight), `body[data-theme=light]` + `daylight` preset = warm-light, oude blauwe accent-tints (`110,201,255`) globaal vervangen door taupe. Eenmalige migratie `warmAccentV1` zet accent=taupe + dark + auto-thema uit. Andere 15 presets ongemoeid.
+   - **Token/sync:** PAT én encryptie-wachtwoord nu **persistent in localStorage** (waren sessie-only → telkens kwijt). Gist-hergebruik: `syncUp` zoekt eerst een bestaande dashboard-gist (`findExistingDashboardGistId`) i.p.v. een nieuwe te maken. **Geen** delete-knop in de UI (bewust, user ruimt zelf op via gist.github.com).
+   - **Hadith van de dag:** vertalingen herzien tot getrouwe, volledige weergaven van het Arabisch (eigen vertaling, geverifieerd tegen sunnah.com), overleveraar toegevoegd ("Overgeleverd door …"), 6467-matn gecorrigeerd, mislabel 73→71 gefixt, Koranvers uit hadith-lijst gehaald.
+   - **Woord van de dag:** alle definities herschreven in gewone taal.
+   - **Taxikosten:** naast maandelijks/wekelijks nu ook **eenmalig** (met datum, telt mee in netto van die maand, niet in dagelijkse break-even).
+   - **Gids:** `docs/BACKUP-GIDS-iPhone.md` met echte knopnamen.
+0. **Premium polish-ronde (juni 2026):**
+   - **Motion One** lokaal gevendord (`js/vendor/motion.min.js`) i.p.v. npm/CDN — vanilla no-build PWA moet offline blijven werken. `js/motion.js` `revealView()` doet subtiele scroll-in (fade + 12px translate, gentle stagger, één keer, alleen transform/opacity). `window.staggerIn` wijst nu hiernaar i.p.v. de CSS-staggerIn.
+   - **prefers-reduced-motion** nu globaal afgehandeld (was 1 regel); luide loops getemperd (moneyGlow/heroGlow/mascotBob niet meer infinite).
+   - **Bugfixes:** SW miste 5 assets (offline breuk) → toegevoegd + CACHE v49; Week `+`-knop was hover-only → leeg tijdvak nu tikbaar op mobiel; Week event-chip tekst was zwart-op-donker (onleesbaar) → licht; "virtuale"→"virtuele" typo.
+   - **Notities/Week/Doelen** opgepoetst: uniforme `.page-title`, rustige `.add-tile` i.p.v. luide blauwe knop, premium empty-states (`.section-empty`, `.day-empty-hint`, icon-in-cirkel).
+   - **Let op:** preview-sandbox tikt geen requestAnimationFrame → JS-animaties (Motion) renderen niet in de preview, wél in een echte browser. CSS-animaties wél zichtbaar.
 1. **Real-time sync gefixt:** _updatedAt op elke schrijfactie, auto-push 8s debounce, push op visibility hidden, pull op visible — eindelijk écht synchroon tussen Safari en PWA
 2. **Find-my-gists fix:** als gebruiker per ongeluk 2x setup deed kunnen ze nu de juiste gist kiezen
 3. **Safe-area-inset-top fix:** floating buttons (⚙️ 🔍 ☁️) onder Dynamic Island

@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v47';
+const CACHE = 'dashboard-v51';
 const ASSETS = [
   './',
   './index.html',
@@ -16,6 +16,7 @@ const ASSETS = [
   './js/nlp.js',
   './js/voice.js',
   './js/privacy.js',
+  './js/notifications.js',
   './js/lock.js',
   './js/github-sync.js',
   './js/export-ical.js',
@@ -23,6 +24,7 @@ const ASSETS = [
   './js/mascot.js',
   './js/quotes.js',
   './js/animate.js',
+  './js/motion.js',
   './js/crypto.js',
   './js/biometric.js',
   './js/haptic.js',
@@ -46,6 +48,8 @@ const ASSETS = [
   './js/components/undo.js',
   './js/modules/dashboard.js',
   './js/modules/taxi.js',
+  './js/modules/agenda.js',
+  './js/modules/stats.js',
   './js/modules/koran.js',
   './js/modules/arabic.js',
   './js/modules/arabic-srs.js',
@@ -55,6 +59,8 @@ const ASSETS = [
   './js/components/calendar.js',
   './js/components/year-review.js',
   './js/data/arabic-words.js',
+  './js/data/hizbs.js',
+  './js/vendor/motion.min.js',
 ];
 
 self.addEventListener('install', (e) => {

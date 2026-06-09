@@ -86,14 +86,48 @@ function snapshotFilename() {
   return `backup-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.json`;
 }
 
+// Zoek een bestaande dashboard-gist in het account (meest recent bijgewerkt eerst).
+// Voorkomt dat er telkens een NIEUWE gist wordt aangemaakt wanneer de lokale
+// gist-ID kwijt is (bv. na storage-eviction, browser-data wissen, of op een
+// apart PWA-storage-partitie). Niet-primaire "mirror"-gists worden achteraan gezet.
+async function findExistingDashboardGistId(token) {
+  try {
+    const gists = await api('/gists?per_page=100', token);
+    const matches = gists
+      .filter(g => /dashboard/i.test(g.description || '') ||
+                   Object.keys(g.files || {}).some(f => f === LATEST_FILE || f.startsWith('backup-')))
+      .sort((a, b) => {
+        // Primaire backups vóór mirrors, daarna nieuwste eerst
+        const am = /mirror/i.test(a.description || '') ? 1 : 0;
+        const bm = /mirror/i.test(b.description || '') ? 1 : 0;
+        if (am !== bm) return am - bm;
+        return new Date(b.updated_at) - new Date(a.updated_at);
+      });
+    return matches.length ? matches[0].id : null;
+  } catch (_) {
+    return null; // bij netwerkfout: terugvallen op normaal gedrag
+  }
+}
+
 export async function syncUp() {
   const token = getSetting('ghToken');
   if (!token) throw new Error('Geen GitHub token ingesteld');
   let content = await buildPayload();
-  const encPwd = sessionStorage.getItem('ghEncPwd');
+  const encPwd = getSetting('ghEncPwd');
   if (encPwd) content = await encrypt(content, encPwd);
 
-  const ids = getGistIds();
+  let ids = getGistIds();
+
+  // Geen lokale gist-ID? Probeer eerst een BESTAANDE dashboard-gist te hergebruiken
+  // i.p.v. blind een nieuwe aan te maken (oorzaak van de "te veel gists"-bug).
+  if (ids.length === 0) {
+    const existing = await findExistingDashboardGistId(token);
+    if (existing) {
+      setGistIds([existing]);
+      ids = getGistIds();
+    }
+  }
+
   const newId = ids.length === 0;
 
   if (newId) {
@@ -166,9 +200,9 @@ async function fetchPayload(specificFile = LATEST_FILE) {
   }
   if (!content) throw new Error('Geen backup gevonden');
   if (isEncrypted(content)) {
-    const pwd = sessionStorage.getItem('ghEncPwd') || await askPassword();
+    const pwd = getSetting('ghEncPwd') || await askPassword();
     if (!pwd) throw new Error('Wachtwoord verplicht');
-    try { content = await decrypt(content, pwd); sessionStorage.setItem('ghEncPwd', pwd); }
+    try { content = await decrypt(content, pwd); setSetting('ghEncPwd', pwd); }
     catch (e) { throw new Error('Wachtwoord onjuist of bestand beschadigd'); }
   }
   return JSON.parse(content);
@@ -385,7 +419,7 @@ export async function createSecondaryGist() {
   const token = getSetting('ghToken');
   if (!token) throw new Error('Geen token');
   let content = await buildPayload();
-  const encPwd = sessionStorage.getItem('ghEncPwd');
+  const encPwd = getSetting('ghEncPwd');
   if (encPwd) content = await encrypt(content, encPwd);
   const gist = await api('/gists', token, {
     method: 'POST',

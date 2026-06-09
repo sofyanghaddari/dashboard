@@ -5,7 +5,8 @@ import { openSettings } from './components/settings.js';
 import { initTheme, initAutoTheme } from './theme.js';
 import { enablePullToRefresh } from './components/pullrefresh.js';
 import { initCmdK, openSearch } from './components/cmdk.js';
-import { bindRipple, staggerIn } from './animate.js';
+import { bindRipple } from './animate.js';
+import { revealView } from './motion.js';
 import { autoHaptic } from './haptic.js';
 import { initSwipeBack } from './gestures.js';
 import { exportMonthPDF } from './pdf-export.js';
@@ -47,7 +48,7 @@ async function bootApp() {
   autoHaptic();
   initSwipeBack();
   window.openCalendar = openCalendar;
-  window.staggerIn = staggerIn;
+  window.staggerIn = revealView;
   window.openYearReview = openYearReview;
 
   document.getElementById('settings-btn').onclick = () => {

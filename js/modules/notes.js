@@ -39,8 +39,8 @@ export async function render(container) {
       </button>
     </div>
 
-    <button class="btn block" id="add" style="margin-bottom:16px">
-      + ${view === 'ideas' ? 'Nieuw idee' : 'Nieuwe notitie'}
+    <button class="add-tile" id="add">
+      <span class="at-plus">+</span> ${view === 'ideas' ? 'Nieuw idee' : 'Nieuwe notitie'}
     </button>
 
     <div id="notes-list"></div>

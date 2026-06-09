@@ -57,7 +57,11 @@ export async function render(container) {
 function renderGoals(container, sel, items, totalRides) {
   const el = container.querySelector(sel);
   if (!items.length) {
-    el.innerHTML = `<div style="padding:16px;border:1px dashed var(--border);border-radius:var(--radius-sm);text-align:center;color:var(--text-faint);font-size:.85rem;margin-bottom:8px">Nog geen doelen</div>`;
+    el.replaceChildren();
+    el.insertAdjacentHTML('beforeend', `<div class="section-empty">
+      <div class="section-empty-icon">🎯</div>
+      <div class="section-empty-text">Nog geen doelen — tik <b>+ Doel</b> om er een te stellen.</div>
+    </div>`);
     return;
   }
   el.innerHTML = items.map(g => {
@@ -137,7 +141,11 @@ function renderGoals(container, sel, items, totalRides) {
 function renderHabits(container, habits, log) {
   const el = container.querySelector('#habits-list');
   if (!habits.length) {
-    el.innerHTML = `<div style="padding:16px;border:1px dashed var(--border);border-radius:var(--radius-sm);text-align:center;color:var(--text-faint);font-size:.85rem;margin-bottom:8px">Geen gewoontes — bouw een dagelijkse routine</div>`;
+    el.replaceChildren();
+    el.insertAdjacentHTML('beforeend', `<div class="section-empty">
+      <div class="section-empty-icon">🔁</div>
+      <div class="section-empty-text">Geen gewoontes — bouw een dagelijkse routine die blijft plakken.</div>
+    </div>`);
     return;
   }
   const today    = ymd();
@@ -206,7 +214,11 @@ function renderHabits(container, habits, log) {
 function renderPots(container, pots) {
   const el = container.querySelector('#pots-list');
   if (!pots.length) {
-    el.innerHTML = `<div style="padding:16px;border:1px dashed var(--border);border-radius:var(--radius-sm);text-align:center;color:var(--text-faint);font-size:.85rem;margin-bottom:8px">Geen spaarpotjes — verdeel je geld in virtuale potjes</div>`;
+    el.replaceChildren();
+    el.insertAdjacentHTML('beforeend', `<div class="section-empty">
+      <div class="section-empty-icon">🏺</div>
+      <div class="section-empty-text">Geen spaarpotjes — verdeel je geld in virtuele potjes.</div>
+    </div>`);
     return;
   }
   el.innerHTML = pots.map(p => {

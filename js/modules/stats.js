@@ -5,15 +5,17 @@ export async function render(container) {
   const period = container.dataset.statsPeriod || '30';
 
   container.innerHTML = `
-    <h1 class="page-title">Statistieken</h1>
-    <div class="todo-seg" style="margin-bottom:20px">
-      <button class="todo-seg-btn ${period==='7'  ?'active':''}" data-p="7">7 d</button>
-      <button class="todo-seg-btn ${period==='30' ?'active':''}" data-p="30">30 d</button>
-      <button class="todo-seg-btn ${period==='90' ?'active':''}" data-p="90">90 d</button>
-      <button class="todo-seg-btn ${period==='all'?'active':''}" data-p="all">Alles</button>
+    <div class="stats-header">
+      <h1 class="stats-title">Jouw Inzichten</h1>
+      <div class="stats-period-seg">
+        <button class="stats-period-btn ${period==='7'   ?'active':''}" data-p="7">7d</button>
+        <button class="stats-period-btn ${period==='30'  ?'active':''}" data-p="30">30d</button>
+        <button class="stats-period-btn ${period==='90'  ?'active':''}" data-p="90">90d</button>
+        <button class="stats-period-btn ${period==='all' ?'active':''}" data-p="all">Alles</button>
+      </div>
     </div>
-    <div id="stats-body">
-      <div style="text-align:center;padding:40px;color:var(--text-dim)">Laden…</div>
+    <div id="stats-body" class="stats-body">
+      <div class="stats-loading"><span></span><span></span><span></span></div>
     </div>
   `;
 
@@ -31,13 +33,32 @@ export async function render(container) {
   const body = container.querySelector('#stats-body');
   const cutoff = getCutoff(period);
 
-  body.innerHTML = `
-    ${renderTaxiStats(rides, cutoff)}
-    ${renderKoranStats(hizbLog, cutoff)}
-    ${renderArabicStats(cards, cutoff)}
-    ${renderTaakStats(todos, cutoff)}
-  `;
+  body.innerHTML =
+    renderInkomenHero(rides, cutoff, period) +
+    renderKoranRing(hizbLog) +
+    renderArabicMastery(cards) +
+    renderTakenDonut(todos, cutoff) +
+    renderActivityGrid(rides);
+
+  // Count-ups start immediately
+  requestAnimationFrame(() => {
+    body.querySelectorAll('[data-count]').forEach(el => {
+      const target = +el.dataset.count;
+      if (target > 0) animateCount(el, target, el.hasAttribute('data-money'));
+    });
+    // SVG transitions need double rAF so initial state is committed
+    requestAnimationFrame(() => {
+      body.querySelectorAll('.sring-circle').forEach(c => {
+        c.style.strokeDashoffset = c.dataset.offset;
+      });
+      body.querySelectorAll('.donut-seg').forEach(s => {
+        s.style.strokeDasharray = s.dataset.dash;
+      });
+    });
+  });
 }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getCutoff(period) {
   if (period === 'all') return null;
@@ -51,272 +72,406 @@ function inRange(dateStr, cutoff) {
   return dateStr >= cutoff;
 }
 
-// ── TAXI STATS ───────────────────────────────────────────────────────────────
-function renderTaxiStats(rides, cutoff) {
-  const filtered = rides.filter(r => r.date && inRange(r.date, cutoff));
-  if (!filtered.length) return statSection('🚖 Taxi & Inkomen', `<div class="stats-empty">Nog geen ritgegevens</div>`);
-
-  const total     = filtered.reduce((s, r) => s + (r.amount || 0), 0);
-  const days      = [...new Set(filtered.map(r => r.date))];
-  const avgDay    = days.length ? total / days.length : 0;
-
-  // Best day
-  const byDay = {};
-  filtered.forEach(r => { byDay[r.date] = (byDay[r.date] || 0) + (r.amount || 0); });
-  const bestDayEntry = Object.entries(byDay).sort((a,b) => b[1]-a[1])[0];
-  const bestDay   = bestDayEntry ? bestDayEntry[0] : null;
-  const bestAmt   = bestDayEntry ? bestDayEntry[1] : 0;
-
-  // Drukste dag van de week
-  const byWeekday = [0,0,0,0,0,0,0];
-  const weekdayCnt = [0,0,0,0,0,0,0];
-  Object.entries(byDay).forEach(([d, amt]) => {
-    const wd = new Date(d + 'T12:00:00').getDay(); // 0=Sun
-    byWeekday[wd] += amt; weekdayCnt[wd]++;
-  });
-  const avgByWd = byWeekday.map((t, i) => weekdayCnt[i] ? t / weekdayCnt[i] : 0);
-  const busyWd  = avgByWd.indexOf(Math.max(...avgByWd));
-  const WD_NL   = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
-
-  // Last 6 months bar chart
-  const monthBars = lastNMonths(6).map(m => {
-    const monthRides = rides.filter(r => r.date && r.date.startsWith(m));
-    return { m, total: monthRides.reduce((s, r) => s + (r.amount || 0), 0) };
-  });
-
-  return statSection('🚖 Taxi & Inkomen', `
-    <div class="stats-grid-2">
-      <div class="stat-card">
-        <div class="stat-num money">${fmtMoney(avgDay)}</div>
-        <div class="stat-lbl">Gem. per dag</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num money">${fmtMoney(total)}</div>
-        <div class="stat-lbl">Totaal inkomen</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num money">${fmtMoney(bestAmt)}</div>
-        <div class="stat-lbl">Beste dag${bestDay ? ` (${fmtDate(bestDay)})` : ''}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" style="font-size:1.1rem">${WD_NL[busyWd]}</div>
-        <div class="stat-lbl">Drukste dag</div>
-      </div>
-    </div>
-    <div style="margin-top:14px">
-      <div class="card-title" style="margin-bottom:8px">Inkomen laatste 6 maanden</div>
-      ${barChart(monthBars.map(b => ({ label: b.m.slice(5), value: b.total })))}
-    </div>
-  `);
-}
-
-// ── KORAN STATS ──────────────────────────────────────────────────────────────
-function renderKoranStats(log, cutoff) {
-  const filtered = log.filter(l => inRange(l.date, cutoff));
-  const totalDone  = filtered.length;
-  const allLog     = log;
-
-  // Streak current
-  const doneSet = new Set(allLog.map(l => l.date));
-  let streak = 0;
-  const cur = new Date();
-  while (doneSet.has(ymd(cur))) { streak++; cur.setDate(cur.getDate() - 1); }
-
-  // Longest streak (all time)
-  let longest = 0, running = 0;
-  const sorted = [...doneSet].sort();
-  for (let i = 0; i < sorted.length; i++) {
-    if (i === 0) running = 1;
-    else {
-      const diff = Math.round((new Date(sorted[i]+'T12:00:00') - new Date(sorted[i-1]+'T12:00:00')) / 86400000);
-      running = diff === 1 ? running + 1 : 1;
-    }
-    if (running > longest) longest = running;
+function animateCount(el, target, isMoney = false, duration = 1500) {
+  const start = performance.now();
+  function step(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    const val = Math.round(target * ease);
+    el.textContent = isMoney ? fmtMoney(val) : val.toLocaleString('nl-NL');
+    if (p < 1) requestAnimationFrame(step);
   }
-
-  // Miss rate per weekday
-  const byWd = [0,0,0,0,0,0,0], totalWd = [0,0,0,0,0,0,0];
-  if (allLog.length) {
-    const from = new Date(sorted[0] + 'T12:00:00');
-    const to   = new Date();
-    for (let d = new Date(from); d <= to; d.setDate(d.getDate()+1)) {
-      const k = ymd(d);
-      totalWd[d.getDay()]++;
-      if (!doneSet.has(k)) byWd[d.getDay()]++;
-    }
-  }
-  const missRates = byWd.map((m, i) => totalWd[i] ? Math.round(m/totalWd[i]*100) : 0);
-  const WD_SHORT = ['Zo','Ma','Di','Wo','Do','Vr','Za'];
-  const WD_FULL  = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
-  const worstWd = missRates.indexOf(Math.max(...missRates));
-
-  return statSection('📖 Koran & Hizb', `
-    <div class="stats-grid-2">
-      <div class="stat-card">
-        <div class="stat-num" style="color:var(--gold)">${streak}</div>
-        <div class="stat-lbl">Huidige streak 🔥</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">${longest}</div>
-        <div class="stat-lbl">Langste streak ooit</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">${totalDone}</div>
-        <div class="stat-lbl">Hizbs voltooid (periode)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" style="color:var(--err);font-size:1.1rem">${WD_FULL[worstWd]}</div>
-        <div class="stat-lbl">Meest gemist (${missRates[worstWd]}%)</div>
-      </div>
-    </div>
-    ${allLog.length ? `
-    <div style="margin-top:14px">
-      <div class="card-title" style="margin-bottom:8px">Mis-rate per dag</div>
-      ${barChart(WD_SHORT.map((d, i) => ({ label: d, value: missRates[i] })), '%', 100)}
-    </div>` : ''}
-  `);
-}
-
-// ── ARABISCH STATS ────────────────────────────────────────────────────────────
-function renderArabicStats(cards, cutoff) {
-  if (!cards.length) return statSection('📚 Arabisch', `<div class="stats-empty">Nog geen kaarten</div>`);
-
-  const totalCards   = cards.length;
-  const learnedCards = cards.filter(c => c.repetitions > 0).length;
-
-  // Lowest ease (hardest cards)
-  const worst = cards.filter(c => c.ease).sort((a,b) => a.ease - b.ease).slice(0, 3);
-
-  // Weekly review scores (last 8 weeks) - approximate from card due dates
-  const weekScores = lastNWeeks(8).map(wStart => {
-    const wEnd = new Date(wStart); wEnd.setDate(wEnd.getDate() + 7);
-    const due = cards.filter(c => {
-      if (!c.dueDate) return false;
-      const d = new Date(c.dueDate + 'T12:00:00');
-      return d >= new Date(wStart+'T12:00:00') && d < wEnd;
-    });
-    return { label: wStart.slice(5), value: due.length };
-  });
-
-  return statSection('📚 Arabisch', `
-    <div class="stats-grid-2">
-      <div class="stat-card">
-        <div class="stat-num">${learnedCards}</div>
-        <div class="stat-lbl">Geleerde woorden</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">${totalCards}</div>
-        <div class="stat-lbl">Totaal kaarten</div>
-      </div>
-    </div>
-    ${worst.length ? `
-    <div style="margin-top:14px">
-      <div class="card-title" style="margin-bottom:8px">Moeilijkste woorden</div>
-      ${worst.map(c => `
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.88rem">
-          <span>${escapeHTML(c.front || '')}</span>
-          <span style="color:var(--err);font-weight:600">ease ${(c.ease||2.5).toFixed(1)}</span>
-        </div>`).join('')}
-    </div>` : ''}
-    <div style="margin-top:14px">
-      <div class="card-title" style="margin-bottom:8px">Reviews per week</div>
-      ${barChart(weekScores)}
-    </div>
-  `);
-}
-
-// ── TAAK STATS ────────────────────────────────────────────────────────────────
-function renderTaakStats(todos, cutoff) {
-  const filtered    = todos.filter(t => !cutoff || (t.createdAt && t.createdAt.slice(0,10) >= cutoff));
-  const done        = filtered.filter(t => t.done);
-  const total       = filtered.length;
-  const pct         = total ? Math.round(done.length / total * 100) : 0;
-
-  // Average completion time (days)
-  const withTime = done.filter(t => t.createdAt && t.completedAt);
-  const avgDays  = withTime.length
-    ? (withTime.reduce((s, t) => s + (new Date(t.completedAt) - new Date(t.createdAt)) / 86400000, 0) / withTime.length).toFixed(1)
-    : null;
-
-  // Top tags
-  const tagCounts = {};
-  filtered.forEach(t => (t.tags||[]).forEach(g => { tagCounts[g] = (tagCounts[g]||0)+1; }));
-  const topTags = Object.entries(tagCounts).sort((a,b) => b[1]-a[1]).slice(0,3);
-
-  return statSection('✅ Taken', `
-    <div class="stats-grid-2">
-      <div class="stat-card">
-        <div class="stat-num" style="color:var(--ok)">${pct}%</div>
-        <div class="stat-lbl">Voltooiingspercentage</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">${done.length}/${total}</div>
-        <div class="stat-lbl">Gedaan / totaal</div>
-      </div>
-      ${avgDays !== null ? `
-      <div class="stat-card" style="grid-column:1/-1">
-        <div class="stat-num">${avgDays}d</div>
-        <div class="stat-lbl">Gem. aanmaken → voltooien</div>
-      </div>` : ''}
-    </div>
-    ${topTags.length ? `
-    <div style="margin-top:12px">
-      <div class="card-title" style="margin-bottom:8px">Top tags</div>
-      ${topTags.map(([tag, cnt]) => `
-        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:.88rem">
-          <span>#${escapeHTML(tag)}</span>
-          <span style="color:var(--text-dim)">${cnt} taken</span>
-        </div>`).join('')}
-    </div>` : ''}
-  `);
-}
-
-// ── Layout helpers ────────────────────────────────────────────────────────────
-function statSection(title, content) {
-  return `<div class="card stats-section"><h2 class="card-title">${title}</h2>${content}</div>`;
-}
-
-function barChart(items, unit = '', max = null) {
-  if (!items.length) return '';
-  const maxVal = max || Math.max(...items.map(i => i.value), 1);
-  return `<div class="stats-bar-chart">
-    ${items.map(item => `
-      <div class="sbc-col">
-        <div class="sbc-bar-wrap">
-          <div class="sbc-bar" style="height:${Math.round(item.value/maxVal*100)}%"></div>
-        </div>
-        <div class="sbc-lbl">${item.label}</div>
-        ${item.value > 0 ? `<div class="sbc-val">${Math.round(item.value)}${unit}</div>` : ''}
-      </div>`).join('')}
-  </div>`;
+  requestAnimationFrame(step);
 }
 
 function fmtMoney(n) {
-  return '€' + Math.round(n).toLocaleString('nl-NL');
+  return '€ ' + Math.round(n).toLocaleString('nl-NL');
 }
 
 function fmtDate(d) {
   return new Date(d + 'T12:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
 }
 
-function lastNMonths(n) {
-  const result = [];
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(1);
-    d.setMonth(d.getMonth() - i);
-    result.push(d.toISOString().slice(0, 7));
-  }
-  return result;
-}
-
 function lastNWeeks(n) {
   const result = [];
   for (let i = n - 1; i >= 0; i--) {
     const d = new Date();
-    const day = d.getDay();
-    d.setDate(d.getDate() - ((day === 0 ? 7 : day) - 1) - i * 7);
+    const day = (d.getDay() + 6) % 7; // 0=Mon
+    d.setDate(d.getDate() - day - i * 7);
     result.push(ymd(d));
   }
   return result;
+}
+
+// ── INKOMEN HERO ──────────────────────────────────────────────────────────────
+
+function renderInkomenHero(rides, cutoff, period) {
+  const filtered = rides.filter(r => r.date && inRange(r.date, cutoff));
+  const total = filtered.reduce((s, r) => s + (r.amount || 0), 0);
+
+  const byDay = {};
+  filtered.forEach(r => { byDay[r.date] = (byDay[r.date] || 0) + (r.amount || 0); });
+  const days = Object.keys(byDay);
+  const avgDay = days.length ? total / days.length : 0;
+  const bestEntry = Object.entries(byDay).sort((a, b) => b[1] - a[1])[0];
+  const bestAmt = bestEntry ? bestEntry[1] : 0;
+  const bestDay = bestEntry ? bestEntry[0] : null;
+
+  // Growth vs previous period
+  let growthHtml = '';
+  if (period !== 'all' && cutoff) {
+    const days_n = +period;
+    const d2 = new Date(); d2.setDate(d2.getDate() - days_n * 2);
+    const cutoff2 = ymd(d2);
+    const prev = rides.filter(r => r.date && r.date >= cutoff2 && r.date < cutoff)
+      .reduce((s, r) => s + (r.amount || 0), 0);
+    if (prev > 0) {
+      const pct = Math.round((total - prev) / prev * 100);
+      const up = pct >= 0;
+      growthHtml = `<span class="shero-growth ${up ? 'up' : 'down'}">${up ? '↑' : '↓'} ${Math.abs(pct)}% vs vorige periode</span>`;
+    }
+  }
+
+  // Last 8 weeks bar chart
+  const weeks = lastNWeeks(8);
+  const weekBars = weeks.map((wStart, i) => {
+    const wEnd = new Date(wStart + 'T00:00:00'); wEnd.setDate(wEnd.getDate() + 7);
+    const wTotal = rides.filter(r => r.date && r.date >= wStart && r.date < ymd(wEnd))
+      .reduce((s, r) => s + (r.amount || 0), 0);
+    return { label: wStart.slice(5).replace('-', '/'), value: wTotal, current: i === weeks.length - 1 };
+  });
+  const barMax = Math.max(...weekBars.map(b => b.value), 1);
+
+  return `
+    <div class="stats-section-wrap" style="--i:0">
+      <div class="stat-hero">
+        <div class="stat-hero-glow"></div>
+        <div class="shero-label">Totaal inkomen</div>
+        <div class="shero-amount" data-count="${Math.round(total)}" data-money>${fmtMoney(total)}</div>
+        ${growthHtml}
+        <div class="shero-grid">
+          <div class="shero-metric">
+            <div class="shero-metric-val" data-count="${Math.round(avgDay)}" data-money>${fmtMoney(Math.round(avgDay))}</div>
+            <div class="shero-metric-lbl">Gem. per dag</div>
+          </div>
+          <div class="shero-metric">
+            <div class="shero-metric-val" data-count="${Math.round(bestAmt)}" data-money>${fmtMoney(Math.round(bestAmt))}</div>
+            <div class="shero-metric-lbl">Beste dag${bestDay ? `<br><span class="shero-date">${fmtDate(bestDay)}</span>` : ''}</div>
+          </div>
+          <div class="shero-metric">
+            <div class="shero-metric-val plain" data-count="${days.length}">${days.length}</div>
+            <div class="shero-metric-lbl">Rijdagen</div>
+          </div>
+          <div class="shero-metric">
+            <div class="shero-metric-val" data-count="${Math.round(total / Math.max(weeks.length, 1))}" data-money>${fmtMoney(Math.round(total / Math.max(weeks.length, 1)))}</div>
+            <div class="shero-metric-lbl">Gem. per week</div>
+          </div>
+        </div>
+        <div class="shero-chart-title">Inkomen per week</div>
+        <div class="shero-barchart">
+          ${weekBars.map((b, i) => `
+            <div class="shbc-col" title="${b.label}: ${fmtMoney(b.value)}">
+              <div class="shbc-bar-wrap">
+                <div class="shbc-bar ${b.current ? 'current' : ''}"
+                     style="--h:${Math.max(Math.round(b.value / barMax * 100), b.value > 0 ? 2 : 0)}%;--i:${i}"></div>
+              </div>
+              <div class="shbc-lbl">${b.label}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── KORAN RING ────────────────────────────────────────────────────────────────
+
+function renderKoranRing(log) {
+  const doneSet = new Set(log.map(l => l.date));
+
+  // Current streak
+  let streak = 0;
+  const cur = new Date();
+  while (doneSet.has(ymd(cur))) { streak++; cur.setDate(cur.getDate() - 1); }
+
+  // Longest streak
+  let longest = 0, running = 0;
+  const sorted = [...doneSet].sort();
+  for (let i = 0; i < sorted.length; i++) {
+    if (i === 0) running = 1;
+    else {
+      const diff = Math.round((new Date(sorted[i] + 'T12:00:00') - new Date(sorted[i-1] + 'T12:00:00')) / 86400000);
+      running = diff === 1 ? running + 1 : 1;
+    }
+    if (running > longest) longest = running;
+  }
+
+  // 30-day completion ratio
+  const thirtyAgo = (() => { const d = new Date(); d.setDate(d.getDate() - 30); return ymd(d); })();
+  let done30 = 0, total30 = 0;
+  for (let d = new Date(thirtyAgo + 'T12:00:00'); d <= new Date(); d.setDate(d.getDate() + 1)) {
+    total30++;
+    if (doneSet.has(ymd(d))) done30++;
+  }
+  const ratio = total30 ? done30 / total30 : 0;
+  const R = 60, circ = +(2 * Math.PI * R).toFixed(1);
+  const targetOffset = +(circ * (1 - ratio)).toFixed(1);
+
+  // Last 7 days dots (Mon–Sun order relative to today)
+  const WD = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+  const today = new Date();
+  const weekDots = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today); d.setDate(today.getDate() - 6 + i);
+    return { label: WD[(d.getDay() + 6) % 7], done: doneSet.has(ymd(d)) };
+  });
+
+  return `
+    <div class="stats-section-wrap" style="--i:1">
+      <div class="stats-card">
+        <div class="stats-card-title">Koran & Hizb</div>
+        <div class="koran-ring-layout">
+          <div class="koran-ring-wrap">
+            <svg class="koran-ring-svg" viewBox="0 0 160 160" width="140" height="140">
+              <circle class="sring-track" cx="80" cy="80" r="${R}" />
+              <circle class="sring-circle" cx="80" cy="80" r="${R}"
+                stroke-dasharray="${circ}"
+                stroke-dashoffset="${circ}"
+                data-offset="${targetOffset}" />
+            </svg>
+            <div class="koran-ring-inner">
+              <div class="koran-streak-num" data-count="${streak}">${streak}</div>
+              <div class="koran-streak-lbl">🔥 streak</div>
+            </div>
+          </div>
+          <div class="koran-ring-stats">
+            <div class="kring-pill">
+              <div class="kring-val" data-count="${done30}">${done30}</div>
+              <div class="kring-lbl">Laatste 30 dagen</div>
+            </div>
+            <div class="kring-pill">
+              <div class="kring-val" data-count="${longest}">${longest}</div>
+              <div class="kring-lbl">Beste streak ooit</div>
+            </div>
+            <div class="kring-pill">
+              <div class="kring-val">${Math.round(ratio * 100)}%</div>
+              <div class="kring-lbl">Voltooiingsratio</div>
+            </div>
+          </div>
+        </div>
+        <div class="koran-week-dots">
+          ${weekDots.map(d => `
+            <div class="kwd-item">
+              <div class="kwd-dot ${d.done ? 'done' : ''}"></div>
+              <div class="kwd-lbl">${d.label}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── ARABISCH MASTERY ──────────────────────────────────────────────────────────
+
+function renderArabicMastery(cards) {
+  if (!cards.length) return `
+    <div class="stats-section-wrap" style="--i:2">
+      <div class="stats-card">
+        <div class="stats-card-title">Arabisch</div>
+        <div class="stats-empty-state">Nog geen kaarten toegevoegd</div>
+      </div>
+    </div>`;
+
+  const total    = cards.length;
+  const learned  = cards.filter(c => c.repetitions > 0).length;
+  const mastered = cards.filter(c => (c.repetitions || 0) >= 3 && (c.ease || 0) >= 2.5).length;
+  const todayStr = ymd(new Date());
+  const dueNow   = cards.filter(c => c.dueDate && c.dueDate <= todayStr).length;
+
+  const learnPct  = total ? Math.round(learned / total * 100) : 0;
+  const masterPct = total ? Math.round(mastered / total * 100) : 0;
+
+  const worst = cards.filter(c => c.ease && (c.repetitions || 0) > 0)
+    .sort((a, b) => a.ease - b.ease).slice(0, 5);
+
+  return `
+    <div class="stats-section-wrap" style="--i:2">
+      <div class="stats-card">
+        <div class="stats-card-title">Arabisch</div>
+        <div class="arabic-mini-grid">
+          <div class="arabic-mini-stat">
+            <div class="ams-val" data-count="${total}">${total}</div>
+            <div class="ams-lbl">Totaal kaarten</div>
+          </div>
+          <div class="arabic-mini-stat">
+            <div class="ams-val" data-count="${learned}">${learned}</div>
+            <div class="ams-lbl">Geleerd</div>
+          </div>
+          <div class="arabic-mini-stat accent">
+            <div class="ams-val" data-count="${dueNow}">${dueNow}</div>
+            <div class="ams-lbl">Te herhalen</div>
+          </div>
+          <div class="arabic-mini-stat">
+            <div class="ams-val" data-count="${mastered}">${mastered}</div>
+            <div class="ams-lbl">Beheerst</div>
+          </div>
+        </div>
+        <div class="arabic-bars">
+          <div class="abar-row">
+            <div class="abar-label">Geleerd</div>
+            <div class="abar-track">
+              <div class="abar-fill" style="--w:${learnPct}%;--i:0"></div>
+            </div>
+            <div class="abar-pct">${learnPct}%</div>
+          </div>
+          <div class="abar-row">
+            <div class="abar-label">Beheerst</div>
+            <div class="abar-track">
+              <div class="abar-fill gold" style="--w:${masterPct}%;--i:1"></div>
+            </div>
+            <div class="abar-pct">${masterPct}%</div>
+          </div>
+        </div>
+        ${worst.length ? `
+        <div class="arabic-hard-title">Moeilijkste woorden</div>
+        <div class="arabic-hard-list">
+          ${worst.map((c, i) => `
+            <div class="ahl-row" style="--i:${i}">
+              <span class="ahl-arabic">${escapeHTML(c.front || '')}</span>
+              <span class="ahl-back">${escapeHTML(c.back || '')}</span>
+              <span class="ahl-ease">ease ${(c.ease || 2.5).toFixed(1)}</span>
+            </div>`).join('')}
+        </div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+// ── TAKEN DONUT ───────────────────────────────────────────────────────────────
+
+function renderTakenDonut(todos, cutoff) {
+  const filtered = todos.filter(t => !cutoff || (t.createdAt && t.createdAt.slice(0, 10) >= cutoff));
+  const done  = filtered.filter(t => t.done).length;
+  const total = filtered.length;
+  const pct   = total ? Math.round(done / total * 100) : 0;
+
+  const R = 50, circ = +(2 * Math.PI * R).toFixed(1);
+  const dashFill = +((pct / 100) * circ).toFixed(1);
+
+  const tagCounts = {};
+  filtered.forEach(t => (t.tags || []).forEach(g => { tagCounts[g] = (tagCounts[g] || 0) + 1; }));
+  const topTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const tagMax  = topTags.length ? topTags[0][1] : 1;
+
+  const withTime = todos.filter(t => t.done && t.createdAt && t.completedAt);
+  const avgDays  = withTime.length
+    ? (withTime.reduce((s, t) => s + (new Date(t.completedAt) - new Date(t.createdAt)) / 86400000, 0) / withTime.length).toFixed(1)
+    : null;
+
+  return `
+    <div class="stats-section-wrap" style="--i:3">
+      <div class="stats-card">
+        <div class="stats-card-title">Taken</div>
+        <div class="taken-donut-layout">
+          <div class="donut-wrap">
+            <svg class="donut-svg" viewBox="0 0 120 120" width="110" height="110">
+              <circle class="donut-track" cx="60" cy="60" r="${R}" />
+              <circle class="donut-seg" cx="60" cy="60" r="${R}"
+                stroke-dasharray="0 ${circ}"
+                data-dash="${dashFill} ${circ}" />
+            </svg>
+            <div class="donut-center">
+              <div class="donut-pct">${pct}%</div>
+              <div class="donut-pct-lbl">gedaan</div>
+            </div>
+          </div>
+          <div class="taken-stats-col">
+            <div class="taken-stat ok">
+              <div class="ts-val" data-count="${done}">${done}</div>
+              <div class="ts-lbl">Voltooid</div>
+            </div>
+            <div class="taken-stat">
+              <div class="ts-val" data-count="${total - done}">${total - done}</div>
+              <div class="ts-lbl">Open</div>
+            </div>
+            ${avgDays !== null ? `
+            <div class="taken-stat">
+              <div class="ts-val">${avgDays}d</div>
+              <div class="ts-lbl">Gem. doorlooptijd</div>
+            </div>` : ''}
+          </div>
+        </div>
+        ${topTags.length ? `
+        <div class="taken-tags-title">Top tags</div>
+        <div class="taken-tags-list">
+          ${topTags.map(([tag, cnt], i) => `
+            <div class="ttl-row" style="--i:${i}">
+              <span class="ttl-tag">#${escapeHTML(tag)}</span>
+              <div class="ttl-bar-wrap">
+                <div class="ttl-bar" style="--w:${Math.round(cnt / tagMax * 100)}%;--i:${i}"></div>
+              </div>
+              <span class="ttl-cnt">${cnt}</span>
+            </div>`).join('')}
+        </div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+// ── ACTIVITY GRID ─────────────────────────────────────────────────────────────
+
+function renderActivityGrid(rides) {
+  const WEEKS = 12;
+  const today = new Date();
+  // Start from the Monday of 12 weeks ago
+  const dayOfWeek = (today.getDay() + 6) % 7; // 0=Mon
+  const startD = new Date(today);
+  startD.setDate(today.getDate() - dayOfWeek - (WEEKS - 1) * 7);
+
+  const byDay = {};
+  rides.forEach(r => { if (r.date) byDay[r.date] = (byDay[r.date] || 0) + (r.amount || 0); });
+
+  const allVals = Object.values(byDay).filter(v => v > 0);
+  const maxVal  = allVals.length ? Math.max(...allVals) : 1;
+
+  // grid[w][d] = { key, amt, level }
+  const grid = Array.from({ length: WEEKS }, (_, w) =>
+    Array.from({ length: 7 }, (_, d) => {
+      const date = new Date(startD);
+      date.setDate(startD.getDate() + w * 7 + d);
+      const key  = ymd(date);
+      const amt  = byDay[key] || 0;
+      const future = key > ymd(today);
+      const level = future ? -1 : amt === 0 ? 0 : amt < maxVal * .25 ? 1 : amt < maxVal * .5 ? 2 : amt < maxVal * .75 ? 3 : 4;
+      return { key, amt, level };
+    })
+  );
+
+  const WD = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+
+  return `
+    <div class="stats-section-wrap" style="--i:4">
+      <div class="stats-card">
+        <div class="stats-card-title">Activiteit — 12 weken</div>
+        <div class="activity-grid-wrap">
+          <div class="activity-wd-labels">
+            ${WD.map(l => `<div class="awd-lbl">${l}</div>`).join('')}
+          </div>
+          <div class="activity-grid">
+            ${grid.map((col, w) => `
+              <div class="ag-col">
+                ${col.map((cell, d) => cell.level < 0
+                  ? `<div class="activity-cell future" style="--row:${d};--col:${w}"></div>`
+                  : `<div class="activity-cell level-${cell.level}" style="--row:${d};--col:${w}"
+                          title="${cell.key}${cell.amt ? ': ' + fmtMoney(cell.amt) : ''}"></div>`
+                ).join('')}
+              </div>`).join('')}
+          </div>
+        </div>
+        <div class="activity-legend">
+          <span class="al-label">Minder</span>
+          ${[0, 1, 2, 3, 4].map(l => `<div class="al-cell level-${l}"></div>`).join('')}
+          <span class="al-label">Meer</span>
+        </div>
+      </div>
+    </div>
+  `;
 }
