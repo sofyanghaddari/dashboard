@@ -1,4 +1,4 @@
-import { getSetting, setSetting } from './settings.js';
+import { getSetting, setSetting, removeSetting } from './settings.js';
 
 const ACCENTS = {
   // Warm taupe — het enige accent van het "stille luxe" systeem (donker + licht variant)
@@ -86,16 +86,18 @@ export function setPreset(preset) {
 export function setDensity(d) { setSetting('density', d); applyTheme(); }
 
 export function initTheme() {
-  // Eenmalige overgang naar het warm-neutrale systeem: taupe accent + een nette
-  // warm-donkere modus als standaard (gebruiker kan dit later aanpassen in
-  // instellingen). De automatische dag/nacht-wissel zetten we uit zodat de app
-  // niet ongevraagd naar licht springt.
+  // Eenmalige overgang naar het warm-neutrale systeem: zet het accent op taupe.
+  // De automatische dag/nacht-wissel blijft behouden — overdag de warme licht-variant
+  // (daylight), 's avonds de warme donkere variant.
   if (!localStorage.getItem('warmAccentV1')) {
     setSetting('accentColor', 'taupe');
-    setSetting('themeMode', 'dark');
-    setSetting('themePreset', 'midnight');
-    setSetting('autoTheme', '0');
     localStorage.setItem('warmAccentV1', '1');
+  }
+  // Correctie: een eerdere build zette de dag/nacht-wissel uit. Eenmalig herstellen.
+  if (!localStorage.getItem('warmAutoFixV2')) {
+    removeSetting('autoTheme');         // terug naar standaard = auto aan
+    removeSetting('autoThemeOverride'); // verwijder eventuele dag-override
+    localStorage.setItem('warmAutoFixV2', '1');
   }
   applyTheme();
   if (window.matchMedia) {
