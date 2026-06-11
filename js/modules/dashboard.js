@@ -8,6 +8,7 @@ import { getWeather, codeInfo, rideOpportunities } from '../weather.js';
 import { getMascotState, shouldShame, pickShame } from '../mascot.js';
 import { detectInsights, goalFeasibility, goalTrajectoryPath } from '../insights.js';
 import { initPrivacyToggle } from '../privacy.js';
+import { initCountUps } from '../animate.js';
 
 let weatherAbortCtrl = null;
 
@@ -181,16 +182,16 @@ export async function render(container) {
       </div>
       <div class="dagstart-stats">
         <div class="dagstart-stat">
-          <div class="dagstart-stat-val blurred-amount">${fmtMoney(todayIncome)}</div>
+          <div class="dagstart-stat-val blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
           <div class="dagstart-stat-lbl">Vandaag</div>
-          ${dailyCost > 0 ? `<div class="dagstart-stat-netto blurred-amount" style="color:${nettoToday>=0?'var(--ok)':'var(--danger)'}">netto ${fmtMoney(nettoToday)}</div>` : ''}
+          ${dailyCost > 0 ? `<div class="dagstart-stat-netto blurred-amount" style="color:${nettoToday>=0?'var(--ok)':'var(--danger)'}" data-countup="${nettoToday}" data-prefix="netto € ">netto ${fmtMoney(nettoToday)}</div>` : ''}
         </div>
         <div class="dagstart-stat">
           <div class="dagstart-stat-val" style="color:${todayHizb ? 'var(--ok)' : 'var(--text-faint)'}">${todayHizb ? '✓' : '–'}</div>
           <div class="dagstart-stat-lbl">Hizb</div>
         </div>
         <div class="dagstart-stat">
-          <div class="dagstart-stat-val">${openTodos.length}</div>
+          <div class="dagstart-stat-val" data-countup="${openTodos.length}" data-decimals="0" data-prefix="">${openTodos.length}</div>
           <div class="dagstart-stat-lbl">Taken</div>
         </div>
       </div>
@@ -252,7 +253,7 @@ export async function render(container) {
         <span>Inkomen vandaag</span>
         <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
       </div>
-      <div class="income-hero-amount big-money blurred-amount">${fmtMoney(todayIncome)}</div>
+      <div class="income-hero-amount big-money blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
       ${dailyGoal > 0 ? `
         <div class="income-hero-progress">
           <div class="progress-bar"><div class="progress-fill" style="width:${goalPct}%"></div></div>
@@ -267,18 +268,18 @@ export async function render(container) {
     <!-- MAANDOVERZICHT -->
     <div class="card">
       <h2 class="card-title">Maand — ${maandNamen[now.getMonth()]} ${now.getFullYear()}</h2>
-      <div class="big-money blurred-amount">${fmtMoney(monthIncome)}</div>
+      <div class="big-money blurred-amount" data-countup="${monthIncome}">${fmtMoney(monthIncome)}</div>
       ${monthlyGoal > 0 ? `
         <div class="progress-bar" style="margin-bottom:8px"><div class="progress-fill" style="width:${monthGoalPct}%"></div></div>
       ` : ''}
       <div class="kpi-grid" style="margin-bottom:${traj?'12px':'0'}">
         <div class="kpi-card">
           <div class="kpi-label">Week</div>
-          <div class="kpi-value blurred-amount">${fmtMoney(weekIncome)}</div>
+          <div class="kpi-value blurred-amount" data-countup="${weekIncome}">${fmtMoney(weekIncome)}</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Verwacht</div>
-          <div class="kpi-value blurred-amount">${fmtMoney(projectedMonth)}</div>
+          <div class="kpi-value blurred-amount" data-countup="${projectedMonth}">${fmtMoney(projectedMonth)}</div>
         </div>
         ${monthDelta !== null ? `<div class="kpi-card">
           <div class="kpi-label">Vs vorige</div>
@@ -288,7 +289,7 @@ export async function render(container) {
       ${traj ? `
         <svg viewBox="0 0 ${traj.width} ${traj.height}" style="width:100%;height:${traj.height}px;margin-top:4px;opacity:.9" preserveAspectRatio="none">
           <path d="${traj.idealPath}" stroke="var(--text-faint)" stroke-width="1" stroke-dasharray="4,4" fill="none" opacity=".7"/>
-          <path d="${traj.actualPath}" stroke="var(--gold)" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+          <path class="traj-line" pathLength="1" d="${traj.actualPath}" stroke="var(--gold)" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
         </svg>
         <div class="muted" style="font-size:.7rem;display:flex;justify-content:space-between;margin-top:2px;opacity:.7"><span>dag 1</span><span>— doel · ━ werkelijk</span><span>dag ${daysInMonth}</span></div>
       ` : ''}
@@ -364,7 +365,7 @@ export async function render(container) {
       <div class="heatmap">
         ${last30.map(d => {
           const i = d.total > 0 ? Math.max(0.18, d.total / heatMax) : 0;
-          return `<div class="heat-cell" style="${i>0?`background:linear-gradient(135deg,rgba(212,176,107,${i.toFixed(2)}),rgba(212,176,107,${(i*.6).toFixed(2)}))`:''}background-attachment:local" title="${d.key}: ${fmtMoney(d.total)}"></div>`;
+          return `<div class="heat-cell" style="${i>0?`background:linear-gradient(135deg,rgba(212,176,107,${i.toFixed(2)}),rgba(212,176,107,${(i*.6).toFixed(2)}));`:''}" title="${d.key}: ${fmtMoney(d.total)}"></div>`;
         }).join('')}
       </div>
       <div class="heat-legend" style="margin-top:6px"><span class="muted" style="font-size:.72rem">minder</span><span class="heat-spec"></span><span class="muted" style="font-size:.72rem">meer</span></div>
@@ -384,6 +385,7 @@ export async function render(container) {
   `;
 
   loadWeather(container);
+  initCountUps(container);
   container.querySelector('#open-calendar').onclick = () => window.openCalendar && window.openCalendar();
   container.querySelector('#open-yr').onclick = () => window.openYearReview && window.openYearReview();
 

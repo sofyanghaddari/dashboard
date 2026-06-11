@@ -18,7 +18,26 @@
       "Bash(chmod +x ~/bin/gh)",
       "Bash(~/bin/gh --version)",
       "Bash(grep -q 'export PATH=\"$HOME/bin:$PATH\"' ~/.zshrc)",
-      "Bash(~/bin/gh auth *)"
+      "Bash(~/bin/gh auth *)",
+      "Read(//Users/soef/Desktop/khalid dafiri cursus level 2/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(pip3 install *)",
+      "Bash(cat)",
+      "Read(//tmp/**)",
+      "Bash(pdftotext \"/Users/soef/Desktop/khalid dafiri cursus level 2/VocabularyBook 4-6.pdf\" /tmp/vocab.txt)",
+      "Bash(cat > *)",
+      "Bash(find /Users/soef -name \"arabic.js\" -type f 2>/dev/null)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node -c js/data/arabic-words.js)",
+      "Bash(node --input-type=module -e \"import\\('./js/data/arabic-words.js'\\).then\\(\\(\\)=>console.log\\('OK'\\)\\).catch\\(e=>console.log\\('ERR',e.message\\)\\)\")",
+      "Bash(python3)",
+      "Bash(node --input-type=module -e \"import\\('./js/data/arabic-words.js'\\).then\\(m=>console.log\\('OK',m.ARABIC_WORDS.length,'woorden'\\)\\).catch\\(e=>console.log\\('ERR',e.message\\)\\)\")",
+      "Bash(node --input-type=module -e 'import\\('\\\\''./__TRACKED_VAR__'\\\\''\\).catch\\(e=>{console.log\\('\\\\''FAIL: __TRACKED_VAR__ →'\\\\'', e.message\\)}\\)')",
+      "Bash(node --check js/data/arabic-words.js)",
+      "Bash(node --check js/modules/arabic.js)",
+      "Bash(node --check js/animate.js)",
+      "Bash(node --check js/components/celebrate.js)"
     ]
   }
 }

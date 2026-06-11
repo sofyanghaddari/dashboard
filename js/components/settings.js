@@ -111,6 +111,19 @@ export async function openVersionPicker() {
   }
 }
 
+const APP_VERSION = 'v53';
+
+// Onthoud binnen de sessie welke settings-tab open stond
+let _lastSettingsTab = 'profiel';
+
+const SETTINGS_TABS = [
+  { id: 'profiel',  icon: '👤', label: 'Profiel' },
+  { id: 'weergave', icon: '🎨', label: 'Stijl' },
+  { id: 'doelen',   icon: '🎯', label: 'Doelen' },
+  { id: 'data',     icon: '☁️', label: 'Data' },
+  { id: 'systeem',  icon: '🔒', label: 'Systeem' },
+];
+
 export async function openSettings(onClose) {
   const earned = await computeEarnedBadges();
   const themeMode = getSetting('themeMode') || 'dark';
@@ -121,6 +134,7 @@ export async function openSettings(onClose) {
   const userName = getSetting('userName') || '';
   const hizbTime = getSetting('hizbReminderTime') || '20:00';
   const arabicSettings = getArabicSettings();
+  const activeTab = SETTINGS_TABS.some(t => t.id === _lastSettingsTab) ? _lastSettingsTab : 'profiel';
 
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
@@ -128,6 +142,16 @@ export async function openSettings(onClose) {
     <div class="modal settings-modal" role="dialog" aria-modal="true">
       <button type="button" class="modal-close" id="close-settings-x" aria-label="Sluiten">×</button>
       <h2>Instellingen</h2>
+
+      <div class="settings-tabs" role="tablist">
+        ${SETTINGS_TABS.map(t => `
+          <button type="button" role="tab" class="settings-tab ${t.id === activeTab ? 'active' : ''}" data-pane-btn="${t.id}" aria-selected="${t.id === activeTab}">
+            <span class="settings-tab-icon">${t.icon}</span><span>${t.label}</span>
+          </button>`).join('')}
+      </div>
+
+      <!-- ════ TAB: PROFIEL ════ -->
+      <div class="settings-pane ${activeTab === 'profiel' ? 'active' : ''}" data-pane="profiel">
 
       <!-- PROFIEL -->
       <div class="settings-section">
@@ -167,6 +191,10 @@ export async function openSettings(onClose) {
         </div>
         <button type="button" class="btn block" id="save-pers" style="margin-top:8px">Profiel opslaan</button>
       </div>
+      </div>
+
+      <!-- ════ TAB: WEERGAVE ════ -->
+      <div class="settings-pane ${activeTab === 'weergave' ? 'active' : ''}" data-pane="weergave">
 
       <!-- WEERGAVE -->
       <div class="settings-section">
@@ -228,6 +256,10 @@ export async function openSettings(onClose) {
           </label>
         </div>
       </div>
+      </div>
+
+      <!-- ════ TAB: DOELEN & LEREN ════ -->
+      <div class="settings-pane ${activeTab === 'doelen' ? 'active' : ''}" data-pane="doelen">
 
       <!-- DOELEN -->
       <div class="settings-section">
@@ -389,6 +421,10 @@ export async function openSettings(onClose) {
         </div>
         <button type="button" class="btn block" id="save-ar-settings" style="margin-top:8px">Arabisch opslaan</button>
       </div>
+      </div>
+
+      <!-- ════ TAB: SYSTEEM (deel 1: beveiliging) ════ -->
+      <div class="settings-pane ${activeTab === 'systeem' ? 'active' : ''}" data-pane="systeem">
 
       <!-- BEVEILIGING -->
       <div class="settings-section">
@@ -437,6 +473,10 @@ export async function openSettings(onClose) {
           </div>
         </div>
       </div>
+      </div>
+
+      <!-- ════ TAB: DATA & SYNC ════ -->
+      <div class="settings-pane ${activeTab === 'data' ? 'active' : ''}" data-pane="data">
 
       <!-- SYNCHRONISATIE -->
       <div class="settings-section">
@@ -612,6 +652,10 @@ export async function openSettings(onClose) {
           </div>
         </div>
       </div>
+      </div>
+
+      <!-- ════ TAB: SYSTEEM (deel 2: badges + opslag) ════ -->
+      <div class="settings-pane ${activeTab === 'systeem' ? 'active' : ''}" data-pane="systeem">
 
       <!-- BADGES -->
       <div class="settings-section">
@@ -659,10 +703,11 @@ export async function openSettings(onClose) {
         </div>
         <div id="storage-info" class="muted" style="font-size:.82rem;margin-top:8px;padding:0 2px">Opslag laden…</div>
       </div>
+      </div>
 
       <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
         <button type="button" class="btn secondary" id="close-settings">Sluiten</button>
-        <div style="margin-top:10px"><span style="opacity:0.4;font-size:11px">dashboard-v32</span></div>
+        <div style="margin-top:10px"><span style="opacity:0.4;font-size:11px">dashboard-${APP_VERSION}</span></div>
       </div>
     </div>`;
   document.body.appendChild(backdrop);
@@ -671,6 +716,23 @@ export async function openSettings(onClose) {
   backdrop.querySelector('#close-settings').onclick = close;
   backdrop.querySelector('#close-settings-x').onclick = close;
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+
+  // Tab-navigatie (Systeem bestaat uit twee pane-delen — beide togglen)
+  const modalEl = backdrop.querySelector('.settings-modal');
+  const tabBtns = backdrop.querySelectorAll('[data-pane-btn]');
+  const panes = backdrop.querySelectorAll('.settings-pane');
+  tabBtns.forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.paneBtn;
+      _lastSettingsTab = id;
+      tabBtns.forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+      });
+      panes.forEach(p => p.classList.toggle('active', p.dataset.pane === id));
+      if (modalEl) modalEl.scrollTop = 0;
+    };
+  });
 
   // Weergave
   backdrop.querySelectorAll('[data-accent]').forEach(btn => {
@@ -974,12 +1036,22 @@ export async function openSettings(onClose) {
       for (const s of STORES) data[s] = await all(s);
       data._settings = {
         dailyIncomeGoal: getSetting('dailyIncomeGoal'),
+        monthlyIncomeGoal: getSetting('monthlyIncomeGoal'),
         taxReservePercent: getSetting('taxReservePercent'),
         hizbReminderTime: getSetting('hizbReminderTime'),
         hizbStartPoint: getSetting('hizbStartPoint'),
         themeMode: getSetting('themeMode'),
+        themePreset: getSetting('themePreset'),
         accentColor: getSetting('accentColor'),
+        density: getSetting('density'),
+        userName: getSetting('userName'),
+        autoTheme: getSetting('autoTheme'),
+        lockGraceMin: getSetting('lockGraceMin'),
       };
+      // Taxikosten + custom personalisatie zitten in losse localStorage-keys
+      try { data._taxiExpenses = JSON.parse(localStorage.getItem('taxiExpenses') || '[]'); } catch (_) {}
+      try { data._customShame = JSON.parse(localStorage.getItem('customShame') || '[]'); } catch (_) {}
+      data._customMascot = localStorage.getItem('customMascot') || null;
       data._exportedAt = new Date().toISOString();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
@@ -1004,8 +1076,11 @@ export async function openSettings(onClose) {
         for (const item of data[s]) await put(s, item);
       }
       if (data._settings) {
-        for (const [k, v] of Object.entries(data._settings)) setSetting(k, v);
+        for (const [k, v] of Object.entries(data._settings)) { if (v != null && v !== '') setSetting(k, v); }
       }
+      if (Array.isArray(data._taxiExpenses)) localStorage.setItem('taxiExpenses', JSON.stringify(data._taxiExpenses));
+      if (Array.isArray(data._customShame) && data._customShame.length) localStorage.setItem('customShame', JSON.stringify(data._customShame));
+      if (data._customMascot) localStorage.setItem('customMascot', data._customMascot);
       ok('Geïmporteerd. Pagina ververst.');
       setTimeout(() => location.reload(), 500);
     } catch (e2) { err('Import mislukt: ' + e2.message); }

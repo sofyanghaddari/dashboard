@@ -580,13 +580,35 @@ async function importCSV(container, file) {
   render(container);
 }
 
+// pdf.js wordt pas geladen wanneer er écht een PDF geïmporteerd wordt —
+// niet bij elke app-start (scheelt ~350KB blokkerende download + offline-fout).
+let _pdfJsLoading = null;
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve();
+  if (_pdfJsLoading) return _pdfJsLoading;
+  _pdfJsLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload = () => {
+      try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; } catch (_) {}
+      resolve();
+    };
+    s.onerror = () => {
+      _pdfJsLoading = null;
+      reject(new Error('PDF-bibliotheek kon niet laden — controleer je internetverbinding'));
+    };
+    document.head.appendChild(s);
+  });
+  return _pdfJsLoading;
+}
+
 async function importPDF(container, file) {
   if (!file) return;
-  if (!window.pdfjsLib) { toastErr('PDF-bibliotheek laadt...'); return; }
 
   try {
+    await loadPdfJs();
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    const pdf = await window.pdfjsLib.getDocument(arrayBuffer).promise;
 
     let imported = 0;
     const wordsAdded = new Set();

@@ -31,7 +31,7 @@ import { render as renderAgenda } from './modules/agenda.js';
 import { render as renderStats } from './modules/stats.js';
 
 async function bootApp() {
-  migrateSessionKeys(); // Verplaats ghToken e.d. van localStorage naar sessionStorage
+  migrateSessionKeys(); // Promoveer ghToken/ghEncPwd eenmalig van sessionStorage naar localStorage
   await openDB();
   register('dashboard', renderDashboard);
   register('taxi', renderTaxi);

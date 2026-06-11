@@ -4,6 +4,7 @@ import { openModal } from '../components/modal.js';
 import { uid, fmtMoney, escapeHTML, ymd, startOfWeek, startOfMonth, monthKey } from '../utils.js';
 import { getNumber } from '../settings.js';
 import { ok } from '../components/toast.js';
+import { initCountUps } from '../animate.js';
 
 const EXPENSES_KEY = 'taxiExpenses';
 const BREAKEVEN_KEY = 'breakEvenToastDate';
@@ -120,6 +121,7 @@ export async function render(container) {
   }
 
   initPrivacyToggle(container);
+  initCountUps(container);
 }
 
 // ─── OVERZICHT TAB ────────────────────────────────────────────────────────
@@ -146,7 +148,7 @@ function renderOverview(content, container, d) {
         <span>Vandaag verdiend</span>
         <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
       </div>
-      <div class="income-hero-amount blurred-amount">${fmtMoney(todayIncome)}</div>
+      <div class="income-hero-amount blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
       ${dailyGoal > 0 ? `
         <div class="income-hero-progress">
           <div class="progress-bar"><div class="progress-fill" style="width:${goalPct}%"></div></div>
@@ -163,16 +165,16 @@ function renderOverview(content, container, d) {
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">Week</div>
-        <div class="kpi-value blurred-amount">${fmtMoney(weekIncome)}</div>
+        <div class="kpi-value blurred-amount" data-countup="${weekIncome}">${fmtMoney(weekIncome)}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Maand bruto</div>
-        <div class="kpi-value blurred-amount">${fmtMoney(monthIncome)}</div>
+        <div class="kpi-value blurred-amount" data-countup="${monthIncome}">${fmtMoney(monthIncome)}</div>
         ${trendPct !== null ? `<div class="kpi-trend ${trendPct>=0?'up':'down'}">${trendPct>=0?'↑':'↓'}${Math.abs(trendPct)}% vs vorige</div>` : ''}
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Verwacht</div>
-        <div class="kpi-value blurred-amount">${fmtMoney(projectedMonth)}</div>
+        <div class="kpi-value blurred-amount" data-countup="${projectedMonth}">${fmtMoney(projectedMonth)}</div>
       </div>
     </div>
 
@@ -196,7 +198,7 @@ function renderOverview(content, container, d) {
       </div>` : ''}
       <div class="netto-row netto-total-row">
         <span class="netto-label">Netto inkomen</span>
-        <span class="netto-value ${monthNetto >= 0 ? 'positive' : 'negative'} blurred-amount">${fmtMoney(monthNetto)}</span>
+        <span class="netto-value ${monthNetto >= 0 ? 'positive' : 'negative'} blurred-amount" data-countup="${monthNetto}">${fmtMoney(monthNetto)}</span>
       </div>
       <div class="cost-ratio-bar">
         <div class="cost-ratio-fill ${costRatioPct < 70 ? 'safe' : ''}" style="width:${costRatioPct}%"></div>
@@ -288,7 +290,7 @@ function renderKosten(content, container, expenses) {
   content.innerHTML = `
     <div class="card" style="padding:14px;margin-bottom:12px">
       <h2 class="card-title">Totaal maandkosten</h2>
-      <div style="font-size:1.6rem;font-family:Georgia,serif;font-weight:700;color:var(--danger);margin:6px 0 2px">${fmtMoney(monthly)}<span style="font-size:.9rem;font-weight:400;color:var(--text-faint)">/maand</span></div>
+      <div style="font-size:1.6rem;font-family:Georgia,serif;font-weight:700;color:var(--danger);margin:6px 0 2px"><span data-countup="${monthly}">${fmtMoney(monthly)}</span><span style="font-size:.9rem;font-weight:400;color:var(--text-faint)">/maand</span></div>
       <div style="font-size:.82rem;color:var(--text-faint)">Break-even per dag: <b style="color:var(--text)">${fmtMoney(monthly / 30)}</b></div>
       ${oneTime > 0 ? `<div style="font-size:.82rem;color:var(--text-faint);margin-top:6px;padding-top:6px;border-top:1px solid var(--border-soft)">Eenmalig deze maand: <b style="color:var(--text)">${fmtMoney(oneTime)}</b></div>` : ''}
     </div>

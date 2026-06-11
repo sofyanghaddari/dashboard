@@ -13,7 +13,8 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=3), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: v51)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: v53 — bump óók `APP_VERSION` in `js/components/settings.js`)
+- pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - Web App Manifest met shortcuts voor installeerbaarheid
 - Open-Meteo voor weer (geen API key, default Amsterdam centrum 52.3676, 4.9041)
 - GitHub Gist API voor encrypted auto-sync met versie-historie
@@ -47,7 +48,7 @@ Lokaal: `/Users/soef/claude code`
 ## Globale features
 
 ### UI & Toegang
-- ⚙️ **Settings** floating top-right (met safe-area-inset-top voor Dynamic Island clearance)
+- ⚙️ **Settings** floating top-right (met safe-area-inset-top voor Dynamic Island clearance) — modal met **5 tabs** (Profiel / Stijl / Doelen / Data / Systeem), laatst geopende tab wordt onthouden binnen de sessie
 - 🔍 **⌘K + zoek-knop** top-right, doorzoekt alles
 - ☁️ **Sync-pill** top-center: toont "Synced 2m geleden" + tap voor handmatige sync
 - 📡 **Offline-banner** bovenin (met safe-area)
@@ -122,7 +123,7 @@ js/
   theme.js                       — dark/light/auto + accent + preset + density
   achievements.js                — 12 badges berekening
   activity.js                    — silent activity log (max 200)
-  animate.js                     — countUp, (legacy) staggerIn, bindRipple
+  animate.js                     — countUp, initCountUps ([data-countup] tel-animaties), (legacy) staggerIn, bindRipple
   motion.js                      — Motion One wiring: revealView() scroll-in reveals (window.staggerIn wijst hiernaar)
   vendor/motion.min.js           — lokaal gevendorde Motion One (offline-safe, in SW-cache)
   notifications.js               — browser-notificaties voor taken met deadline
@@ -234,7 +235,7 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - Money via `fmtMoney()` met goud-kleur (.money class) + serif font (Georgia)
 - Modals hebben rechtsboven een ×-knop (`.modal-close`)
 - Card-titles `.card-title` class (uppercase, small, letterspacing)
-- Service worker CACHE versie bumpen bij elke wijziging van static assets
+- Service worker CACHE versie bumpen bij elke wijziging van static assets — én `APP_VERSION` in `js/components/settings.js` gelijk houden
 - Bij nieuwe IndexedDB store: bump `DB_VERSION` én voeg toe aan STORES lijsten in `db.js`, `github-sync.js`, `components/settings.js`
 - `safe-area-inset-top` (--safe-top) voor alle floating top elementen
 - `_updatedAt` automatisch via `db.js put()` — niet handmatig zetten
@@ -250,6 +251,14 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
+-2. **"Stille luxe" polish-ronde v53 (11 juni 2026):**
+   - **Settings in 5 tabs:** Profiel / Stijl / Doelen / Data / Systeem (`.settings-tabs` + `.settings-pane`; Systeem bestaat uit twee pane-delen die samen togglen — Beveiliging staat fysiek vóór Sync in de template). Laatst geopende tab onthouden in module-var. Versielabel = `APP_VERSION` const ('v53') in `js/components/settings.js` — mee bumpen met SW CACHE.
+   - **Tel-animaties overal:** `initCountUps()` in animate.js animeert elk `[data-countup]`-element (formaat volgt fmtMoney via data-prefix/-decimals/-suffix; respecteert prefers-reduced-motion; target 0 = direct eindwaarde). Actief op Dashboard (dagkaart, inkomen-hero, maand, KPI's), Taxi (hero, KPI's, netto, kostentotaal) en Koran (streaks). Stats had al een eigen variant.
+   - **Bugfixes:** dashboard 30-dagen heatmap rendert weer (ontbrekende `;` in inline-style maakte de hele background-declaratie ongeldig); `.accent-taupe` swatch-CSS toegevoegd (default-accent was onzichtbare knop in instellingen); accent-picker wrapt nu (10 swatches werden ovaal geknepen op mobiel); html-achtergrond transparant zodat overscroll/rubber-band de preset-kleur toont (custom props op body gelden niet op html); `meta[name=theme-color]` volgt nu het actieve thema via `_syncThemeColorMeta()` in theme.js (iOS-statusbalk licht in daylight).
+   - **pdf.js lazy:** CDN-script weg uit index.html (was ±350KB render-blocking + gooide offline ReferenceError); `loadPdfJs()` in arabic.js laadt het pas bij PDF-import. Preconnect naar open-meteo toegevoegd.
+   - **Luxe-laag CSS (sectie "STILLE LUXE" onderaan styles.css):** statische film-grain overlay op body::before (opacity .03 donker / .045 licht), diepere gelaagde bg-gradient, zachte top-sheen op .card (in de basisregel — pas op met `background:`-shorthand overrides), eenmalige sheen-sweep over .income-hero::after, goal-trajectory-lijn tekent zichzelf (`.traj-line` + `pathLength="1"`), dagstart-statvakken licht-thema-variant.
+   - **Backup-export uitgebreid:** `_settings` bevat nu ook monthlyIncomeGoal/themePreset/density/userName/autoTheme/lockGraceMin + `_taxiExpenses`/`_customShame`/`_customMascot`; import zet ze terug.
 
 -1. **Warm-neutraal kleursysteem + content/feature-ronde (juni 2026):**
    - **Kleuren:** warm-neutraal "stille luxe" palet als CSS-tokens. Gekozen aanpak: app blijft **donker** (default), met een warm-donkere basis afgeleid van het opgegeven licht-palet; één accent = **taupe** (`#8a7e6f` licht / `#bfb09a` donker). `:root` retuned (default/midnight), `body[data-theme=light]` + `daylight` preset = warm-light, oude blauwe accent-tints (`110,201,255`) globaal vervangen door taupe. Eenmalige migratie `warmAccentV1` zet accent=taupe. De automatische dag/nacht-wissel **blijft behouden** (overdag warm-light `daylight`, 's avonds warm-dark); `warmAutoFixV2` herstelt dit voor wie op de v51-build zat. Andere 15 presets ongemoeid.

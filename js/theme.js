@@ -51,6 +51,18 @@ export function applyTheme() {
   document.documentElement.style.setProperty('--gold', isLight && a.goldLight ? a.goldLight : a.gold);
   document.documentElement.style.setProperty('--gold-bright', isLight && a.goldBrightLight ? a.goldBrightLight : a.goldBright);
   document.documentElement.style.setProperty('--gold-glow', isLight && a.glowLight ? a.glowLight : a.glow);
+
+  _syncThemeColorMeta();
+}
+
+// iOS-statusbalk / PWA-chrome meekleuren met het actieve thema.
+function _syncThemeColorMeta() {
+  requestAnimationFrame(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta || !document.body) return;
+    const bg = getComputedStyle(document.body).backgroundColor;
+    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') meta.setAttribute('content', bg);
+  });
 }
 
 function _todayStr() { return new Date().toISOString().split('T')[0]; }

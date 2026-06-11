@@ -4,6 +4,7 @@ import { ymd, escapeHTML } from '../utils.js';
 import { celebrateTask } from '../components/celebrate.js';
 import { ok, err } from '../components/toast.js';
 import { HIZBS } from '../data/hizbs.js';
+import { initCountUps } from '../animate.js';
 
 let _reminderTimer = null;
 const CIRCUMFERENCE = 2 * Math.PI * 50;
@@ -117,7 +118,7 @@ async function renderHizb(container) {
           </div>
         </div>
         <div>
-          <div class="streak-num">${streak}</div>
+          <div class="streak-num" data-countup="${streak}" data-decimals="0" data-prefix="">${streak}</div>
           <div class="streak-unit">dag${streak === 1 ? '' : 'en'}</div>
           <div class="streak-sub">op rij${streak > 0 ? ' 🔥' : ''}</div>
           ${monthPct >= 80 ? `<div style="font-size:.72rem;color:var(--ok);margin-top:6px;font-weight:600">${monthPct}% deze maand ✓</div>` : ''}
@@ -149,11 +150,11 @@ async function renderHizb(container) {
       <h2 class="card-title">Streak statistieken</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="stat-mini-card">
-          <div class="stat-mini-num">${streak}</div>
+          <div class="stat-mini-num" data-countup="${streak}" data-decimals="0" data-prefix="">${streak}</div>
           <div class="stat-mini-lbl">Huidige streak</div>
         </div>
         <div class="stat-mini-card">
-          <div class="stat-mini-num">${calcLongestStreak(log)}</div>
+          <div class="stat-mini-num" data-countup="${calcLongestStreak(log)}" data-decimals="0" data-prefix="">${calcLongestStreak(log)}</div>
           <div class="stat-mini-lbl">Langste streak ooit</div>
         </div>
         <div class="stat-mini-card">
@@ -181,6 +182,7 @@ async function renderHizb(container) {
   `;
 
   renderChart30(el, doneSet, log);
+  initCountUps(el);
 
   // Feature 12: Inhaal banner button
   const catchupBtn = el.querySelector('#catchup-btn');
