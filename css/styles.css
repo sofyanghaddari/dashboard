@@ -1452,12 +1452,13 @@ body[data-theme="light"] .dagstart-stat {
   border-color: var(--border);
 }
 .dagstart-stat-val {
-  font-size: 1.12rem;
+  font-size: clamp(.92rem, 3.8vw, 1.12rem);
   font-weight: 700;
   color: var(--gold);
   font-family: Georgia, 'Times New Roman', serif;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
+  white-space: nowrap;
 }
 .dagstart-stat-lbl {
   font-size: var(--font-2xs);
@@ -2523,13 +2524,15 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   margin-bottom: 4px;
 }
 .kpi-value {
-  font-size: 1.25rem;
+  /* Schaalt mee op smalle schermen zodat "€ 1155.50" nooit over twee regels breekt */
+  font-size: clamp(.92rem, 4.1vw, 1.25rem);
   font-weight: 700;
   color: var(--gold);
   font-family: Georgia, serif;
   font-variant-numeric: tabular-nums;
   letter-spacing: -.02em;
   line-height: 1.1;
+  white-space: nowrap;
 }
 .kpi-value.neutral { color: var(--text); }
 .kpi-value.ok { color: var(--ok); }
@@ -4215,6 +4218,95 @@ body[data-theme="light"]::before { opacity: .045; }
   animation: trajDraw 1.3s cubic-bezier(.4,0,.2,1) .35s forwards;
 }
 @keyframes trajDraw { to { stroke-dashoffset: 0; } }
+
+/* ── TO-DO REDESIGN (v54) ───────────────────────────────────── */
+.todo-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: var(--sp-4);
+}
+.todo-head .page-title { margin: 0; }
+.todo-summary {
+  font-size: .78rem; color: var(--text-dim); font-weight: 600;
+  white-space: nowrap; flex: 0 0 auto;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  padding: 5px 12px; border-radius: 999px;
+}
+.todo-summary b { color: var(--gold); }
+
+.quick-add-row { display: flex; gap: 8px; align-items: stretch; margin-bottom: 14px; }
+.quick-add-row .quick-add-wrap { flex: 1; margin-bottom: 0; }
+.quick-detail-btn {
+  width: 48px; flex: 0 0 48px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  color: var(--accent); font-size: 1.35rem; line-height: 1;
+  cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-sm), var(--shadow-inner);
+  transition: background var(--transition), color var(--transition), transform var(--transition), border-color var(--transition);
+}
+.quick-detail-btn:hover { background: var(--bg-elev-3); color: var(--text); border-color: var(--accent-dim); }
+.quick-detail-btn:active { transform: scale(.92); }
+
+/* Eén compacte, horizontaal scrollbare chip-rij (filters + tags + selecteer) */
+.todo-chiprow {
+  display: flex; gap: 6px; align-items: center;
+  overflow-x: auto; padding: 2px 2px 6px; margin-bottom: 12px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.todo-chiprow::-webkit-scrollbar { display: none; }
+.todo-chiprow .filter-chip { flex: 0 0 auto; }
+.chip-sep { width: 1px; height: 18px; background: var(--border); flex: 0 0 auto; margin: 0 2px; }
+.chip-spacer { flex: 1 0 8px; }
+
+/* Compactere taakkaarten: acties horizontaal zodat ze de kaart niet oprekken */
+.task-card .task-actions {
+  flex-direction: row;
+  gap: 4px;
+  align-self: flex-start;
+}
+.task-card .task-btn { width: 28px; height: 28px; font-size: .76rem; border-radius: 7px; }
+
+/* Subtaken: geen geërfde uppercase label-stijl */
+label.subtask {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--text);
+  margin: 0;
+  font-size: .88rem;
+}
+
+/* Taken: rustige stagger-entree */
+.task-list .task-card {
+  animation: taskIn .38s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+@keyframes taskIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Afvinken: check-pop, dan glijdt de kaart uit vóór de re-render */
+.task-chk.chk-pop {
+  background: var(--ok) !important; border-color: var(--ok) !important;
+  color: #fff !important;
+  animation: habCheckPop .35s var(--spring);
+}
+.task-card.task-out {
+  animation: none !important;
+  opacity: 0 !important;
+  transform: translateX(18px) scale(.96) !important;
+  transition: opacity .24s ease, transform .24s ease;
+}
+
+/* ── TABBAR: icoon-pop bij tab-activatie ────────────────────── */
+.tab.active { animation: tabIconPop .4s var(--spring); }
+@keyframes tabIconPop {
+  0%   { transform: translateY(0) scale(1); }
+  45%  { transform: translateY(-3px) scale(1.08); }
+  100% { transform: none; }
+}
 
 /* ── INCOME HERO: eenmalige sheen-sweep bij binnenkomst ─────── */
 .income-hero::after {

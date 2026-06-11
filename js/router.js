@@ -8,6 +8,11 @@ export async function navigate(name) {
   const route = routes[name] ? name : 'dashboard';
   const view = document.getElementById('view');
   view.innerHTML = '';
+  // Her-trigger de viewIn-animatie zodat elke tab-wissel een zachte
+  // fade-up krijgt (speelde anders alleen bij de allereerste load).
+  view.style.animation = 'none';
+  void view.offsetHeight;
+  view.style.animation = '';
   document.querySelectorAll('.tab').forEach(t => {
     t.classList.toggle('active', t.dataset.route === route);
   });

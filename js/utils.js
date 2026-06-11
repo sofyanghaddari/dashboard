@@ -1,5 +1,11 @@
 export function uid() { return crypto.randomUUID(); }
 export function fmtMoney(n) { return '€ ' + (Math.round(n * 100) / 100).toFixed(2); }
+// Bedrag-invoer tolerant parsen: het NL-toetsenbord op iPhone typt een KOMMA
+// ("187,50"); type="number"-velden maken de waarde dan stilletjes leeg.
+// Gebruik daarom type="text" inputmode="decimal" + deze parser.
+export function parseAmount(v) {
+  return parseFloat(String(v ?? '').trim().replace(',', '.'));
+}
 export function todayISO() { return new Date().toISOString(); }
 export function ymd(d = new Date()) {
   const x = new Date(d);

@@ -68,12 +68,14 @@ export async function render(container) {
   const monthlyGoal = getNumber('monthlyIncomeGoal');
   const goalPct      = dailyGoal > 0 ? Math.min(100, Math.round(todayIncome / dailyGoal * 100)) : 0;
 
-  // Netto vandaag berekenen via taxiExpenses
+  // Netto vandaag berekenen via taxiExpenses (zelfde regels als taxi.js:
+  // eenmalige kosten zijn géén vaste maandlast en tellen hier niet mee)
   let dailyCost = 0;
   try {
     const expenses = JSON.parse(localStorage.getItem('taxiExpenses') || '[]');
     const monthly = expenses.reduce((s, e) => {
       const a = Number(e.amount) || 0;
+      if (e.frequency === 'eenmalig') return s;
       return s + (e.frequency === 'weekly' ? a * (52 / 12) : a);
     }, 0);
     dailyCost = monthly / 30;

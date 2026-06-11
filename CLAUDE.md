@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=3), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: v53 — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: v54 — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - Web App Manifest met shortcuts voor installeerbaarheid
 - Open-Meteo voor weer (geen API key, default Amsterdam centrum 52.3676, 4.9041)
@@ -40,7 +40,7 @@ Lokaal: `/Users/soef/claude code`
 3. **📖 Koran** — dagelijkse hizb afvinken + streak + 30-dagen grid + streak-repair (1× per maand gemiste dag goedmaken) + reminder-instellingen
 4. **📚 Arabisch** — SRS (SM-2 lite) met 4 knoppen, CSV-import (Anki tab/comma), sessies, kaarten-overzicht met search
 5. **🎯 Doelen** — lange/korte termijn met taxi-koppeling (% per rit + streefbedrag), gewoontes met chains + 14-dagen-strip, spaarpotjes (Bunq-style met current/target)
-6. **✅ To-do** — prioriteit/medium/waiting, smart filters (vandaag/week), tags, subtaken, herhalend, bulk-modus, undo, mark-for-later, quick-NL-input ("morgen 10:00 APK")
+6. **✅ To-do** — compacte layout (v54): header met open-teller-pill, quick-add + ＋-knop bovenaan, daaronder direct de taken; alléén niet-lege prioriteitsgroepen (geen lege placeholder-blokken), één scrollbare chip-rij (filters+tags+selecteer), horizontale actieknoppen op de kaart, afvink-animatie (check-pop + kaart glijdt uit), stagger-entree. Verder: prioriteit/medium/waiting, tags, subtaken, herhalend, bulk, undo, later-parkeren, quick-NL-input ("morgen 10:00 APK")
 7. **📝 Notities** — notities + ideeën sub-tabs, lichte markdown
 8. **🗓 Week** (`agenda.js`) — week-tijdrooster 06:00–24:00, dag-selector met dag-inkomen, blokken per categorie; tik een leeg tijdvak om te plannen (werkt op mobiel, geen hover nodig). Events in localStorage (`agenda_events`)
 9. **📊 Stats** (`stats.js`) — inkomen-inzichten met 7d/30d/90d/Alles filter, totalen + per-week bar-chart (WIP, serif titel)
@@ -251,6 +251,14 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
+-3. **Komma-bugfix + To-do herontwerp v54 (11 juni 2026):**
+   - **DE taxi-bug:** het NL-iPhone-toetsenbord typt een KOMMA ("187,50"); `type="number"`-velden maken de waarde dan stilletjes **leeg** → "Voer een geldig bedrag in" bij inkomen noteren, en in Kosten werd invoer geruisloos genegeerd. Fix: alle bedragvelden zijn nu `type="text" inputmode="decimal"` + `parseAmount()` in utils.js (komma→punt). Toegepast in taxi (dag-modal, kosten) en goals (potje +/−, potje-modal, doel-modal). **Conventie: nieuwe bedragvelden altijd zo bouwen.**
+   - **Netto-bug dashboard:** eenmalige taxikosten telden in dashboard.js als vaste maandlast mee in "netto vandaag" (taxi.js sloot ze wél uit) — nu zelfde regels.
+   - **To-do volledig herontworpen** (user vond het onoverzichtelijk + te veel scrollen): zie module-beschrijving. Oude `.todo-filters`/aparte tag-row/grote knoppenrij vervangen door `.todo-head`/`.quick-add-row`/`.todo-chiprow`. Bulk-toggle zit als chip in de chip-rij. Lege-staat = notes-empty-stijl ("Alles is gedaan" ✨ / "Niets binnen dit filter" 🔍).
+   - **Meer animaties:** elke tab-wissel hertriggert de viewIn fade-up (router.js), tabbar-icoon popt bij activatie (`tabIconPop`), taakkaarten stagger-in, afvinken = check-pop → kaart glijdt uit vóór re-render.
+   - **KPI/dagstart-bedragen wrappen niet meer** op smalle schermen (clamp + nowrap).
+   - Kosten-formulier geeft nu een err-toast bij ontbrekende naam/bedrag (was stille focus).
 
 -2. **"Stille luxe" polish-ronde v53 (11 juni 2026):**
    - **Settings in 5 tabs:** Profiel / Stijl / Doelen / Data / Systeem (`.settings-tabs` + `.settings-pane`; Systeem bestaat uit twee pane-delen die samen togglen — Beveiliging staat fysiek vóór Sync in de template). Laatst geopende tab onthouden in module-var. Versielabel = `APP_VERSION` const ('v53') in `js/components/settings.js` — mee bumpen met SW CACHE.

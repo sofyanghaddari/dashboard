@@ -1,9 +1,9 @@
 import { all, put, del } from '../db.js';
 import { initPrivacyToggle } from '../privacy.js';
 import { openModal } from '../components/modal.js';
-import { uid, fmtMoney, escapeHTML, ymd, startOfWeek, startOfMonth, monthKey } from '../utils.js';
+import { uid, fmtMoney, parseAmount, escapeHTML, ymd, startOfWeek, startOfMonth, monthKey } from '../utils.js';
 import { getNumber } from '../settings.js';
-import { ok } from '../components/toast.js';
+import { ok, err } from '../components/toast.js';
 import { initCountUps } from '../animate.js';
 
 const EXPENSES_KEY = 'taxiExpenses';
@@ -321,7 +321,7 @@ function renderKosten(content, container, expenses) {
       <label>Naam</label>
       <input id="exp-name" placeholder="bijv. Parkeervergunning" />
       <label>Bedrag (€)</label>
-      <input id="exp-amount" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
+      <input id="exp-amount" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" />
       <label>Frequentie</label>
       <div class="segmented" style="margin-bottom:12px">
         <button type="button" class="seg active" data-freq="monthly">Per maand</button>
@@ -364,9 +364,9 @@ function renderKosten(content, container, expenses) {
   // Save new expense
   content.querySelector('#save-expense').onclick = () => {
     const name = content.querySelector('#exp-name').value.trim();
-    const amount = parseFloat(content.querySelector('#exp-amount').value);
-    if (!name) { content.querySelector('#exp-name').focus(); return; }
-    if (!isFinite(amount) || amount <= 0) { content.querySelector('#exp-amount').focus(); return; }
+    const amount = parseAmount(content.querySelector('#exp-amount').value);
+    if (!name) { content.querySelector('#exp-name').focus(); err('Vul eerst een naam in'); return; }
+    if (!isFinite(amount) || amount <= 0) { content.querySelector('#exp-amount').focus(); err('Vul een geldig bedrag in'); return; }
     const list = getExpenses();
     const item = { id: uid(), name, amount, frequency: selectedFreq };
     if (selectedFreq === 'eenmalig') item.date = ymd(new Date()); // koppel aan de huidige maand
@@ -440,11 +440,11 @@ function openDayModal(container, dateKey, existing) {
         <p class="muted" style="font-size:.85rem;margin-top:8px">Dagtotaal: <b class="money">${fmtMoney(total)}</b></p>
       </div>` : ''}
     <label>Bedrag (€) *</label>
-    <input name="amount" type="number" step="0.01" inputmode="decimal" required autofocus placeholder="0.00" />
+    <input name="amount" type="text" inputmode="decimal" autocomplete="off" required autofocus placeholder="0,00" />
     <label>Notitie <span class="muted" style="font-size:.8rem;text-transform:none;letter-spacing:0">(optioneel)</span></label>
     <input name="note" placeholder="dagdienst, nachtshift…" />
   `, async (d) => {
-    const amount = parseFloat(d.amount);
+    const amount = parseAmount(d.amount);
     if (!isFinite(amount) || amount <= 0) throw new Error('Voer een geldig bedrag in');
     await put('rides', {
       id: uid(), date: new Date(dateKey + 'T12:00:00').toISOString(),

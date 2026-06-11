@@ -1,6 +1,6 @@
 import { all, put, del } from '../db.js';
 import { openModal } from '../components/modal.js';
-import { uid, fmtMoney, escapeHTML, ymd } from '../utils.js';
+import { uid, fmtMoney, parseAmount, escapeHTML, ymd } from '../utils.js';
 import { ok } from '../components/toast.js';
 import { celebrateTask } from '../components/celebrate.js';
 
@@ -253,9 +253,9 @@ function renderPots(container, pots) {
       const p = pots.find(x => x.id === b.dataset.potAdd);
       openModal(`Toevoegen — ${escapeHTML(p.name)}`, `
         <label>Bedrag (€) *</label>
-        <input name="amount" type="number" step="0.01" min="0.01" inputmode="decimal" required autofocus />
+        <input name="amount" type="text" inputmode="decimal" autocomplete="off" required autofocus placeholder="0,00" />
       `, async (d) => {
-        const amt = parseFloat(d.amount);
+        const amt = parseAmount(d.amount);
         if (!isFinite(amt) || amt <= 0) throw new Error('Bedrag moet groter dan 0 zijn');
         await put('pots', { ...p, current: Number(p.current || 0) + amt });
         ok(`${fmtMoney(amt)} toegevoegd aan ${p.name}`);
@@ -268,9 +268,9 @@ function renderPots(container, pots) {
       const p = pots.find(x => x.id === b.dataset.potSub);
       openModal(`Afhalen — ${escapeHTML(p.name)}`, `
         <label>Bedrag (€) *</label>
-        <input name="amount" type="number" step="0.01" min="0.01" inputmode="decimal" required autofocus />
+        <input name="amount" type="text" inputmode="decimal" autocomplete="off" required autofocus placeholder="0,00" />
       `, async (d) => {
-        const amt = parseFloat(d.amount);
+        const amt = parseAmount(d.amount);
         if (!isFinite(amt) || amt <= 0) throw new Error('Bedrag moet groter dan 0 zijn');
         await put('pots', { ...p, current: Math.max(0, Number(p.current || 0) - amt) });
         ok(`${fmtMoney(amt)} afgehaald van ${p.name}`);
@@ -307,15 +307,15 @@ function openPotModal(container, existing) {
   openModal(existing ? 'Potje bewerken' : 'Nieuw potje', `
     <label>Naam *</label><input name="name" required value="${existing ? escapeHTML(existing.name) : ''}" />
     <label>Emoji</label><input name="emoji" maxlength="2" value="${existing?.emoji || '🏺'}" />
-    <label>Doelbedrag (€)</label><input name="target" type="number" step="1" value="${existing?.target || ''}" />
-    <label>Huidig bedrag (€)</label><input name="current" type="number" step="0.01" value="${existing?.current || 0}" />
+    <label>Doelbedrag (€)</label><input name="target" type="text" inputmode="decimal" autocomplete="off" value="${existing?.target || ''}" />
+    <label>Huidig bedrag (€)</label><input name="current" type="text" inputmode="decimal" autocomplete="off" value="${existing?.current || 0}" />
   `, async (d) => {
     if (!d.name) throw new Error('Naam verplicht');
     const base = existing || { id: uid(), createdAt: new Date().toISOString() };
     await put('pots', {
       ...base, name: d.name, emoji: d.emoji || '🏺',
-      target: parseFloat(d.target) || 0,
-      current: parseFloat(d.current) || 0,
+      target: parseAmount(d.target) || 0,
+      current: parseAmount(d.current) || 0,
     });
     ok('Opgeslagen');
     render(container);
@@ -328,9 +328,9 @@ function openGoalModal(container, existing, term) {
     <label>Beschrijving</label><textarea name="description" rows="2">${existing?.description ? escapeHTML(existing.description) : ''}</textarea>
     <label>Deadline</label><input name="deadline" type="date" value="${existing?.deadline || ''}" />
     <label>Streefbedrag (€) — optioneel</label>
-    <input name="target" type="number" step="1" value="${existing?.target || ''}" />
+    <input name="target" type="text" inputmode="decimal" autocomplete="off" value="${existing?.target || ''}" />
     <label>% van elke taxi-rit — optioneel (auto-voortgang)</label>
-    <input name="taxiPercent" type="number" step="0.5" min="0" max="100" value="${existing?.taxiPercent || ''}" />
+    <input name="taxiPercent" type="text" inputmode="decimal" autocomplete="off" placeholder="bijv. 2,5" value="${existing?.taxiPercent || ''}" />
   `, async (d) => {
     if (!d.title) throw new Error('Titel verplicht');
     const base = existing || { id: uid(), term, progress: 0 };
@@ -338,8 +338,8 @@ function openGoalModal(container, existing, term) {
       ...base, title: d.title,
       description: d.description || '',
       deadline: d.deadline || null,
-      target: d.target ? parseFloat(d.target) : null,
-      taxiPercent: d.taxiPercent ? parseFloat(d.taxiPercent) : null,
+      target: d.target ? parseAmount(d.target) : null,
+      taxiPercent: d.taxiPercent ? parseAmount(d.taxiPercent) : null,
     });
     render(container);
   });

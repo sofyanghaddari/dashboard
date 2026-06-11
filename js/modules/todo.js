@@ -28,8 +28,22 @@ export async function render(container) {
 
   const allTags = [...new Set(todos.flatMap(t => t.tags || []))].sort();
 
+  const today = ymd();
+  const dueToday = active.filter(t => t.dueDate && t.dueDate <= today).length;
+
   container.innerHTML = `
-    <h1>To-do</h1>
+    <div class="todo-head">
+      <h1 class="page-title">To-do</h1>
+      <span class="todo-summary">${active.length} open${dueToday ? ` · <b>${dueToday}</b> vandaag` : ''}</span>
+    </div>
+
+    <div class="quick-add-row">
+      <div class="quick-add-wrap">
+        <input id="quick-add" placeholder="Snel toevoegen — 'morgen 10:00 APK'" />
+        <span class="quick-add-enter">↵</span>
+      </div>
+      <button class="quick-detail-btn" id="add" aria-label="Gedetailleerde taak toevoegen" title="Gedetailleerde taak">＋</button>
+    </div>
 
     <div class="todo-seg">
       <button class="todo-seg-btn ${view==='active' ?'active':''}" id="tab-active">
@@ -44,27 +58,16 @@ export async function render(container) {
     </div>
 
     ${view === 'active' ? `
-      <div class="todo-filters">
+      <div class="todo-chiprow">
         <button class="filter-chip ${filter==='all'  ?'active':''}" data-filter="all">Alle</button>
         <button class="filter-chip ${filter==='today'?'active':''}" data-filter="today">Vandaag</button>
-        <button class="filter-chip ${filter==='week' ?'active':''}" data-filter="week">Deze week</button>
+        <button class="filter-chip ${filter==='week' ?'active':''}" data-filter="week">Week</button>
+        ${allTags.length ? `<span class="chip-sep"></span>
+          ${allTags.map(t => `<button class="filter-chip tag-chip ${tagFilter===t?'active':''}" data-tag="${tagFilter===t?'':escapeHTML(t)}">#${escapeHTML(t)}</button>`).join('')}` : ''}
+        <span class="chip-spacer"></span>
+        <button class="filter-chip ${bulkMode?'active':''}" id="bulk-toggle">${bulkMode ? '✕ Klaar' : '☑ Selecteer'}</button>
       </div>
-      ${allTags.length ? `
-        <div class="tag-row" style="margin-bottom:12px">
-          <span class="pill ${tagFilter===''?'active':''}" data-tag="">alle</span>
-          ${allTags.map(t => `<span class="pill ${tagFilter===t?'active':''}" data-tag="${escapeHTML(t)}">#${escapeHTML(t)}</span>`).join('')}
-        </div>` : ''}
     ` : ''}
-
-    <div class="quick-add-wrap">
-      <input id="quick-add" placeholder="Snel toevoegen: 'morgen 10:00 APK'" />
-      <span class="quick-add-enter">↵</span>
-    </div>
-
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <button class="btn secondary" id="add" style="flex:1">+ Gedetailleerd</button>
-      ${view === 'active' ? `<button class="btn secondary" id="bulk-toggle" style="flex:0 0 auto;padding:12px 14px">${bulkMode ? '✕ Bulk uit' : '☑ Selecteren'}</button>` : ''}
-    </div>
 
     ${bulkMode ? `
       <div class="row" style="margin-bottom:14px">
@@ -83,21 +86,38 @@ export async function render(container) {
   const body = container.querySelector('#todo-body');
 
   if (view === 'active') {
-    body.innerHTML = ['high', 'medium', 'waiting'].map(p => {
-      const items = displayed.filter(t => t.priority === p);
-      const m = BUCKET_META[p];
-      return `
-        <div class="bucket-section">
-          <div class="bucket-hd">
-            <span class="bucket-dot ${m.dot}"></span>
-            <span class="bucket-lbl">${m.label}</span>
-            <span class="bucket-cnt">${items.length}</span>
-          </div>
-          <div class="task-list" data-bucket="${p}"></div>
+    // Alleen niet-lege groepen tonen — geen lege placeholder-blokken die
+    // de echte taken naar beneden duwen.
+    const buckets = ['high', 'medium', 'waiting']
+      .map(p => ({ p, items: displayed.filter(t => t.priority === p) }))
+      .filter(b => b.items.length);
+
+    if (!buckets.length) {
+      const isFiltered = filter !== 'all' || tagFilter;
+      body.innerHTML = `
+        <div class="notes-empty">
+          <div class="notes-empty-icon">${isFiltered ? '🔍' : '✨'}</div>
+          <div class="notes-empty-title">${isFiltered ? 'Niets binnen dit filter' : 'Alles is gedaan'}</div>
+          <div class="notes-empty-sub">${isFiltered ? 'Pas het filter aan of voeg een nieuwe taak toe.' : 'Geen open taken — voeg er snel één toe via de balk hierboven.'}</div>
         </div>`;
-    }).join('');
-    for (const p of ['high', 'medium', 'waiting']) {
-      renderBucket(container, p, displayed.filter(t => t.priority === p), bulkMode);
+    } else {
+      body.innerHTML = buckets.map(({ p, items }) => {
+        const m = BUCKET_META[p];
+        return `
+          <div class="bucket-section">
+            <div class="bucket-hd">
+              <span class="bucket-dot ${m.dot}"></span>
+              <span class="bucket-lbl">${m.label}</span>
+              <span class="bucket-cnt">${items.length}</span>
+            </div>
+            <div class="task-list" data-bucket="${p}"></div>
+          </div>`;
+      }).join('');
+      let idx = 0;
+      for (const { p, items } of buckets) {
+        renderBucket(container, p, items, bulkMode, idx);
+        idx += items.length;
+      }
     }
   } else if (view === 'later') {
     body.innerHTML = `<div class="task-list" data-bucket="later"></div>`;
@@ -184,7 +204,7 @@ function dueDateBadge(dueDate) {
   return { label: `${bell} ${dueDate}`, cls: 'task-badge-date' };
 }
 
-function taskCard(t, bulkMode) {
+function taskCard(t, bulkMode, idx = 0) {
   const subs    = t.subtasks || [];
   const subDone = subs.filter(s => s.done).length;
   const badge   = dueDateBadge(t.dueDate);
@@ -213,7 +233,7 @@ function taskCard(t, bulkMode) {
     </div>` : '';
 
   return `
-    <div class="task-card" data-id="${t.id}" data-priority="${t.priority}">
+    <div class="task-card" data-id="${t.id}" data-priority="${t.priority}" style="--i:${Math.min(idx, 8)}">
       ${bulkMode
         ? `<input type="checkbox" data-bulk="${t.id}" style="width:22px;height:22px;min-width:22px;margin-top:1px" />`
         : `<button class="task-chk" data-check="${t.id}" aria-label="Afvinken"></button>`}
@@ -232,13 +252,9 @@ function taskCard(t, bulkMode) {
     </div>`;
 }
 
-function renderBucket(container, p, items, bulkMode) {
+function renderBucket(container, p, items, bulkMode, offset = 0) {
   const el = container.querySelector(`[data-bucket="${p}"]`);
-  if (!items.length) {
-    el.innerHTML = `<div class="todo-empty">Geen taken in deze categorie</div>`;
-    return;
-  }
-  el.innerHTML = items.map(t => taskCard(t, bulkMode)).join('');
+  el.innerHTML = items.map((t, i) => taskCard(t, bulkMode, offset + i)).join('');
   bindRowEvents(container, el, items);
   if (!bulkMode) {
     enableSwipeDelete(el, async (id) => {
@@ -254,7 +270,16 @@ function bindRowEvents(container, el, items) {
   el.querySelectorAll('[data-check]').forEach(btn => {
     btn.onclick = async () => {
       const t = items.find(x => x.id === btn.dataset.check);
-      if (t) await completeTask(container, t);
+      if (!t) return;
+      btn.disabled = true;
+      btn.classList.add('chk-pop');
+      const card = btn.closest('.task-card');
+      if (card) {
+        await new Promise(r => setTimeout(r, 180));
+        card.classList.add('task-out');
+        await new Promise(r => setTimeout(r, 240));
+      }
+      await completeTask(container, t);
     };
   });
   el.querySelectorAll('[data-del]').forEach(b => {
@@ -308,7 +333,7 @@ function renderLater(container, items) {
     </div>`;
     return;
   }
-  el.innerHTML = items.map(t => taskCard(t, false)).join('');
+  el.innerHTML = items.map((t, i) => taskCard(t, false, i)).join('');
   bindRowEvents(container, el, items);
 }
 
@@ -322,8 +347,8 @@ function renderArchive(container, items) {
     </div>`;
     return;
   }
-  el.innerHTML = `<div class="task-list">` + items.map(t => `
-    <div class="task-card task-card-done" data-id="${t.id}" data-priority="${t.priority || 'medium'}">
+  el.innerHTML = `<div class="task-list">` + items.map((t, i) => `
+    <div class="task-card task-card-done" data-id="${t.id}" data-priority="${t.priority || 'medium'}" style="--i:${Math.min(i, 8)}">
       <div style="width:22px;height:22px;min-width:22px;border-radius:6px;background:var(--ok);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:white;flex-shrink:0;margin-top:1px">✓</div>
       <div class="task-body">
         <div class="task-title">${escapeHTML(t.title)}</div>
