@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=3), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: v54 — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: v55 — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - Web App Manifest met shortcuts voor installeerbaarheid
 - Open-Meteo voor weer (geen API key, default Amsterdam centrum 52.3676, 4.9041)
@@ -35,7 +35,7 @@ Lokaal: `/Users/soef/claude code`
 
 ## Modules (9 tabs)
 
-1. **🏠 Dashboard** — hero (mascot + shame), weer-radar Amsterdam (spitsuren ipv Schiphol), kalender+jaaroverzicht knoppen, voice-knop, vandaag/maand-stats, goal-trajectory SVG, doel-haalbaarheid kaart, patroon-insights, 30-dagen heatmap, koran/arabic/spaardoelen kaarten, top-prioriteit-taken, empty CTA bij lege data
+1. **🏠 Dashboard** — hero, weer-radar Amsterdam, kalender+jaaroverzicht, vandaag/maand-stats (tel-animaties), goal-trajectory SVG, doel-haalbaarheid, patroon-insights, 30-dagen heatmap, **Hadith- en Woord-van-de-dag met ‹ › dag-navigatie (vorige dagen herhalen) + 🔊 voorlees-knop** (hadith in Arabisch via `speechSynthesis` ar-SA, woord in NL nl-NL), koran/arabic/spaardoelen kaarten, top-prioriteit-taken, empty CTA
 2. **🚖 Taxi** — vereenvoudigd: alleen "+ Inkomen vandaag noteren" + maandkalender-grid waarop je per dag retroactief inkomen invult (klik dag → modal met items + add), CSV-export, jaarverloop bar-chart. **Geen** shift-tracker, source-breakdown, uitgaven of belasting-reserve meer
 3. **📖 Koran** — dagelijkse hizb afvinken + streak + 30-dagen grid + streak-repair (1× per maand gemiste dag goedmaken) + reminder-instellingen
 4. **📚 Arabisch** — SRS (SM-2 lite) met 4 knoppen, CSV-import (Anki tab/comma), sessies, kaarten-overzicht met search
@@ -251,6 +251,11 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
+-4. **Dag-kaart navigatie + voorlezen + privacy-default v55 (12 juni 2026):**
+   - **Hadith/Woord van de dag** hebben nu een `.daycard-head` met ‹ (vorige dag) · 🔊 (voorlezen) · › (volgende dag, disabled op vandaag) + dag-label ("Vandaag"/"Gisteren"/datum). Offsets in module-vars `_hadithOffset`/`_woordOffset` (sessie-only, reset bij reload). Arrays `HADITHS`/`WOORDEN` worden via `_HADITHS`/`_WOORDEN` aan de nav-handlers doorgegeven; index = `((dayOfYear+offset) % len + len) % len`. Generieke helpers `dayCard()`/`_dayInner()`/`bindDayWidgets()` in dashboard.js.
+   - **Voorlezen (TTS)** via Web Speech `speechSynthesis` + `speakText(text, lang, btn)`: hadith Arabisch (`ar-SA`, rate 0.8), woord Nederlands (`nl-NL`, leest "woord. definitie"). Tweede tik = stoppen; `.speaking`-puls op de knop; waarschuwt als er geen Arabische stem is.
+   - **Privacy omgedraaid:** bedragen zijn nu **standaard zichtbaar** bij elke app-start; pas na tik op het oogje worden ze geblurd. privacy.js gebruikt nu een globale `body.amounts-hidden`-class (geen FOUC meer, geen `.revealed` per element). Sessie-only module-var `_hidden` (default false). CSS: `.blurred-amount` blurt enkel onder `body.amounts-hidden`.
 
 -3. **Komma-bugfix + To-do herontwerp v54 (11 juni 2026):**
    - **DE taxi-bug:** het NL-iPhone-toetsenbord typt een KOMMA ("187,50"); `type="number"`-velden maken de waarde dan stilletjes **leeg** → "Voer een geldig bedrag in" bij inkomen noteren, en in Kosten werd invoer geruisloos genegeerd. Fix: alle bedragvelden zijn nu `type="text" inputmode="decimal"` + `parseAmount()` in utils.js (komma→punt). Toegepast in taxi (dag-modal, kosten) en goals (potje +/−, potje-modal, doel-modal). **Conventie: nieuwe bedragvelden altijd zo bouwen.**

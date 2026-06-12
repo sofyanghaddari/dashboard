@@ -12,6 +12,13 @@ import { initCountUps } from '../animate.js';
 
 let weatherAbortCtrl = null;
 
+// Hadith/Woord-van-de-dag: offset 0 = vandaag, -1 = gisteren, enz.
+// Arrays worden door de widget-functies in deze module-vars gezet zodat de
+// navigatie- en voorlees-knoppen er ook bij kunnen.
+let _HADITHS = null, _WOORDEN = null;
+let _hadithOffset = 0, _woordOffset = 0;
+let _ttsActiveBtn = null;
+
 function weatherIcon(code) {
   const h = new Date().getHours();
   const isNight = h < 6 || h >= 21;
@@ -388,6 +395,7 @@ export async function render(container) {
 
   loadWeather(container);
   initCountUps(container);
+  bindDayWidgets(container);
   container.querySelector('#open-calendar').onclick = () => window.openCalendar && window.openCalendar();
   container.querySelector('#open-yr').onclick = () => window.openYearReview && window.openYearReview();
 
@@ -534,16 +542,8 @@ function hadithWidget() {
     { ar: 'أَحَبُّ الأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ', nl: 'De geliefdste daden bij Allah zijn de meest standvastige, ook al zijn ze klein.', bron: 'Overgeleverd door al-Bukhari · nr. 6465' },
     { ar: 'إِنَّ مِنْ أَكْمَلِ الْمُؤْمِنِينَ إِيمَانًا أَحْسَنُهُمْ خُلُقًا وَأَلْطَفُهُمْ بِأَهْلِهِ', nl: 'Tot de gelovigen met het meest volledige geloof behoort wie het beste karakter heeft en het zachtaardigst is voor zijn gezin.', bron: 'Overgeleverd door at-Tirmidhi · nr. 2612' },
   ];
-  const today = new Date();
-  const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
-  const h = HADITHS[dayOfYear % HADITHS.length];
-  return `
-    <div class="card hadith-card">
-      <h2 class="card-title">Hadith van de dag</h2>
-      <div class="hadith-arabic">${h.ar}</div>
-      <div class="hadith-text">${escapeHTML(h.nl)}</div>
-      <div class="hadith-source">${escapeHTML(h.bron)}</div>
-    </div>`;
+  _HADITHS = HADITHS;
+  return dayCard('hadith', _hadithOffset);
 }
 
 function woordWidget(now) {
@@ -614,15 +614,115 @@ function woordWidget(now) {
     { w: 'xenofoob', def: 'Bang voor of afkerig van vreemden.', tip: '"Xenos" = vreemdeling, "phobos" = angst.' },
     { w: 'zelfgenoegzaam', def: 'Te tevreden met jezelf; vindt zichzelf al goed genoeg.', tip: 'Je leunt achterover en wilt niet meer leren.' },
   ];
-  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-  const w = WOORDEN[dayOfYear % WOORDEN.length];
+  _WOORDEN = WOORDEN;
+  return dayCard('woord', _woordOffset);
+}
+
+// ── Dag-kaarten: navigatie (vorige/volgende dag) + voorlezen (TTS) ──────────
+function _doy(offset) {
+  const t = new Date();
+  return Math.floor((t - new Date(t.getFullYear(), 0, 0)) / 86400000) + offset;
+}
+function _dayLabel(offset) {
+  if (offset === 0) return 'Vandaag';
+  if (offset === -1) return 'Gisteren';
+  const d = new Date(); d.setDate(d.getDate() + offset);
+  return d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+function _hadithAt(offset) { const a = _HADITHS; const i = ((_doy(offset) % a.length) + a.length) % a.length; return a[i]; }
+function _woordAt(offset)  { const a = _WOORDEN; const i = ((_doy(offset) % a.length) + a.length) % a.length; return a[i]; }
+
+function _dayInner(kind, offset) {
+  if (kind === 'hadith') {
+    const h = _hadithAt(offset);
+    return `<div class="hadith-arabic">${h.ar}</div>
+      <div class="hadith-text">${escapeHTML(h.nl)}</div>
+      <div class="hadith-source">${escapeHTML(h.bron)}</div>`;
+  }
+  const w = _woordAt(offset);
+  return `<div class="woord-word">${escapeHTML(w.w)}</div>
+    <div class="woord-def">${escapeHTML(w.def)}</div>
+    <div class="woord-bridge">${escapeHTML(w.tip)}</div>`;
+}
+
+function dayCard(kind, offset) {
+  const cardCls    = kind === 'hadith' ? 'hadith-card' : 'woord-card';
+  const title      = kind === 'hadith' ? 'Hadith van de dag' : 'Woord van de dag';
+  const speakTitle = kind === 'hadith' ? 'Voorlezen (Arabisch)' : 'Voorlezen (Nederlands)';
   return `
-    <div class="card woord-card">
-      <h2 class="card-title">Woord van de dag</h2>
-      <div class="woord-word">${escapeHTML(w.w)}</div>
-      <div class="woord-def">${escapeHTML(w.def)}</div>
-      <div class="woord-bridge">${escapeHTML(w.tip)}</div>
+    <div class="card ${cardCls}">
+      <div class="daycard-head">
+        <h2 class="card-title">${title}</h2>
+        <div class="daycard-controls">
+          <button class="daycard-btn" data-day-prev="${kind}" title="Vorige dag" aria-label="Vorige dag">‹</button>
+          <button class="daycard-btn" data-day-speak="${kind}" title="${speakTitle}" aria-label="${speakTitle}">🔊</button>
+          <button class="daycard-btn" data-day-next="${kind}" title="Volgende dag" aria-label="Volgende dag" ${offset >= 0 ? 'disabled' : ''}>›</button>
+        </div>
+      </div>
+      <div class="daycard-body" data-day-body="${kind}">${_dayInner(kind, offset)}</div>
+      <div class="daycard-daylabel" data-day-label="${kind}">${_dayLabel(offset)}</div>
     </div>`;
+}
+
+function bindDayWidgets(container) {
+  const refresh = (kind) => {
+    const offset = kind === 'hadith' ? _hadithOffset : _woordOffset;
+    const body  = container.querySelector(`[data-day-body="${kind}"]`);
+    const label = container.querySelector(`[data-day-label="${kind}"]`);
+    const next  = container.querySelector(`[data-day-next="${kind}"]`);
+    if (body) {
+      body.innerHTML = _dayInner(kind, offset);
+      body.classList.remove('daycard-anim'); void body.offsetWidth; body.classList.add('daycard-anim');
+    }
+    if (label) label.textContent = _dayLabel(offset);
+    if (next) next.disabled = offset >= 0;
+  };
+  container.querySelectorAll('[data-day-prev]').forEach(b => b.onclick = () => {
+    const k = b.dataset.dayPrev;
+    if (k === 'hadith') _hadithOffset -= 1; else _woordOffset -= 1;
+    refresh(k);
+  });
+  container.querySelectorAll('[data-day-next]').forEach(b => b.onclick = () => {
+    const k = b.dataset.dayNext;
+    if (k === 'hadith') { if (_hadithOffset < 0) _hadithOffset += 1; }
+    else                { if (_woordOffset  < 0) _woordOffset  += 1; }
+    refresh(k);
+  });
+  container.querySelectorAll('[data-day-speak]').forEach(b => b.onclick = () => {
+    const k = b.dataset.daySpeak;
+    if (k === 'hadith') { const h = _hadithAt(_hadithOffset); speakText(h.ar, 'ar', b); }
+    else                { const w = _woordAt(_woordOffset);  speakText(`${w.w}. ${w.def}`, 'nl', b); }
+  });
+}
+
+function speakText(text, lang, btn) {
+  const synth = window.speechSynthesis;
+  if (!synth || typeof SpeechSynthesisUtterance === 'undefined') {
+    toast('Voorlezen wordt niet ondersteund in deze browser', { type: 'err' });
+    return;
+  }
+  // Tweede tik op dezelfde knop = stoppen.
+  if (_ttsActiveBtn === btn) { synth.cancel(); btn.classList.remove('speaking'); _ttsActiveBtn = null; return; }
+  synth.cancel();
+  if (_ttsActiveBtn) { _ttsActiveBtn.classList.remove('speaking'); _ttsActiveBtn = null; }
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang === 'ar' ? 'ar-SA' : 'nl-NL';
+  u.rate = lang === 'ar' ? 0.8 : 0.95;
+  const voices = synth.getVoices ? synth.getVoices() : [];
+  const pref = lang === 'ar' ? 'ar' : 'nl';
+  const match = voices.find(v => (v.lang || '').toLowerCase().startsWith(pref));
+  if (match) u.voice = match;
+  else if (lang === 'ar' && voices.length) {
+    toast('Geen Arabische stem op dit toestel — voeg er één toe via iOS Instellingen → Toegankelijkheid → Gesproken materiaal', { type: 'info', duration: 5000 });
+  }
+
+  const clear = () => { btn.classList.remove('speaking'); if (_ttsActiveBtn === btn) _ttsActiveBtn = null; };
+  u.onend = clear;
+  u.onerror = clear;
+  _ttsActiveBtn = btn;
+  btn.classList.add('speaking');
+  synth.speak(u);
 }
 
 function wegWidget() {
