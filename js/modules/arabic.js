@@ -261,8 +261,11 @@ async function buildFullQueue(settings, today, userCards) {
     dirs.map(d => ({ word: w, dir: d, id: `${w.id}_${d}` }))
   );
 
-  const dueBuiltin = allBuiltin.filter(c => isCardDue(c.id, today));
-  const newBuiltin = allBuiltin.filter(c => isCardNew(c.id));
+  // Geschud vóór de selectie: zo krijg je elke sessie willekeurige woorden i.p.v.
+  // telkens dezelfde eerste paar uit de lijst. SRS blijft gelden — due-woorden
+  // (incl. "Opnieuw"/fout) komen gewoon terug; alleen de keuze/volgorde is random.
+  const dueBuiltin = shuffle(allBuiltin.filter(c => isCardDue(c.id, today)));
+  const newBuiltin = shuffle(allBuiltin.filter(c => isCardNew(c.id)));
 
   const alreadyNewToday = todayData.newSeen.length;
   const newLimit = Math.max(0, settings.newCardsPerDay - alreadyNewToday);
@@ -417,10 +420,22 @@ function startSession(container, queue, settings) {
       // Tik op kaart ook onthullen
       flashcard.onclick = () => { if (!revealed) revealBtn.click(); };
     } else {
+      let animating = false;
       container.querySelectorAll('[data-grade]').forEach(btn => {
         btn.onclick = async () => {
+          if (animating) return;          // voorkom dubbel-graden tijdens animatie
+          animating = true;
           const grade = parseInt(btn.dataset.grade);
           grade >= 4 ? haptic.success() : grade <= 1 ? haptic.err() : haptic.tap();
+
+          // Wegglij-animatie (richting volgt het oordeel) + feedback-puls.
+          const fc = container.querySelector('#flashcard');
+          const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (fc && !reduce) {
+            fc.classList.add(grade >= 4 ? 'srs-exit-right' : grade === 1 ? 'srs-exit-left' : 'srs-exit-up');
+            fc.classList.add(grade >= 3 ? 'srs-flash-good' : 'srs-flash-again');
+          }
+
           await gradeCard(c, grade, todayData, settings);
           grades.push({ id: c.id, grade });
           // Alleen "Opnieuw" (Again) komt later in deze sessie terug; de rest niet,
@@ -428,7 +443,7 @@ function startSession(container, queue, settings) {
           if (grade === 1) queue.push({ ...c, _requeued: true });
           idx++;
           revealed = false;
-          showCard();
+          if (fc && !reduce) setTimeout(showCard, 220); else showCard();
         };
       });
     }

@@ -2324,6 +2324,26 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   position: absolute; display: flex;
 }
 
+/* ── Antwoord-animaties: wegglijden + feedback-puls (60fps, transform/opacity) ── */
+.srs-flashcard.srs-exit-right { animation: srsExitRight .26s cubic-bezier(.4,0,.2,1) forwards; }
+.srs-flashcard.srs-exit-left  { animation: srsExitLeft  .26s cubic-bezier(.4,0,.2,1) forwards; }
+.srs-flashcard.srs-exit-up    { animation: srsExitUp    .24s cubic-bezier(.4,0,.2,1) forwards; }
+@keyframes srsExitRight { to { transform: translateX(72px) rotate(3deg); opacity: 0; } }
+@keyframes srsExitLeft  { to { transform: translateX(-72px) rotate(-3deg); opacity: 0; } }
+@keyframes srsExitUp    { to { transform: translateY(-44px); opacity: 0; } }
+/* Zachte ring-puls als feedback op goed/fout */
+.srs-flashcard.srs-flash-good .srs-flashcard-front,
+.srs-flashcard.srs-flash-good .srs-flashcard-back  { animation: srsRingGood .42s ease-out; }
+.srs-flashcard.srs-flash-again .srs-flashcard-front,
+.srs-flashcard.srs-flash-again .srs-flashcard-back { animation: srsRingAgain .42s ease-out; }
+@keyframes srsRingGood  { from { box-shadow: var(--shadow-md), 0 0 0 0 rgba(154,179,140,.55); } to { box-shadow: var(--shadow-md), 0 0 0 14px rgba(154,179,140,0); } }
+@keyframes srsRingAgain { from { box-shadow: var(--shadow-md), 0 0 0 0 rgba(217,140,132,.55); } to { box-shadow: var(--shadow-md), 0 0 0 14px rgba(217,140,132,0); } }
+@media (prefers-reduced-motion: reduce) {
+  .srs-flashcard.srs-exit-right, .srs-flashcard.srs-exit-left, .srs-flashcard.srs-exit-up { animation: none !important; opacity: 0; }
+  .srs-flashcard.srs-flash-good .srs-flashcard-front, .srs-flashcard.srs-flash-good .srs-flashcard-back,
+  .srs-flashcard.srs-flash-again .srs-flashcard-front, .srs-flashcard.srs-flash-again .srs-flashcard-back { animation: none !important; }
+}
+
 .arabic-text {
   font-size: 2.2rem; font-weight: 700; direction: rtl; line-height: 1.6;
   color: var(--text);
