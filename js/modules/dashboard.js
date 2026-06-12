@@ -256,6 +256,15 @@ export async function render(container) {
       <div id="weather-body"><p class="muted" style="font-size:.875rem">Laden…</p></div>
     </div>
 
+    <!-- NS TREIN-STORINGEN -->
+    <div class="card" id="ns-card">
+      <div class="daycard-head">
+        <h2 class="card-title">NS · trein-storingen</h2>
+        <button class="daycard-btn" id="ns-refresh" title="Vernieuwen" aria-label="Vernieuwen">⟳</button>
+      </div>
+      <div id="ns-body"><p class="muted" style="font-size:.875rem">Laden…</p></div>
+    </div>
+
     <!-- INKOMEN VANDAAG -->
     <div class="income-hero">
       <div class="income-hero-label" style="display:flex;justify-content:space-between;align-items:center">
@@ -394,6 +403,7 @@ export async function render(container) {
   `;
 
   loadWeather(container);
+  loadNs(container);
   initCountUps(container);
   bindDayWidgets(container);
   container.querySelector('#open-calendar').onclick = () => window.openCalendar && window.openCalendar();
@@ -561,7 +571,7 @@ function woordWidget(now) {
     { w: 'frugaal', def: 'Zuinig; leeft eenvoudig met weinig.', tip: 'Geen luxe, alleen wat echt nodig is.' },
     { w: 'altruïstisch', def: 'Onzelfzuchtig; doet dingen voor anderen.', tip: '"Altri" = anderen. Je denkt eerst aan een ander.' },
     { w: 'arbitrair', def: 'Willekeurig; zonder duidelijke reden gekozen.', tip: 'Zomaar gekozen, niet volgens een vaste regel.' },
-    { w: 'bevlogen', def: 'Vol vuur en enthousiasme voor iets.', tip: 'Bevlogen = je vliegt van enthousiasme.' },
+    { w: 'onverzettelijk', def: 'Niet om te buigen; houdt voet bij stuk.', tip: 'Wat er ook gebeurt, je wijkt niet.' },
     { w: 'diffuus', def: 'Vaag en verspreid; geen duidelijke vorm.', tip: 'Diffuus licht gaat alle kanten op — geen bundel.' },
     { w: 'eminent', def: 'Heel goed; steekt boven anderen uit.', tip: 'Iemand die echt bovenaan staat in zijn vak.' },
     { w: 'fatalistisch', def: 'Denkt dat alles toch al vastligt; laat het lot beslissen.', tip: '"Fata" = lot. Je laat het gewoon gebeuren.' },
@@ -569,7 +579,7 @@ function woordWidget(now) {
     { w: 'intuïtief', def: 'Op gevoel; je weet het zonder na te denken.', tip: 'Je voelt gewoon dat iets klopt.' },
     { w: 'ironisch', def: 'Je zegt het tegenovergestelde van wat je bedoelt.', tip: 'Zoals "lekker weer" zeggen als het regent.' },
     { w: 'latent', def: 'Wel aanwezig, maar nog niet zichtbaar; sluimert.', tip: 'Het zit er al, het wacht alleen nog.' },
-    { w: 'naïef', def: 'Goedgelovig; gelooft iets te snel door weinig ervaring.', tip: 'Als een kind dat nog niet gewaarschuwd is.' },
+    { w: 'argeloos', def: 'Zonder achterdocht; vermoedt geen kwaad.', tip: 'Je loopt er nietsvermoedend in.' },
     { w: 'paradoxaal', def: 'Lijkt tegenstrijdig, maar klopt toch.', tip: 'Bijvoorbeeld: "minder is meer".' },
     { w: 'provocatief', def: 'Uitdagend; bedoeld om een reactie uit te lokken.', tip: 'Je port iemand op om te zien wat er gebeurt.' },
     { w: 'retorisch', def: 'Een vraag die geen antwoord verwacht.', tip: 'Zoals: "Wil iedereen soms ontslagen worden?"' },
@@ -594,15 +604,15 @@ function woordWidget(now) {
     { w: 'catharsis', def: 'Opluchting; je voelt je bevrijd na veel emotie.', tip: 'Even goed huilen en je voelt je lichter.' },
     { w: 'dogmatisch', def: 'Houdt strak vast aan regels; staat geen twijfel toe.', tip: '"Dogma" = leer. Het is zo, en daarmee uit.' },
     { w: 'eclectisch', def: 'Pikt het beste uit verschillende bronnen.', tip: 'Je mixt het beste van overal.' },
-    { w: 'faceteus', def: 'Grappig bedoeld, soms net iets te brutaal.', tip: 'Een grapje dat soms net te ver gaat.' },
+    { w: 'facetieus', def: 'Grappig bedoeld, soms net iets te brutaal.', tip: 'Een grapje dat soms net te ver gaat.' },
     { w: 'gregair', def: 'Houdt van gezelschap; zoekt graag de groep op.', tip: '"Grex" = kudde. Je blijft graag bij de groep.' },
     { w: 'inherent', def: 'Hoort er van nature bij; zit erin.', tip: 'Het zit er ingebakken, hoort er gewoon bij.' },
     { w: 'oordeelkundig', def: 'Verstandig; kan goed beoordelen.', tip: 'Je weegt goed af voordat je beslist.' },
-    { w: 'kaleidoscopisch', def: 'Steeds wisselend en kleurrijk.', tip: 'Als een caleidoscoop: bij elke draai een nieuw beeld.' },
+    { w: 'caleidoscopisch', def: 'Steeds wisselend en kleurrijk.', tip: 'Als een caleidoscoop: bij elke draai een nieuw beeld.' },
     { w: 'lacune', def: 'Een gat; een stuk dat ontbreekt.', tip: 'Er mist een stukje.' },
     { w: 'malafide', def: 'Met slechte bedoelingen; niet te vertrouwen.', tip: '"Mala" = slecht. Kwade bedoeling.' },
     { w: 'nominaal', def: 'Alleen in naam; niet echt in de praktijk.', tip: 'Je hebt de titel, maar niet de macht.' },
-    { w: 'onbewust', def: 'Zonder dat je het doorhebt.', tip: 'Je doet het vanzelf, zonder erbij na te denken.' },
+    { w: 'impliciet', def: 'Niet hardop gezegd, maar wel bedoeld.', tip: 'Je snapt het zonder dat het er met zoveel woorden staat.' },
     { w: 'pedant', def: 'Betweterig; let te veel op regeltjes.', tip: 'De schoolmeester die alles beter weet.' },
     { w: 'quintessentieel', def: 'De pure kern; het meest wezenlijke van iets.', tip: 'Waar het echt om draait, en niets anders.' },
     { w: 'reprimande', def: 'Een officiële uitbrander; een berisping.', tip: 'Je krijgt er flink van langs, formeel.' },
@@ -610,7 +620,7 @@ function woordWidget(now) {
     { w: 'tactvol', def: 'Met gevoel; houdt rekening met de ander.', tip: 'Iets moeilijks zeggen zonder te kwetsen.' },
     { w: 'unilateraal', def: 'Eenzijdig; door één partij beslist.', tip: '"Uni" = één. Eén kant beslist alleen.' },
     { w: 'vigilant', def: 'Waakzaam; let steeds goed op.', tip: '"Vigilare" = waken. Altijd alert.' },
-    { w: 'wankel', def: 'Onvast en wiebelig; kan zo omvallen.', tip: 'Een wankele basis valt makkelijk om.' },
+    { w: 'precair', def: 'Wankel en gevaarlijk; kan elk moment misgaan.', tip: 'Het hangt aan een dun draadje.' },
     { w: 'xenofoob', def: 'Bang voor of afkerig van vreemden.', tip: '"Xenos" = vreemdeling, "phobos" = angst.' },
     { w: 'zelfgenoegzaam', def: 'Te tevreden met jezelf; vindt zichzelf al goed genoeg.', tip: 'Je leunt achterover en wilt niet meer leren.' },
   ];
@@ -695,6 +705,29 @@ function bindDayWidgets(container) {
   });
 }
 
+// Kiest de meest natuurlijke beschikbare stem voor een taal. Voor Arabisch geven we
+// voorrang aan "enhanced/premium/neural" en aan bekende kwaliteitsstemmen (bv. de
+// iOS-stem "Majed"), en aan niet-lokale (online) stemmen — die klinken doorgaans
+// natuurlijker dan de compacte ingebouwde stem.
+function _pickVoice(voices, lang) {
+  if (!voices || !voices.length) return null;
+  if (lang === 'ar') {
+    const ar = voices.filter(v => (v.lang || '').toLowerCase().startsWith('ar'));
+    if (!ar.length) return null;
+    const score = (v) => {
+      const n = (v.name || '').toLowerCase();
+      let s = 0;
+      if (/(enhanced|premium|neural|natural)/.test(n)) s += 4;
+      if (/(majed|maged|tarik|laila|hala|amira|salim|naayf)/.test(n)) s += 3;
+      if (v.localService === false) s += 2;            // online = vaak natuurlijker
+      if ((v.lang || '').toLowerCase() === 'ar-sa') s += 1;
+      return s;
+    };
+    return ar.slice().sort((a, b) => score(b) - score(a))[0];
+  }
+  return voices.find(v => (v.lang || '').toLowerCase().startsWith('nl')) || null;
+}
+
 function speakText(text, lang, btn) {
   const synth = window.speechSynthesis;
   if (!synth || typeof SpeechSynthesisUtterance === 'undefined') {
@@ -706,23 +739,36 @@ function speakText(text, lang, btn) {
   synth.cancel();
   if (_ttsActiveBtn) { _ttsActiveBtn.classList.remove('speaking'); _ttsActiveBtn = null; }
 
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang === 'ar' ? 'ar-SA' : 'nl-NL';
-  u.rate = lang === 'ar' ? 0.8 : 0.95;
-  const voices = synth.getVoices ? synth.getVoices() : [];
-  const pref = lang === 'ar' ? 'ar' : 'nl';
-  const match = voices.find(v => (v.lang || '').toLowerCase().startsWith(pref));
-  if (match) u.voice = match;
-  else if (lang === 'ar' && voices.length) {
-    toast('Geen Arabische stem op dit toestel — voeg er één toe via iOS Instellingen → Toegankelijkheid → Gesproken materiaal', { type: 'info', duration: 5000 });
-  }
+  const speakNow = () => {
+    const voices = synth.getVoices ? synth.getVoices() : [];
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang  = lang === 'ar' ? 'ar-SA' : 'nl-NL';
+    u.rate  = lang === 'ar' ? 0.85 : 0.98;   // iets rustiger voor Arabisch = duidelijker
+    u.pitch = 1;
+    const match = _pickVoice(voices, lang);
+    if (match) u.voice = match;
+    else if (lang === 'ar') {
+      toast('Geen Arabische stem op dit toestel. Voeg er één toe via iOS: Instellingen → Toegankelijkheid → Gesproken materiaal → Stemmen → Arabisch (kies "Majed").', { type: 'info', duration: 6000 });
+    }
+    const clear = () => { btn.classList.remove('speaking'); if (_ttsActiveBtn === btn) _ttsActiveBtn = null; };
+    u.onend = clear;
+    u.onerror = clear;
+    _ttsActiveBtn = btn;
+    btn.classList.add('speaking');
+    synth.speak(u);
+  };
 
-  const clear = () => { btn.classList.remove('speaking'); if (_ttsActiveBtn === btn) _ttsActiveBtn = null; };
-  u.onend = clear;
-  u.onerror = clear;
-  _ttsActiveBtn = btn;
-  btn.classList.add('speaking');
-  synth.speak(u);
+  // Op veel toestellen is getVoices() bij de eerste aanroep nog leeg; wacht dan op
+  // het voiceschanged-event zodat we tóch de juiste stem kunnen kiezen.
+  const have = synth.getVoices ? synth.getVoices() : [];
+  if (!have.length && 'onvoiceschanged' in synth) {
+    let done = false;
+    const handler = () => { if (done) return; done = true; synth.onvoiceschanged = null; speakNow(); };
+    synth.onvoiceschanged = handler;
+    setTimeout(() => { if (!done) { done = true; synth.onvoiceschanged = null; speakNow(); } }, 500);
+  } else {
+    speakNow();
+  }
 }
 
 function wegWidget() {
@@ -776,6 +822,74 @@ function wegWidget() {
       ${workItems.length ? `<details class="weginfo-details"><summary>Werkzaamheden (${workItems.length})</summary>${workItems.map(row).join('')}</details>` : ''}
       ${okItems.length ? `<details class="weginfo-details"><summary>Overige snelwegen (${okItems.length})</summary>${okItems.map(row).join('')}</details>` : ''}
     </div>`;
+}
+
+// ── NS trein-storingen ────────────────────────────────────────
+// Statische PWA → directe NS-API calls kunnen niet (CORS + de sleutel mag niet
+// in client-code). Daarom haalt dit een door de gebruiker ingestelde proxy-URL op
+// (een kleine serverless functie die de NS-sleutel bewaart en CORS toevoegt).
+// Zonder proxy: nette uitleg, geen nepdata. Alle externe tekst wordt ge-escaped.
+const NS_CACHE_KEY = 'nsDisruptionsCache';
+const _setHTML = (el, html) => { el.replaceChildren(); el.insertAdjacentHTML('beforeend', html); };
+
+async function loadNs(container) {
+  const body = container.querySelector('#ns-body');
+  if (!body) return;
+  const refreshBtn = container.querySelector('#ns-refresh');
+  if (refreshBtn) refreshBtn.onclick = () => { localStorage.removeItem(NS_CACHE_KEY); loadNs(container); };
+
+  const proxy = (localStorage.getItem('nsProxyUrl') || '').trim();
+  if (!proxy) {
+    _setHTML(body, `
+      <p class="muted" style="font-size:.85rem;line-height:1.5">Live NS-storingen vereisen een kleine proxy: de NS-API blokkeert directe aanvragen uit de browser en je API-sleutel mag niet in de app staan.</p>
+      <button class="btn secondary sm" id="ns-setup" style="margin-top:8px">Proxy-URL instellen</button>`);
+    const b = body.querySelector('#ns-setup');
+    if (b) b.onclick = () => {
+      const url = prompt('Plak de URL van je NS-proxy (moet JSON met storingen teruggeven):', '');
+      if (url && url.trim()) { localStorage.setItem('nsProxyUrl', url.trim()); loadNs(container); }
+    };
+    return;
+  }
+
+  try {
+    const cached = JSON.parse(localStorage.getItem(NS_CACHE_KEY) || 'null');
+    if (cached && Date.now() - cached.ts < 5 * 60 * 1000) { renderNs(body, cached.data); return; }
+  } catch (_) {}
+
+  _setHTML(body, `<p class="muted" style="font-size:.875rem">Laden…</p>`);
+  try {
+    const res = await fetch(proxy, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    localStorage.setItem(NS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+    renderNs(body, data);
+  } catch (e) {
+    _setHTML(body, `<p class="muted" style="font-size:.85rem">NS-storingen niet beschikbaar. Controleer je proxy-URL.</p>
+      <button class="btn secondary sm" id="ns-reset" style="margin-top:8px">Proxy wijzigen</button>`);
+    const r = body.querySelector('#ns-reset');
+    if (r) r.onclick = () => { const u = prompt('NS-proxy URL:', localStorage.getItem('nsProxyUrl') || ''); if (u !== null) { localStorage.setItem('nsProxyUrl', u.trim()); loadNs(container); } };
+  }
+}
+
+function renderNs(body, data) {
+  const list = Array.isArray(data) ? data : (data.disruptions || data.payload || []);
+  const items = (list || []).map(d => ({
+    title: d.title || d.titel || d.description || 'Verstoring',
+    type: String(d.type || '').toLowerCase(),
+    text: d?.timespans?.[0]?.situation?.label || d.text || d.body || '',
+  }));
+  if (!items.length) {
+    _setHTML(body, `<p class="muted" style="font-size:.875rem">✓ Geen grote storingen op dit moment.</p>`);
+    return;
+  }
+  _setHTML(body, `<div class="ns-list">${items.slice(0, 6).map(d => `
+    <div class="ns-item">
+      <span class="ns-dot ${/storing|disruption|calamit/.test(d.type) ? 'ns-dot-alert' : 'ns-dot-work'}"></span>
+      <div class="ns-item-body">
+        <div class="ns-item-title">${escapeHTML(d.title)}</div>
+        ${d.text ? `<div class="ns-item-text">${escapeHTML(String(d.text).slice(0, 140))}</div>` : ''}
+      </div>
+    </div>`).join('')}</div>`);
 }
 
 async function loadWeather(container) {

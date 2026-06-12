@@ -340,13 +340,13 @@ function startSession(container, queue, settings) {
     }
 
     const c = queue[idx];
-    const progress = Math.round((idx / startCount) * 100);
+    const progress = Math.round((idx / queue.length) * 100);
     const useFlip = settings.flipAnimation;
 
     container.innerHTML = `
       <div class="srs-session-header">
         <button class="btn secondary" id="sess-stop" style="padding:6px 12px;font-size:.82rem">✕ Stoppen</button>
-        <div class="srs-progress-info">${idx + 1} / ${startCount}</div>
+        <div class="srs-progress-info">${idx + 1} / ${queue.length}</div>
         <div style="width:60px"></div>
       </div>
       <div class="progress-bar" style="margin-bottom:20px">
@@ -376,13 +376,13 @@ function startSession(container, queue, settings) {
         <div class="srs-grade-grid">
           <button class="srs-grade-btn srs-grade-again" data-grade="1">
             <span class="grade-icon">✗</span>
-            <span>Again</span>
-            <span class="grade-interval">morgen</span>
+            <span>Opnieuw</span>
+            <span class="grade-interval">${gradeInterval(c, 1)}</span>
           </button>
           <button class="srs-grade-btn srs-grade-hard" data-grade="2">
             <span class="grade-icon">△</span>
             <span>Moeilijk</span>
-            <span class="grade-interval">morgen</span>
+            <span class="grade-interval">${gradeInterval(c, 2)}</span>
           </button>
           <button class="srs-grade-btn srs-grade-good" data-grade="4">
             <span class="grade-icon">✓</span>
@@ -423,6 +423,9 @@ function startSession(container, queue, settings) {
           grade >= 4 ? haptic.success() : grade <= 1 ? haptic.err() : haptic.tap();
           await gradeCard(c, grade, todayData, settings);
           grades.push({ id: c.id, grade });
+          // Alleen "Opnieuw" (Again) komt later in deze sessie terug; de rest niet,
+          // zodat je vlot door de set heen gaat.
+          if (grade === 1) queue.push({ ...c, _requeued: true });
           idx++;
           revealed = false;
           showCard();
@@ -456,19 +459,22 @@ async function gradeCard(card, grade, todayData, settings) {
   }
 }
 
-function gradeInterval(card, grade) {
-  if (!card.isBuiltin) return '';
+// Voorspelt exact hetzelfde interval als updateCardSrs(), zodat het label op de
+// knop klopt met wat er daadwerkelijk gepland wordt. Again (1) komt deze sessie
+// terug → geen dag-label.
+function predictInterval(card, grade) {
   const srs = getCardSrs(card.id);
-  const existing = srs || { interval: 1, easeFactor: 2.5, repetitions: 0 };
-  let interval;
-  if (grade >= 3) {
-    if (existing.repetitions === 0) interval = 1;
-    else if (existing.repetitions === 1) interval = 6;
-    else interval = Math.round(existing.interval * existing.easeFactor);
-    if (grade === 5) interval = Math.round(interval * 1.3);
-  } else {
-    interval = 1;
-  }
+  const { interval = 1, easeFactor = 2.5, repetitions = 0 } = srs || {};
+  if (grade === 1) return 0;                                   // straks weer (zelfde sessie)
+  if (grade === 2) return repetitions === 0 ? 1 : Math.max(1, Math.round(interval * 1.2));
+  if (grade === 4) return repetitions === 0 ? 3 : repetitions === 1 ? 7 : Math.round(interval * easeFactor);
+  return repetitions === 0 ? 7 : repetitions === 1 ? 16 : Math.round(interval * easeFactor * 1.3); // grade 5
+}
+
+function gradeInterval(card, grade) {
+  if (!card.isBuiltin) return grade === 1 ? 'straks' : '';
+  const interval = predictInterval(card, grade);
+  if (interval === 0) return 'straks';
   if (interval === 1) return 'morgen';
   if (interval < 7) return `${interval}d`;
   if (interval < 30) return `${Math.round(interval / 7)}w`;

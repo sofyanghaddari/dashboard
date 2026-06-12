@@ -20,7 +20,6 @@ export async function render(container) {
   const view      = container.dataset.todoView   || 'active';
   const filter    = container.dataset.todoFilter || 'all';
   const tagFilter = container.dataset.todoTag    || '';
-  const bulkMode  = container.dataset.todoBulk   === '1';
 
   const active   = todos.filter(t => !t.done && !t.savedForLater);
   const later    = todos.filter(t => !t.done && t.savedForLater);
@@ -64,16 +63,8 @@ export async function render(container) {
         <button class="filter-chip ${filter==='week' ?'active':''}" data-filter="week">Week</button>
         ${allTags.length ? `<span class="chip-sep"></span>
           ${allTags.map(t => `<button class="filter-chip tag-chip ${tagFilter===t?'active':''}" data-tag="${tagFilter===t?'':escapeHTML(t)}">#${escapeHTML(t)}</button>`).join('')}` : ''}
-        <span class="chip-spacer"></span>
-        <button class="filter-chip ${bulkMode?'active':''}" id="bulk-toggle">${bulkMode ? '✕ Klaar' : '☑ Selecteer'}</button>
       </div>
     ` : ''}
-
-    ${bulkMode ? `
-      <div class="row" style="margin-bottom:14px">
-        <button class="btn secondary" id="bulk-done">✓ Klaar</button>
-        <button class="btn danger" id="bulk-del">✕ Verwijder</button>
-      </div>` : ''}
 
     <div id="todo-body"></div>
   `;
@@ -115,7 +106,7 @@ export async function render(container) {
       }).join('');
       let idx = 0;
       for (const { p, items } of buckets) {
-        renderBucket(container, p, items, bulkMode, idx);
+        renderBucket(container, p, items, false, idx);
         idx += items.length;
       }
     }
@@ -168,13 +159,6 @@ export async function render(container) {
     b.onclick = () => { container.dataset.todoFilter = b.dataset.filter; render(container); });
   container.querySelectorAll('[data-tag]').forEach(el =>
     el.onclick = () => { container.dataset.todoTag = el.dataset.tag; render(container); });
-
-  const bulkBtn = container.querySelector('#bulk-toggle');
-  if (bulkBtn) bulkBtn.onclick = () => { container.dataset.todoBulk = bulkMode ? '' : '1'; render(container); };
-  if (bulkMode) {
-    container.querySelector('#bulk-done').onclick = () => bulkAction(container, displayed, 'done');
-    container.querySelector('#bulk-del').onclick  = () => bulkAction(container, displayed, 'del');
-  }
 }
 
 // ── Helpers ───────────────────────────────────────────────

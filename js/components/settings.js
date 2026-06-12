@@ -111,7 +111,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v55';
+const APP_VERSION = 'v56';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
