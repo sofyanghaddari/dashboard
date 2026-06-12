@@ -174,22 +174,49 @@ body {
 }
 .list-item:active { transform: scale(.98); }
 
-/* CARD TAP RESPONSE */
-.card { transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition); }
-.card:active { transform: scale(.99); }
+/* ─────────────────────────────────────────────────────────────
+   SITE-BREDE MICRO-INTERACTIES — consistent over álle tabs.
+   Eén set tokens (timing/easing), 60fps (transform/opacity).
+   ───────────────────────────────────────────────────────────── */
 
-/* QUIET HOVER MICRO-INTERACTIONS (pointer devices only — phones keep :active) */
+/* Gedeelde, soepele transitie op elk interactief blok/rij/kaart */
+.card,
+.note-card, .goal-card, .pot-item, .habit-item,
+.stat, .stat-row .stat, .kpi-card,
+.expense-item, .bucket-section, .task-card,
+.list-item, .agenda-day-tab, .srs-stat, .pot-bar-row,
+.section-add-btn, .filter-chip, .notes-seg-btn, .taxi-tab, .seg {
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition), background var(--transition);
+}
+
+/* Tik-feedback (ook op touch): subtiele indruk */
+.card:active { transform: scale(.99); }
+.note-card:active, .goal-card:active, .pot-item:active, .habit-item:active,
+.kpi-card:active, .expense-item:active, .task-card:active, .list-item:active,
+.agenda-day-tab:active { transform: scale(.985); }
+
+/* Hover-lift (alleen pointer-apparaten — telefoons houden de :active-indruk) */
 @media (hover: hover) {
   .card:hover,
-  .note-card:hover,
-  .goal-card:hover,
-  .pot-item:hover,
-  .habit-item:hover {
+  .note-card:hover, .goal-card:hover, .pot-item:hover, .habit-item:hover,
+  .kpi-card:hover, .stat:hover, .stat-row .stat:hover,
+  .expense-item:hover, .bucket-section:hover, .task-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
   }
   .btn:hover { transform: translateY(-1px); }
   .btn:active { transform: translateY(0); }
+  .section-add-btn:hover, .filter-chip:hover, .notes-seg-btn:hover, .taxi-tab:hover,
+  .daycard-btn:hover, .pot-btn:hover, .goal-btn:hover, .note-btn:hover, .task-btn:hover {
+    transform: translateY(-1px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .note-card, .goal-card, .pot-item, .habit-item, .stat, .kpi-card,
+  .expense-item, .bucket-section, .task-card, .list-item, .agenda-day-tab,
+  .btn, .section-add-btn, .filter-chip, .notes-seg-btn, .taxi-tab {
+    transition: none !important;
+  }
 }
 
 /* HIZB DAY CELL ANIMATION */

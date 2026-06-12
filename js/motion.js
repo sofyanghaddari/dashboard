@@ -20,6 +20,10 @@ const REVEAL_SELECTOR = [
   '.notes-empty',
   '.section-empty',
   '.day-empty-hint',
+  '.income-hero',
+  '.netto-hero',
+  '.kpi-grid',
+  '.bucket-section',
 ].join(',');
 
 /**
