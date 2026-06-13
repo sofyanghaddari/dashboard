@@ -148,6 +148,47 @@ function catInfo(id) {
   return CATS.find(c => c.id === id) || CATS[CATS.length - 1];
 }
 
+function animateKPIs(root) {
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  root.querySelectorAll('[data-bk-count]').forEach(el => {
+    const target = parseFloat(el.dataset.bkCount);
+    if (isNaN(target) || target === 0) return;
+    const isMoney = el.classList.contains('money');
+    const duration = 650;
+    const t0 = performance.now();
+    const tick = ts => {
+      const p = Math.min((ts - t0) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      const v = target * ease;
+      if (isMoney) {
+        el.textContent = '€ ' + v.toFixed(2)
+          .replace('.', ',')
+          .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      } else {
+        el.textContent = Math.round(v).toLocaleString('nl-NL');
+      }
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+function exportCSV(rows, filename) {
+  if (!rows.length) { err('Geen data om te exporteren'); return; }
+  const headers = Object.keys(rows[0]);
+  const csv = [
+    headers.join(';'),
+    ...rows.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(';')),
+  ].join('\r\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })),
+    download: filename,
+  });
+  a.click();
+  URL.revokeObjectURL(a.href);
+  ok(`${filename} gedownload ✓`);
+}
+
 // ─── SUB-NAV ─────────────────────────────────────────────────────────────────
 
 const TABS = [
@@ -180,7 +221,8 @@ function buildSubNav(active, adminId) {
 
 export async function render(container) {
   const tab     = container.dataset.bkTab   || 'overzicht';
-  const adminId = container.dataset.bkAdmin || 'taxi';
+  const adminId = container.dataset.bkAdmin || localStorage.getItem('bkAdmin') || 'taxi';
+  container.dataset.bkAdmin = adminId;
   container.innerHTML = buildSubNav(tab, adminId);
 
   container.querySelectorAll('.bk-admin-btn').forEach(btn => {
@@ -188,6 +230,7 @@ export async function render(container) {
       container.dataset.bkAdmin   = btn.dataset.admin;
       container.dataset.bkTab     = 'overzicht';
       container.dataset.invFilter = '';
+      localStorage.setItem('bkAdmin', btn.dataset.admin);
       render(container);
     };
   });
@@ -221,6 +264,7 @@ export async function render(container) {
     case 'wv':        renderWV(view, withStatus, purchases, kmLogs, container); break;
     default:          renderOverview(view, withStatus, purchases, kmLogs, container);
   }
+  animateKPIs(view);
 }
 
 // ─── OVERZICHT ────────────────────────────────────────────────────────────────
@@ -250,22 +294,22 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
     <div class="bk-kpi-grid">
       <div class="bk-kpi">
         <div class="bk-kpi-label">Omzet ${y}</div>
-        <div class="bk-kpi-val money">${fmtMoney(omzetYear)}</div>
+        <div class="bk-kpi-val money" data-bk-count="${omzetYear}">${fmtMoney(omzetYear)}</div>
         <div class="bk-kpi-sub">excl. BTW</div>
       </div>
       <div class="bk-kpi">
         <div class="bk-kpi-label">Kosten ${y}</div>
-        <div class="bk-kpi-val" style="color:var(--danger)">${fmtMoney(kostenYear)}</div>
+        <div class="bk-kpi-val money" style="color:var(--danger)" data-bk-count="${kostenYear}">${fmtMoney(kostenYear)}</div>
         <div class="bk-kpi-sub">excl. BTW</div>
       </div>
       <div class="bk-kpi">
         <div class="bk-kpi-label">Winst ${y}</div>
-        <div class="bk-kpi-val" style="color:${winstYear >= 0 ? 'var(--ok)' : 'var(--danger)'}">${fmtMoney(winstYear)}</div>
+        <div class="bk-kpi-val money" style="color:${winstYear >= 0 ? 'var(--ok)' : 'var(--danger)'}" data-bk-count="${winstYear}">${fmtMoney(winstYear)}</div>
         <div class="bk-kpi-sub">excl. aftrekken</div>
       </div>
       <div class="bk-kpi">
         <div class="bk-kpi-label">BTW Q${q + 1}</div>
-        <div class="bk-kpi-val" style="color:var(--accent)">${fmtMoney(btwSaldo)}</div>
+        <div class="bk-kpi-val money" style="color:var(--accent)" data-bk-count="${btwSaldo}">${fmtMoney(btwSaldo)}</div>
         <div class="bk-kpi-sub">te betalen</div>
       </div>
     </div>
@@ -323,9 +367,14 @@ function renderFacturen(view, invoices, container) {
   const now      = new Date();
   const yearStr  = String(now.getFullYear());
   const filter   = container.dataset.invFilter || 'alle';
+  const search   = (container.dataset.invSearch || '').toLowerCase();
 
-  const filteredInv = filter === 'alle' ? invoices
-    : invoices.filter(i => i._status === filter);
+  const filteredInv = (filter === 'alle' ? invoices : invoices.filter(i => i._status === filter))
+    .filter(i => !search ||
+      (i.client?.name || '').toLowerCase().includes(search) ||
+      (i.number || '').toLowerCase().includes(search) ||
+      (i.lines?.[0]?.description || '').toLowerCase().includes(search)
+    );
 
   const sorted = [...filteredInv].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
@@ -338,7 +387,15 @@ function renderFacturen(view, invoices, container) {
         <span style="font-size:.82rem;color:var(--text-dim)">${invoices.length} facturen · ${fmtMoney(totalOpen)} open</span>
         ${totalLate > 0 ? `<span style="color:var(--danger);margin-left:8px;font-size:.82rem">⚠️ ${totalLate} vervallen</span>` : ''}
       </div>
-      <button class="btn bk-new-btn" id="new-inv-btn">+ Factuur</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="inv-csv-btn" style="background:var(--bg-elev-2);color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;font-size:.8rem">📊 CSV</button>
+        <button class="btn bk-new-btn" id="new-inv-btn">+ Factuur</button>
+      </div>
+    </div>
+
+    <div class="bk-client-search-wrap" style="margin-bottom:10px">
+      <span style="opacity:.5">🔍</span>
+      <input id="inv-search" class="bk-client-search" placeholder="Zoek klant, nummer…" value="${escapeHTML(container.dataset.invSearch || '')}" />
     </div>
 
     <div class="bk-filter-row">
@@ -358,8 +415,8 @@ function renderFacturen(view, invoices, container) {
       </div>
     ` : `
       <div class="bk-list">
-        ${sorted.map(inv => `
-          <div class="bk-card card" data-id="${escapeHTML(inv.id)}">
+        ${sorted.map((inv, idx) => `
+          <div class="bk-card card" style="--i:${idx}" data-id="${escapeHTML(inv.id)}">
             <div class="bk-card-top">
               <span class="bk-card-client">${escapeHTML(inv.client?.name || '—')}</span>
               <span class="bk-status bk-status-${inv._status}">${statusLabel(inv._status)}</span>
@@ -386,7 +443,34 @@ function renderFacturen(view, invoices, container) {
     `}
   `;
 
-  view.querySelector('#new-inv-btn').onclick = () => openNewInvoiceModal(container);
+  view.querySelector('#new-inv-btn').onclick = () => openInvoiceModal(container);
+
+  view.querySelector('#inv-csv-btn').onclick = () => exportCSV(
+    invoices.map(i => ({
+      Nummer: i.number || '',
+      Datum: i.date || '',
+      Vervaldatum: i.dueDate || '',
+      Status: statusLabel(computeStatus(i)),
+      Klant: i.client?.name || '',
+      KvK: i.client?.kvk || '',
+      Email: i.client?.email || '',
+      Omschrijving: i.lines?.[0]?.description || '',
+      'Excl BTW': (i.totalExcl || 0).toFixed(2).replace('.', ','),
+      'BTW%': i.lines?.[0]?.vatRate || 0,
+      'BTW bedrag': (i.totalVat || 0).toFixed(2).replace('.', ','),
+      'Incl BTW': (i.totalIncl || 0).toFixed(2).replace('.', ','),
+    })),
+    `facturen-${new Date().getFullYear()}.csv`
+  );
+
+  const searchInput = view.querySelector('#inv-search');
+  if (searchInput) {
+    let t = null;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(() => { container.dataset.invSearch = searchInput.value; render(container); }, 300);
+    });
+  }
 
   view.querySelectorAll('.bk-filter-chip').forEach(chip => {
     chip.onclick = () => { container.dataset.invFilter = chip.dataset.filter; render(container); };
@@ -448,7 +532,10 @@ function renderKosten(view, purchases, container) {
       <select id="kosten-year" class="bk-year-select">
         ${years.map(y => `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`).join('')}
       </select>
-      <button class="btn bk-new-btn" id="new-kosten-btn">+ Kosten</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="kosten-csv-btn" style="background:var(--bg-elev-2);color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;font-size:.8rem">📊 CSV</button>
+        <button class="btn bk-new-btn" id="new-kosten-btn">+ Kosten</button>
+      </div>
     </div>
 
     <div class="bk-kosten-summary">
@@ -475,7 +562,7 @@ function renderKosten(view, purchases, container) {
             <div class="bk-cat-row">
               <span class="bk-cat-label">${cat.emoji} ${cat.label}</span>
               <div class="bk-cat-bar-wrap">
-                <div class="bk-cat-bar" style="width:${pct}%"></div>
+                <div class="bk-cat-bar" style="--bk-bar-w:${pct}%;width:var(--bk-bar-w,0)"></div>
               </div>
               <span class="bk-cat-amt">${fmtMoney(amt)}</span>
             </div>
@@ -493,10 +580,10 @@ function renderKosten(view, purchases, container) {
     ` : `
       <div class="card-title" style="margin:16px 0 8px">Alle kosten ${year}</div>
       <div class="bk-list">
-        ${sorted.map(p => {
+        ${sorted.map((p, idx) => {
           const cat = catInfo(p.category || 'overig');
           return `
-            <div class="bk-cost-card card" data-id="${escapeHTML(p.id)}">
+            <div class="bk-cost-card card" style="--i:${idx}" data-id="${escapeHTML(p.id)}">
               <div style="display:flex;justify-content:space-between;align-items:flex-start">
                 <div>
                   <div style="font-weight:600">${cat.emoji} ${escapeHTML(p.vendor || '—')}</div>
@@ -517,6 +604,19 @@ function renderKosten(view, purchases, container) {
 
   view.querySelector('#new-kosten-btn').onclick = () => openNewPurchaseModal(container);
   view.querySelector('#kosten-year').onchange = e => { container.dataset.kostenYear = e.target.value; render(container); };
+  view.querySelector('#kosten-csv-btn').onclick = () => exportCSV(
+    yearPurchases.map(p => ({
+      Datum: p.date || '',
+      Leverancier: p.vendor || '',
+      Omschrijving: p.description || '',
+      Categorie: catInfo(p.category || 'overig').label,
+      'Excl BTW': (p.amountExcl || 0).toFixed(2).replace('.', ','),
+      'BTW%': p.vatRate || 0,
+      'BTW bedrag': (p.vatAmount || 0).toFixed(2).replace('.', ','),
+      'Incl BTW': (p.amountIncl || 0).toFixed(2).replace('.', ','),
+    })),
+    `kosten-${year}.csv`
+  );
 
   view.querySelectorAll('.bk-cost-card').forEach(card => {
     card.onclick = () => {
@@ -584,7 +684,7 @@ function renderKm(view, kmLogs, container) {
           return `
             <div class="bk-km-col">
               <div class="bk-km-bar-wrap">
-                <div class="bk-km-bar bar" style="height:${h}px" title="${km} km"></div>
+                <div class="bk-km-bar bar" style="--bk-bar-h:${h}px;height:var(--bk-bar-h,0)" title="${km} km"></div>
               </div>
               <div class="bk-km-month">${m}</div>
             </div>
@@ -602,8 +702,8 @@ function renderKm(view, kmLogs, container) {
     ` : `
       <div class="card-title" style="margin:16px 0 8px">Ritten ${year}</div>
       <div class="bk-list">
-        ${sorted.map(k => `
-          <div class="bk-km-card card" data-id="${escapeHTML(k.id)}">
+        ${sorted.map((k, idx) => `
+          <div class="bk-km-card card" style="--i:${idx}" data-id="${escapeHTML(k.id)}">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div>
                 <div style="font-weight:600">${k.isPrivate ? '🏠' : '💼'} ${escapeHTML(k.from || '—')} → ${escapeHTML(k.to || '—')}</div>
@@ -898,8 +998,8 @@ function renderKlanten(view, clients, invoices, container) {
       </div>
     ` : `
       <div class="bk-list">
-        ${sorted.map(c => `
-          <div class="bk-client-card card" data-id="${escapeHTML(c.id)}">
+        ${sorted.map((c, idx) => `
+          <div class="bk-client-card card" style="--i:${idx}" data-id="${escapeHTML(c.id)}">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <div style="flex:1;min-width:0">
                 <div class="bk-client-name">${escapeHTML(c.name || '—')}</div>
