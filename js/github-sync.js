@@ -31,7 +31,7 @@ function askPassword() {
   });
 }
 
-const STORES = ['rides','expenses','hizb_log','cards','goals','todos','shifts','notes','habits','habit_log','pots'];
+const STORES = ['rides','expenses','hizb_log','cards','goals','todos','shifts','notes','habits','habit_log','pots','invoices'];
 const LATEST_FILE = 'dashboard-backup.json';
 const KEEP_VERSIONS = 30;
 

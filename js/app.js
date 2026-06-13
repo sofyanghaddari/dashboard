@@ -29,6 +29,7 @@ import { render as renderTodo } from './modules/todo.js';
 import { render as renderNotes } from './modules/notes.js';
 import { render as renderAgenda } from './modules/agenda.js';
 import { render as renderStats } from './modules/stats.js';
+import { render as renderBoekhouding } from './modules/boekhouding.js';
 
 async function bootApp() {
   migrateSessionKeys(); // Promoveer ghToken/ghEncPwd eenmalig van sessionStorage naar localStorage
@@ -42,6 +43,7 @@ async function bootApp() {
   register('notes', renderNotes);
   register('agenda', renderAgenda);
   register('stats', renderStats);
+  register('boekhouding', renderBoekhouding);
   initRouter();
   initAutoTheme();
   bindRipple();
