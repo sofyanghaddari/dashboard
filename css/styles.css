@@ -4771,6 +4771,46 @@ label.subtask {
   box-shadow: 0 1px 5px rgba(0,0,0,.2);
 }
 
+/* Boekhouding animaties */
+@keyframes bk-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bk-bar-grow {
+  from { width: 0 !important; }
+  to   { width: var(--bk-bar-w, 100%); }
+}
+@keyframes bk-bar-rise {
+  from { height: 0 !important; }
+  to   { height: var(--bk-bar-h, 40px); }
+}
+
+.bk-list .bk-card,
+.bk-list .bk-cost-card,
+.bk-list .bk-km-card,
+.bk-list .bk-client-card {
+  animation: bk-fade-up .28s ease-out both;
+  animation-delay: calc(var(--i, 0) * 0.04s);
+}
+
+.bk-cat-bar {
+  animation: bk-bar-grow .5s ease-out both;
+  animation-delay: calc(var(--i, 0) * 0.04s + .1s);
+}
+
+.bk-km-bar {
+  animation: bk-bar-rise .5s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-list .bk-card,
+  .bk-list .bk-cost-card,
+  .bk-list .bk-km-card,
+  .bk-list .bk-client-card,
+  .bk-cat-bar,
+  .bk-km-bar { animation: none; }
+}
+
 .bk-subnav {
   display: flex; gap: 6px;
   overflow-x: auto; padding: 2px 0 12px;

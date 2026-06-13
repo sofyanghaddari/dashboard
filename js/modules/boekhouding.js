@@ -349,7 +349,7 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
     `}
   `;
 
-  view.querySelector('#qa-factuur').onclick = () => { container.dataset.bkTab = 'facturen'; render(container); setTimeout(() => openNewInvoiceModal(container), 100); };
+  view.querySelector('#qa-factuur').onclick = () => { container.dataset.bkTab = 'facturen'; render(container); setTimeout(() => openInvoiceModal(container), 100); };
   view.querySelector('#qa-kosten').onclick  = () => { container.dataset.bkTab = 'kosten';   render(container); setTimeout(() => openNewPurchaseModal(container), 100); };
   view.querySelector('#qa-km').onclick      = () => { container.dataset.bkTab = 'km';        render(container); setTimeout(() => openNewKmModal(container), 100); };
 
@@ -1037,7 +1037,7 @@ function renderKlanten(view, clients, invoices, container) {
       if (!client) return;
       container.dataset.bkTab = 'facturen';
       render(container);
-      setTimeout(() => openNewInvoiceModal(container, client), 100);
+      setTimeout(() => openInvoiceModal(container, { prefillClient: client }), 100);
     };
   });
 
@@ -1099,7 +1099,7 @@ function openClientDetailModal(client, invoices, container) {
     backdrop.remove();
     container.dataset.bkTab = 'facturen';
     render(container);
-    setTimeout(() => openNewInvoiceModal(container, client), 100);
+    setTimeout(() => openInvoiceModal(container, { prefillClient: client }), 100);
   };
 
   let delStep = 0;
@@ -1207,21 +1207,27 @@ function openClientPicker(clients) {
   });
 }
 
-// ─── NIEUWE FACTUUR MODAL ────────────────────────────────────────────────────
+// ─── NIEUWE / BEWERK FACTUUR MODAL ──────────────────────────────────────────
 
-async function openNewInvoiceModal(container, prefillClient = null) {
-  const bedrijf  = getAdmin(container);
-  const number   = await nextInvoiceNumber(bedrijf);
+async function openInvoiceModal(container, { prefillClient = null, existingInv = null } = {}) {
+  const isEdit   = !!existingInv;
+  const bedrijf  = isEdit ? (ADMINS[existingInv.adminId || 'taxi'] || ADMINS.taxi) : getAdmin(container);
+  const number   = isEdit ? existingInv.number : await nextInvoiceNumber(bedrijf);
   const todayStr = ymd();
-  const dueStr   = addDays(todayStr, bedrijf.termijn);
+  const dueStr   = isEdit ? existingInv.dueDate : addDays(todayStr, bedrijf.termijn);
+  const inv0     = existingInv || {};
+
+  const invVatRate = inv0.lines?.[0]?.vatRate ?? bedrijf.defaultVat;
+  const invDesc    = inv0.lines?.[0]?.description || bedrijf.defaultDesc;
 
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
   backdrop.innerHTML = `
     <div class="modal bk-modal">
       <button type="button" class="modal-close" id="bk-x">×</button>
-      <h2 style="margin:0 0 16px">Nieuwe factuur</h2>
+      <h2 style="margin:0 0 16px">${isEdit ? 'Factuur bewerken' : 'Nieuwe factuur'}</h2>
 
+      ${!isEdit ? `
       <button type="button" id="bk-pick-client" class="btn" style="width:100%;margin-bottom:10px;background:var(--bg-elev-2);border:1.5px solid var(--accent);color:var(--accent)">
         👥 Kies opgeslagen klant
       </button>
@@ -1234,37 +1240,38 @@ async function openNewInvoiceModal(container, prefillClient = null) {
       </div>
 
       <div class="bk-divider">— of handmatig —</div>
+      ` : ''}
 
       <form id="bk-form" autocomplete="off">
         <div class="bk-form-section">
           <div class="bk-section-title">Klantgegevens</div>
           <label>Bedrijfsnaam / naam *</label>
-          <input id="bk-client-name" type="text" placeholder="Bedrijfsnaam" required />
+          <input id="bk-client-name" type="text" placeholder="Bedrijfsnaam" value="${escapeHTML(inv0.client?.name || '')}" required />
           <label>Straat + huisnummer</label>
-          <input id="bk-client-addr" type="text" placeholder="Straatnaam 1" />
+          <input id="bk-client-addr" type="text" placeholder="Straatnaam 1" value="${escapeHTML(inv0.client?.address || '')}" />
           <label>Postcode + stad</label>
-          <input id="bk-client-city" type="text" placeholder="1234 AB Amsterdam" />
+          <input id="bk-client-city" type="text" placeholder="1234 AB Amsterdam" value="${escapeHTML(inv0.client?.city || '')}" />
           <label>KvK-nummer</label>
-          <input id="bk-client-kvk" type="text" inputmode="numeric" placeholder="12345678" />
+          <input id="bk-client-kvk" type="text" inputmode="numeric" placeholder="12345678" value="${escapeHTML(inv0.client?.kvk || '')}" />
           <label>E-mailadres</label>
-          <input id="bk-client-email" type="email" placeholder="info@bedrijf.nl" />
+          <input id="bk-client-email" type="email" placeholder="info@bedrijf.nl" value="${escapeHTML(inv0.client?.email || '')}" />
         </div>
 
         <div class="bk-form-section">
           <div class="bk-section-title">Factuurgegevens</div>
           <label>Omschrijving *</label>
-          <input id="bk-desc" type="text" placeholder="${escapeHTML(bedrijf.defaultDesc)}" value="${escapeHTML(bedrijf.defaultDesc)}" required />
+          <input id="bk-desc" type="text" placeholder="${escapeHTML(bedrijf.defaultDesc)}" value="${escapeHTML(invDesc)}" required />
           <label>Bedrag *</label>
           <div class="bk-amount-row">
-            <input id="bk-amount" type="text" inputmode="decimal" placeholder="320" required />
+            <input id="bk-amount" type="text" inputmode="decimal" placeholder="320" value="${isEdit ? (inv0.totalIncl || '') : ''}" required />
             <label class="bk-radio"><input type="radio" name="bk-ie" value="incl" checked /> Incl. BTW</label>
             <label class="bk-radio"><input type="radio" name="bk-ie" value="excl" /> Excl. BTW</label>
           </div>
           <label style="margin-top:10px">BTW-tarief</label>
           <select id="bk-vat">
-            <option value="9"  ${bedrijf.defaultVat === 9  ? 'selected' : ''}>9% — verlaagd (personenvervoer)</option>
-            <option value="21" ${bedrijf.defaultVat === 21 ? 'selected' : ''}>21% — standaard</option>
-            <option value="0"  ${bedrijf.defaultVat === 0  ? 'selected' : ''}>0% — vrijgesteld</option>
+            <option value="9"  ${invVatRate === 9  ? 'selected' : ''}>9% — verlaagd (personenvervoer)</option>
+            <option value="21" ${invVatRate === 21 ? 'selected' : ''}>21% — standaard</option>
+            <option value="0"  ${invVatRate === 0  ? 'selected' : ''}>0% — vrijgesteld</option>
           </select>
           <div id="bk-calc" class="bk-calc-preview" style="display:none"></div>
         </div>
@@ -1274,16 +1281,16 @@ async function openNewInvoiceModal(container, prefillClient = null) {
           <label>Factuurnummer</label>
           <input id="bk-number" type="text" value="${escapeHTML(number)}" required />
           <label>Factuurdatum</label>
-          <input id="bk-date" type="date" value="${todayStr}" required />
+          <input id="bk-date" type="date" value="${isEdit ? (inv0.date || todayStr) : todayStr}" required />
           <label>Vervaldatum (${bedrijf.termijn} dagen)</label>
           <input id="bk-due" type="date" value="${dueStr}" required />
         </div>
 
         <label>Interne notitie (staat niet op factuur)</label>
-        <textarea id="bk-note" rows="2" style="resize:vertical" placeholder="Optioneel…"></textarea>
+        <textarea id="bk-note" rows="2" style="resize:vertical" placeholder="Optioneel…">${escapeHTML(inv0.note || '')}</textarea>
 
         <button type="submit" class="btn block" style="margin-top:18px;padding:14px;font-size:1rem">
-          🧾 Factuur aanmaken &amp; afdrukken
+          ${isEdit ? '💾 Factuur opslaan' : '🧾 Factuur aanmaken &amp; afdrukken'}
         </button>
       </form>
     </div>
@@ -1293,35 +1300,37 @@ async function openNewInvoiceModal(container, prefillClient = null) {
   backdrop.querySelector('#bk-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 
-  // Prefill from saved client (when invoked from klanten tab)
-  function fillClient(c) {
-    if (!c) return;
-    backdrop.querySelector('#bk-client-name').value  = c.name    || '';
-    backdrop.querySelector('#bk-client-addr').value  = c.address || '';
-    backdrop.querySelector('#bk-client-city').value  = c.city    || '';
-    backdrop.querySelector('#bk-client-kvk').value   = c.kvk     || '';
-    backdrop.querySelector('#bk-client-email').value = c.email   || '';
+  if (!isEdit) {
+    // Prefill from saved client (when invoked from klanten tab)
+    function fillClient(c) {
+      if (!c) return;
+      backdrop.querySelector('#bk-client-name').value  = c.name    || '';
+      backdrop.querySelector('#bk-client-addr').value  = c.address || '';
+      backdrop.querySelector('#bk-client-city').value  = c.city    || '';
+      backdrop.querySelector('#bk-client-kvk').value   = c.kvk     || '';
+      backdrop.querySelector('#bk-client-email').value = c.email   || '';
+    }
+    if (prefillClient) fillClient(prefillClient);
+
+    // Client picker button
+    backdrop.querySelector('#bk-pick-client').onclick = async () => {
+      const savedClients = await all('clients');
+      const chosen = await openClientPicker(savedClients);
+      if (chosen) fillClient(chosen);
+    };
+
+    // Smart paste
+    const pasteArea = backdrop.querySelector('#bk-paste');
+    let parseTimer = null;
+    pasteArea.addEventListener('input', () => {
+      clearTimeout(parseTimer);
+      parseTimer = setTimeout(() => {
+        const parsed = parseInvoiceText(pasteArea.value);
+        applyParsed(parsed, backdrop);
+        refreshCalc(backdrop);
+      }, 300);
+    });
   }
-  if (prefillClient) fillClient(prefillClient);
-
-  // Client picker button
-  backdrop.querySelector('#bk-pick-client').onclick = async () => {
-    const savedClients = await all('clients');
-    const chosen = await openClientPicker(savedClients);
-    if (chosen) fillClient(chosen);
-  };
-
-  // Smart paste
-  const pasteArea = backdrop.querySelector('#bk-paste');
-  let parseTimer = null;
-  pasteArea.addEventListener('input', () => {
-    clearTimeout(parseTimer);
-    parseTimer = setTimeout(() => {
-      const parsed = parseInvoiceText(pasteArea.value);
-      applyParsed(parsed, backdrop);
-      refreshCalc(backdrop);
-    }, 300);
-  });
 
   const refreshCalcFn = () => refreshCalc(backdrop);
   backdrop.querySelector('#bk-amount').addEventListener('input', refreshCalcFn);
@@ -1330,6 +1339,9 @@ async function openNewInvoiceModal(container, prefillClient = null) {
   backdrop.querySelector('#bk-date').addEventListener('change', e => {
     backdrop.querySelector('#bk-due').value = addDays(e.target.value, bedrijf.termijn);
   });
+
+  // Show calc preview immediately if editing
+  if (isEdit) refreshCalc(backdrop);
 
   backdrop.querySelector('#bk-form').onsubmit = async e => {
     e.preventDefault();
@@ -1343,12 +1355,12 @@ async function openNewInvoiceModal(container, prefillClient = null) {
     const { amountExcl, vatAmount, amountIncl } = calcVat(raw, vatRate, isIncl);
 
     const inv = {
-      id:      uid(),
+      id:      isEdit ? existingInv.id : uid(),
       adminId: bedrijf.id,
       number:  backdrop.querySelector('#bk-number').value.trim(),
       date:    backdrop.querySelector('#bk-date').value,
       dueDate: backdrop.querySelector('#bk-due').value,
-      status:  'open',
+      status:  isEdit ? (existingInv.status || 'open') : 'open',
       note:    backdrop.querySelector('#bk-note').value.trim(),
       client:  {
         name:    clientName,
@@ -1366,29 +1378,36 @@ async function openNewInvoiceModal(container, prefillClient = null) {
       totalIncl: amountIncl,
     };
 
-    await add('invoices', inv);
-
-    // Auto-save / update client
-    const savedClients = await all('clients');
-    const email = inv.client.email;
-    const name  = inv.client.name;
-    const existing = savedClients.find(c =>
-      (email && c.email === email) ||
-      (c.name || '').toLowerCase() === name.toLowerCase()
-    );
-    if (existing) {
-      await put('clients', { ...existing, lastUsed: Date.now() });
-      ok(`Factuur ${inv.number} aangemaakt ✓`);
-    } else if (name) {
-      await add('clients', { id: uid(), name, address: inv.client.address, city: inv.client.city, kvk: inv.client.kvk, email, lastUsed: Date.now() });
-      ok(`Factuur ${inv.number} aangemaakt · ${name} opgeslagen als klant ✓`);
+    if (isEdit) {
+      await put('invoices', { ...cleanInv(existingInv), ...inv });
+      ok(`Factuur ${inv.number} bijgewerkt ✓`);
+      backdrop.remove();
+      render(container);
     } else {
-      ok(`Factuur ${inv.number} aangemaakt ✓`);
-    }
+      await add('invoices', inv);
 
-    backdrop.remove();
-    render(container);
-    printInvoice(inv, bedrijf);
+      // Auto-save / update client
+      const savedClients = await all('clients');
+      const email = inv.client.email;
+      const name  = inv.client.name;
+      const existing = savedClients.find(c =>
+        (email && c.email === email) ||
+        (c.name || '').toLowerCase() === name.toLowerCase()
+      );
+      if (existing) {
+        await put('clients', { ...existing, lastUsed: Date.now() });
+        ok(`Factuur ${inv.number} aangemaakt ✓`);
+      } else if (name) {
+        await add('clients', { id: uid(), name, address: inv.client.address, city: inv.client.city, kvk: inv.client.kvk, email, lastUsed: Date.now() });
+        ok(`Factuur ${inv.number} aangemaakt · ${name} opgeslagen als klant ✓`);
+      } else {
+        ok(`Factuur ${inv.number} aangemaakt ✓`);
+      }
+
+      backdrop.remove();
+      render(container);
+      printInvoice(inv, bedrijf);
+    }
   };
 }
 
@@ -1659,9 +1678,11 @@ function openDetailModal(inv, container) {
       ${inv.note ? `<div class="bk-detail-block"><div class="bk-detail-label">Notitie</div><div style="font-size:.88rem;color:var(--text-dim)">${escapeHTML(inv.note)}</div></div>` : ''}
 
       <div class="bk-detail-actions">
+        <button class="btn" id="det-edit"  style="flex:1">✏️ Bewerken</button>
         <button class="btn" id="det-print" style="flex:1">🖨️ Afdrukken</button>
         ${status !== 'betaald' ? `<button class="btn" id="det-paid" style="flex:1;background:rgba(154,179,140,.2);color:var(--ok);border-color:rgba(154,179,140,.4)">✓ Betaald</button>` : ''}
       </div>
+      ${status !== 'betaald' ? `<button class="btn" id="det-remind" style="width:100%;margin-top:8px;background:rgba(191,176,154,.1);color:var(--accent);border-color:rgba(191,176,154,.3);font-size:.85rem">📋 Kopieer betalingsherinnering</button>` : ''}
       <button class="btn" id="det-del" style="width:100%;margin-top:8px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
     </div>
   `;
@@ -1670,6 +1691,21 @@ function openDetailModal(inv, container) {
   backdrop.querySelector('#det-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
   backdrop.querySelector('#det-print').onclick = () => { backdrop.remove(); printInvoice(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi); };
+
+  backdrop.querySelector('#det-edit').onclick = () => {
+    backdrop.remove();
+    openInvoiceModal(container, { existingInv: inv });
+  };
+
+  const remindBtn = backdrop.querySelector('#det-remind');
+  if (remindBtn) {
+    remindBtn.onclick = () => {
+      const clientName = inv.client?.name || 'Geachte relatie';
+      const isLate = status === 'te-laat';
+      const text = `${isLate ? 'Herinnering' : 'Betalingsverzoek'}: Factuur ${inv.number}\n\nGeachte ${clientName},\n\n${isLate ? 'Wij constateren dat onderstaande factuur nog niet is voldaan.' : 'Wij verzoeken u vriendelijk het onderstaande bedrag te voldoen.'}\n\nFactuurnummer: ${inv.number}\nFactuurdatum: ${fmtDateLong(inv.date)}\nVervaldatum: ${fmtDateLong(inv.dueDate)}\nBedrag: ${fmtMoney(inv.totalIncl || 0)}\n\nOmschrijving: ${inv.lines?.[0]?.description || '—'}\n\nGelieve het bedrag over te maken naar:\nIBAN: ${fmtIBAN(ADMINS[inv.adminId || 'taxi']?.iban || '')}\nt.n.v. ${ADMINS[inv.adminId || 'taxi']?.naam || ''}\no.v.v. ${inv.number}\n\nMet vriendelijke groet,\n${ADMINS[inv.adminId || 'taxi']?.naam || ''}`;
+      navigator.clipboard.writeText(text).then(() => ok('Herinneringstekst gekopieerd ✓')).catch(() => err('Kopiëren mislukt'));
+    };
+  }
 
   const paidBtn = backdrop.querySelector('#det-paid');
   if (paidBtn) {
@@ -1719,7 +1755,8 @@ function openPurchaseDetailModal(purchase, container) {
         <div class="bk-detail-row bk-detail-total"><span>Totaal incl.</span><span class="money" style="color:var(--danger)">${fmtMoney(purchase.amountIncl || 0)}</span></div>
       </div>
 
-      <button class="btn" id="pd-del" style="width:100%;margin-top:12px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
+      <button class="btn" id="pd-edit" style="width:100%;margin-top:12px">✏️ Bewerken</button>
+      <button class="btn" id="pd-del" style="width:100%;margin-top:8px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
     </div>
   `;
 
@@ -1727,11 +1764,111 @@ function openPurchaseDetailModal(purchase, container) {
   backdrop.querySelector('#pd-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 
+  backdrop.querySelector('#pd-edit').onclick = () => {
+    backdrop.remove();
+    openEditPurchaseModal(purchase, container);
+  };
+
   let delStep = 0;
   backdrop.querySelector('#pd-del').onclick = async function () {
     if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
     await del('purchase_invoices', purchase.id);
     ok('Kosten verwijderd');
+    backdrop.remove();
+    render(container);
+  };
+}
+
+function openEditPurchaseModal(purchase, container) {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal bk-modal">
+      <button type="button" class="modal-close" id="epk-x">×</button>
+      <h2 style="margin:0 0 16px">Kosten bewerken</h2>
+      <form id="epk-form" autocomplete="off">
+        <div class="bk-form-section">
+          <div class="bk-section-title">Kosten</div>
+          <label>Leverancier / winkel *</label>
+          <input id="epk-vendor" type="text" placeholder="bijv. Shell, Gamma, …" value="${escapeHTML(purchase.vendor || '')}" required />
+          <label>Omschrijving</label>
+          <input id="epk-desc" type="text" placeholder="bijv. Brandstof 13 juni" value="${escapeHTML(purchase.description || '')}" />
+          <label>Categorie</label>
+          <select id="epk-cat">
+            ${CATS.map(c => `<option value="${c.id}" ${purchase.category === c.id ? 'selected' : ''}>${c.emoji} ${c.label}</option>`).join('')}
+          </select>
+          <label>Bedrag *</label>
+          <div class="bk-amount-row">
+            <input id="epk-amount" type="text" inputmode="decimal" placeholder="80" value="${escapeHTML(String(purchase.amountIncl || ''))}" required />
+            <label class="bk-radio"><input type="radio" name="epk-ie" value="incl" checked /> Incl. BTW</label>
+            <label class="bk-radio"><input type="radio" name="epk-ie" value="excl" /> Excl. BTW</label>
+          </div>
+          <label style="margin-top:10px">BTW-tarief</label>
+          <select id="epk-vat">
+            <option value="21" ${(purchase.vatRate || 21) === 21 ? 'selected' : ''}>21% — standaard</option>
+            <option value="9"  ${purchase.vatRate === 9  ? 'selected' : ''}>9% — verlaagd</option>
+            <option value="0"  ${purchase.vatRate === 0  ? 'selected' : ''}>0% — geen BTW aftrek</option>
+          </select>
+          <div id="epk-calc" class="bk-calc-preview" style="display:none"></div>
+        </div>
+        <div class="bk-form-section">
+          <div class="bk-section-title">Datum</div>
+          <label>Datum</label>
+          <input id="epk-date" type="date" value="${escapeHTML(purchase.date || ymd())}" required />
+          <label>Factuurnummer leverancier (optioneel)</label>
+          <input id="epk-invnr" type="text" placeholder="bijv. INV-2026-001" value="${escapeHTML(purchase.invoiceNumber || '')}" />
+        </div>
+        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">💾 Kosten opslaan</button>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('#epk-x').onclick = () => backdrop.remove();
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+
+  const refreshFn = () => {
+    const calcEl  = backdrop.querySelector('#epk-calc');
+    if (!calcEl) return;
+    const raw     = parseAmount(backdrop.querySelector('#epk-amount').value);
+    const vatRate = parseInt(backdrop.querySelector('#epk-vat').value) || 0;
+    const isIncl  = backdrop.querySelector('input[name="epk-ie"]:checked')?.value === 'incl';
+    if (!raw || isNaN(raw) || raw <= 0) { calcEl.style.display = 'none'; return; }
+    const { amountExcl, vatAmount, amountIncl } = calcVat(raw, vatRate, isIncl);
+    calcEl.style.display = 'block';
+    calcEl.innerHTML = `
+      <div class="bk-calc-row"><span>Excl. BTW</span><span>${fmtMoney(amountExcl)}</span></div>
+      <div class="bk-calc-row"><span>BTW ${vatRate}% (aftrekbaar)</span><span style="color:var(--ok)">${fmtMoney(vatAmount)}</span></div>
+      <div class="bk-calc-row bk-calc-total"><span>Totaal incl.</span><span class="money" style="color:var(--danger)">${fmtMoney(amountIncl)}</span></div>
+    `;
+  };
+  backdrop.querySelector('#epk-amount').addEventListener('input', refreshFn);
+  backdrop.querySelector('#epk-vat').addEventListener('input', refreshFn);
+  backdrop.querySelectorAll('input[name="epk-ie"]').forEach(r => r.addEventListener('change', refreshFn));
+  refreshFn();
+
+  backdrop.querySelector('#epk-form').onsubmit = async e => {
+    e.preventDefault();
+    const vendor = backdrop.querySelector('#epk-vendor').value.trim();
+    const raw    = parseAmount(backdrop.querySelector('#epk-amount').value);
+    if (!vendor) { err('Vul een leverancier in'); return; }
+    if (!raw || isNaN(raw) || raw <= 0) { err('Vul een geldig bedrag in'); return; }
+
+    const vatRate = parseInt(backdrop.querySelector('#epk-vat').value);
+    const isIncl  = backdrop.querySelector('input[name="epk-ie"]:checked')?.value === 'incl';
+    const { amountExcl, vatAmount, amountIncl } = calcVat(raw, vatRate, isIncl);
+
+    await put('purchase_invoices', {
+      ...purchase,
+      date:          backdrop.querySelector('#epk-date').value,
+      vendor,
+      description:   backdrop.querySelector('#epk-desc').value.trim(),
+      category:      backdrop.querySelector('#epk-cat').value,
+      invoiceNumber: backdrop.querySelector('#epk-invnr').value.trim(),
+      amountIncl, amountExcl, vatRate, vatAmount,
+    });
+
+    ok('Kosten bijgewerkt ✓');
     backdrop.remove();
     render(container);
   };
@@ -1752,7 +1889,8 @@ function openKmDetailModal(k, container) {
         ${k.purpose ? `<div class="bk-detail-row"><span>Doel</span><span>${escapeHTML(k.purpose)}</span></div>` : ''}
         ${!k.isPrivate ? `<div class="bk-detail-row bk-detail-total"><span>Aftrek (€0,23/km)</span><span class="money" style="color:var(--ok)">${fmtMoney((Number(k.km) || 0) * KM_VERGOEDING)}</span></div>` : ''}
       </div>
-      <button class="btn" id="kd-del" style="width:100%;margin-top:12px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
+      <button class="btn" id="kd-edit" style="width:100%;margin-top:12px">✏️ Bewerken</button>
+      <button class="btn" id="kd-del" style="width:100%;margin-top:8px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
     </div>
   `;
 
@@ -1760,11 +1898,85 @@ function openKmDetailModal(k, container) {
   backdrop.querySelector('#kd-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 
+  backdrop.querySelector('#kd-edit').onclick = () => {
+    backdrop.remove();
+    openEditKmModal(k, container);
+  };
+
   let delStep = 0;
   backdrop.querySelector('#kd-del').onclick = async function () {
     if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
     await del('km_log', k.id);
     ok('Rit verwijderd');
+    backdrop.remove();
+    render(container);
+  };
+}
+
+function openEditKmModal(k, container) {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal bk-modal">
+      <button type="button" class="modal-close" id="ekm-x">×</button>
+      <h2 style="margin:0 0 16px">Rit bewerken</h2>
+      <form id="ekm-form" autocomplete="off">
+        <div class="bk-form-section">
+          <div class="bk-section-title">Ritgegevens</div>
+          <label>Datum *</label>
+          <input id="ekm-date" type="date" value="${escapeHTML(k.date || ymd())}" required />
+          <label>Van *</label>
+          <input id="ekm-from" type="text" placeholder="bijv. Amsterdam Centrum" value="${escapeHTML(k.from || '')}" required />
+          <label>Naar *</label>
+          <input id="ekm-to" type="text" placeholder="bijv. Schiphol" value="${escapeHTML(k.to || '')}" required />
+          <label>Kilometers *</label>
+          <input id="ekm-km" type="text" inputmode="decimal" placeholder="18" value="${escapeHTML(String(k.km || ''))}" required />
+          <label>Doel</label>
+          <input id="ekm-purpose" type="text" placeholder="bijv. Klantvervoer, Inkoop, Bank" value="${escapeHTML(k.purpose || '')}" />
+          <label style="margin-top:12px;display:flex;align-items:center;gap:10px;cursor:pointer">
+            <input type="checkbox" id="ekm-private" style="width:auto;min-width:unset" ${k.isPrivate ? 'checked' : ''} />
+            Privérit (niet aftrekbaar)
+          </label>
+          <div id="ekm-preview" class="bk-calc-preview" style="display:none;margin-top:10px"></div>
+        </div>
+        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">💾 Rit opslaan</button>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('#ekm-x').onclick = () => backdrop.remove();
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+
+  const previewKm = () => {
+    const km      = parseAmount(backdrop.querySelector('#ekm-km').value);
+    const preview = backdrop.querySelector('#ekm-preview');
+    const isPriv  = backdrop.querySelector('#ekm-private').checked;
+    if (!km || isNaN(km) || km <= 0 || isPriv) { preview.style.display = 'none'; return; }
+    preview.style.display = 'block';
+    preview.innerHTML = `<div class="bk-calc-row"><span>Aftrek (${km} km × €0,23)</span><span class="money" style="color:var(--ok)">${fmtMoney(km * KM_VERGOEDING)}</span></div>`;
+  };
+  backdrop.querySelector('#ekm-km').addEventListener('input', previewKm);
+  backdrop.querySelector('#ekm-private').addEventListener('change', previewKm);
+  previewKm();
+
+  backdrop.querySelector('#ekm-form').onsubmit = async e => {
+    e.preventDefault();
+    const km = parseAmount(backdrop.querySelector('#ekm-km').value);
+    if (!km || isNaN(km) || km <= 0) { err('Vul een geldig aantal km in'); return; }
+    const from = backdrop.querySelector('#ekm-from').value.trim();
+    const to   = backdrop.querySelector('#ekm-to').value.trim();
+    if (!from || !to) { err('Vul vertrek en bestemming in'); return; }
+
+    await put('km_log', {
+      ...k,
+      date:      backdrop.querySelector('#ekm-date').value,
+      from, to, km,
+      purpose:   backdrop.querySelector('#ekm-purpose').value.trim(),
+      isPrivate: backdrop.querySelector('#ekm-private').checked,
+    });
+
+    ok('Rit bijgewerkt ✓');
     backdrop.remove();
     render(container);
   };
