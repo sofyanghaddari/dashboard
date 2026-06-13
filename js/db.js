@@ -1,18 +1,21 @@
 const DB_NAME = 'dashboard';
-const DB_VERSION = 4;
+const DB_VERSION = 6;
 const STORES = {
-  rides:     { keyPath: 'id',   indexes: [['date', 'date']] },
-  expenses:  { keyPath: 'id',   indexes: [['date', 'date']] },
-  hizb_log:  { keyPath: 'date' },
-  cards:     { keyPath: 'id',   indexes: [['dueDate', 'dueDate']] },
-  goals:     { keyPath: 'id' },
-  todos:     { keyPath: 'id' },
-  shifts:    { keyPath: 'id',   indexes: [['startTime', 'startTime']] },
-  notes:     { keyPath: 'id',   indexes: [['updatedAt', 'updatedAt']] },
-  habits:    { keyPath: 'id' },
-  habit_log: { keyPath: 'id' },
-  pots:      { keyPath: 'id' },
-  invoices:  { keyPath: 'id',   indexes: [['date', 'date']] },
+  rides:             { keyPath: 'id',   indexes: [['date', 'date']] },
+  expenses:          { keyPath: 'id',   indexes: [['date', 'date']] },
+  hizb_log:          { keyPath: 'date' },
+  cards:             { keyPath: 'id',   indexes: [['dueDate', 'dueDate']] },
+  goals:             { keyPath: 'id' },
+  todos:             { keyPath: 'id' },
+  shifts:            { keyPath: 'id',   indexes: [['startTime', 'startTime']] },
+  notes:             { keyPath: 'id',   indexes: [['updatedAt', 'updatedAt']] },
+  habits:            { keyPath: 'id' },
+  habit_log:         { keyPath: 'id' },
+  pots:              { keyPath: 'id' },
+  invoices:          { keyPath: 'id',   indexes: [['date', 'date']] },
+  purchase_invoices: { keyPath: 'id',   indexes: [['date', 'date']] },
+  km_log:            { keyPath: 'id',   indexes: [['date', 'date']] },
+  clients:           { keyPath: 'id' },
 };
 
 let _dbPromise = null;
