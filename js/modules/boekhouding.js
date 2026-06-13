@@ -3,16 +3,43 @@ import { uid, fmtMoney, parseAmount, escapeHTML, ymd } from '../utils.js';
 import { ok, err } from '../components/toast.js';
 import { parseInvoiceText } from '../invoice-nlp.js';
 
-// ─── BEDRIJFSGEGEVENS ────────────────────────────────────────────────────────
-const BEDRIJF = {
-  naam:     'Woosh-Amsterdam',
-  adres:    'Jephtastraat 28',
-  postcode: '1055JV Amsterdam',
-  btw:      'NL003042226B35',
-  kvk:      '77755170',
-  iban:     'NL67INGB0660701413',
-  termijn:  30,
+// ─── ADMINISTRATIES ──────────────────────────────────────────────────────────
+const ADMINS = {
+  taxi: {
+    id:          'taxi',
+    emoji:       '🚖',
+    label:       'Taxi',
+    naam:        'Woosh-Amsterdam',
+    adres:       'Jephtastraat 28',
+    postcode:    '1055JV Amsterdam',
+    btw:         'NL003042226B35',
+    kvk:         '77755170',
+    iban:        'NL67INGB0660701413',
+    termijn:     30,
+    prefix:      'WOOSH',
+    defaultVat:  9,
+    defaultDesc: 'Vervoersdienst',
+  },
+  olijfolie: {
+    id:          'olijfolie',
+    emoji:       '🫒',
+    label:       'Olijfolie',
+    naam:        'Sofyan Ghaddari',
+    adres:       'Jephtastraat 28',
+    postcode:    '1055JV Amsterdam',
+    btw:         'NL003042226B35',
+    kvk:         '77755170',
+    iban:        'NL67INGB0660701413',
+    termijn:     14,
+    prefix:      'OLIE',
+    defaultVat:  21,
+    defaultDesc: 'Levering olijfolie',
+  },
 };
+
+function getAdmin(container) {
+  return ADMINS[container.dataset.bkAdmin || 'taxi'] || ADMINS.taxi;
+}
 
 // ─── FISCALE CONSTANTEN 2025 ─────────────────────────────────────────────────
 const KM_VERGOEDING = 0.23;   // €0,23 per zakelijke km (2025)
@@ -98,11 +125,12 @@ function inYear(dateStr, y) {
   return dateStr && getYear(dateStr) === y;
 }
 
-async function nextInvoiceNumber() {
+async function nextInvoiceNumber(bedrijf) {
   const invoices = await all('invoices');
   const year = new Date().getFullYear();
-  const prefix = `WOOSH-${year}-`;
+  const prefix = `${bedrijf.prefix}-${year}-`;
   const nums = invoices
+    .filter(i => (i.adminId || 'taxi') === bedrijf.id)
     .map(i => i.number || '')
     .filter(n => n.startsWith(prefix))
     .map(n => parseInt(n.replace(prefix, ''), 10) || 0);
@@ -132,10 +160,14 @@ const TABS = [
   { id: 'wv',        label: '📈 W&V' },
 ];
 
-function buildSubNav(active) {
+function buildSubNav(active, adminId) {
   return `
-    <div class="page-title-row" style="margin-bottom:12px">
-      <h1 class="page-title" style="margin:0">Boekhouding</h1>
+    <div class="bk-admin-switcher">
+      ${Object.values(ADMINS).map(a => `
+        <button class="bk-admin-btn${a.id === adminId ? ' active' : ''}" data-admin="${a.id}">
+          ${a.emoji} ${a.label}
+        </button>
+      `).join('')}
     </div>
     <div class="bk-subnav">
       ${TABS.map(t => `<button class="bk-subnav-btn${t.id === active ? ' active' : ''}" data-tab="${t.id}">${t.label}</button>`).join('')}
@@ -147,8 +179,18 @@ function buildSubNav(active) {
 // ─── MAIN RENDER ─────────────────────────────────────────────────────────────
 
 export async function render(container) {
-  const tab = container.dataset.bkTab || 'overzicht';
-  container.innerHTML = buildSubNav(tab);
+  const tab     = container.dataset.bkTab   || 'overzicht';
+  const adminId = container.dataset.bkAdmin || 'taxi';
+  container.innerHTML = buildSubNav(tab, adminId);
+
+  container.querySelectorAll('.bk-admin-btn').forEach(btn => {
+    btn.onclick = () => {
+      container.dataset.bkAdmin   = btn.dataset.admin;
+      container.dataset.bkTab     = 'overzicht';
+      container.dataset.invFilter = '';
+      render(container);
+    };
+  });
 
   container.querySelectorAll('.bk-subnav-btn').forEach(btn => {
     btn.onclick = () => { container.dataset.bkTab = btn.dataset.tab; render(container); };
@@ -156,14 +198,18 @@ export async function render(container) {
 
   const view = container.querySelector('#bk-view');
 
-  const [invoices, purchases, kmLogs, clients] = await Promise.all([
+  const [allInvoices, allPurchases, allKmLogs, clients] = await Promise.all([
     all('invoices'),
     all('purchase_invoices'),
     all('km_log'),
     all('clients'),
   ]);
 
-  const withStatus = invoices.map(inv => ({ ...inv, _status: computeStatus(inv) }));
+  // Filter op actieve administratie; records zonder adminId vallen onder 'taxi' (achterwaartse compatibiliteit)
+  const invoicesRaw = allInvoices.filter(i => (i.adminId || 'taxi') === adminId);
+  const purchases   = allPurchases.filter(p => (p.adminId || 'taxi') === adminId);
+  const kmLogs      = allKmLogs.filter(k => (k.adminId || 'taxi') === adminId);
+  const withStatus  = invoicesRaw.map(inv => ({ ...inv, _status: computeStatus(inv) }));
 
   switch (tab) {
     case 'overzicht': renderOverview(view, withStatus, purchases, kmLogs, container); break;
@@ -369,7 +415,7 @@ function renderFacturen(view, invoices, container) {
     btn.onclick = e => {
       e.stopPropagation();
       const inv = invoices.find(i => i.id === btn.dataset.id);
-      if (inv) printInvoice(inv);
+      if (inv) printInvoice(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi);
     };
   });
 }
@@ -1064,9 +1110,10 @@ function openClientPicker(clients) {
 // ─── NIEUWE FACTUUR MODAL ────────────────────────────────────────────────────
 
 async function openNewInvoiceModal(container, prefillClient = null) {
-  const number   = await nextInvoiceNumber();
+  const bedrijf  = getAdmin(container);
+  const number   = await nextInvoiceNumber(bedrijf);
   const todayStr = ymd();
-  const dueStr   = addDays(todayStr, BEDRIJF.termijn);
+  const dueStr   = addDays(todayStr, bedrijf.termijn);
 
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
@@ -1106,7 +1153,7 @@ async function openNewInvoiceModal(container, prefillClient = null) {
         <div class="bk-form-section">
           <div class="bk-section-title">Factuurgegevens</div>
           <label>Omschrijving *</label>
-          <input id="bk-desc" type="text" placeholder="Vervoersdienst" value="Vervoersdienst" required />
+          <input id="bk-desc" type="text" placeholder="${escapeHTML(bedrijf.defaultDesc)}" value="${escapeHTML(bedrijf.defaultDesc)}" required />
           <label>Bedrag *</label>
           <div class="bk-amount-row">
             <input id="bk-amount" type="text" inputmode="decimal" placeholder="320" required />
@@ -1115,9 +1162,9 @@ async function openNewInvoiceModal(container, prefillClient = null) {
           </div>
           <label style="margin-top:10px">BTW-tarief</label>
           <select id="bk-vat">
-            <option value="9">9% — verlaagd (personenvervoer)</option>
-            <option value="21">21% — standaard</option>
-            <option value="0">0% — vrijgesteld</option>
+            <option value="9"  ${bedrijf.defaultVat === 9  ? 'selected' : ''}>9% — verlaagd (personenvervoer)</option>
+            <option value="21" ${bedrijf.defaultVat === 21 ? 'selected' : ''}>21% — standaard</option>
+            <option value="0"  ${bedrijf.defaultVat === 0  ? 'selected' : ''}>0% — vrijgesteld</option>
           </select>
           <div id="bk-calc" class="bk-calc-preview" style="display:none"></div>
         </div>
@@ -1128,7 +1175,7 @@ async function openNewInvoiceModal(container, prefillClient = null) {
           <input id="bk-number" type="text" value="${escapeHTML(number)}" required />
           <label>Factuurdatum</label>
           <input id="bk-date" type="date" value="${todayStr}" required />
-          <label>Vervaldatum (${BEDRIJF.termijn} dagen)</label>
+          <label>Vervaldatum (${bedrijf.termijn} dagen)</label>
           <input id="bk-due" type="date" value="${dueStr}" required />
         </div>
 
@@ -1181,7 +1228,7 @@ async function openNewInvoiceModal(container, prefillClient = null) {
   backdrop.querySelector('#bk-vat').addEventListener('input', refreshCalcFn);
   backdrop.querySelectorAll('input[name="bk-ie"]').forEach(r => r.addEventListener('change', refreshCalcFn));
   backdrop.querySelector('#bk-date').addEventListener('change', e => {
-    backdrop.querySelector('#bk-due').value = addDays(e.target.value, BEDRIJF.termijn);
+    backdrop.querySelector('#bk-due').value = addDays(e.target.value, bedrijf.termijn);
   });
 
   backdrop.querySelector('#bk-form').onsubmit = async e => {
@@ -1197,6 +1244,7 @@ async function openNewInvoiceModal(container, prefillClient = null) {
 
     const inv = {
       id:      uid(),
+      adminId: bedrijf.id,
       number:  backdrop.querySelector('#bk-number').value.trim(),
       date:    backdrop.querySelector('#bk-date').value,
       dueDate: backdrop.querySelector('#bk-due').value,
@@ -1210,7 +1258,7 @@ async function openNewInvoiceModal(container, prefillClient = null) {
         email:   backdrop.querySelector('#bk-client-email').value.trim(),
       },
       lines: [{
-        description: backdrop.querySelector('#bk-desc').value.trim() || 'Vervoersdienst',
+        description: backdrop.querySelector('#bk-desc').value.trim() || bedrijf.defaultDesc,
         amountExcl, vatRate, vatAmount, amountIncl,
       }],
       totalExcl: amountExcl,
@@ -1230,6 +1278,7 @@ async function openNewInvoiceModal(container, prefillClient = null) {
     );
     if (existing) {
       await put('clients', { ...existing, lastUsed: Date.now() });
+      ok(`Factuur ${inv.number} aangemaakt ✓`);
     } else if (name) {
       await add('clients', { id: uid(), name, address: inv.client.address, city: inv.client.city, kvk: inv.client.kvk, email, lastUsed: Date.now() });
       ok(`Factuur ${inv.number} aangemaakt · ${name} opgeslagen als klant ✓`);
@@ -1239,7 +1288,7 @@ async function openNewInvoiceModal(container, prefillClient = null) {
 
     backdrop.remove();
     render(container);
-    printInvoice(inv);
+    printInvoice(inv, bedrijf);
   };
 }
 
@@ -1292,6 +1341,7 @@ function refreshCalc(backdrop) {
 // ─── NIEUWE KOSTEN MODAL ──────────────────────────────────────────────────────
 
 function openNewPurchaseModal(container) {
+  const bedrijf  = getAdmin(container);
   const todayStr = ymd();
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
@@ -1358,6 +1408,7 @@ function openNewPurchaseModal(container) {
 
     await add('purchase_invoices', {
       id:            uid(),
+      adminId:       bedrijf.id,
       date:          backdrop.querySelector('#pk-date').value,
       vendor,
       description:   backdrop.querySelector('#pk-desc').value.trim(),
@@ -1391,6 +1442,7 @@ function refreshPurchaseCalc(backdrop) {
 // ─── NIEUWE KM MODAL ─────────────────────────────────────────────────────────
 
 function openNewKmModal(container) {
+  const bedrijf  = getAdmin(container);
   const todayStr = ymd();
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
@@ -1448,6 +1500,7 @@ function openNewKmModal(container) {
 
     await add('km_log', {
       id:        uid(),
+      adminId:   bedrijf.id,
       date:      backdrop.querySelector('#km-date').value,
       from, to, km,
       purpose:   backdrop.querySelector('#km-purpose').value.trim(),
@@ -1516,7 +1569,7 @@ function openDetailModal(inv, container) {
   document.body.appendChild(backdrop);
   backdrop.querySelector('#det-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
-  backdrop.querySelector('#det-print').onclick = () => { backdrop.remove(); printInvoice(inv); };
+  backdrop.querySelector('#det-print').onclick = () => { backdrop.remove(); printInvoice(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi); };
 
   const paidBtn = backdrop.querySelector('#det-paid');
   if (paidBtn) {
@@ -1619,10 +1672,11 @@ function openKmDetailModal(k, container) {
 
 // ─── PDF PRINT ────────────────────────────────────────────────────────────────
 
-function printInvoice(inv) {
+function printInvoice(inv, bedrijf) {
+  if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
   const line    = inv.lines?.[0] || {};
   const client  = inv.client || {};
-  const ibanFmt = fmtIBAN(BEDRIJF.iban);
+  const ibanFmt = fmtIBAN(bedrijf.iban);
 
   const html = `<!DOCTYPE html>
 <html lang="nl">
@@ -1663,10 +1717,10 @@ function printInvoice(inv) {
 <div class="wrap">
   <div class="header">
     <div>
-      <div class="brand">${escapeHTML(BEDRIJF.naam)}</div>
+      <div class="brand">${escapeHTML(bedrijf.naam)}</div>
       <div class="co-info">
-        ${escapeHTML(BEDRIJF.adres)}<br>${escapeHTML(BEDRIJF.postcode)}<br>
-        BTW: ${escapeHTML(BEDRIJF.btw)}<br>KvK: ${escapeHTML(BEDRIJF.kvk)}<br>IBAN: ${escapeHTML(ibanFmt)}
+        ${escapeHTML(bedrijf.adres)}<br>${escapeHTML(bedrijf.postcode)}<br>
+        BTW: ${escapeHTML(bedrijf.btw)}<br>KvK: ${escapeHTML(bedrijf.kvk)}<br>IBAN: ${escapeHTML(ibanFmt)}
       </div>
     </div>
     <div style="text-align:right">
@@ -1707,11 +1761,11 @@ function printInvoice(inv) {
   </div>
   <div class="pay-box">
     Gelieve het bedrag van <strong>${fmtMoney(inv.totalIncl || 0)}</strong> vóór <strong>${fmtDateLong(inv.dueDate)}</strong> over te maken naar:<br>
-    <span class="pay-iban">${escapeHTML(ibanFmt)}</span> — t.n.v. ${escapeHTML(BEDRIJF.naam)}<br>
+    <span class="pay-iban">${escapeHTML(ibanFmt)}</span> — t.n.v. ${escapeHTML(bedrijf.naam)}<br>
     o.v.v. factuurnummer <strong>${escapeHTML(inv.number || '')}</strong>
   </div>
   <div class="footer">
-    <span>${escapeHTML(BEDRIJF.naam)} · KvK ${escapeHTML(BEDRIJF.kvk)} · BTW ${escapeHTML(BEDRIJF.btw)}</span>
+    <span>${escapeHTML(bedrijf.naam)} · KvK ${escapeHTML(bedrijf.kvk)} · BTW ${escapeHTML(bedrijf.btw)}</span>
     <span>${escapeHTML(inv.number || '')}</span>
   </div>
 </div>
