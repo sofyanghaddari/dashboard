@@ -3,6 +3,7 @@ import { uid, fmtMoney, parseAmount, escapeHTML, ymd } from '../utils.js';
 import { ok, err } from '../components/toast.js';
 import { parseInvoiceText } from '../invoice-nlp.js';
 
+// ─── BEDRIJFSGEGEVENS ────────────────────────────────────────────────────────
 const BEDRIJF = {
   naam:     'Woosh-Amsterdam',
   adres:    'Jephtastraat 28',
@@ -13,9 +14,91 @@ const BEDRIJF = {
   termijn:  30,
 };
 
-// ─── helpers ────────────────────────────────────────────────────────────────
+// ─── FISCALE CONSTANTEN 2025 ─────────────────────────────────────────────────
+const KM_VERGOEDING = 0.23;   // €0,23 per zakelijke km (2025)
+const ZELFST_AFTREK = 2470;   // zelfstandigenaftrek 2025
+const MKB_PCT       = 0.127;  // MKB-winstvrijstelling 12,7%
+const BOX1_GRENS    = 75518;  // 2e belastingschijf grens 2025
+const BOX1_LAAG     = 0.3582; // 35,82% box 1 schijf 1
+const BOX1_HOOG     = 0.495;  // 49,50% box 1 schijf 2
 
-async function nextNumber() {
+// ─── KOSTENCATEGORIEËN ───────────────────────────────────────────────────────
+const CATS = [
+  { id: 'brandstof',   label: 'Brandstof',            emoji: '⛽' },
+  { id: 'onderhoud',   label: 'Onderhoud & reparatie', emoji: '🔧' },
+  { id: 'verzekering', label: 'Verzekering',           emoji: '🛡️' },
+  { id: 'lease',       label: 'Lease / financiering',  emoji: '🚗' },
+  { id: 'licentie',    label: 'Vergunning & licentie', emoji: '📜' },
+  { id: 'telefoon',    label: 'Telefoon & data',       emoji: '📱' },
+  { id: 'software',    label: 'Software & apps',       emoji: '💻' },
+  { id: 'accountant',  label: 'Accountant & advies',   emoji: '📊' },
+  { id: 'overig',      label: 'Overige kosten',        emoji: '📦' },
+];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+function computeStatus(inv) {
+  if (inv.status === 'betaald') return 'betaald';
+  if (inv.dueDate && inv.dueDate < ymd()) return 'te-laat';
+  return 'open';
+}
+
+function statusLabel(s) {
+  return s === 'betaald' ? 'Betaald' : s === 'te-laat' ? 'Vervallen' : 'Open';
+}
+
+function calcVat(amount, vatRate, isIncl) {
+  if (isIncl) {
+    const excl = amount / (1 + vatRate / 100);
+    return { amountExcl: excl, vatAmount: amount - excl, amountIncl: amount };
+  }
+  const vat = amount * (vatRate / 100);
+  return { amountExcl: amount, vatAmount: vat, amountIncl: amount + vat };
+}
+
+function fmtDateLong(iso) {
+  if (!iso) return '—';
+  return new Date(iso + 'T00:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function fmtDateShort(iso) {
+  if (!iso) return '—';
+  return new Date(iso + 'T00:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+}
+
+function addDays(dateStr, days) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return ymd(d);
+}
+
+function fmtIBAN(iban) { return iban.replace(/(.{4})/g, '$1 ').trim(); }
+
+function getYear(dateStr)  { return dateStr ? parseInt(dateStr.slice(0, 4)) : 0; }
+function getMonth(dateStr) { return dateStr ? parseInt(dateStr.slice(5, 7)) - 1 : -1; }
+function getQuarter(dateStr) { return Math.floor(getMonth(dateStr) / 3); }
+
+function quarterLabel(q, y) { return `Q${q + 1} ${y}`; }
+
+function quarterDates(q, y) {
+  const start = `${y}-${String(q * 3 + 1).padStart(2, '0')}-01`;
+  const endMonth = q * 3 + 3;
+  const lastDay = new Date(y, endMonth, 0).getDate();
+  const end = `${y}-${String(endMonth).padStart(2, '0')}-${lastDay}`;
+  return { start, end };
+}
+
+function inQuarter(dateStr, q, y) {
+  if (!dateStr) return false;
+  const { start, end } = quarterDates(q, y);
+  return dateStr >= start && dateStr <= end;
+}
+
+function inYear(dateStr, y) {
+  return dateStr && getYear(dateStr) === y;
+}
+
+async function nextInvoiceNumber() {
   const invoices = await all('invoices');
   const year = new Date().getFullYear();
   const prefix = `WOOSH-${year}-`;
@@ -27,97 +110,202 @@ async function nextNumber() {
   return `${prefix}${String(next).padStart(3, '0')}`;
 }
 
-function computeStatus(inv) {
-  if (inv.status === 'betaald') return 'betaald';
-  if (inv.dueDate && inv.dueDate < ymd()) return 'te-laat';
-  return 'open';
+function cleanInv(inv) {
+  // Strip computed _status before storing
+  const { _status, ...clean } = inv;
+  return clean;
 }
 
-function calcVat(amount, vatRate, isIncl) {
-  if (isIncl) {
-    const excl = amount / (1 + vatRate / 100);
-    const vat  = amount - excl;
-    return { amountExcl: excl, vatAmount: vat, amountIncl: amount };
-  }
-  const vat  = amount * (vatRate / 100);
-  const incl = amount + vat;
-  return { amountExcl: amount, vatAmount: vat, amountIncl: incl };
+function catInfo(id) {
+  return CATS.find(c => c.id === id) || CATS[CATS.length - 1];
 }
 
-function fmtDateLong(iso) {
-  if (!iso) return '—';
-  return new Date(iso + 'T00:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+// ─── SUB-NAV ─────────────────────────────────────────────────────────────────
+
+const TABS = [
+  { id: 'overzicht', label: '📊 Overzicht' },
+  { id: 'facturen',  label: '🧾 Facturen' },
+  { id: 'kosten',    label: '🛒 Kosten' },
+  { id: 'km',        label: '🚗 Kilometers' },
+  { id: 'btw',       label: '📋 BTW' },
+  { id: 'wv',        label: '📈 W&V' },
+];
+
+function buildSubNav(active) {
+  return `
+    <div class="page-title-row" style="margin-bottom:12px">
+      <h1 class="page-title" style="margin:0">Boekhouding</h1>
+    </div>
+    <div class="bk-subnav">
+      ${TABS.map(t => `<button class="bk-subnav-btn${t.id === active ? ' active' : ''}" data-tab="${t.id}">${t.label}</button>`).join('')}
+    </div>
+    <div id="bk-view"></div>
+  `;
 }
 
-function addDays(dateStr, days) {
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + days);
-  return ymd(d);
-}
-
-function fmtIBAN(iban) {
-  return iban.replace(/(.{4})/g, '$1 ').trim();
-}
-
-function statusLabel(s) {
-  return s === 'betaald' ? 'Betaald' : s === 'te-laat' ? 'Vervallen' : 'Open';
-}
-
-// ─── main render ────────────────────────────────────────────────────────────
+// ─── MAIN RENDER ─────────────────────────────────────────────────────────────
 
 export async function render(container) {
-  const invoices = await all('invoices');
-  const now      = new Date();
-  const yearStr  = String(now.getFullYear());
+  const tab = container.dataset.bkTab || 'overzicht';
+  container.innerHTML = buildSubNav(tab);
+
+  container.querySelectorAll('.bk-subnav-btn').forEach(btn => {
+    btn.onclick = () => { container.dataset.bkTab = btn.dataset.tab; render(container); };
+  });
+
+  const view = container.querySelector('#bk-view');
+
+  const [invoices, purchases, kmLogs] = await Promise.all([
+    all('invoices'),
+    all('purchase_invoices'),
+    all('km_log'),
+  ]);
 
   const withStatus = invoices.map(inv => ({ ...inv, _status: computeStatus(inv) }));
 
-  const openList  = withStatus.filter(i => i._status !== 'betaald');
-  const paidList  = withStatus.filter(i => i._status === 'betaald');
-  const totalOpen = openList.reduce((s, i) => s + (i.totalIncl || 0), 0);
-  const paidYear  = paidList
-    .filter(i => (i.date || '').startsWith(yearStr))
-    .reduce((s, i) => s + (i.totalIncl || 0), 0);
-  const curQ = Math.floor(now.getMonth() / 3);
-  const vatQ  = withStatus
-    .filter(i => {
-      if (!i.date) return false;
-      const d = new Date(i.date + 'T00:00:00');
-      return d.getFullYear() === now.getFullYear() && Math.floor(d.getMonth() / 3) === curQ;
-    })
-    .reduce((s, i) => s + (i.totalVat || 0), 0);
+  switch (tab) {
+    case 'overzicht': renderOverview(view, withStatus, purchases, kmLogs, container); break;
+    case 'facturen':  renderFacturen(view, withStatus, container); break;
+    case 'kosten':    renderKosten(view, purchases, container); break;
+    case 'km':        renderKm(view, kmLogs, container); break;
+    case 'btw':       renderBTW(view, withStatus, purchases, container); break;
+    case 'wv':        renderWV(view, withStatus, purchases, kmLogs, container); break;
+    default:          renderOverview(view, withStatus, purchases, kmLogs, container);
+  }
+}
 
-  const sorted = [...withStatus].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+// ─── OVERZICHT ────────────────────────────────────────────────────────────────
 
-  container.innerHTML = `
-    <div class="page-title-row">
-      <h1 class="page-title">Boekhouding</h1>
-      <button class="btn bk-new-btn" id="bk-new-btn">+ Nieuwe factuur</button>
+function renderOverview(view, invoices, purchases, kmLogs, container) {
+  const now  = new Date();
+  const y    = now.getFullYear();
+  const q    = Math.floor(now.getMonth() / 3);
+
+  // Jaaromzet (excl BTW, alleen betaalde + openstaande facturen)
+  const omzetYear   = invoices.filter(i => inYear(i.date, y)).reduce((s, i) => s + (i.totalExcl || 0), 0);
+  const kostenYear  = purchases.filter(i => inYear(i.date, y)).reduce((s, i) => s + (i.amountExcl || 0), 0);
+  const winstYear   = omzetYear - kostenYear;
+  const openCount   = invoices.filter(i => i._status !== 'betaald').length;
+  const openAmount  = invoices.filter(i => i._status !== 'betaald').reduce((s, i) => s + (i.totalIncl || 0), 0);
+  const overdueCount = invoices.filter(i => i._status === 'te-laat').length;
+
+  // BTW saldo dit kwartaal
+  const btwOntvangen = invoices.filter(i => inQuarter(i.date, q, y)).reduce((s, i) => s + (i.totalVat || 0), 0);
+  const btwBetaald   = purchases.filter(i => inQuarter(i.date, q, y)).reduce((s, i) => s + (i.vatAmount || 0), 0);
+  const btwSaldo     = btwOntvangen - btwBetaald;
+
+  // Recent facturen (laatste 5)
+  const recent = [...invoices].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 5);
+
+  view.innerHTML = `
+    <div class="bk-kpi-grid">
+      <div class="bk-kpi">
+        <div class="bk-kpi-label">Omzet ${y}</div>
+        <div class="bk-kpi-val money">${fmtMoney(omzetYear)}</div>
+        <div class="bk-kpi-sub">excl. BTW</div>
+      </div>
+      <div class="bk-kpi">
+        <div class="bk-kpi-label">Kosten ${y}</div>
+        <div class="bk-kpi-val" style="color:var(--danger)">${fmtMoney(kostenYear)}</div>
+        <div class="bk-kpi-sub">excl. BTW</div>
+      </div>
+      <div class="bk-kpi">
+        <div class="bk-kpi-label">Winst ${y}</div>
+        <div class="bk-kpi-val" style="color:${winstYear >= 0 ? 'var(--ok)' : 'var(--danger)'}">${fmtMoney(winstYear)}</div>
+        <div class="bk-kpi-sub">excl. aftrekken</div>
+      </div>
+      <div class="bk-kpi">
+        <div class="bk-kpi-label">BTW Q${q + 1}</div>
+        <div class="bk-kpi-val" style="color:var(--accent)">${fmtMoney(btwSaldo)}</div>
+        <div class="bk-kpi-sub">te betalen</div>
+      </div>
     </div>
 
-    <div class="bk-stats">
-      <div class="bk-stat">
-        <div class="bk-stat-label">Openstaand</div>
-        <div class="bk-stat-val money">${fmtMoney(totalOpen)}</div>
-        <div class="bk-stat-sub">${openList.length} factuur${openList.length !== 1 ? 'en' : ''}</div>
+    ${overdueCount > 0 ? `
+      <div class="bk-alert">
+        ⚠️ <strong>${overdueCount} factuur${overdueCount > 1 ? 'en' : ''} vervallen</strong> — betaling achterstallig
       </div>
-      <div class="bk-stat">
-        <div class="bk-stat-label">Betaald ${yearStr}</div>
-        <div class="bk-stat-val money">${fmtMoney(paidYear)}</div>
-        <div class="bk-stat-sub">${paidList.filter(i => (i.date||'').startsWith(yearStr)).length} facturen</div>
+    ` : ''}
+
+    <div class="bk-quick-actions">
+      <button class="bk-qa" id="qa-factuur">🧾<span>Nieuwe factuur</span></button>
+      <button class="bk-qa" id="qa-kosten">🛒<span>Kosten boeken</span></button>
+      <button class="bk-qa" id="qa-km">🚗<span>Km registreren</span></button>
+    </div>
+
+    <div class="bk-section-head">
+      <span class="card-title">Openstaande facturen</span>
+      <span class="bk-badge${openCount > 0 ? ' bk-badge-warn' : ''}">${openCount} · ${fmtMoney(openAmount)}</span>
+    </div>
+
+    ${recent.length === 0 ? `<p class="muted" style="text-align:center;padding:20px 0">Nog geen facturen</p>` : `
+      <div class="bk-list">
+        ${recent.map(inv => `
+          <div class="bk-card card bk-card-sm" data-id="${inv.id}">
+            <div class="bk-card-top">
+              <span class="bk-card-client">${escapeHTML(inv.client?.name || '—')}</span>
+              <span class="bk-status bk-status-${inv._status}">${statusLabel(inv._status)}</span>
+            </div>
+            <div class="bk-card-bot" style="margin-top:6px">
+              <span style="font-size:.78rem;color:var(--text-dim)">${escapeHTML(inv.number || '')} · ${fmtDateShort(inv.date)}</span>
+              <span class="bk-card-amount money">${fmtMoney(inv.totalIncl || 0)}</span>
+            </div>
+          </div>
+        `).join('')}
       </div>
-      <div class="bk-stat">
-        <div class="bk-stat-label">BTW Q${curQ + 1}</div>
-        <div class="bk-stat-val money">${fmtMoney(vatQ)}</div>
-        <div class="bk-stat-sub">af te dragen</div>
+    `}
+  `;
+
+  view.querySelector('#qa-factuur').onclick = () => { container.dataset.bkTab = 'facturen'; render(container); setTimeout(() => openNewInvoiceModal(container), 100); };
+  view.querySelector('#qa-kosten').onclick  = () => { container.dataset.bkTab = 'kosten';   render(container); setTimeout(() => openNewPurchaseModal(container), 100); };
+  view.querySelector('#qa-km').onclick      = () => { container.dataset.bkTab = 'km';        render(container); setTimeout(() => openNewKmModal(container), 100); };
+
+  view.querySelectorAll('.bk-card-sm').forEach(card => {
+    card.onclick = () => {
+      const inv = invoices.find(i => i.id === card.dataset.id);
+      if (inv) openDetailModal(inv, container);
+    };
+  });
+}
+
+// ─── FACTUREN ────────────────────────────────────────────────────────────────
+
+function renderFacturen(view, invoices, container) {
+  const now      = new Date();
+  const yearStr  = String(now.getFullYear());
+  const filter   = container.dataset.invFilter || 'alle';
+
+  const filteredInv = filter === 'alle' ? invoices
+    : invoices.filter(i => i._status === filter);
+
+  const sorted = [...filteredInv].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const totalOpen  = invoices.filter(i => i._status === 'open').reduce((s, i) => s + (i.totalIncl || 0), 0);
+  const totalLate  = invoices.filter(i => i._status === 'te-laat').length;
+
+  view.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div>
+        <span style="font-size:.82rem;color:var(--text-dim)">${invoices.length} facturen · ${fmtMoney(totalOpen)} open</span>
+        ${totalLate > 0 ? `<span style="color:var(--danger);margin-left:8px;font-size:.82rem">⚠️ ${totalLate} vervallen</span>` : ''}
       </div>
+      <button class="btn bk-new-btn" id="new-inv-btn">+ Factuur</button>
+    </div>
+
+    <div class="bk-filter-row">
+      ${['alle','open','betaald','te-laat'].map(f => `
+        <button class="bk-filter-chip${filter === f ? ' active' : ''}" data-filter="${f}">
+          ${f === 'alle' ? 'Alle' : f === 'open' ? 'Open' : f === 'betaald' ? 'Betaald' : 'Vervallen'}
+          <span class="bk-chip-count">${invoices.filter(i => f === 'alle' || i._status === f).length}</span>
+        </button>
+      `).join('')}
     </div>
 
     ${sorted.length === 0 ? `
-      <div class="section-empty" style="margin-top:40px">
-        <div style="font-size:2.5rem;margin-bottom:12px">🧾</div>
-        <p style="font-weight:600;margin:0 0 6px">Nog geen facturen</p>
-        <p class="muted" style="font-size:.85rem;margin:0">Tik op "+ Nieuwe factuur" om te beginnen</p>
+      <div class="section-empty" style="margin-top:30px">
+        <div style="font-size:2rem;margin-bottom:10px">🧾</div>
+        <p style="font-weight:600;margin:0 0 4px">Geen facturen</p>
+        <p class="muted" style="font-size:.85rem;margin:0">Tik op "+ Factuur" om te beginnen</p>
       </div>
     ` : `
       <div class="bk-list">
@@ -133,9 +321,12 @@ export async function render(container) {
               <span class="bk-card-date">${fmtDateLong(inv.date)}</span>
             </div>
             <div class="bk-card-bot">
-              <span class="bk-card-amount money">${fmtMoney(inv.totalIncl || 0)}</span>
+              <div>
+                <div class="bk-card-amount money">${fmtMoney(inv.totalIncl || 0)}</div>
+                <div style="font-size:.72rem;color:var(--text-faint)">excl. ${fmtMoney(inv.totalExcl || 0)} · BTW ${fmtMoney(inv.totalVat || 0)}</div>
+              </div>
               <div class="bk-card-actions">
-                ${inv._status !== 'betaald' ? `<button class="bk-btn-paid" data-id="${escapeHTML(inv.id)}">✓ Betaald</button>` : ''}
+                ${inv._status !== 'betaald' ? `<button class="bk-btn-paid" data-id="${escapeHTML(inv.id)}">✓</button>` : ''}
                 <button class="bk-btn-print" data-id="${escapeHTML(inv.id)}">🖨️</button>
               </div>
             </div>
@@ -146,40 +337,483 @@ export async function render(container) {
     `}
   `;
 
-  container.querySelector('#bk-new-btn').onclick = () => openNewModal(container);
+  view.querySelector('#new-inv-btn').onclick = () => openNewInvoiceModal(container);
 
-  container.querySelectorAll('.bk-card').forEach(card => {
+  view.querySelectorAll('.bk-filter-chip').forEach(chip => {
+    chip.onclick = () => { container.dataset.invFilter = chip.dataset.filter; render(container); };
+  });
+
+  view.querySelectorAll('.bk-card').forEach(card => {
     card.addEventListener('click', e => {
-      if (e.target.closest('.bk-btn-paid, .bk-btn-print')) return;
-      const inv = withStatus.find(i => i.id === card.dataset.id);
+      if (e.target.closest('.bk-btn-paid,.bk-btn-print')) return;
+      const inv = invoices.find(i => i.id === card.dataset.id);
       if (inv) openDetailModal(inv, container);
     });
   });
 
-  container.querySelectorAll('.bk-btn-paid').forEach(btn => {
+  view.querySelectorAll('.bk-btn-paid').forEach(btn => {
     btn.onclick = async e => {
       e.stopPropagation();
-      const inv = withStatus.find(i => i.id === btn.dataset.id);
+      const inv = invoices.find(i => i.id === btn.dataset.id);
       if (!inv) return;
-      await put('invoices', { ...inv, status: 'betaald', paidAt: ymd() });
+      await put('invoices', { ...cleanInv(inv), status: 'betaald', paidAt: ymd() });
       ok('Factuur gemarkeerd als betaald ✓');
       render(container);
     };
   });
 
-  container.querySelectorAll('.bk-btn-print').forEach(btn => {
-    btn.onclick = async e => {
+  view.querySelectorAll('.bk-btn-print').forEach(btn => {
+    btn.onclick = e => {
       e.stopPropagation();
-      const inv = withStatus.find(i => i.id === btn.dataset.id);
+      const inv = invoices.find(i => i.id === btn.dataset.id);
       if (inv) printInvoice(inv);
     };
   });
 }
 
-// ─── new invoice modal ───────────────────────────────────────────────────────
+// ─── KOSTEN ──────────────────────────────────────────────────────────────────
 
-async function openNewModal(container) {
-  const number   = await nextNumber();
+function renderKosten(view, purchases, container) {
+  const now    = new Date();
+  const year   = container.dataset.kostenYear ? parseInt(container.dataset.kostenYear) : now.getFullYear();
+  const yearPurchases = purchases.filter(p => inYear(p.date, year));
+
+  const totalExcl = yearPurchases.reduce((s, p) => s + (p.amountExcl || 0), 0);
+  const totalVat  = yearPurchases.reduce((s, p) => s + (p.vatAmount || 0), 0);
+  const totalIncl = yearPurchases.reduce((s, p) => s + (p.amountIncl || 0), 0);
+
+  // Per categorie
+  const byCat = {};
+  yearPurchases.forEach(p => {
+    const id = p.category || 'overig';
+    byCat[id] = (byCat[id] || 0) + (p.amountExcl || 0);
+  });
+
+  const sorted = [...yearPurchases].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const years = [...new Set(purchases.map(p => getYear(p.date)).filter(Boolean))].sort((a, b) => b - a);
+  if (!years.includes(now.getFullYear())) years.unshift(now.getFullYear());
+
+  view.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <select id="kosten-year" class="bk-year-select">
+        ${years.map(y => `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`).join('')}
+      </select>
+      <button class="btn bk-new-btn" id="new-kosten-btn">+ Kosten</button>
+    </div>
+
+    <div class="bk-kosten-summary">
+      <div class="bk-ks-item">
+        <span>Totaal excl. BTW</span>
+        <span class="money" style="color:var(--danger)">${fmtMoney(totalExcl)}</span>
+      </div>
+      <div class="bk-ks-item">
+        <span>BTW betaald</span>
+        <span style="color:var(--text-dim)">${fmtMoney(totalVat)}</span>
+      </div>
+      <div class="bk-ks-item bk-ks-total">
+        <span>Totaal incl. BTW</span>
+        <span class="money" style="color:var(--danger)">${fmtMoney(totalIncl)}</span>
+      </div>
+    </div>
+
+    ${Object.keys(byCat).length > 0 ? `
+      <div class="bk-cat-bars">
+        ${Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([id, amt]) => {
+          const cat = catInfo(id);
+          const pct = totalExcl > 0 ? Math.round(amt / totalExcl * 100) : 0;
+          return `
+            <div class="bk-cat-row">
+              <span class="bk-cat-label">${cat.emoji} ${cat.label}</span>
+              <div class="bk-cat-bar-wrap">
+                <div class="bk-cat-bar" style="width:${pct}%"></div>
+              </div>
+              <span class="bk-cat-amt">${fmtMoney(amt)}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : ''}
+
+    ${sorted.length === 0 ? `
+      <div class="section-empty" style="margin-top:20px">
+        <div style="font-size:2rem;margin-bottom:10px">🛒</div>
+        <p style="font-weight:600;margin:0 0 4px">Geen kosten in ${year}</p>
+        <p class="muted" style="font-size:.85rem;margin:0">Boek zakelijke kosten om BTW terug te vragen</p>
+      </div>
+    ` : `
+      <div class="card-title" style="margin:16px 0 8px">Alle kosten ${year}</div>
+      <div class="bk-list">
+        ${sorted.map(p => {
+          const cat = catInfo(p.category || 'overig');
+          return `
+            <div class="bk-cost-card card" data-id="${escapeHTML(p.id)}">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div>
+                  <div style="font-weight:600">${cat.emoji} ${escapeHTML(p.vendor || '—')}</div>
+                  <div style="font-size:.78rem;color:var(--text-dim);margin-top:2px">${cat.label} · ${fmtDateShort(p.date)}</div>
+                  ${p.description ? `<div style="font-size:.8rem;color:var(--text-dim)">${escapeHTML(p.description)}</div>` : ''}
+                </div>
+                <div style="text-align:right">
+                  <div class="money" style="color:var(--danger)">${fmtMoney(p.amountIncl || 0)}</div>
+                  <div style="font-size:.7rem;color:var(--text-faint)">BTW ${p.vatRate || 0}%: ${fmtMoney(p.vatAmount || 0)}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `}
+  `;
+
+  view.querySelector('#new-kosten-btn').onclick = () => openNewPurchaseModal(container);
+  view.querySelector('#kosten-year').onchange = e => { container.dataset.kostenYear = e.target.value; render(container); };
+
+  view.querySelectorAll('.bk-cost-card').forEach(card => {
+    card.onclick = () => {
+      const p = purchases.find(x => x.id === card.dataset.id);
+      if (p) openPurchaseDetailModal(p, container);
+    };
+  });
+}
+
+// ─── KILOMETERS ──────────────────────────────────────────────────────────────
+
+function renderKm(view, kmLogs, container) {
+  const now  = new Date();
+  const year = container.dataset.kmYear ? parseInt(container.dataset.kmYear) : now.getFullYear();
+  const yearLogs = kmLogs.filter(k => inYear(k.date, year) && !k.isPrivate);
+  const allYearLogs = kmLogs.filter(k => inYear(k.date, year));
+
+  const totalZakelijk = yearLogs.reduce((s, k) => s + (Number(k.km) || 0), 0);
+  const totalPrive    = allYearLogs.filter(k => k.isPrivate).reduce((s, k) => s + (Number(k.km) || 0), 0);
+  const aftrek        = totalZakelijk * KM_VERGOEDING;
+
+  const sorted = [...allYearLogs].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  // Per maand zakelijk
+  const byMonth = {};
+  yearLogs.forEach(k => {
+    const m = getMonth(k.date);
+    byMonth[m] = (byMonth[m] || 0) + (Number(k.km) || 0);
+  });
+
+  const years = [...new Set(kmLogs.map(k => getYear(k.date)).filter(Boolean))].sort((a, b) => b - a);
+  if (!years.includes(now.getFullYear())) years.unshift(now.getFullYear());
+
+  const maanden = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const maxKm   = Math.max(...Object.values(byMonth), 1);
+
+  view.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <select id="km-year" class="bk-year-select">
+        ${years.map(y => `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`).join('')}
+      </select>
+      <button class="btn bk-new-btn" id="new-km-btn">+ Rit</button>
+    </div>
+
+    <div class="bk-km-summary">
+      <div class="bk-km-stat">
+        <div class="bk-km-val">${totalZakelijk.toLocaleString('nl-NL')}</div>
+        <div class="bk-km-label">Zakelijke km</div>
+      </div>
+      <div class="bk-km-stat">
+        <div class="bk-km-val money">${fmtMoney(aftrek)}</div>
+        <div class="bk-km-label">Aftrek (€0,23/km)</div>
+      </div>
+      <div class="bk-km-stat">
+        <div class="bk-km-val">${totalPrive.toLocaleString('nl-NL')}</div>
+        <div class="bk-km-label">Privé km</div>
+      </div>
+    </div>
+
+    ${Object.keys(byMonth).length > 0 ? `
+      <div class="bk-km-chart">
+        ${maanden.map((m, i) => {
+          const km = byMonth[i] || 0;
+          const h  = maxKm > 0 ? Math.round(km / maxKm * 60) : 0;
+          return `
+            <div class="bk-km-col">
+              <div class="bk-km-bar-wrap">
+                <div class="bk-km-bar bar" style="height:${h}px" title="${km} km"></div>
+              </div>
+              <div class="bk-km-month">${m}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : ''}
+
+    ${sorted.length === 0 ? `
+      <div class="section-empty" style="margin-top:20px">
+        <div style="font-size:2rem;margin-bottom:10px">🚗</div>
+        <p style="font-weight:600;margin:0 0 4px">Geen ritten in ${year}</p>
+        <p class="muted" style="font-size:.85rem;margin:0">Registreer zakelijke kilometers voor aftrek</p>
+      </div>
+    ` : `
+      <div class="card-title" style="margin:16px 0 8px">Ritten ${year}</div>
+      <div class="bk-list">
+        ${sorted.map(k => `
+          <div class="bk-km-card card" data-id="${escapeHTML(k.id)}">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:600">${k.isPrivate ? '🏠' : '💼'} ${escapeHTML(k.from || '—')} → ${escapeHTML(k.to || '—')}</div>
+                <div style="font-size:.78rem;color:var(--text-dim);margin-top:2px">${fmtDateShort(k.date)} · ${escapeHTML(k.purpose || '')}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-weight:700;font-size:1.05rem">${Number(k.km || 0).toLocaleString('nl-NL')} km</div>
+                ${!k.isPrivate ? `<div style="font-size:.7rem;color:var(--ok)">${fmtMoney((Number(k.km) || 0) * KM_VERGOEDING)} aftrek</div>` : `<div style="font-size:.7rem;color:var(--text-faint)">Privé</div>`}
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+
+  view.querySelector('#new-km-btn').onclick = () => openNewKmModal(container);
+  view.querySelector('#km-year').onchange = e => { container.dataset.kmYear = e.target.value; render(container); };
+
+  view.querySelectorAll('.bk-km-card').forEach(card => {
+    card.onclick = () => {
+      const k = kmLogs.find(x => x.id === card.dataset.id);
+      if (k) openKmDetailModal(k, container);
+    };
+  });
+}
+
+// ─── BTW-AANGIFTE ────────────────────────────────────────────────────────────
+
+function renderBTW(view, invoices, purchases, container) {
+  const now    = new Date();
+  const curQ   = Math.floor(now.getMonth() / 3);
+  const curY   = now.getFullYear();
+  const selQ   = container.dataset.btwQ !== undefined ? parseInt(container.dataset.btwQ) : curQ;
+  const selY   = container.dataset.btwY ? parseInt(container.dataset.btwY) : curY;
+
+  // BTW over verkoopfacturen
+  const inv9  = invoices.filter(i => inQuarter(i.date, selQ, selY) && (i.lines?.[0]?.vatRate || 0) === 9);
+  const inv21 = invoices.filter(i => inQuarter(i.date, selQ, selY) && (i.lines?.[0]?.vatRate || 0) === 21);
+  const inv0  = invoices.filter(i => inQuarter(i.date, selQ, selY) && (i.lines?.[0]?.vatRate || 0) === 0);
+
+  const omzet9   = inv9.reduce((s, i)  => s + (i.totalExcl || 0), 0);
+  const btw9     = inv9.reduce((s, i)  => s + (i.totalVat  || 0), 0);
+  const omzet21  = inv21.reduce((s, i) => s + (i.totalExcl || 0), 0);
+  const btw21    = inv21.reduce((s, i) => s + (i.totalVat  || 0), 0);
+  const omzet0   = inv0.reduce((s, i)  => s + (i.totalExcl || 0), 0);
+  const totOmzet = omzet9 + omzet21 + omzet0;
+  const totBtwAf = btw9 + btw21;
+
+  // Voorbelasting (BTW op inkoopfacturen)
+  const purQ    = purchases.filter(p => inQuarter(p.date, selQ, selY));
+  const voorBel = purQ.reduce((s, p) => s + (p.vatAmount || 0), 0);
+
+  // Saldo
+  const saldo = totBtwAf - voorBel;
+
+  // Deadline: 30 dagen na einde kwartaal
+  const { end } = quarterDates(selQ, selY);
+  const deadline = addDays(end, 30);
+  const isLate   = ymd() > deadline;
+  const isPast   = end < ymd();
+
+  // Kwartaal picker
+  const quarters = [];
+  for (let y = curY; y >= curY - 2; y--) {
+    for (let q = 3; q >= 0; q--) {
+      if (y === curY && q > curQ) continue;
+      quarters.push({ q, y });
+    }
+  }
+
+  view.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="card-title">BTW-aangifte</div>
+      <select id="btw-kwartaal" class="bk-year-select">
+        ${quarters.map(({ q, y }) => `
+          <option value="${q}-${y}" ${q === selQ && y === selY ? 'selected' : ''}>${quarterLabel(q, y)}</option>
+        `).join('')}
+      </select>
+    </div>
+
+    ${isPast ? `
+      <div class="bk-btw-deadline ${isLate ? 'bk-deadline-late' : ''}">
+        ${isLate ? '⚠️ Aangifte deadline verstreken' : `📅 Aangifte deadline: ${fmtDateLong(deadline)}`}
+      </div>
+    ` : ''}
+
+    <div class="bk-btw-table">
+      <div class="bk-btw-section-head">Leveringen/diensten</div>
+
+      <div class="bk-btw-row">
+        <span class="bk-btw-rubriek">1a</span>
+        <span>Belast met 9% — ${inv9.length} facturen</span>
+        <span class="money">${fmtMoney(omzet9)}</span>
+        <span class="bk-btw-vat">${fmtMoney(btw9)}</span>
+      </div>
+      <div class="bk-btw-row">
+        <span class="bk-btw-rubriek">1b</span>
+        <span>Belast met 21% — ${inv21.length} facturen</span>
+        <span class="money">${fmtMoney(omzet21)}</span>
+        <span class="bk-btw-vat">${fmtMoney(btw21)}</span>
+      </div>
+      ${omzet0 > 0 ? `
+        <div class="bk-btw-row">
+          <span class="bk-btw-rubriek">1c</span>
+          <span>Belast met 0%</span>
+          <span class="money">${fmtMoney(omzet0)}</span>
+          <span class="bk-btw-vat">—</span>
+        </div>
+      ` : ''}
+
+      <div class="bk-btw-subtotal">
+        <span>Totaal omzet</span>
+        <span class="money">${fmtMoney(totOmzet)}</span>
+        <span>BTW verschuldigd</span>
+        <span class="money">${fmtMoney(totBtwAf)}</span>
+      </div>
+
+      <div class="bk-btw-section-head" style="margin-top:12px">Voorbelasting (aftrekbaar)</div>
+      <div class="bk-btw-row">
+        <span class="bk-btw-rubriek">5b</span>
+        <span>BTW op inkopen — ${purQ.length} bonnen</span>
+        <span></span>
+        <span class="bk-btw-vat" style="color:var(--ok)">- ${fmtMoney(voorBel)}</span>
+      </div>
+
+      <div class="bk-btw-saldo ${saldo > 0 ? 'bk-saldo-betalen' : 'bk-saldo-terug'}">
+        <span>${saldo > 0 ? '🔴 Te betalen aan Belastingdienst' : '🟢 Terug te ontvangen'}</span>
+        <span class="money">${fmtMoney(Math.abs(saldo))}</span>
+      </div>
+    </div>
+
+    <button class="btn" id="btw-copy" style="width:100%;margin-top:14px">📋 Kopieer aangifte-samenvatting</button>
+
+    <div class="bk-btw-disclaimer">
+      ℹ️ Dit is een indicatie. Controleer altijd via Mijn Belastingdienst Zakelijk. Aangifte uiterlijk ${fmtDateLong(deadline)}.
+    </div>
+  `;
+
+  view.querySelector('#btw-kwartaal').onchange = e => {
+    const [q, y] = e.target.value.split('-');
+    container.dataset.btwQ = q;
+    container.dataset.btwY = y;
+    render(container);
+  };
+
+  view.querySelector('#btw-copy').onclick = () => {
+    const text = `BTW-aangifte ${quarterLabel(selQ, selY)}\n\nRubriek 1a (9%): €${omzet9.toFixed(2)} | BTW: €${btw9.toFixed(2)}\nRubriek 1b (21%): €${omzet21.toFixed(2)} | BTW: €${btw21.toFixed(2)}\nRubriek 5b (voorbelasting): -€${voorBel.toFixed(2)}\n\n${saldo > 0 ? 'TE BETALEN' : 'TERUG TE ONTVANGEN'}: €${Math.abs(saldo).toFixed(2)}`;
+    navigator.clipboard.writeText(text).then(() => ok('Samenvatting gekopieerd')).catch(() => err('Kopiëren mislukt'));
+  };
+}
+
+// ─── WINST & VERLIES ─────────────────────────────────────────────────────────
+
+function renderWV(view, invoices, purchases, kmLogs, container) {
+  const now  = new Date();
+  const year = container.dataset.wvYear ? parseInt(container.dataset.wvYear) : now.getFullYear();
+
+  const invYear = invoices.filter(i => inYear(i.date, year));
+  const purYear = purchases.filter(p => inYear(p.date, year));
+  const kmYear  = kmLogs.filter(k => inYear(k.date, year) && !k.isPrivate);
+
+  const omzet    = invYear.reduce((s, i) => s + (i.totalExcl || 0), 0);
+  const kosten   = purYear.reduce((s, p) => s + (p.amountExcl || 0), 0);
+  const kmTotaal = kmYear.reduce((s, k) => s + (Number(k.km) || 0), 0);
+  const kmAftrek = kmTotaal * KM_VERGOEDING;
+
+  const brutoWinst  = omzet - kosten - kmAftrek;
+  const zelfstAftrek = brutoWinst > 0 ? Math.min(ZELFST_AFTREK, brutoWinst) : 0;
+  const naZelfst    = Math.max(0, brutoWinst - zelfstAftrek);
+  const mkbAftrek   = naZelfst * MKB_PCT;
+  const belastbaar  = Math.max(0, naZelfst - mkbAftrek);
+
+  // Belasting schatting (box 1)
+  const belasting = belastbaar <= BOX1_GRENS
+    ? belastbaar * BOX1_LAAG
+    : BOX1_GRENS * BOX1_LAAG + (belastbaar - BOX1_GRENS) * BOX1_HOOG;
+
+  const nettoNaBelasting = brutoWinst - belasting;
+
+  const years = [...new Set([...invoices, ...purchases].map(i => getYear(i.date)).filter(Boolean))].sort((a, b) => b - a);
+  if (!years.includes(now.getFullYear())) years.unshift(now.getFullYear());
+
+  view.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="card-title">Winst &amp; Verlies ${year}</div>
+      <select id="wv-year" class="bk-year-select">
+        ${years.map(y => `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="bk-wv-table">
+      <div class="bk-wv-section">OMZET</div>
+      <div class="bk-wv-row">
+        <span>Verkoopfacturen (excl. BTW)</span>
+        <span class="money" style="color:var(--ok)">${fmtMoney(omzet)}</span>
+      </div>
+      <div class="bk-wv-row bk-wv-subtotal">
+        <span>Totale omzet</span>
+        <span class="money" style="color:var(--ok)">${fmtMoney(omzet)}</span>
+      </div>
+
+      <div class="bk-wv-section" style="margin-top:12px">KOSTEN</div>
+      <div class="bk-wv-row">
+        <span>Zakelijke kosten (excl. BTW)</span>
+        <span class="money" style="color:var(--danger)">- ${fmtMoney(kosten)}</span>
+      </div>
+      <div class="bk-wv-row">
+        <span>Kilometeraftrek (${kmTotaal.toLocaleString('nl-NL')} km × €0,23)</span>
+        <span class="money" style="color:var(--danger)">- ${fmtMoney(kmAftrek)}</span>
+      </div>
+      <div class="bk-wv-row bk-wv-subtotal">
+        <span>Totale kosten</span>
+        <span class="money" style="color:var(--danger)">- ${fmtMoney(kosten + kmAftrek)}</span>
+      </div>
+
+      <div class="bk-wv-row bk-wv-result ${brutoWinst >= 0 ? 'bk-wv-positive' : 'bk-wv-negative'}">
+        <span>Bruto winst</span>
+        <span class="money">${fmtMoney(brutoWinst)}</span>
+      </div>
+    </div>
+
+    <div class="bk-wv-table" style="margin-top:12px">
+      <div class="bk-wv-section">FISCALE AFTREKKEN (schatting ${year})</div>
+      <div class="bk-wv-row">
+        <span>Zelfstandigenaftrek</span>
+        <span class="money" style="color:var(--ok)">- ${fmtMoney(zelfstAftrek)}</span>
+      </div>
+      <div class="bk-wv-row">
+        <span>MKB-winstvrijstelling (12,7%)</span>
+        <span class="money" style="color:var(--ok)">- ${fmtMoney(mkbAftrek)}</span>
+      </div>
+      <div class="bk-wv-row bk-wv-subtotal">
+        <span>Belastbare winst</span>
+        <span class="money">${fmtMoney(belastbaar)}</span>
+      </div>
+      <div class="bk-wv-row">
+        <span>Inkomstenbelasting (schatting)</span>
+        <span class="money" style="color:var(--danger)">- ${fmtMoney(belasting)}</span>
+      </div>
+
+      <div class="bk-wv-row bk-wv-netto ${nettoNaBelasting >= 0 ? 'bk-wv-positive' : 'bk-wv-negative'}">
+        <span>💰 Netto over (na belasting)</span>
+        <span class="money" style="font-size:1.1rem">${fmtMoney(nettoNaBelasting)}</span>
+      </div>
+    </div>
+
+    <div class="bk-btw-disclaimer">
+      ⚠️ Dit is een ruwe schatting. Heffingskortingen, startersaftrek en andere persoonlijke omstandigheden zijn niet meegenomen. Laat je aangifte controleren door een boekhouder.
+    </div>
+  `;
+
+  view.querySelector('#wv-year').onchange = e => { container.dataset.wvYear = e.target.value; render(container); };
+}
+
+// ─── NIEUWE FACTUUR MODAL ────────────────────────────────────────────────────
+
+async function openNewInvoiceModal(container) {
+  const number   = await nextInvoiceNumber();
   const todayStr = ymd();
   const dueStr   = addDays(todayStr, BEDRIJF.termijn);
 
@@ -188,16 +822,16 @@ async function openNewModal(container) {
   backdrop.innerHTML = `
     <div class="modal bk-modal">
       <button type="button" class="modal-close" id="bk-x">×</button>
-      <h2 style="margin:0 0 18px">Nieuwe factuur</h2>
+      <h2 style="margin:0 0 16px">Nieuwe factuur</h2>
 
       <div class="bk-paste-section">
         <label class="bk-paste-label">📋 Plak WhatsApp- of e-mailtekst — velden worden automatisch ingevuld</label>
-        <textarea id="bk-paste" class="bk-paste-area" rows="5"
-          placeholder="Supreme Transit Solutions&#10;Baden Powellweg&#10;Amsterdam 1069 LK&#10;KvK: 85234362&#10;Email: info@voorbeeld.nl&#10;€320 incl 9% btw"></textarea>
+        <textarea id="bk-paste" class="bk-paste-area" rows="4"
+          placeholder="Supreme Transit Solutions&#10;Baden Powellweg, Amsterdam 1069 LK&#10;KvK: 85234362&#10;€320 incl 9% btw"></textarea>
         <div id="bk-parsed-preview" class="bk-parsed-preview" style="display:none"></div>
       </div>
 
-      <div class="bk-divider">— of handmatig invullen —</div>
+      <div class="bk-divider">— of handmatig —</div>
 
       <form id="bk-form" autocomplete="off">
         <div class="bk-form-section">
@@ -209,7 +843,7 @@ async function openNewModal(container) {
           <label>Postcode + stad</label>
           <input id="bk-client-city" type="text" placeholder="1234 AB Amsterdam" />
           <label>KvK-nummer</label>
-          <input id="bk-client-kvk" type="text" placeholder="12345678" inputmode="numeric" />
+          <input id="bk-client-kvk" type="text" inputmode="numeric" placeholder="12345678" />
           <label>E-mailadres</label>
           <input id="bk-client-email" type="email" placeholder="info@bedrijf.nl" />
         </div>
@@ -243,10 +877,12 @@ async function openNewModal(container) {
           <input id="bk-due" type="date" value="${dueStr}" required />
         </div>
 
-        <label>Notitie (intern, staat niet op factuur)</label>
-        <textarea id="bk-note" rows="2" style="width:100%;resize:vertical" placeholder="Optionele interne notitie…"></textarea>
+        <label>Interne notitie (staat niet op factuur)</label>
+        <textarea id="bk-note" rows="2" style="resize:vertical" placeholder="Optioneel…"></textarea>
 
-        <button type="submit" class="btn block" style="margin-top:20px;font-size:1rem;padding:14px">🧾 Factuur aanmaken &amp; afdrukken</button>
+        <button type="submit" class="btn block" style="margin-top:18px;padding:14px;font-size:1rem">
+          🧾 Factuur aanmaken &amp; afdrukken
+        </button>
       </form>
     </div>
   `;
@@ -255,34 +891,26 @@ async function openNewModal(container) {
   backdrop.querySelector('#bk-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 
-  // Smart paste – live parsing with 300ms debounce
+  // Smart paste
   const pasteArea = backdrop.querySelector('#bk-paste');
-  const preview   = backdrop.querySelector('#bk-parsed-preview');
-  let parseTimer  = null;
-
+  let parseTimer = null;
   pasteArea.addEventListener('input', () => {
     clearTimeout(parseTimer);
     parseTimer = setTimeout(() => {
       const parsed = parseInvoiceText(pasteArea.value);
-      applyParsed(parsed, backdrop, preview);
+      applyParsed(parsed, backdrop);
       refreshCalc(backdrop);
     }, 300);
   });
 
-  // Live VAT calc on amount/rate/incl change
-  ['#bk-amount', '#bk-vat'].forEach(sel => {
-    backdrop.querySelector(sel).addEventListener('input', () => refreshCalc(backdrop));
-  });
-  backdrop.querySelectorAll('input[name="bk-ie"]').forEach(r => {
-    r.addEventListener('change', () => refreshCalc(backdrop));
-  });
-
-  // Update due date when invoice date changes
+  const refreshCalcFn = () => refreshCalc(backdrop);
+  backdrop.querySelector('#bk-amount').addEventListener('input', refreshCalcFn);
+  backdrop.querySelector('#bk-vat').addEventListener('input', refreshCalcFn);
+  backdrop.querySelectorAll('input[name="bk-ie"]').forEach(r => r.addEventListener('change', refreshCalcFn));
   backdrop.querySelector('#bk-date').addEventListener('change', e => {
     backdrop.querySelector('#bk-due').value = addDays(e.target.value, BEDRIJF.termijn);
   });
 
-  // Form submit
   backdrop.querySelector('#bk-form').onsubmit = async e => {
     e.preventDefault();
     const clientName = backdrop.querySelector('#bk-client-name').value.trim();
@@ -301,7 +929,7 @@ async function openNewModal(container) {
       dueDate: backdrop.querySelector('#bk-due').value,
       status:  'open',
       note:    backdrop.querySelector('#bk-note').value.trim(),
-      client: {
+      client:  {
         name:    clientName,
         address: backdrop.querySelector('#bk-client-addr').value.trim(),
         city:    backdrop.querySelector('#bk-client-city').value.trim(),
@@ -310,25 +938,22 @@ async function openNewModal(container) {
       },
       lines: [{
         description: backdrop.querySelector('#bk-desc').value.trim() || 'Vervoersdienst',
-        amountExcl,
-        vatRate,
-        vatAmount,
-        amountIncl,
+        amountExcl, vatRate, vatAmount, amountIncl,
       }],
-      totalExcl:  amountExcl,
-      totalVat:   vatAmount,
-      totalIncl:  amountIncl,
+      totalExcl: amountExcl,
+      totalVat:  vatAmount,
+      totalIncl: amountIncl,
     };
 
     await add('invoices', inv);
-    ok(`Factuur ${inv.number} aangemaakt`);
+    ok(`Factuur ${inv.number} aangemaakt ✓`);
     backdrop.remove();
     render(container);
     printInvoice(inv);
   };
 }
 
-function applyParsed(parsed, backdrop, preview) {
+function applyParsed(parsed, backdrop) {
   if (!parsed) return;
   const set = (id, val) => { if (val != null) backdrop.querySelector(id).value = val; };
   set('#bk-client-name',  parsed.clientName);
@@ -339,19 +964,19 @@ function applyParsed(parsed, backdrop, preview) {
   if (parsed.amount != null) set('#bk-amount', parsed.amount);
   if (parsed.vatRate != null) backdrop.querySelector('#bk-vat').value = String(parsed.vatRate);
   if (parsed.isIncl !== null) {
-    const radio = backdrop.querySelector(`input[name="bk-ie"][value="${parsed.isIncl ? 'incl' : 'excl'}"]`);
-    if (radio) radio.checked = true;
+    const r = backdrop.querySelector(`input[name="bk-ie"][value="${parsed.isIncl ? 'incl' : 'excl'}"]`);
+    if (r) r.checked = true;
   }
   if (parsed.description) set('#bk-desc', parsed.description);
 
   const found = [
-    parsed.clientName && `<strong>${escapeHTML(parsed.clientName)}</strong>`,
+    parsed.clientName  && `<strong>${escapeHTML(parsed.clientName)}</strong>`,
     parsed.amount != null && `€${parsed.amount}`,
     parsed.vatRate != null && `${parsed.vatRate}% BTW`,
     parsed.isIncl !== null && (parsed.isIncl ? 'incl.' : 'excl.'),
-    parsed.clientEmail && parsed.clientEmail,
   ].filter(Boolean);
 
+  const preview = backdrop.querySelector('#bk-parsed-preview');
   if (found.length) {
     preview.style.display = 'block';
     preview.innerHTML = `✅ Gevonden: ${found.join(' · ')}`;
@@ -360,6 +985,7 @@ function applyParsed(parsed, backdrop, preview) {
 
 function refreshCalc(backdrop) {
   const calcEl  = backdrop.querySelector('#bk-calc');
+  if (!calcEl) return;
   const raw     = parseAmount(backdrop.querySelector('#bk-amount').value);
   const vatRate = parseInt(backdrop.querySelector('#bk-vat').value) || 0;
   const isIncl  = backdrop.querySelector('input[name="bk-ie"]:checked')?.value === 'incl';
@@ -369,11 +995,182 @@ function refreshCalc(backdrop) {
   calcEl.innerHTML = `
     <div class="bk-calc-row"><span>Excl. BTW</span><span>${fmtMoney(amountExcl)}</span></div>
     <div class="bk-calc-row"><span>BTW ${vatRate}%</span><span>${fmtMoney(vatAmount)}</span></div>
-    <div class="bk-calc-row bk-calc-total"><span>Totaal incl. BTW</span><span class="money">${fmtMoney(amountIncl)}</span></div>
+    <div class="bk-calc-row bk-calc-total"><span>Totaal incl.</span><span class="money">${fmtMoney(amountIncl)}</span></div>
   `;
 }
 
-// ─── detail modal ────────────────────────────────────────────────────────────
+// ─── NIEUWE KOSTEN MODAL ──────────────────────────────────────────────────────
+
+function openNewPurchaseModal(container) {
+  const todayStr = ymd();
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal bk-modal">
+      <button type="button" class="modal-close" id="pk-x">×</button>
+      <h2 style="margin:0 0 16px">Kosten boeken</h2>
+      <form id="pk-form" autocomplete="off">
+        <div class="bk-form-section">
+          <div class="bk-section-title">Kosten</div>
+          <label>Leverancier / winkel *</label>
+          <input id="pk-vendor" type="text" placeholder="bijv. Shell, Gamma, …" required />
+          <label>Omschrijving</label>
+          <input id="pk-desc" type="text" placeholder="bijv. Brandstof 13 juni" />
+          <label>Categorie</label>
+          <select id="pk-cat">
+            ${CATS.map(c => `<option value="${c.id}">${c.emoji} ${c.label}</option>`).join('')}
+          </select>
+          <label>Bedrag *</label>
+          <div class="bk-amount-row">
+            <input id="pk-amount" type="text" inputmode="decimal" placeholder="80" required />
+            <label class="bk-radio"><input type="radio" name="pk-ie" value="incl" checked /> Incl. BTW</label>
+            <label class="bk-radio"><input type="radio" name="pk-ie" value="excl" /> Excl. BTW</label>
+          </div>
+          <label style="margin-top:10px">BTW-tarief</label>
+          <select id="pk-vat">
+            <option value="21">21% — standaard</option>
+            <option value="9">9% — verlaagd</option>
+            <option value="0">0% — geen BTW aftrek</option>
+          </select>
+          <div id="pk-calc" class="bk-calc-preview" style="display:none"></div>
+        </div>
+        <div class="bk-form-section">
+          <div class="bk-section-title">Datum</div>
+          <label>Datum</label>
+          <input id="pk-date" type="date" value="${todayStr}" required />
+          <label>Factuurnummer leverancier (optioneel)</label>
+          <input id="pk-invnr" type="text" placeholder="bijv. INV-2026-001" />
+        </div>
+        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">🛒 Kosten opslaan</button>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('#pk-x').onclick = () => backdrop.remove();
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+
+  const refreshFn = () => refreshPurchaseCalc(backdrop);
+  backdrop.querySelector('#pk-amount').addEventListener('input', refreshFn);
+  backdrop.querySelector('#pk-vat').addEventListener('input', refreshFn);
+  backdrop.querySelectorAll('input[name="pk-ie"]').forEach(r => r.addEventListener('change', refreshFn));
+
+  backdrop.querySelector('#pk-form').onsubmit = async e => {
+    e.preventDefault();
+    const vendor = backdrop.querySelector('#pk-vendor').value.trim();
+    const raw    = parseAmount(backdrop.querySelector('#pk-amount').value);
+    if (!vendor) { err('Vul een leverancier in'); return; }
+    if (!raw || isNaN(raw) || raw <= 0) { err('Vul een geldig bedrag in'); return; }
+
+    const vatRate = parseInt(backdrop.querySelector('#pk-vat').value);
+    const isIncl  = backdrop.querySelector('input[name="pk-ie"]:checked')?.value === 'incl';
+    const { amountExcl, vatAmount, amountIncl } = calcVat(raw, vatRate, isIncl);
+
+    await add('purchase_invoices', {
+      id:            uid(),
+      date:          backdrop.querySelector('#pk-date').value,
+      vendor,
+      description:   backdrop.querySelector('#pk-desc').value.trim(),
+      category:      backdrop.querySelector('#pk-cat').value,
+      invoiceNumber: backdrop.querySelector('#pk-invnr').value.trim(),
+      amountIncl, amountExcl, vatRate, vatAmount,
+    });
+
+    ok(`Kosten ${vendor} geboekt ✓`);
+    backdrop.remove();
+    render(container);
+  };
+}
+
+function refreshPurchaseCalc(backdrop) {
+  const calcEl  = backdrop.querySelector('#pk-calc');
+  if (!calcEl) return;
+  const raw     = parseAmount(backdrop.querySelector('#pk-amount').value);
+  const vatRate = parseInt(backdrop.querySelector('#pk-vat').value) || 0;
+  const isIncl  = backdrop.querySelector('input[name="pk-ie"]:checked')?.value === 'incl';
+  if (!raw || isNaN(raw) || raw <= 0) { calcEl.style.display = 'none'; return; }
+  const { amountExcl, vatAmount, amountIncl } = calcVat(raw, vatRate, isIncl);
+  calcEl.style.display = 'block';
+  calcEl.innerHTML = `
+    <div class="bk-calc-row"><span>Excl. BTW</span><span>${fmtMoney(amountExcl)}</span></div>
+    <div class="bk-calc-row"><span>BTW ${vatRate}% (aftrekbaar)</span><span style="color:var(--ok)">${fmtMoney(vatAmount)}</span></div>
+    <div class="bk-calc-row bk-calc-total"><span>Totaal incl.</span><span class="money" style="color:var(--danger)">${fmtMoney(amountIncl)}</span></div>
+  `;
+}
+
+// ─── NIEUWE KM MODAL ─────────────────────────────────────────────────────────
+
+function openNewKmModal(container) {
+  const todayStr = ymd();
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal bk-modal">
+      <button type="button" class="modal-close" id="km-x">×</button>
+      <h2 style="margin:0 0 16px">Rit registreren</h2>
+      <form id="km-form" autocomplete="off">
+        <div class="bk-form-section">
+          <div class="bk-section-title">Ritgegevens</div>
+          <label>Datum *</label>
+          <input id="km-date" type="date" value="${todayStr}" required />
+          <label>Van *</label>
+          <input id="km-from" type="text" placeholder="bijv. Amsterdam Centrum" required />
+          <label>Naar *</label>
+          <input id="km-to" type="text" placeholder="bijv. Schiphol" required />
+          <label>Kilometers *</label>
+          <input id="km-km" type="text" inputmode="decimal" placeholder="18" required />
+          <label>Doel</label>
+          <input id="km-purpose" type="text" placeholder="bijv. Klantvervoer, Inkoop, Bank" />
+          <label style="margin-top:12px;display:flex;align-items:center;gap:10px;cursor:pointer">
+            <input type="checkbox" id="km-private" style="width:auto;min-width:unset" />
+            Privérit (niet aftrekbaar)
+          </label>
+          <div id="km-preview" class="bk-calc-preview" style="display:none;margin-top:10px"></div>
+        </div>
+        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">🚗 Rit opslaan</button>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('#km-x').onclick = () => backdrop.remove();
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+
+  const previewKm = () => {
+    const km      = parseAmount(backdrop.querySelector('#km-km').value);
+    const preview = backdrop.querySelector('#km-preview');
+    const isPriv  = backdrop.querySelector('#km-private').checked;
+    if (!km || isNaN(km) || km <= 0 || isPriv) { preview.style.display = 'none'; return; }
+    preview.style.display = 'block';
+    preview.innerHTML = `<div class="bk-calc-row"><span>Aftrek (${km} km × €0,23)</span><span class="money" style="color:var(--ok)">${fmtMoney(km * KM_VERGOEDING)}</span></div>`;
+  };
+
+  backdrop.querySelector('#km-km').addEventListener('input', previewKm);
+  backdrop.querySelector('#km-private').addEventListener('change', previewKm);
+
+  backdrop.querySelector('#km-form').onsubmit = async e => {
+    e.preventDefault();
+    const km = parseAmount(backdrop.querySelector('#km-km').value);
+    if (!km || isNaN(km) || km <= 0) { err('Vul een geldig aantal km in'); return; }
+    const from = backdrop.querySelector('#km-from').value.trim();
+    const to   = backdrop.querySelector('#km-to').value.trim();
+    if (!from || !to) { err('Vul vertrek en bestemming in'); return; }
+
+    await add('km_log', {
+      id:        uid(),
+      date:      backdrop.querySelector('#km-date').value,
+      from, to, km,
+      purpose:   backdrop.querySelector('#km-purpose').value.trim(),
+      isPrivate: backdrop.querySelector('#km-private').checked,
+    });
+
+    ok(`${km} km geregistreerd ✓`);
+    backdrop.remove();
+    render(container);
+  };
+}
+
+// ─── DETAIL MODALS ────────────────────────────────────────────────────────────
 
 function openDetailModal(inv, container) {
   const status = computeStatus(inv);
@@ -386,10 +1183,10 @@ function openDetailModal(inv, container) {
       <button type="button" class="modal-close" id="det-x">×</button>
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
         <div>
-          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);margin-bottom:4px">Factuur</div>
+          <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);margin-bottom:3px">Factuur</div>
           <div style="font-size:1.2rem;font-weight:700">${escapeHTML(inv.number || '—')}</div>
         </div>
-        <span class="bk-status bk-status-${status}" style="font-size:.8rem">${statusLabel(status)}</span>
+        <span class="bk-status bk-status-${status}">${statusLabel(status)}</span>
       </div>
 
       <div class="bk-detail-block">
@@ -416,26 +1213,25 @@ function openDetailModal(inv, container) {
         <div class="bk-detail-row bk-detail-total"><span>Totaal</span><span class="money">${fmtMoney(inv.totalIncl || 0)}</span></div>
       </div>
 
-      ${inv.note ? `<div class="bk-detail-block"><div class="bk-detail-label">Notitie</div><div style="font-size:.9rem;color:var(--text-dim)">${escapeHTML(inv.note)}</div></div>` : ''}
+      ${inv.note ? `<div class="bk-detail-block"><div class="bk-detail-label">Notitie</div><div style="font-size:.88rem;color:var(--text-dim)">${escapeHTML(inv.note)}</div></div>` : ''}
 
       <div class="bk-detail-actions">
         <button class="btn" id="det-print" style="flex:1">🖨️ Afdrukken</button>
-        ${status !== 'betaald' ? `<button class="btn" id="det-paid" style="flex:1;background:var(--ok);color:#1a1a1a">✓ Betaald</button>` : ''}
+        ${status !== 'betaald' ? `<button class="btn" id="det-paid" style="flex:1;background:rgba(154,179,140,.2);color:var(--ok);border-color:rgba(154,179,140,.4)">✓ Betaald</button>` : ''}
       </div>
-      <button class="btn" id="det-del" style="width:100%;margin-top:8px;background:rgba(217,140,132,.12);color:var(--danger);border:1px solid rgba(217,140,132,.25)">🗑️ Verwijderen</button>
+      <button class="btn" id="det-del" style="width:100%;margin-top:8px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
     </div>
   `;
 
   document.body.appendChild(backdrop);
   backdrop.querySelector('#det-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
-
   backdrop.querySelector('#det-print').onclick = () => { backdrop.remove(); printInvoice(inv); };
 
   const paidBtn = backdrop.querySelector('#det-paid');
   if (paidBtn) {
     paidBtn.onclick = async () => {
-      await put('invoices', { ...inv, status: 'betaald', paidAt: ymd() });
+      await put('invoices', { ...cleanInv(inv), status: 'betaald', paidAt: ymd() });
       ok('Factuur gemarkeerd als betaald ✓');
       backdrop.remove();
       render(container);
@@ -446,8 +1242,7 @@ function openDetailModal(inv, container) {
   backdrop.querySelector('#det-del').onclick = async function () {
     if (delStep === 0) {
       delStep = 1;
-      this.textContent = 'Weet je het zeker? Nogmaals tikken om definitief te verwijderen';
-      this.style.background = 'rgba(217,140,132,.25)';
+      this.textContent = '⚠️ Nogmaals tikken om definitief te verwijderen';
       return;
     }
     await del('invoices', inv.id);
@@ -457,7 +1252,82 @@ function openDetailModal(inv, container) {
   };
 }
 
-// ─── PDF print window ────────────────────────────────────────────────────────
+function openPurchaseDetailModal(purchase, container) {
+  const cat = catInfo(purchase.category || 'overig');
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal bk-modal">
+      <button type="button" class="modal-close" id="pd-x">×</button>
+      <h2 style="margin:0 0 16px">${cat.emoji} ${escapeHTML(purchase.vendor || '—')}</h2>
+
+      <div class="bk-detail-block">
+        <div class="bk-detail-label">Kosten</div>
+        <div class="bk-detail-row"><span>Categorie</span><span>${cat.label}</span></div>
+        <div class="bk-detail-row"><span>Datum</span><span>${fmtDateLong(purchase.date)}</span></div>
+        ${purchase.description ? `<div class="bk-detail-row"><span>Omschrijving</span><span>${escapeHTML(purchase.description)}</span></div>` : ''}
+        ${purchase.invoiceNumber ? `<div class="bk-detail-row"><span>Factuurnr. leverancier</span><span>${escapeHTML(purchase.invoiceNumber)}</span></div>` : ''}
+      </div>
+
+      <div class="bk-detail-block">
+        <div class="bk-detail-label">Bedragen</div>
+        <div class="bk-detail-row"><span>Excl. BTW</span><span>${fmtMoney(purchase.amountExcl || 0)}</span></div>
+        <div class="bk-detail-row"><span>BTW ${purchase.vatRate || 0}% (aftrekbaar)</span><span style="color:var(--ok)">${fmtMoney(purchase.vatAmount || 0)}</span></div>
+        <div class="bk-detail-row bk-detail-total"><span>Totaal incl.</span><span class="money" style="color:var(--danger)">${fmtMoney(purchase.amountIncl || 0)}</span></div>
+      </div>
+
+      <button class="btn" id="pd-del" style="width:100%;margin-top:12px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('#pd-x').onclick = () => backdrop.remove();
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+
+  let delStep = 0;
+  backdrop.querySelector('#pd-del').onclick = async function () {
+    if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
+    await del('purchase_invoices', purchase.id);
+    ok('Kosten verwijderd');
+    backdrop.remove();
+    render(container);
+  };
+}
+
+function openKmDetailModal(k, container) {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal bk-modal">
+      <button type="button" class="modal-close" id="kd-x">×</button>
+      <h2 style="margin:0 0 16px">${k.isPrivate ? '🏠 Privérit' : '💼 Zakelijke rit'}</h2>
+      <div class="bk-detail-block">
+        <div class="bk-detail-row"><span>Datum</span><span>${fmtDateLong(k.date)}</span></div>
+        <div class="bk-detail-row"><span>Van</span><span>${escapeHTML(k.from || '—')}</span></div>
+        <div class="bk-detail-row"><span>Naar</span><span>${escapeHTML(k.to || '—')}</span></div>
+        <div class="bk-detail-row"><span>Kilometers</span><span>${Number(k.km || 0).toLocaleString('nl-NL')} km</span></div>
+        ${k.purpose ? `<div class="bk-detail-row"><span>Doel</span><span>${escapeHTML(k.purpose)}</span></div>` : ''}
+        ${!k.isPrivate ? `<div class="bk-detail-row bk-detail-total"><span>Aftrek (€0,23/km)</span><span class="money" style="color:var(--ok)">${fmtMoney((Number(k.km) || 0) * KM_VERGOEDING)}</span></div>` : ''}
+      </div>
+      <button class="btn" id="kd-del" style="width:100%;margin-top:12px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('#kd-x').onclick = () => backdrop.remove();
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+
+  let delStep = 0;
+  backdrop.querySelector('#kd-del').onclick = async function () {
+    if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
+    await del('km_log', k.id);
+    ok('Rit verwijderd');
+    backdrop.remove();
+    render(container);
+  };
+}
+
+// ─── PDF PRINT ────────────────────────────────────────────────────────────────
 
 function printInvoice(inv) {
   const line    = inv.lines?.[0] || {};
@@ -473,36 +1343,29 @@ function printInvoice(inv) {
   @page { margin: 20mm 22mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, Arial, Helvetica, sans-serif; color: #1a1a1a; font-size: 14px; line-height: 1.5; background: #fff; }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 0; }
-
+  .wrap { max-width: 760px; margin: 0 auto; }
   .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 32px; border-bottom: 1.5px solid #e8e4de; margin-bottom: 36px; }
   .brand { font-size: 22px; font-weight: 800; letter-spacing: -.5px; color: #1a1a1a; margin-bottom: 8px; }
   .co-info { font-size: 12px; color: #666; line-height: 1.7; }
   .inv-title { font-size: 36px; font-weight: 800; color: #8a7e6f; letter-spacing: -1px; }
   .inv-meta { font-size: 12px; color: #666; margin-top: 10px; line-height: 1.7; text-align: right; }
   .inv-meta strong { color: #1a1a1a; }
-
   .client-box { background: #f8f7f5; border-radius: 10px; padding: 20px 24px; margin-bottom: 36px; }
   .client-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: #999; margin-bottom: 8px; font-weight: 600; }
   .client-name { font-size: 17px; font-weight: 700; margin-bottom: 5px; }
   .client-detail { font-size: 13px; color: #555; line-height: 1.7; }
-
   table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
   thead th { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #999; font-weight: 600; padding: 8px 12px; border-bottom: 1.5px solid #e8e4de; text-align: left; }
   thead th:last-child { text-align: right; }
   tbody td { padding: 14px 12px; border-bottom: 1px solid #f0ede8; font-size: 14px; }
   tbody td:last-child { text-align: right; font-weight: 500; }
-
   .totals { margin-left: auto; width: 300px; margin-bottom: 40px; }
   .t-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; color: #555; }
   .t-grand { display: flex; justify-content: space-between; padding: 14px 0 0; margin-top: 10px; border-top: 2px solid #1a1a1a; font-size: 20px; font-weight: 800; color: #1a1a1a; }
-
   .pay-box { background: #f8f7f5; border-radius: 10px; padding: 20px 24px; font-size: 13px; color: #555; line-height: 1.8; }
   .pay-box strong { color: #1a1a1a; }
   .pay-iban { font-size: 15px; font-weight: 700; color: #1a1a1a; letter-spacing: .5px; }
-
   .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e8e4de; font-size: 11px; color: #aaa; display: flex; justify-content: space-between; }
-
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
 </head>
@@ -512,11 +1375,8 @@ function printInvoice(inv) {
     <div>
       <div class="brand">${escapeHTML(BEDRIJF.naam)}</div>
       <div class="co-info">
-        ${escapeHTML(BEDRIJF.adres)}<br>
-        ${escapeHTML(BEDRIJF.postcode)}<br>
-        BTW: ${escapeHTML(BEDRIJF.btw)}<br>
-        KvK: ${escapeHTML(BEDRIJF.kvk)}<br>
-        IBAN: ${escapeHTML(ibanFmt)}
+        ${escapeHTML(BEDRIJF.adres)}<br>${escapeHTML(BEDRIJF.postcode)}<br>
+        BTW: ${escapeHTML(BEDRIJF.btw)}<br>KvK: ${escapeHTML(BEDRIJF.kvk)}<br>IBAN: ${escapeHTML(ibanFmt)}
       </div>
     </div>
     <div style="text-align:right">
@@ -528,49 +1388,38 @@ function printInvoice(inv) {
       </div>
     </div>
   </div>
-
   <div class="client-box">
     <div class="client-label">Factuur aan</div>
     <div class="client-name">${escapeHTML(client.name || '—')}</div>
     <div class="client-detail">
       ${client.address ? escapeHTML(client.address) + '<br>' : ''}
       ${client.city    ? escapeHTML(client.city)    + '<br>' : ''}
-      ${client.kvk     ? 'KvK: ' + escapeHTML(client.kvk) + '<br>' : ''}
+      ${client.kvk     ? 'KvK: '   + escapeHTML(client.kvk)   + '<br>' : ''}
       ${client.email   ? escapeHTML(client.email) : ''}
     </div>
   </div>
-
   <table>
-    <thead>
-      <tr>
-        <th style="width:50%">Omschrijving</th>
-        <th>BTW</th>
-        <th>Excl. BTW</th>
-        <th>Totaal incl.</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>${escapeHTML(line.description || 'Vervoersdienst')}</td>
-        <td>${line.vatRate || 0}%</td>
-        <td>${fmtMoney(inv.totalExcl || 0)}</td>
-        <td>${fmtMoney(inv.totalIncl || 0)}</td>
-      </tr>
-    </tbody>
+    <thead><tr>
+      <th style="width:50%">Omschrijving</th>
+      <th>BTW</th><th>Excl. BTW</th><th>Totaal incl.</th>
+    </tr></thead>
+    <tbody><tr>
+      <td>${escapeHTML(line.description || 'Vervoersdienst')}</td>
+      <td>${line.vatRate || 0}%</td>
+      <td>${fmtMoney(inv.totalExcl || 0)}</td>
+      <td>${fmtMoney(inv.totalIncl || 0)}</td>
+    </tr></tbody>
   </table>
-
   <div class="totals">
     <div class="t-row"><span>Subtotaal excl. BTW</span><span>${fmtMoney(inv.totalExcl || 0)}</span></div>
     <div class="t-row"><span>BTW ${line.vatRate || 0}%</span><span>${fmtMoney(inv.totalVat || 0)}</span></div>
     <div class="t-grand"><span>Totaal</span><span>${fmtMoney(inv.totalIncl || 0)}</span></div>
   </div>
-
   <div class="pay-box">
     Gelieve het bedrag van <strong>${fmtMoney(inv.totalIncl || 0)}</strong> vóór <strong>${fmtDateLong(inv.dueDate)}</strong> over te maken naar:<br>
     <span class="pay-iban">${escapeHTML(ibanFmt)}</span> — t.n.v. ${escapeHTML(BEDRIJF.naam)}<br>
     o.v.v. factuurnummer <strong>${escapeHTML(inv.number || '')}</strong>
   </div>
-
   <div class="footer">
     <span>${escapeHTML(BEDRIJF.naam)} · KvK ${escapeHTML(BEDRIJF.kvk)} · BTW ${escapeHTML(BEDRIJF.btw)}</span>
     <span>${escapeHTML(inv.number || '')}</span>

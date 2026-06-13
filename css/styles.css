@@ -4735,3 +4735,261 @@ label.subtask {
   margin-top: 16px;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   BOEKHOUDING — UITBREIDING (sub-nav, overzicht, kosten, km, btw, w&v)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Sub-nav */
+.bk-subnav {
+  display: flex; gap: 6px;
+  overflow-x: auto; padding: 2px 0 12px;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.bk-subnav::-webkit-scrollbar { display: none; }
+.bk-subnav-btn {
+  flex-shrink: 0;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--text-dim);
+  font-size: .82rem; padding: 7px 14px;
+  cursor: pointer; white-space: nowrap;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.bk-subnav-btn.active {
+  background: var(--accent); color: var(--on-accent);
+  border-color: var(--accent); font-weight: 600;
+}
+
+/* Overzicht KPI grid */
+.bk-kpi-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 10px; margin-bottom: 16px;
+}
+.bk-kpi {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 12px;
+  box-shadow: var(--shadow-inner), var(--shadow-sm);
+}
+.bk-kpi-label {
+  font-size: .65rem; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--text-dim); margin-bottom: 4px;
+}
+.bk-kpi-val { font-size: 1.1rem; font-family: Georgia, serif; font-weight: 700; }
+.bk-kpi-sub { font-size: .65rem; color: var(--text-faint); margin-top: 2px; }
+
+/* Alert */
+.bk-alert {
+  background: rgba(217,140,132,.1); border: 1px solid rgba(217,140,132,.3);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: .85rem; color: var(--danger); margin-bottom: 14px;
+}
+
+/* Quick actions */
+.bk-quick-actions {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; margin-bottom: 20px;
+}
+.bk-qa {
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-size: .78rem; color: var(--text-dim); cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+.bk-qa:active { transform: scale(.96); background: var(--bg-elev-3); }
+.bk-qa span { font-size: .75rem; text-align: center; }
+
+/* Section head */
+.bk-section-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 4px 0 10px;
+}
+.bk-badge {
+  font-size: .72rem; padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--bg-elev-2); color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.bk-badge-warn { background: rgba(217,140,132,.12); color: var(--danger); border-color: rgba(217,140,132,.3); }
+
+/* Filter row */
+.bk-filter-row {
+  display: flex; gap: 6px; overflow-x: auto;
+  padding-bottom: 10px; margin-bottom: 6px;
+  scrollbar-width: none;
+}
+.bk-filter-row::-webkit-scrollbar { display: none; }
+.bk-filter-chip {
+  flex-shrink: 0; display: flex; align-items: center; gap: 5px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  border-radius: var(--radius-full); padding: 6px 12px;
+  font-size: .78rem; color: var(--text-dim); cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition), color var(--transition);
+}
+.bk-filter-chip.active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+.bk-chip-count {
+  background: rgba(255,255,255,.12); border-radius: var(--radius-full);
+  padding: 1px 6px; font-size: .7rem;
+}
+.bk-filter-chip.active .bk-chip-count { background: rgba(0,0,0,.15); }
+
+/* Year select */
+.bk-year-select {
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-size: .88rem; padding: 7px 10px; font-family: inherit;
+}
+
+/* Kosten summary */
+.bk-kosten-summary {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.bk-ks-item {
+  display: flex; justify-content: space-between;
+  font-size: .88rem; color: var(--text-dim); padding: 5px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.bk-ks-item:last-child { border-bottom: none; }
+.bk-ks-total { color: var(--text-strong); font-weight: 700; font-size: .95rem; }
+
+/* Cat bars */
+.bk-cat-bars { margin-bottom: 16px; }
+.bk-cat-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+.bk-cat-label { font-size: .78rem; color: var(--text-dim); width: 140px; flex-shrink: 0; }
+.bk-cat-bar-wrap {
+  flex: 1; background: var(--bg-elev-2);
+  border-radius: var(--radius-full); height: 8px; overflow: hidden;
+}
+.bk-cat-bar {
+  height: 100%; background: var(--accent);
+  border-radius: var(--radius-full);
+  transition: width .6s var(--ease-out);
+  min-width: 4px;
+}
+.bk-cat-amt { font-size: .78rem; color: var(--text-dim); width: 70px; text-align: right; flex-shrink: 0; }
+
+/* Cost card */
+.bk-cost-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px; cursor: pointer;
+}
+
+/* Km summary */
+.bk-km-summary {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; margin-bottom: 16px;
+}
+.bk-km-stat {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 10px; text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.bk-km-val { font-size: 1.1rem; font-family: Georgia, serif; font-weight: 700; color: var(--text-strong); }
+.bk-km-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); margin-top: 4px; }
+
+/* Km bar chart */
+.bk-km-chart {
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 80px; margin-bottom: 16px;
+  background: var(--bg-elev-2); border-radius: var(--radius-sm);
+  padding: 10px 8px 0;
+}
+.bk-km-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.bk-km-bar-wrap { flex: 1; display: flex; align-items: flex-end; width: 100%; }
+.bk-km-bar {
+  width: 100%; background: var(--accent); border-radius: 2px 2px 0 0;
+  min-height: 2px;
+}
+.bk-km-month { font-size: .5rem; color: var(--text-faint); margin-top: 3px; padding-bottom: 4px; }
+
+/* Km card */
+.bk-km-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px; cursor: pointer;
+}
+
+/* BTW table */
+.bk-btw-deadline {
+  background: rgba(191,176,154,.1); border: 1px solid rgba(191,176,154,.3);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: .85rem; color: var(--accent); margin-bottom: 14px;
+}
+.bk-deadline-late {
+  background: rgba(217,140,132,.1); border-color: rgba(217,140,132,.3);
+  color: var(--danger);
+}
+.bk-btw-table {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; margin-bottom: 10px;
+}
+.bk-btw-section-head {
+  background: var(--bg-elev-2); padding: 8px 14px;
+  font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--text-dim); font-weight: 600;
+}
+.bk-btw-row {
+  display: grid; grid-template-columns: 2rem 1fr auto auto;
+  gap: 8px; align-items: center;
+  padding: 10px 14px; border-bottom: 1px solid var(--border-soft);
+  font-size: .85rem;
+}
+.bk-btw-row:last-child { border-bottom: none; }
+.bk-btw-rubriek {
+  font-size: .72rem; font-weight: 700; color: var(--accent);
+  background: rgba(191,176,154,.15); border-radius: 4px;
+  padding: 2px 5px; text-align: center;
+}
+.bk-btw-vat { font-weight: 600; text-align: right; min-width: 80px; }
+.bk-btw-subtotal {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 4px; padding: 10px 14px;
+  background: var(--bg-elev-2);
+  font-size: .83rem; color: var(--text-dim);
+}
+.bk-btw-saldo {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px; font-weight: 700; font-size: .95rem;
+  border-top: 2px solid var(--border);
+}
+.bk-saldo-betalen { color: var(--danger); }
+.bk-saldo-terug   { color: var(--ok); }
+.bk-btw-disclaimer {
+  font-size: .75rem; color: var(--text-faint);
+  margin-top: 12px; line-height: 1.5;
+}
+
+/* W&V table */
+.bk-wv-table {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; margin-bottom: 4px;
+}
+.bk-wv-section {
+  background: var(--bg-elev-2); padding: 8px 14px;
+  font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--text-dim); font-weight: 600;
+}
+.bk-wv-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; border-bottom: 1px solid var(--border-soft);
+  font-size: .87rem; color: var(--text-dim);
+}
+.bk-wv-row:last-child { border-bottom: none; }
+.bk-wv-subtotal {
+  color: var(--text); font-weight: 600;
+  background: var(--bg-elev-2) !important;
+}
+.bk-wv-result, .bk-wv-netto {
+  font-size: .95rem; font-weight: 700;
+  background: var(--bg-elev-2) !important;
+  border-bottom: none !important;
+}
+.bk-wv-positive { color: var(--ok); }
+.bk-wv-negative { color: var(--danger); }
