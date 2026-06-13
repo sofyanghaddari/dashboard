@@ -945,3 +945,146 @@ input,select{font:inherit}
 @media(max-width:480px){
   .lang-btn span:last-of-type{display:none}
 }
+
+/* ══════════════════════════════
+   AMBIENT AURORA + DEPTH
+══════════════════════════════ */
+body{
+  background:
+    radial-gradient(1100px 560px at 12% -8%, rgba(200,168,76,.055), transparent 60%),
+    radial-gradient(900px 620px at 105% 4%, rgba(200,168,76,.035), transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
+}
+.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.aurora::before,.aurora::after{content:'';position:absolute;border-radius:50%;filter:blur(90px)}
+.aurora::before{width:55vw;height:55vw;background:radial-gradient(circle,rgba(200,168,76,.10),transparent 70%);top:-12%;left:-8%;animation:auroraA 28s ease-in-out infinite alternate}
+.aurora::after{width:48vw;height:48vw;background:radial-gradient(circle,rgba(150,170,220,.055),transparent 70%);bottom:-18%;right:-12%;animation:auroraB 34s ease-in-out infinite alternate}
+@keyframes auroraA{from{transform:translate(0,0)}to{transform:translate(12%,8%)}}
+@keyframes auroraB{from{transform:translate(0,0)}to{transform:translate(-10%,-10%)}}
+.tab-pane,.footer{position:relative;z-index:1}
+
+/* Scroll progress bar */
+.scroll-progress{
+  position:fixed;top:0;left:0;height:2px;width:0;z-index:2000;
+  background:linear-gradient(90deg,var(--gold-lo),var(--gold-hi));
+  box-shadow:0 0 8px var(--gold-glow2);
+  transition:width .12s linear;
+}
+
+/* Tab transition */
+.tab-pane.active{animation:tabIn .45s var(--ease-out)}
+@keyframes tabIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* Form field stagger entrance */
+.form-panel-scroll>*{animation:formItemIn .55s var(--ease-out) both}
+.form-panel-scroll>.price-box{animation:none}
+.form-panel-scroll>*:nth-child(1){animation-delay:.04s}
+.form-panel-scroll>*:nth-child(2){animation-delay:.09s}
+.form-panel-scroll>*:nth-child(3){animation-delay:.14s}
+.form-panel-scroll>*:nth-child(4){animation-delay:.19s}
+.form-panel-scroll>*:nth-child(5){animation-delay:.24s}
+.form-panel-scroll>*:nth-child(6){animation-delay:.29s}
+.form-panel-scroll>*:nth-child(7){animation-delay:.34s}
+.form-panel-scroll>*:nth-child(8){animation-delay:.39s}
+.form-panel-scroll>*:nth-child(9){animation-delay:.44s}
+@keyframes formItemIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* Gold button shimmer (hover) */
+.btn-gold,.book-btn,.confirm-send{position:relative;overflow:hidden}
+.btn-gold::after,.book-btn::after,.confirm-send::after{
+  content:'';position:absolute;top:0;left:-160%;width:55%;height:100%;
+  background:linear-gradient(115deg,transparent,rgba(255,255,255,.28),transparent);
+  transform:skewX(-20deg);pointer-events:none;
+}
+.btn-gold:hover::after,.book-btn:hover::after,.confirm-send:hover::after{animation:shimmer .85s ease}
+@keyframes shimmer{to{left:160%}}
+
+/* Red route line glow */
+.route-line{filter:drop-shadow(0 0 5px rgba(229,72,77,.55))}
+
+/* ══════════════════════════════
+   USE MY LOCATION BUTTON
+══════════════════════════════ */
+.use-loc-btn{
+  display:flex;align-items:center;gap:7px;width:100%;justify-content:center;
+  padding:10px;margin-bottom:var(--sp-4);
+  background:transparent;border:1px dashed var(--border-hi);
+  border-radius:var(--r-sm);font-size:.82rem;color:var(--text-3);
+  transition:all var(--dur);
+}
+.use-loc-btn:hover{color:var(--gold);border-color:rgba(200,168,76,.4);background:rgba(200,168,76,.04)}
+.use-loc-btn.locating{color:var(--gold);border-style:solid;border-color:rgba(200,168,76,.4)}
+.use-loc-btn.locating svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════════════════════════════
+   CONFIRM MODAL
+══════════════════════════════ */
+.confirm-modal{
+  position:fixed;inset:0;z-index:3000;display:none;
+  align-items:center;justify-content:center;padding:var(--sp-4);
+}
+.confirm-modal.open{display:flex}
+.confirm-backdrop{
+  position:absolute;inset:0;background:rgba(4,4,3,.7);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  animation:fadeIn .25s;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.confirm-sheet{
+  position:relative;width:100%;max-width:440px;
+  background:var(--bg-1);border:1px solid var(--border-hi);
+  border-radius:var(--r-xl);padding:var(--sp-6);
+  box-shadow:0 24px 80px rgba(0,0,0,.7);
+  animation:sheetIn .35s var(--spring);
+  max-height:92dvh;overflow-y:auto;
+}
+@keyframes sheetIn{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:none}}
+.confirm-close{
+  position:absolute;top:var(--sp-4);right:var(--sp-4);
+  width:32px;height:32px;border-radius:50%;background:var(--bg-3);
+  color:var(--text-3);display:flex;align-items:center;justify-content:center;
+  transition:all var(--dur);z-index:2;
+}
+.confirm-close:hover{background:var(--bg-4);color:var(--text)}
+.confirm-title{font-family:var(--font-d);font-size:1.25rem;font-weight:700;color:var(--text);margin-bottom:var(--sp-4);letter-spacing:-.02em}
+.confirm-map-wrap{height:180px;border-radius:var(--r-md);overflow:hidden;margin-bottom:var(--sp-5);border:1px solid var(--border)}
+#confirm-map{width:100%;height:100%}
+.confirm-route{position:relative;margin-bottom:var(--sp-5)}
+.confirm-stop{display:flex;align-items:flex-start;gap:var(--sp-3);padding:6px 0}
+.confirm-dot{width:11px;height:11px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.confirm-dot-pickup{background:var(--gold);box-shadow:0 0 8px var(--gold-glow2)}
+.confirm-dot-dropoff{border:2px solid var(--text-2)}
+.confirm-line{position:absolute;left:5px;top:26px;bottom:26px;width:2px;background:repeating-linear-gradient(var(--border-hi) 0 4px,transparent 4px 8px)}
+.confirm-stop-label{font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);font-weight:600;margin-bottom:1px}
+.confirm-stop-addr{font-size:.9rem;color:var(--text);line-height:1.35}
+.confirm-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-2);padding:var(--sp-4) 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:var(--sp-5)}
+.confirm-meta-item{text-align:center}
+.confirm-meta-label{font-size:.64rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-4);margin-bottom:3px}
+.confirm-meta-val{font-size:.92rem;color:var(--text-2);font-weight:600}
+.confirm-meta-val.money{font-size:1.05rem}
+.confirm-send{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:var(--sp-2);
+  padding:15px;background:var(--wa);color:#fff;border-radius:var(--r-md);
+  font-size:.95rem;font-weight:700;transition:all var(--dur);
+  box-shadow:0 4px 20px rgba(37,211,102,.3);
+}
+.confirm-send:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(37,211,102,.45)}
+
+/* Shake (validation) */
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+[dir="rtl"] .confirm-close{right:auto;left:var(--sp-4)}
+[dir="rtl"] .confirm-line{left:auto;right:5px}
+[dir="rtl"] .confirm-stop{flex-direction:row-reverse}
+
+@media(prefers-reduced-motion:reduce){
+  .aurora::before,.aurora::after{animation:none}
+  .tab-pane.active{animation:none}
+  .form-panel-scroll>*{animation:none}
+  .btn-gold:hover::after,.book-btn:hover::after,.confirm-send:hover::after{animation:none}
+  .confirm-sheet,.confirm-backdrop{animation:none}
+  .use-loc-btn.locating svg{animation:none}
+}
