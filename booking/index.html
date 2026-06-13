@@ -3,781 +3,565 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>GH Taxi Amsterdam — Professioneel Taxivervoer</title>
-  <meta name="description" content="Professioneel taxivervoer in Amsterdam. Vliegtaxi Schiphol, zakelijk vervoer, stadsritten. Vaste tarieven, altijd op tijd. Boek direct via WhatsApp.">
-  <meta name="keywords" content="taxi amsterdam, schiphol taxi, vliegtaxi, airport taxi amsterdam, taxibedrijf amsterdam">
-  <meta name="author" content="GH Taxi Amsterdam">
-  <meta property="og:title" content="GH Taxi Amsterdam — Professioneel Taxivervoer">
-  <meta property="og:description" content="Betrouwbaar taxivervoer in Amsterdam. Vaste tarieven, 24/7 beschikbaar. Boek via WhatsApp.">
-  <meta property="og:type" content="website">
-  <meta name="theme-color" content="#1a1715">
+  <title>GH Taxi Amsterdam — Luxe Taxivervoer</title>
+  <meta name="description" content="Premium taxivervoer in Amsterdam. Vaste tarieven, vliegtaxi Schiphol, zakelijk vervoer en dagstours. Boek direct.">
+  <meta name="theme-color" content="#080807">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="GH Taxi">
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <!-- ═══════════════ NAV ═══════════════ -->
-  <nav class="nav" id="nav">
-    <div class="nav-inner">
-      <a href="#" class="nav-logo">
-        <span class="nav-logo-icon">🚖</span>
-        <span class="nav-logo-text">GH Taxi <span class="nav-logo-city">Amsterdam</span></span>
-      </a>
-      <div class="nav-links" id="nav-links">
-        <a href="#diensten" class="nav-link">Diensten</a>
-        <a href="#vloot" class="nav-link">Vloot</a>
-        <a href="#prijzen" class="nav-link">Tarieven</a>
-        <a href="#reviews" class="nav-link">Reviews</a>
-        <a href="#contact" class="nav-link">Contact</a>
+<!-- SVG SPRITE -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><defs>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></symbol>
+  <symbol id="i-plane" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M18.92 6.01A1.5 1.5 0 0017.5 5h-11a1.5 1.5 0 00-1.42 1.01L3 12v8a1 1 0 001 1h1a1 1 0 001-1v-1h12v1a1 1 0 001 1h1a1 1 0 001-1v-8zM6.5 16a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm11 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM5 11l1.5-4.5h11L19 11z"/></symbol>
+  <symbol id="i-bus" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm9 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM6 10V6h12v4z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M20 3h-1V1h-2v2H7V1H5v2H4a2 2 0 00-2 2v16a2 2 0 002 2h16a2 2 0 002-2V5a2 2 0 00-2-2zm0 18H4V8h16v13z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2a1 1 0 011.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1V20a1 1 0 01-1 1C10.39 21 3 13.61 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02z"/></symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15s-.77.97-.94 1.16c-.17.2-.35.22-.64.07a8.1 8.1 0 01-2.39-1.47 8.97 8.97 0 01-1.65-2.06c-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.14-.17.19-.3.3-.5.1-.19.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51-.17 0-.37-.01-.57-.01-.2 0-.52.07-.79.37C7.06 7.1 6.3 7.83 6.3 9.29c0 1.46 1.07 2.88 1.21 3.07.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12 0C5.37 0 0 5.37 0 12a11.94 11.94 0 001.52 5.85L0 24l6.34-1.5A11.96 11.96 0 0012 24c6.63 0 12-5.37 12-12S18.63 0 12 0zm0 21.82a9.81 9.81 0 01-5.02-1.38l-.36-.21-3.76.89.94-3.67-.23-.37A9.82 9.82 0 012.18 12 9.82 9.82 0 0112 2.18 9.82 9.82 0 0121.82 12 9.82 9.82 0 0112 21.82z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+  <symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99zM9 3L5 6.99h3V14h2V6.99h3z"/></symbol>
+  <symbol id="i-crosshair" viewBox="0 0 24 24"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06z"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.86.18-1a4 4 0 00-8 0c0 .14.11.56.18 1H8a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2zm-6-1a2 2 0 012 2c0 .14-.11.56-.18 1h-3.64c-.07-.44-.18-.86-.18-1a2 2 0 012-2z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5a.5.5 0 00.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5a.5.5 0 00-.5-.5zM15 19l-6-2.11V5l6 2.11z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M19 13H5v-2h14z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+  <symbol id="i-tour" viewBox="0 0 24 24"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></symbol>
+</defs></svg>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <svg class="nav-logo-mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="36" height="36" rx="9" fill="#C8A84C" fill-opacity="0.12"/>
+        <path d="M27 12H9L6.5 18.5V25h2v2h4v-2h11v2h4v-2h2v-6.5L27 12z" fill="none" stroke="#C8A84C" stroke-width="1.5" stroke-linejoin="round"/>
+        <circle cx="11" cy="21.5" r="2" fill="#C8A84C" fill-opacity="0.8"/>
+        <circle cx="25" cy="21.5" r="2" fill="#C8A84C" fill-opacity="0.8"/>
+        <path d="M9 12l2.5-5h13l2.5 5" stroke="#C8A84C" stroke-opacity="0.5" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      <span>GH Taxi <strong>Amsterdam</strong></span>
+    </a>
+    <div class="nav-links">
+      <a href="#transfers" class="nav-link">Transfers</a>
+      <a href="#tours" class="nav-link">Tours</a>
+      <a href="#tarieven" class="nav-link">Tarieven</a>
+      <a href="#vloot" class="nav-link">Vloot</a>
+      <a href="#contact" class="nav-link">Contact</a>
+    </div>
+    <a href="tel:+31600000000" class="btn btn-outline-light nav-cta-phone">
+      <svg class="icon" width="15" height="15"><use href="#i-phone"/></svg>
+      <span>+31 6 00 00 00 00</span>
+    </a>
+    <a href="https://wa.me/31600000000" class="btn btn-gold nav-cta" target="_blank" rel="noopener">Boek Nu</a>
+    <button class="nav-burger" id="hamburger" aria-label="Menu">
+      <svg class="icon"><use href="#i-menu"/></svg>
+    </button>
+  </div>
+  <div class="nav-mobile" id="nav-mobile">
+    <a href="#transfers" class="nav-mobile-link">Transfers</a>
+    <a href="#tours" class="nav-mobile-link">Tours &amp; Uitjes</a>
+    <a href="#tarieven" class="nav-mobile-link">Tarieven</a>
+    <a href="#vloot" class="nav-mobile-link">Vloot</a>
+    <a href="#contact" class="nav-mobile-link">Contact</a>
+    <a href="https://wa.me/31600000000" class="btn btn-gold nav-mobile-cta" target="_blank" rel="noopener">
+      <svg class="icon" width="16" height="16"><use href="#i-wa"/></svg>
+      WhatsApp Boeken
+    </a>
+  </div>
+</nav>
+
+<!-- HERO: SPLIT (form + map) -->
+<main class="hero" id="transfers">
+  <!-- Form panel -->
+  <div class="form-panel">
+    <div class="form-panel-scroll">
+      <div class="form-head">
+        <h1 class="form-title">Uw rit boeken</h1>
+        <p class="form-subtitle">Vaste prijs &middot; Geen taxameter &middot; Direct bevestigd</p>
       </div>
-      <a href="https://wa.me/31600000000?text=Hallo%2C%20ik%20wil%20graag%20een%20taxi%20boeken." class="btn btn-gold nav-cta" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.554 4.118 1.523 5.847L0 24l6.335-1.502A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.808 9.808 0 01-5.017-1.378l-.36-.214-3.76.892.942-3.665-.235-.375A9.818 9.818 0 012.182 12C2.182 6.576 6.576 2.182 12 2.182S21.818 6.576 21.818 12 17.424 21.818 12 21.818z"/></svg>
-        Boek Nu
-      </a>
-      <button class="nav-hamburger" id="hamburger" aria-label="Menu openen">
-        <span></span><span></span><span></span>
+
+      <!-- Service tabs -->
+      <div class="svc-tabs" id="svc-tabs">
+        <button class="svc-tab active" data-svc="transfer">
+          <svg class="icon" width="16" height="16"><use href="#i-car"/></svg>Transfer
+        </button>
+        <button class="svc-tab" data-svc="airport">
+          <svg class="icon" width="16" height="16"><use href="#i-plane"/></svg>Luchthaven
+        </button>
+        <button class="svc-tab" data-svc="business">
+          <svg class="icon" width="16" height="16"><use href="#i-briefcase"/></svg>Zakelijk
+        </button>
+      </div>
+
+      <!-- Trip type -->
+      <div class="trip-tabs">
+        <button class="trip-tab active" data-trip="single" id="trip-single">Enkele reis</button>
+        <button class="trip-tab" data-trip="return" id="trip-return">Retour</button>
+      </div>
+
+      <!-- Addresses -->
+      <div class="addr-group">
+        <div class="addr-row" id="pickup-row">
+          <div class="addr-dot-col">
+            <div class="addr-dot addr-dot-pickup"></div>
+          </div>
+          <div class="addr-input-col">
+            <label class="addr-label">Ophaaladres</label>
+            <input id="pickup" class="addr-input" type="text" placeholder="Voer adres in of pin op de kaart" autocomplete="off" spellcheck="false">
+            <div class="addr-suggest" id="pickup-suggest"></div>
+          </div>
+          <button class="pin-btn" data-mode="pickup" title="Pin op kaart">
+            <svg class="icon" width="16" height="16"><use href="#i-crosshair"/></svg>
+          </button>
+        </div>
+
+        <div class="addr-swap-row">
+          <div class="addr-connector"></div>
+          <button class="swap-btn" id="swap-btn" title="Wissel adressen">
+            <svg class="icon" width="14" height="14"><use href="#i-swap"/></svg>
+          </button>
+          <div class="addr-connector"></div>
+        </div>
+
+        <div class="addr-row" id="dropoff-row">
+          <div class="addr-dot-col">
+            <div class="addr-dot addr-dot-dropoff"></div>
+          </div>
+          <div class="addr-input-col">
+            <label class="addr-label">Bestemming</label>
+            <input id="dropoff" class="addr-input" type="text" placeholder="Voer adres in of pin op de kaart" autocomplete="off" spellcheck="false">
+            <div class="addr-suggest" id="dropoff-suggest"></div>
+          </div>
+          <button class="pin-btn" data-mode="dropoff" title="Pin op kaart">
+            <svg class="icon" width="16" height="16"><use href="#i-crosshair"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Date + time -->
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Datum</label>
+          <div class="input-icon-wrap">
+            <svg class="input-pre-icon" width="15" height="15"><use href="#i-calendar"/></svg>
+            <input type="date" id="date" class="form-input">
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Tijdstip</label>
+          <div class="input-icon-wrap">
+            <svg class="input-pre-icon" width="15" height="15"><use href="#i-clock"/></svg>
+            <input type="time" id="time" class="form-input" value="08:00">
+          </div>
+        </div>
+      </div>
+
+      <!-- Return row -->
+      <div class="form-row hidden" id="return-row">
+        <div class="form-field">
+          <label class="form-label">Retour datum</label>
+          <div class="input-icon-wrap">
+            <svg class="input-pre-icon" width="15" height="15"><use href="#i-calendar"/></svg>
+            <input type="date" id="return-date" class="form-input">
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Retour tijd</label>
+          <div class="input-icon-wrap">
+            <svg class="input-pre-icon" width="15" height="15"><use href="#i-clock"/></svg>
+            <input type="time" id="return-time" class="form-input" value="20:00">
+          </div>
+        </div>
+      </div>
+
+      <!-- Passengers + vehicle -->
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Passagiers</label>
+          <div class="select-icon-wrap">
+            <svg class="input-pre-icon" width="15" height="15"><use href="#i-user"/></svg>
+            <select id="passengers" class="form-select">
+              <option value="1">1 persoon</option>
+              <option value="2">2 personen</option>
+              <option value="3">3 personen</option>
+              <option value="4" selected>4 personen</option>
+              <option value="8">5–8 personen</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Voertuig</label>
+          <div class="select-icon-wrap">
+            <svg class="input-pre-icon" width="15" height="15"><use href="#i-car"/></svg>
+            <select id="vehicle" class="form-select">
+              <option value="comfort">Comfort</option>
+              <option value="business" selected>Business</option>
+              <option value="bus">Minibus</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price box -->
+      <div class="price-box" id="price-box">
+        <div class="price-box-inner">
+          <div class="price-label">Vaste prijs</div>
+          <div class="price-amount" id="price-amount">—</div>
+        </div>
+        <div class="price-checks">
+          <div class="price-check"><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Geen meter</div>
+          <div class="price-check"><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Vaste prijs</div>
+          <div class="price-check"><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Direct bevestigd</div>
+        </div>
+      </div>
+
+      <button class="book-btn" id="book-btn">
+        <svg class="icon" width="18" height="18"><use href="#i-wa"/></svg>
+        Boek via WhatsApp
       </button>
-    </div>
-    <div class="nav-mobile" id="nav-mobile">
-      <a href="#diensten" class="nav-mobile-link">Diensten</a>
-      <a href="#vloot" class="nav-mobile-link">Vloot</a>
-      <a href="#prijzen" class="nav-mobile-link">Tarieven</a>
-      <a href="#reviews" class="nav-mobile-link">Reviews</a>
-      <a href="#contact" class="nav-mobile-link">Contact</a>
-      <a href="https://wa.me/31600000000" class="btn btn-gold nav-mobile-cta" target="_blank" rel="noopener">WhatsApp Boeken</a>
-    </div>
-  </nav>
 
-  <!-- ═══════════════ HERO ═══════════════ -->
-  <section class="hero" id="home">
-    <div class="hero-bokeh" aria-hidden="true">
-      <span></span><span></span><span></span><span></span>
-      <span></span><span></span><span></span><span></span>
-    </div>
-    <div class="hero-inner container">
-      <div class="hero-text reveal">
-        <div class="hero-badge">✦ Amsterdam's Vertrouwde Taxi</div>
-        <h1 class="hero-title">Professioneel<br>Taxivervoer<br><span class="hero-title-gold">in Amsterdam</span></h1>
-        <p class="hero-sub">Betrouwbaar, op tijd en betaalbaar. Vliegtaxi naar Schiphol, zakelijke ritten, stadsvervoer — wij regelen het voor u.</p>
-        <div class="hero-trust">
-          <div class="trust-item">
-            <span class="trust-star">⭐</span>
-            <span>4.9 Google Reviews</span>
-          </div>
-          <div class="trust-dot"></div>
-          <div class="trust-item">🛡 Vaste prijzen</div>
-          <div class="trust-dot"></div>
-          <div class="trust-item">🕐 24/7 beschikbaar</div>
-        </div>
-      </div>
-
-      <!-- Booking widget -->
-      <div class="booking-widget reveal reveal-delay-1" id="booking-widget">
-        <div class="widget-header">
-          <h2 class="widget-title">Rit Berekenen</h2>
-          <p class="widget-sub">Krijg direct een vaste prijs</p>
-        </div>
-        <div class="widget-tabs">
-          <button class="wtab active" data-tab="direct" id="tab-direct">Nu Boeken</button>
-          <button class="wtab" data-tab="later" id="tab-later">Vooruit Plannen</button>
-        </div>
-
-        <!-- Direct tab -->
-        <div class="widget-pane" id="pane-direct">
-          <div class="wfield">
-            <label class="wlabel">Ophaaladres</label>
-            <div class="wfield-input-wrap">
-              <span class="wfield-icon">📍</span>
-              <input type="text" id="pickup" class="winput" placeholder="Bijv. Amsterdam Centraal" autocomplete="off">
-            </div>
-            <div class="wsuggest" id="pickup-suggest"></div>
-          </div>
-          <div class="wfield">
-            <label class="wlabel">Bestemming</label>
-            <div class="wfield-input-wrap">
-              <span class="wfield-icon">🏁</span>
-              <input type="text" id="dropoff" class="winput" placeholder="Bijv. Schiphol Airport" autocomplete="off">
-            </div>
-            <div class="wsuggest" id="dropoff-suggest"></div>
-          </div>
-          <div class="wrow">
-            <div class="wfield">
-              <label class="wlabel">Passagiers</label>
-              <select id="passengers" class="wselect">
-                <option value="1">1 persoon</option>
-                <option value="2">2 personen</option>
-                <option value="3">3 personen</option>
-                <option value="4" selected>4 personen</option>
-                <option value="8">5–8 (bus)</option>
-              </select>
-            </div>
-            <div class="wfield">
-              <label class="wlabel">Voertuig</label>
-              <select id="vehicle" class="wselect">
-                <option value="comfort">Comfort</option>
-                <option value="business" selected>Business</option>
-                <option value="bus">Minibus</option>
-              </select>
-            </div>
-          </div>
-          <div class="price-estimate" id="price-estimate">
-            <div class="pe-label">Geschatte vaste prijs</div>
-            <div class="pe-amount" id="pe-amount">vul het adres in</div>
-            <div class="pe-note">Geen taxameter · Geen bijkomende kosten</div>
-          </div>
-          <button class="btn btn-gold btn-lg w-full" id="btn-book">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.554 4.118 1.523 5.847L0 24l6.335-1.502A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.808 9.808 0 01-5.017-1.378l-.36-.214-3.76.892.942-3.665-.235-.375A9.818 9.818 0 012.182 12C2.182 6.576 6.576 2.182 12 2.182S21.818 6.576 21.818 12 17.424 21.818 12 21.818z"/></svg>
-            Boek via WhatsApp
-          </button>
-        </div>
-
-        <!-- Later tab -->
-        <div class="widget-pane hidden" id="pane-later">
-          <div class="wfield">
-            <label class="wlabel">Ophaaladres</label>
-            <div class="wfield-input-wrap">
-              <span class="wfield-icon">📍</span>
-              <input type="text" id="pickup-l" class="winput" placeholder="Bijv. Amsterdam Noord">
-            </div>
-          </div>
-          <div class="wfield">
-            <label class="wlabel">Bestemming</label>
-            <div class="wfield-input-wrap">
-              <span class="wfield-icon">🏁</span>
-              <input type="text" id="dropoff-l" class="winput" placeholder="Bijv. Schiphol Airport">
-            </div>
-          </div>
-          <div class="wrow">
-            <div class="wfield">
-              <label class="wlabel">Datum</label>
-              <input type="date" id="date-l" class="winput" style="padding-left:12px">
-            </div>
-            <div class="wfield">
-              <label class="wlabel">Tijdstip</label>
-              <input type="time" id="time-l" class="winput" value="08:00" style="padding-left:12px">
-            </div>
-          </div>
-          <div class="wrow">
-            <div class="wfield">
-              <label class="wlabel">Passagiers</label>
-              <select id="passengers-l" class="wselect">
-                <option value="1">1 persoon</option>
-                <option value="2">2 personen</option>
-                <option value="3">3 personen</option>
-                <option value="4" selected>4 personen</option>
-                <option value="8">5–8 (bus)</option>
-              </select>
-            </div>
-            <div class="wfield">
-              <label class="wlabel">Voertuig</label>
-              <select id="vehicle-l" class="wselect">
-                <option value="comfort">Comfort</option>
-                <option value="business" selected>Business</option>
-                <option value="bus">Minibus</option>
-              </select>
-            </div>
-          </div>
-          <button class="btn btn-gold btn-lg w-full" id="btn-schedule">
-            Stuur Planningsverzoek
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════ STATS BAR ═══════════════ -->
-  <div class="stats-bar">
-    <div class="container stats-bar-inner">
-      <div class="stat-item reveal">
-        <span class="stat-num" data-target="500">0</span><span class="stat-suf">+</span>
-        <span class="stat-label">Tevreden klanten</span>
-      </div>
-      <div class="stat-sep"></div>
-      <div class="stat-item reveal">
-        <span class="stat-num" data-target="5">0</span>
-        <span class="stat-label">Jaar ervaring</span>
-      </div>
-      <div class="stat-sep"></div>
-      <div class="stat-item reveal">
-        <span class="stat-num" data-target="24">0</span><span class="stat-suf">/7</span>
-        <span class="stat-label">Beschikbaar</span>
-      </div>
-      <div class="stat-sep"></div>
-      <div class="stat-item reveal">
-        <span class="stat-num" data-target="99">0</span><span class="stat-suf">%</span>
-        <span class="stat-label">Op tijd</span>
+      <div class="alt-row">
+        <span>of</span>
+        <a href="tel:+31600000000" class="alt-call">
+          <svg class="icon" width="13" height="13"><use href="#i-phone"/></svg>
+          direct bellen
+        </a>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════ SERVICES ═══════════════ -->
-  <section class="section" id="diensten">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-tag">Onze Diensten</div>
-        <h2 class="section-title">Alles geregeld voor u</h2>
-        <p class="section-sub">Van luchthaven-transfer tot zakelijk vervoer — wij bieden een complete taxiservice in en rond Amsterdam.</p>
+  <!-- Map panel -->
+  <div class="map-panel" id="map-panel">
+    <div id="map"></div>
+
+    <!-- Map hint overlay -->
+    <div class="map-hint" id="map-hint">
+      <svg class="icon" width="14" height="14"><use href="#i-pin"/></svg>
+      <span id="map-hint-text">Klik om ophaaladres te pinnen</span>
+    </div>
+
+    <!-- Custom controls -->
+    <div class="map-controls">
+      <button class="map-ctrl" id="myloc-btn" title="Mijn locatie">
+        <svg class="icon" width="16" height="16"><use href="#i-crosshair"/></svg>
+      </button>
+      <div class="map-ctrl-divider"></div>
+      <button class="map-ctrl" id="zoom-in">
+        <svg class="icon" width="16" height="16"><use href="#i-plus"/></svg>
+      </button>
+      <button class="map-ctrl" id="zoom-out">
+        <svg class="icon" width="16" height="16"><use href="#i-minus"/></svg>
+      </button>
+    </div>
+
+    <!-- Legend -->
+    <div class="map-legend">
+      <div class="map-legend-row"><span class="map-leg-dot map-leg-pickup"></span>Ophaallocatie</div>
+      <div class="map-legend-row"><span class="map-leg-dot map-leg-dropoff"></span>Bestemming</div>
+    </div>
+
+    <!-- Mobile: toggle map visibility -->
+    <button class="map-toggle" id="map-toggle">
+      <svg class="icon" width="14" height="14"><use href="#i-map"/></svg>
+      <span id="map-toggle-label">Kaart tonen</span>
+    </button>
+  </div>
+</main>
+
+<!-- STATS -->
+<div class="stats-strip" id="stats-strip">
+  <div class="stats-inner container">
+    <div class="stat reveal"><span class="stat-n" data-target="500">0</span><span class="stat-s">+</span><span class="stat-l">Tevreden klanten</span></div>
+    <div class="stat-div"></div>
+    <div class="stat reveal"><span class="stat-n" data-target="5">0</span><span class="stat-l">Jaar ervaring</span></div>
+    <div class="stat-div"></div>
+    <div class="stat reveal"><span class="stat-n" data-target="24">0</span><span class="stat-s">/7</span><span class="stat-l">Beschikbaar</span></div>
+    <div class="stat-div"></div>
+    <div class="stat reveal"><span class="stat-n" data-target="99">0</span><span class="stat-s">%</span><span class="stat-l">Op tijd</span></div>
+  </div>
+</div>
+
+<!-- TOURS -->
+<section class="section" id="tours">
+  <div class="container">
+    <div class="section-hd reveal">
+      <div class="section-tag">Tours &amp; Uitjes</div>
+      <h2 class="section-title">Ontdek Nederland in stijl</h2>
+      <p class="section-sub">Professionele daguitstappen en city tours. Vaste all-in prijzen, privévervoer.</p>
+    </div>
+    <div class="filter-bar" id="tour-filters" role="tablist">
+      <button class="filter-btn active" data-filter="all" role="tab">Alle tours</button>
+      <button class="filter-btn" data-filter="daguitje" role="tab">Daguitjes</button>
+      <button class="filter-btn" data-filter="luchthaven" role="tab">Luchthaven</button>
+      <button class="filter-btn" data-filter="stad" role="tab">Stad</button>
+      <button class="filter-btn" data-filter="zakelijk" role="tab">Zakelijk</button>
+    </div>
+    <div class="tours-grid" id="tours-grid"></div>
+  </div>
+</section>
+
+<!-- FLEET -->
+<section class="section section-alt" id="vloot">
+  <div class="container">
+    <div class="section-hd reveal">
+      <div class="section-tag">Onze Vloot</div>
+      <h2 class="section-title">De juiste auto voor elke rit</h2>
+      <p class="section-sub">Goed onderhouden, schone voertuigen voor maximaal reiscomfort.</p>
+    </div>
+    <div class="fleet-grid">
+      <div class="fleet-card reveal">
+        <div class="fleet-vis fleet-vis-comfort"></div>
+        <div class="fleet-body">
+          <div class="fleet-name-row">
+            <h3>Comfort</h3><span class="fleet-cap-badge">Max. 4</span>
+          </div>
+          <p class="fleet-model">Toyota Camry &middot; Mercedes C-klasse</p>
+          <ul class="fleet-list">
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Airconditioning</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>USB-oplading</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>2 grote koffers</li>
+          </ul>
+          <div class="fleet-price-row"><span>Vanaf</span><span class="money">€ 18</span></div>
+        </div>
       </div>
-      <div class="services-grid">
-        <div class="service-card featured reveal">
-          <div class="service-card-inner">
-            <div class="service-icon-wrap">
-              <span class="service-icon">✈️</span>
-            </div>
-            <h3 class="service-title">Vliegtaxi Schiphol</h3>
-            <p class="service-desc">Van deur tot gate, comfortabel en op tijd. Wij monitoren uw vlucht voor vertragingen.</p>
-            <ul class="service-list">
-              <li>Vluchtmonitoring inbegrepen</li>
-              <li>45 min. gratis wachten bij vertraging</li>
-              <li>Vaste prijs, geen opvangkosten</li>
-              <li>Hulp met bagage</li>
-            </ul>
-            <a href="#prijzen" class="btn btn-gold">Tarieven bekijken →</a>
+      <div class="fleet-card fleet-card-featured reveal reveal-d1">
+        <div class="fleet-popular">Meest gekozen</div>
+        <div class="fleet-vis fleet-vis-business"></div>
+        <div class="fleet-body">
+          <div class="fleet-name-row">
+            <h3>Business</h3><span class="fleet-cap-badge">Max. 4</span>
           </div>
+          <p class="fleet-model">Mercedes E-klasse &middot; BMW 5-serie</p>
+          <ul class="fleet-list">
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Ruimer en stiller</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>4 grote koffers</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>WiFi op aanvraag</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Strakke presentatie</li>
+          </ul>
+          <div class="fleet-price-row"><span>Vanaf</span><span class="money">€ 28</span></div>
         </div>
-        <div class="service-card reveal reveal-delay-1">
-          <div class="service-card-inner">
-            <div class="service-icon-wrap">
-              <span class="service-icon">🏙️</span>
-            </div>
-            <h3 class="service-title">Stadsritten Amsterdam</h3>
-            <p class="service-desc">Snel door Amsterdam zonder parkeergedoe. Alle wijken, dag en nacht beschikbaar.</p>
-            <ul class="service-list">
-              <li>Direct beschikbaar</li>
-              <li>Alle stadsdeelgebieden</li>
-              <li>Avond- en nachtritten</li>
-            </ul>
-            <a href="#contact" class="btn btn-outline">Direct boeken →</a>
+      </div>
+      <div class="fleet-card reveal reveal-d2">
+        <div class="fleet-vis fleet-vis-bus"></div>
+        <div class="fleet-body">
+          <div class="fleet-name-row">
+            <h3>Minibus</h3><span class="fleet-cap-badge">Max. 8</span>
           </div>
-        </div>
-        <div class="service-card reveal reveal-delay-2">
-          <div class="service-card-inner">
-            <div class="service-icon-wrap">
-              <span class="service-icon">💼</span>
-            </div>
-            <h3 class="service-title">Zakelijk Vervoer</h3>
-            <p class="service-desc">Representatief en punctueel voor zakenreizen, klantbezoeken en vergaderingen.</p>
-            <ul class="service-list">
-              <li>Factuur met btw-specificatie</li>
-              <li>Maandrekening mogelijk</li>
-              <li>Stille, nette voertuigen</li>
-            </ul>
-            <a href="#contact" class="btn btn-outline">Offerte aanvragen →</a>
-          </div>
-        </div>
-        <div class="service-card reveal">
-          <div class="service-card-inner">
-            <div class="service-icon-wrap">
-              <span class="service-icon">🎉</span>
-            </div>
-            <h3 class="service-title">Evenementen</h3>
-            <p class="service-desc">Bruiloften, concerten, bedrijfsfeesten — wij zorgen dat u in stijl arriveert én vertrekt.</p>
-            <ul class="service-list">
-              <li>Groepsvervoer mogelijk</li>
-              <li>Nachtritten tot 04:00</li>
-              <li>Meerdere ritten afstemmen</li>
-            </ul>
-            <a href="#contact" class="btn btn-outline">Info aanvragen →</a>
-          </div>
-        </div>
-        <div class="service-card reveal reveal-delay-1">
-          <div class="service-card-inner">
-            <div class="service-icon-wrap">
-              <span class="service-icon">🏥</span>
-            </div>
-            <h3 class="service-title">Zorgvervoer</h3>
-            <p class="service-desc">Rustig en veilig vervoer naar ziekenhuis, apotheek of specialist. Bijzonder geschikt voor senioren.</p>
-            <ul class="service-list">
-              <li>Rustige rijstijl</li>
-              <li>Hulp bij in- en uitstappen</li>
-              <li>Terugrit direct boekbaar</li>
-            </ul>
-            <a href="#contact" class="btn btn-outline">Meer informatie →</a>
-          </div>
-        </div>
-        <div class="service-card reveal reveal-delay-2">
-          <div class="service-card-inner">
-            <div class="service-icon-wrap">
-              <span class="service-icon">🗺️</span>
-            </div>
-            <h3 class="service-title">Regionale Ritten</h3>
-            <p class="service-desc">Haarlem, Utrecht, Den Haag, Rotterdam — door heel Nederland, altijd een vaste prijs.</p>
-            <ul class="service-list">
-              <li>Heel Nederland gedekt</li>
-              <li>Vaste kilometerprijzen</li>
-              <li>Terugrit-korting beschikbaar</li>
-            </ul>
-            <a href="#contact" class="btn btn-outline">Prijs opvragen →</a>
-          </div>
+          <p class="fleet-model">Mercedes Vito &middot; VW Multivan</p>
+          <ul class="fleet-list">
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Ideaal voor groepen</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Groot bagageruim</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Airconditioning</li>
+          </ul>
+          <div class="fleet-price-row"><span>Vanaf</span><span class="money">€ 52</span></div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ═══════════════ HOW IT WORKS ═══════════════ -->
-  <section class="section section-alt" id="hoe-het-werkt">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-tag">Zo Eenvoudig</div>
-        <h2 class="section-title">Uw taxi in 3 stappen</h2>
-        <p class="section-sub">Geen ingewikkelde app. Direct contact, vaste prijs, klaar.</p>
+<!-- PRICING -->
+<section class="section" id="tarieven">
+  <div class="container">
+    <div class="section-hd reveal">
+      <div class="section-tag">Vaste Tarieven</div>
+      <h2 class="section-title">Transparante hoog­seizoen­prijzen</h2>
+      <p class="section-sub">Geen meter, geen verrassingen. U weet vooraf exact wat u betaalt.</p>
+    </div>
+    <div class="pricing-layout">
+      <div class="pricing-wrap reveal">
+        <table class="pricing-table">
+          <thead><tr><th>Traject</th><th>Comfort</th><th>Business</th><th>Minibus</th></tr></thead>
+          <tbody>
+            <tr><td>Amsterdam Centrum &rarr; Schiphol</td><td class="money">€ 52</td><td class="money">€ 65</td><td class="money">€ 88</td></tr>
+            <tr><td>Amsterdam Noord &rarr; Schiphol</td><td class="money">€ 55</td><td class="money">€ 68</td><td class="money">€ 92</td></tr>
+            <tr><td>Amsterdam Oost &rarr; Schiphol</td><td class="money">€ 58</td><td class="money">€ 72</td><td class="money">€ 98</td></tr>
+            <tr><td>Amsterdam Zuid &rarr; Schiphol</td><td class="money">€ 48</td><td class="money">€ 60</td><td class="money">€ 82</td></tr>
+            <tr><td>Amsterdam Zuidoost &rarr; Schiphol</td><td class="money">€ 55</td><td class="money">€ 68</td><td class="money">€ 92</td></tr>
+            <tr><td>Centrum &rarr; RAI / Ziggo Dome</td><td class="money">€ 22</td><td class="money">€ 30</td><td class="money">€ 45</td></tr>
+            <tr><td>Amsterdam &rarr; Haarlem</td><td class="money">€ 42</td><td class="money">€ 52</td><td class="money">€ 72</td></tr>
+            <tr><td>Amsterdam &rarr; Utrecht</td><td class="money">€ 75</td><td class="money">€ 92</td><td class="money">€ 128</td></tr>
+            <tr><td>Amsterdam &rarr; Den Haag</td><td class="money">€ 110</td><td class="money">€ 135</td><td class="money">€ 188</td></tr>
+            <tr><td>Amsterdam &rarr; Rotterdam</td><td class="money">€ 118</td><td class="money">€ 145</td><td class="money">€ 202</td></tr>
+          </tbody>
+        </table>
+        <div class="pricing-footnote">Traject niet gevonden? Stuur een WhatsApp voor een vaste offerte op maat.</div>
       </div>
-      <div class="steps-grid">
-        <div class="step reveal">
-          <div class="step-num">01</div>
-          <div class="step-body">
-            <h3>Stuur een WhatsApp</h3>
-            <p>Geef uw ophaallocatie, bestemming en gewenste tijd door. Wij reageren binnen 5 minuten met een vaste prijs.</p>
-          </div>
+      <div class="pricing-side reveal reveal-d1">
+        <div class="pricing-incl-card">
+          <h3>Altijd inbegrepen</h3>
+          <ul>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Vaste prijs, geen meter</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Bagagehulp</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>15 min. gratis wachttijd</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Vluchtmonitoring (Schiphol)</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Airconditioning</li>
+            <li><svg class="icon" width="13" height="13"><use href="#i-check"/></svg>Betaling contant of pin</li>
+          </ul>
         </div>
-        <div class="step-arrow reveal reveal-delay-1">→</div>
-        <div class="step reveal reveal-delay-1">
-          <div class="step-num">02</div>
-          <div class="step-body">
-            <h3>Ontvang bevestiging</h3>
-            <p>U ontvangt een bevestiging met de vaste prijs, naam van de chauffeur en het kenteken van de auto.</p>
-          </div>
+        <div class="pricing-incl-card pricing-incl-muted">
+          <h3>Toeslagen</h3>
+          <ul>
+            <li>Nacht 00:00–06:00 &nbsp;+&nbsp; € 6</li>
+            <li>Extra wachttijd &nbsp;€ 0,75 / min</li>
+            <li>Speciale behoeften op aanvraag</li>
+          </ul>
         </div>
-        <div class="step-arrow reveal reveal-delay-2">→</div>
-        <div class="step reveal reveal-delay-2">
-          <div class="step-num">03</div>
-          <div class="step-body">
-            <h3>Wij staan klaar</h3>
-            <p>De chauffeur staat op tijd voor uw deur. Betalen kan contant, pin of via bankoverschrijving.</p>
-          </div>
-        </div>
+        <a href="https://wa.me/31600000000?text=Hallo%2C%20ik%20wil%20graag%20een%20prijs%20opvragen." class="btn btn-gold w-full" target="_blank" rel="noopener">
+          <svg class="icon" width="16" height="16"><use href="#i-wa"/></svg>Vraag prijs op
+        </a>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ═══════════════ FLEET ═══════════════ -->
-  <section class="section" id="vloot">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-tag">Onze Vloot</div>
-        <h2 class="section-title">De juiste auto voor elke rit</h2>
-        <p class="section-sub">Schone, goed onderhouden voertuigen voor maximaal comfort onderweg.</p>
+<!-- USPs -->
+<section class="section usp-section section-alt">
+  <div class="container">
+    <div class="usp-grid">
+      <div class="usp reveal">
+        <div class="usp-icon-wrap"><svg class="icon" width="22" height="22"><use href="#i-clock"/></svg></div>
+        <h3>Altijd op tijd</h3>
+        <p>Stiptheid is onze standaard. Wij zijn er vóórdat u aan vertrekken denkt.</p>
       </div>
-      <div class="fleet-grid">
-        <div class="fleet-card reveal">
-          <div class="fleet-visual">
-            <div class="fleet-emoji">🚗</div>
-          </div>
-          <div class="fleet-info">
-            <h3 class="fleet-name">Comfort</h3>
-            <p class="fleet-type">Sedan · max. 4 personen</p>
-            <ul class="fleet-feat">
-              <li>Toyota Camry / Mercedes C-klasse</li>
-              <li>Airconditioning</li>
-              <li>USB-oplading</li>
-              <li>2 grote koffers</li>
-            </ul>
-            <div class="fleet-price">Vanaf <span class="money">€ 15</span></div>
-          </div>
-        </div>
-        <div class="fleet-card featured reveal reveal-delay-1">
-          <div class="fleet-badge">Meest gekozen</div>
-          <div class="fleet-visual">
-            <div class="fleet-emoji">🚙</div>
-          </div>
-          <div class="fleet-info">
-            <h3 class="fleet-name">Business</h3>
-            <p class="fleet-type">SUV / Stationwagon · max. 4 personen</p>
-            <ul class="fleet-feat">
-              <li>Mercedes E-klasse / BMW 5-serie</li>
-              <li>Ruimer en comfortabeler</li>
-              <li>4 grote koffers</li>
-              <li>WiFi op aanvraag</li>
-            </ul>
-            <div class="fleet-price">Vanaf <span class="money">€ 25</span></div>
-          </div>
-        </div>
-        <div class="fleet-card reveal reveal-delay-2">
-          <div class="fleet-visual">
-            <div class="fleet-emoji">🚐</div>
-          </div>
-          <div class="fleet-info">
-            <h3 class="fleet-name">Minibus</h3>
-            <p class="fleet-type">MPV / Bus · max. 8 personen</p>
-            <ul class="fleet-feat">
-              <li>Mercedes Vito / VW Multivan</li>
-              <li>Ideaal voor groepen</li>
-              <li>Groot bagageruim</li>
-            </ul>
-            <div class="fleet-price">Vanaf <span class="money">€ 45</span></div>
-          </div>
-        </div>
+      <div class="usp reveal reveal-d1">
+        <div class="usp-icon-wrap"><svg class="icon" width="22" height="22"><use href="#i-shield"/></svg></div>
+        <h3>Vaste prijs</h3>
+        <p>Geen taxameter. U betaalt precies wat wij afspreken, niet meer en niet minder.</p>
+      </div>
+      <div class="usp reveal reveal-d2">
+        <div class="usp-icon-wrap"><svg class="icon" width="22" height="22"><use href="#i-star"/></svg></div>
+        <h3>4.9 / 5 sterren</h3>
+        <p>Ruim 500 klanten beoordelen ons consequent met de hoogste score op Google.</p>
+      </div>
+      <div class="usp reveal reveal-d3">
+        <div class="usp-icon-wrap"><svg class="icon" width="22" height="22"><use href="#i-wa"/></svg></div>
+        <h3>Direct bereikbaar</h3>
+        <p>WhatsApp of telefoon, dag en nacht. U spreekt altijd direct met uw chauffeur.</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ═══════════════ PRICING ═══════════════ -->
-  <section class="section section-alt" id="prijzen">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-tag">Vaste Tarieven</div>
-        <h2 class="section-title">Eerlijke, transparante prijzen</h2>
-        <p class="section-sub">Geen taxameter, geen verrassingen. U weet vooraf exact wat u betaalt.</p>
-      </div>
-      <div class="pricing-layout">
-        <div class="pricing-table-wrap reveal">
-          <div class="pricing-table">
-            <div class="pt-head">
-              <div class="pt-col-route">Traject</div>
-              <div class="pt-col-price">Comfort</div>
-              <div class="pt-col-price">Business</div>
-            </div>
-            <div class="pt-row">
-              <div class="pt-route">Amsterdam Centrum → Schiphol</div>
-              <div class="pt-price money">€ 45</div>
-              <div class="pt-price money">€ 55</div>
-            </div>
-            <div class="pt-row">
-              <div class="pt-route">Amsterdam Noord → Schiphol</div>
-              <div class="pt-price money">€ 48</div>
-              <div class="pt-price money">€ 58</div>
-            </div>
-            <div class="pt-row">
-              <div class="pt-route">Amsterdam Oost/Zuidoost → Schiphol</div>
-              <div class="pt-price money">€ 50</div>
-              <div class="pt-price money">€ 60</div>
-            </div>
-            <div class="pt-row">
-              <div class="pt-route">Amsterdam Zuid → Schiphol</div>
-              <div class="pt-price money">€ 40</div>
-              <div class="pt-price money">€ 50</div>
-            </div>
-            <div class="pt-row">
-              <div class="pt-route">Centraal Station → Amsterdam RAI</div>
-              <div class="pt-price money">€ 18</div>
-              <div class="pt-price money">€ 25</div>
-            </div>
-            <div class="pt-row">
-              <div class="pt-route">Amsterdam → Haarlem</div>
-              <div class="pt-price money">€ 35</div>
-              <div class="pt-price money">€ 45</div>
-            </div>
-            <div class="pt-row">
-              <div class="pt-route">Amsterdam → Utrecht</div>
-              <div class="pt-price money">€ 65</div>
-              <div class="pt-price money">€ 80</div>
-            </div>
-            <div class="pt-row">
-              <div class="pt-route">Amsterdam → Den Haag</div>
-              <div class="pt-price money">€ 95</div>
-              <div class="pt-price money">€ 115</div>
-            </div>
-            <div class="pt-row">
-              <div class="pt-route">Amsterdam → Rotterdam</div>
-              <div class="pt-price money">€ 100</div>
-              <div class="pt-price money">€ 120</div>
-            </div>
-            <div class="pt-note">
-              Staat uw traject er niet bij? Stuur ons een WhatsApp voor een vaste prijs op maat.
-            </div>
-          </div>
+<!-- CONTACT -->
+<section class="section cta-section" id="contact">
+  <div class="container">
+    <div class="cta-card reveal">
+      <div class="cta-left">
+        <div class="section-tag" style="margin-bottom:1.2rem">Boek Direct</div>
+        <h2 class="cta-title">Klaar voor uw<br>volgende rit?</h2>
+        <p class="cta-sub">Stuur een WhatsApp of bel ons direct. Uw rit is binnen 10 minuten bevestigd.</p>
+        <div class="cta-btns">
+          <a href="https://wa.me/31600000000?text=Hallo%2C%20ik%20wil%20graag%20een%20taxi%20boeken." class="btn btn-gold btn-lg" target="_blank" rel="noopener">
+            <svg class="icon" width="17" height="17"><use href="#i-wa"/></svg>WhatsApp Boeken
+          </a>
+          <a href="tel:+31600000000" class="btn btn-outline-light btn-lg">
+            <svg class="icon" width="17" height="17"><use href="#i-phone"/></svg>Bel Direct
+          </a>
         </div>
-        <div class="pricing-side reveal reveal-delay-1">
-          <div class="pricing-info-card">
-            <h3>Inbegrepen</h3>
-            <ul class="pi-list">
-              <li><span class="pi-ok">✓</span> Vaste prijs, geen taxameter</li>
-              <li><span class="pi-ok">✓</span> Hulp met bagage</li>
-              <li><span class="pi-ok">✓</span> 15 min. gratis wachttijd</li>
-              <li><span class="pi-ok">✓</span> Airconditioning</li>
-              <li><span class="pi-ok">✓</span> Schone, nette auto</li>
-              <li><span class="pi-ok">✓</span> Betaling contant / pin</li>
-            </ul>
-          </div>
-          <div class="pricing-info-card pricing-info-card-muted">
-            <h3>Toeslagen</h3>
-            <ul class="pi-list">
-              <li><span class="pi-add">+</span> Nacht (00:00–06:00): € 5</li>
-              <li><span class="pi-add">+</span> Extra wachttijd: € 0,50 / min</li>
-              <li><span class="pi-add">+</span> Speciale behoeften: op aanvraag</li>
-            </ul>
-          </div>
-          <a href="#contact" class="btn btn-gold btn-lg w-full" style="margin-top:4px">Vraag uw prijs aan</a>
+        <div class="cta-details">
+          <div class="cta-detail"><svg class="icon" width="14" height="14"><use href="#i-phone"/></svg><a href="tel:+31600000000">+31 6 00 00 00 00</a></div>
+          <div class="cta-detail"><svg class="icon" width="14" height="14"><use href="#i-wa"/></svg><a href="https://wa.me/31600000000" target="_blank" rel="noopener">WhatsApp</a></div>
+          <div class="cta-detail"><svg class="icon" width="14" height="14"><use href="#i-clock"/></svg><span>24 uur per dag, 7 dagen per week</span></div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════ WHY US ═══════════════ -->
-  <section class="section" id="waarom">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-tag">Waarom GH Taxi</div>
-        <h2 class="section-title">Uw vertrouwde taxipartner</h2>
-        <p class="section-sub">Al jarenlang de vertrouwde keuze voor Amsterdammers en bezoekers.</p>
-      </div>
-      <div class="why-grid">
-        <div class="why-item reveal">
-          <div class="why-icon">🕐</div>
-          <h3>Altijd Op Tijd</h3>
-          <p>Punctualiteit is onze prioriteit. Wij zijn er voordat u aan vertrekken denkt.</p>
-        </div>
-        <div class="why-item reveal reveal-delay-1">
-          <div class="why-icon">💰</div>
-          <h3>Vaste Tarieven</h3>
-          <p>Geen taxameter-verrassingen. U betaalt wat wij afspreken — niets meer.</p>
-        </div>
-        <div class="why-item reveal reveal-delay-2">
-          <div class="why-icon">🛡</div>
-          <h3>Veilig & Verzekerd</h3>
-          <p>Professionele chauffeur met taxi-vergunning, volledig verzekerd.</p>
-        </div>
-        <div class="why-item reveal">
-          <div class="why-icon">📱</div>
-          <h3>Altijd Bereikbaar</h3>
-          <p>WhatsApp of bellen — wij reageren snel, dag en nacht, 7 dagen per week.</p>
-        </div>
-        <div class="why-item reveal reveal-delay-1">
-          <div class="why-icon">🧹</div>
-          <h3>Schone Auto's</h3>
-          <p>Elke rit in een goed onderhouden, schone auto. Uw comfort staat centraal.</p>
-        </div>
-        <div class="why-item reveal reveal-delay-2">
-          <div class="why-icon">🗣</div>
-          <h3>Persoonlijk Contact</h3>
-          <p>Geen callcenter — u spreekt direct met uw chauffeur. Snel en efficiënt.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════ REVIEWS ═══════════════ -->
-  <section class="section section-alt" id="reviews">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-tag">Klantbeoordelingen</div>
-        <h2 class="section-title">⭐ 4.9 / 5 sterren</h2>
-        <p class="section-sub">Meer dan 500 tevreden klanten gingen u voor.</p>
-      </div>
-      <div class="reviews-grid">
-        <div class="review-card reveal">
-          <div class="review-stars">⭐⭐⭐⭐⭐</div>
-          <p class="review-text">"Perfecte service! Naar Schiphol gebracht, altijd op tijd. Communicatie via WhatsApp werkt super makkelijk. Echt aanrader."</p>
-          <div class="review-author">
-            <div class="review-avatar">M</div>
-            <div class="review-meta">
-              <div class="review-name">Mohammed A.</div>
-              <div class="review-loc">Amsterdam Noord</div>
-            </div>
-          </div>
-        </div>
-        <div class="review-card reveal reveal-delay-1">
-          <div class="review-stars">⭐⭐⭐⭐⭐</div>
-          <p class="review-text">"Al meerdere keren geboekt voor zakelijke ritten. Altijd nette, stille auto. Precies wat ik nodig heb voor een professionele indruk."</p>
-          <div class="review-author">
-            <div class="review-avatar">J</div>
-            <div class="review-meta">
-              <div class="review-name">Jeroen V.</div>
-              <div class="review-loc">Zakelijk klant</div>
-            </div>
-          </div>
-        </div>
-        <div class="review-card reveal reveal-delay-2">
-          <div class="review-stars">⭐⭐⭐⭐⭐</div>
-          <p class="review-text">"Vaste prijs was een verademing. Wist precies wat ik betaalde. Vriendelijke chauffeur, mooie auto. Ga zeker terugkomen!"</p>
-          <div class="review-author">
-            <div class="review-avatar">F</div>
-            <div class="review-meta">
-              <div class="review-name">Fatima K.</div>
-              <div class="review-loc">Amsterdam Oost</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════ COVERAGE ═══════════════ -->
-  <section class="section" id="gebieden">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-tag">Werkgebied</div>
-        <h2 class="section-title">Actief in heel Amsterdam & omgeving</h2>
-      </div>
-      <div class="coverage-layout">
-        <div class="coverage-block reveal">
-          <h3 class="coverage-group-title">Amsterdam Stadsdelen</h3>
-          <div class="coverage-tags">
-            <span class="ctag">Centrum</span>
-            <span class="ctag">Noord</span>
-            <span class="ctag">Zuid</span>
-            <span class="ctag">Oost</span>
-            <span class="ctag">West</span>
-            <span class="ctag">Nieuw-West</span>
-            <span class="ctag">Zuidoost</span>
-            <span class="ctag">Westpoort</span>
-          </div>
-        </div>
-        <div class="coverage-block reveal reveal-delay-1">
-          <h3 class="coverage-group-title">Populaire Bestemmingen</h3>
-          <div class="coverage-tags">
-            <span class="ctag ctag-gold">✈ Schiphol Airport</span>
-            <span class="ctag">Amsterdam RAI</span>
-            <span class="ctag">Ziggo Dome</span>
-            <span class="ctag">Johan Cruyff ArenA</span>
-            <span class="ctag">AFAS Live</span>
-            <span class="ctag">Amsterdam UMC</span>
-            <span class="ctag">OLVG Ziekenhuis</span>
-            <span class="ctag">Centraal Station</span>
-          </div>
-        </div>
-        <div class="coverage-block reveal reveal-delay-2">
-          <h3 class="coverage-group-title">Regio &amp; Nederland</h3>
-          <div class="coverage-tags">
-            <span class="ctag">Haarlem</span>
-            <span class="ctag">Almere</span>
-            <span class="ctag">Zaandam</span>
-            <span class="ctag">Amstelveen</span>
-            <span class="ctag">Diemen</span>
-            <span class="ctag">Aalsmeer</span>
-            <span class="ctag">Utrecht</span>
-            <span class="ctag">Den Haag</span>
-            <span class="ctag">Rotterdam</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════ CTA / CONTACT ═══════════════ -->
-  <section class="section cta-section" id="contact">
-    <div class="container">
-      <div class="cta-card reveal">
-        <div class="cta-left">
-          <div class="section-tag">Direct Contact</div>
-          <h2 class="cta-title">Klaar om te rijden?</h2>
-          <p class="cta-sub">Stuur een WhatsApp of bel ons direct. Wij reageren altijd snel — ook 's nachts.</p>
-          <div class="cta-btns">
-            <a href="https://wa.me/31600000000?text=Hallo%2C%20ik%20wil%20graag%20een%20taxi%20boeken." class="btn btn-gold btn-lg" target="_blank" rel="noopener">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.554 4.118 1.523 5.847L0 24l6.335-1.502A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.808 9.808 0 01-5.017-1.378l-.36-.214-3.76.892.942-3.665-.235-.375A9.818 9.818 0 012.182 12C2.182 6.576 6.576 2.182 12 2.182S21.818 6.576 21.818 12 17.424 21.818 12 21.818z"/></svg>
-              Boek via WhatsApp
-            </a>
-            <a href="tel:+31600000000" class="btn btn-outline btn-lg">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-              Bel Direct
-            </a>
-          </div>
-          <div class="contact-details">
-            <div class="cd-item">
-              <span class="cd-icon">📞</span>
-              <a href="tel:+31600000000">+31 6 00 00 00 00</a>
-            </div>
-            <div class="cd-item">
-              <span class="cd-icon">✉️</span>
-              <a href="mailto:info@ghtaxi.nl">info@ghtaxi.nl</a>
-            </div>
-            <div class="cd-item">
-              <span class="cd-icon">📍</span>
-              <span>Amsterdam, Nederland</span>
-            </div>
-            <div class="cd-item">
-              <span class="cd-icon">🕐</span>
-              <span>24 uur per dag, 7 dagen per week</span>
-            </div>
-          </div>
-        </div>
-        <div class="cta-right">
-          <div class="phone-mock">
-            <div class="phone-frame">
-              <div class="phone-notch"></div>
-              <div class="phone-screen">
-                <div class="wa-sim">
-                  <div class="wa-sim-header">
-                    <div class="wa-sim-back">‹</div>
-                    <div class="wa-sim-avatar">🚖</div>
-                    <div class="wa-sim-info">
-                      <div class="wa-sim-name">GH Taxi Amsterdam</div>
-                      <div class="wa-sim-status">Online</div>
-                    </div>
-                  </div>
-                  <div class="wa-sim-msgs">
-                    <div class="wa-msg wa-received">Goedemiddag! Waarmee kan ik u helpen? 🚖</div>
-                    <div class="wa-msg wa-sent">Schiphol morgen 06:00 vanuit Amsterdam Noord</div>
-                    <div class="wa-msg wa-received">Prima! Vaste prijs: € 48. Ik sta er op tijd. ✓✓</div>
-                    <div class="wa-msg wa-sent">Top, graag!</div>
-                    <div class="wa-msg wa-received">Ik stuur u morgen een bericht als ik onderweg ben. 👍</div>
-                  </div>
-                  <div class="wa-sim-input">
-                    <span class="wa-sim-placeholder">Typ een bericht...</span>
-                    <span class="wa-sim-send">➤</span>
-                  </div>
+      <div class="cta-right">
+        <div class="phone-mock">
+          <div class="phone-shell">
+            <div class="phone-notch"></div>
+            <div class="phone-screen-inner">
+              <div class="wa-sim">
+                <div class="wa-top"><div class="wa-av">GH</div><div class="wa-nm"><div>GH Taxi Amsterdam</div><div class="wa-st">Online</div></div></div>
+                <div class="wa-body">
+                  <div class="wa-bubble wa-in">Goedemiddag! Waarmee kan ik u helpen?</div>
+                  <div class="wa-bubble wa-out">Schiphol morgen 06:00 vanuit Noord</div>
+                  <div class="wa-bubble wa-in">Geen probleem. Prijs: &euro; 55. Ik sta er. ✓✓</div>
+                  <div class="wa-bubble wa-out">Top, graag boeken!</div>
+                  <div class="wa-bubble wa-in">Bevestigd. Ik bericht u als ik onderweg ben.</div>
                 </div>
+                <div class="wa-inp-bar"><span class="wa-ph">Typ een bericht...</span><span>&#10148;</span></div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ═══════════════ FOOTER ═══════════════ -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <div class="footer-logo">🚖 GH Taxi Amsterdam</div>
-          <p class="footer-desc">Professioneel taxivervoer in Amsterdam en omstreken. Betrouwbaar, op tijd en betaalbaar.</p>
-          <div class="footer-badges">
-            <span class="footer-badge">⭐ 4.9 Google</span>
-            <span class="footer-badge">🛡 Verzekerd</span>
-            <span class="footer-badge">📋 KvK geregistreerd</span>
-          </div>
-        </div>
-        <div class="footer-links-col">
-          <h4>Diensten</h4>
-          <ul>
-            <li><a href="#diensten">Vliegtaxi Schiphol</a></li>
-            <li><a href="#diensten">Stadsritten</a></li>
-            <li><a href="#diensten">Zakelijk vervoer</a></li>
-            <li><a href="#diensten">Evenementen</a></li>
-            <li><a href="#diensten">Zorgvervoer</a></li>
-            <li><a href="#diensten">Regionale ritten</a></li>
-          </ul>
-        </div>
-        <div class="footer-links-col">
-          <h4>Informatie</h4>
-          <ul>
-            <li><a href="#prijzen">Tarieven</a></li>
-            <li><a href="#vloot">Onze vloot</a></li>
-            <li><a href="#reviews">Reviews</a></li>
-            <li><a href="#gebieden">Werkgebied</a></li>
-            <li><a href="#hoe-het-werkt">Hoe het werkt</a></li>
-          </ul>
-        </div>
-        <div class="footer-contact-col">
-          <h4>Contact</h4>
-          <p><a href="tel:+31600000000">📞 +31 6 00 00 00 00</a></p>
-          <p><a href="https://wa.me/31600000000" target="_blank" rel="noopener">💬 WhatsApp</a></p>
-          <p><a href="mailto:info@ghtaxi.nl">✉️ info@ghtaxi.nl</a></p>
-          <p>📍 Amsterdam, Nederland</p>
-          <p>🕐 24/7 beschikbaar</p>
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">GH Taxi Amsterdam</div>
+        <p>Premium taxivervoer in Amsterdam en heel Nederland. Betrouwbaar, punctueel en betaalbaar.</p>
+        <div class="footer-stars">
+          <svg class="icon" width="13" height="13" style="color:#C8A84C"><use href="#i-star"/></svg>
+          <svg class="icon" width="13" height="13" style="color:#C8A84C"><use href="#i-star"/></svg>
+          <svg class="icon" width="13" height="13" style="color:#C8A84C"><use href="#i-star"/></svg>
+          <svg class="icon" width="13" height="13" style="color:#C8A84C"><use href="#i-star"/></svg>
+          <svg class="icon" width="13" height="13" style="color:#C8A84C"><use href="#i-star"/></svg>
+          <span>4.9 Google Reviews</span>
         </div>
       </div>
-      <div class="footer-bottom">
-        <p>© 2026 GH Taxi Amsterdam · Alle rechten voorbehouden</p>
-        <div class="footer-bottom-links">
-          <a href="#">Privacybeleid</a>
-          <span>·</span>
-          <a href="#">Algemene voorwaarden</a>
-        </div>
+      <div class="footer-col">
+        <h4>Diensten</h4>
+        <ul>
+          <li><a href="#transfers">Luchthaven Transfer</a></li>
+          <li><a href="#transfers">Stadsritten</a></li>
+          <li><a href="#transfers">Zakelijk Vervoer</a></li>
+          <li><a href="#tours">Daguitjes</a></li>
+          <li><a href="#tours">City Tours</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Informatie</h4>
+        <ul>
+          <li><a href="#tarieven">Tarieven</a></li>
+          <li><a href="#vloot">Onze vloot</a></li>
+          <li><a href="#tours">Tours</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="tel:+31600000000">+31 6 00 00 00 00</a></li>
+          <li><a href="https://wa.me/31600000000" target="_blank" rel="noopener">WhatsApp</a></li>
+          <li><a href="mailto:info@ghtaxi.nl">info@ghtaxi.nl</a></li>
+          <li>Amsterdam, Nederland</li>
+          <li>24 uur / 7 dagen per week</li>
+        </ul>
       </div>
     </div>
-  </footer>
+    <div class="footer-btm">
+      <span>&copy; 2026 GH Taxi Amsterdam</span>
+      <div class="footer-btm-links"><a href="#">Privacybeleid</a><a href="#">Voorwaarden</a></div>
+    </div>
+  </div>
+</footer>
 
-  <!-- ═══════════════ FLOATING WHATSAPP ═══════════════ -->
-  <a href="https://wa.me/31600000000?text=Hallo%2C%20ik%20wil%20graag%20een%20taxi%20boeken." class="fab-wa" target="_blank" rel="noopener" aria-label="Boek via WhatsApp" id="fab-wa">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.554 4.118 1.523 5.847L0 24l6.335-1.502A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.808 9.808 0 01-5.017-1.378l-.36-.214-3.76.892.942-3.665-.235-.375A9.818 9.818 0 012.182 12C2.182 6.576 6.576 2.182 12 2.182S21.818 6.576 21.818 12 17.424 21.818 12 21.818z"/></svg>
-    <span class="fab-label">Boek Nu</span>
-  </a>
+<!-- FAB -->
+<a href="https://wa.me/31600000000?text=Hallo%2C%20ik%20wil%20graag%20een%20taxi%20boeken." class="fab" id="fab" target="_blank" rel="noopener" aria-label="WhatsApp boeken">
+  <svg class="icon" width="22" height="22"><use href="#i-wa"/></svg>
+  <span class="fab-label">Boek Nu</span>
+</a>
 
-  <script src="js/app.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="js/app.js"></script>
 </body>
 </html>
