@@ -1,5 +1,5 @@
 import { all } from '../db.js';
-import { fmtMoney, ymd, startOfWeek, sameDay } from '../utils.js';
+import { fmtMoney, ymd, startOfWeek } from '../utils.js';
 import { quoteOfDay } from '../quotes.js';
 
 export async function maybeShowWeeklyReview() {

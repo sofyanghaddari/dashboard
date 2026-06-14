@@ -37,10 +37,10 @@ export async function openCalendar() {
       const gls = goalsByDate[date] || [];
       const today = date === ymd();
       cells.push(`
-        <div class="cal-cell ${today ? 'today' : ''}" title="${[
+        <div class="cal-cell ${today ? 'today' : ''}" title="${escapeHTML([
           ...gls.map(g => '🎯 ' + g.title),
           ...tds.map(t => '✅ ' + t.title),
-        ].join(' · ')}">
+        ].join(' · '))}">
           <div class="cal-day">${d}</div>
           <div class="cal-dots">
             ${hasHizb ? '<span class="dot dot-hizb"></span>' : ''}
