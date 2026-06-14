@@ -2,6 +2,8 @@
 import { all } from './db.js';
 import { fmtMoney, ymd, startOfMonth, monthKey } from './utils.js';
 
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+
 export async function exportMonthPDF(date = new Date()) {
   const [rides, expenses] = await Promise.all([all('rides'), all('expenses')]);
   const month = date.getMonth(), year = date.getFullYear();
@@ -44,7 +46,7 @@ export async function exportMonthPDF(date = new Date()) {
       <tbody>
         ${mRides.map(r => `<tr>
           <td>${new Date(r.date).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })}</td>
-          <td>${(r.note || '').replace(/</g,'&lt;')}</td>
+          <td>${esc(r.note || '')}</td>
           <td class="num">${fmtMoney(r.amount)}</td>
         </tr>`).join('')}
         <tr><td colspan="2" style="text-align:right;font-weight:600">Totaal</td><td class="num" style="font-weight:600">${fmtMoney(totIn)}</td></tr>
@@ -57,8 +59,8 @@ export async function exportMonthPDF(date = new Date()) {
       <tbody>
         ${mExp.map(e => `<tr>
           <td>${new Date(e.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}</td>
-          <td>${e.category}</td>
-          <td>${(e.note || '').replace(/</g,'&lt;')}</td>
+          <td>${esc(e.category || '')}</td>
+          <td>${esc(e.note || '')}</td>
           <td class="num">${fmtMoney(e.amount)}</td>
         </tr>`).join('')}
       </tbody>
