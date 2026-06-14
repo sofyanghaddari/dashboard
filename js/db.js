@@ -1,5 +1,5 @@
 const DB_NAME = 'dashboard';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 const STORES = {
   rides:             { keyPath: 'id',   indexes: [['date', 'date']] },
   expenses:          { keyPath: 'id',   indexes: [['date', 'date']] },
@@ -15,6 +15,7 @@ const STORES = {
   invoices:          { keyPath: 'id',   indexes: [['date', 'date']] },
   purchase_invoices: { keyPath: 'id',   indexes: [['date', 'date']] },
   km_log:            { keyPath: 'id',   indexes: [['date', 'date']] },
+  clients:           { keyPath: 'id' },
 };
 
 let _dbPromise = null;

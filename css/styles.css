@@ -4741,6 +4741,76 @@ label.subtask {
    ═══════════════════════════════════════════════════════════════ */
 
 /* Sub-nav */
+/* Administratie-switcher */
+.bk-admin-switcher {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-elev);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+}
+.bk-admin-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s, box-shadow .15s;
+  white-space: nowrap;
+  letter-spacing: .01em;
+}
+.bk-admin-btn.active {
+  background: var(--bg-elev-3);
+  color: var(--text);
+  box-shadow: 0 1px 5px rgba(0,0,0,.2);
+}
+
+/* Boekhouding animaties */
+@keyframes bk-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bk-bar-grow {
+  from { width: 0 !important; }
+  to   { width: var(--bk-bar-w, 100%); }
+}
+@keyframes bk-bar-rise {
+  from { height: 0 !important; }
+  to   { height: var(--bk-bar-h, 40px); }
+}
+
+.bk-list .bk-card,
+.bk-list .bk-cost-card,
+.bk-list .bk-km-card,
+.bk-list .bk-client-card {
+  animation: bk-fade-up .28s ease-out both;
+  animation-delay: calc(var(--i, 0) * 0.04s);
+}
+
+.bk-cat-bar {
+  animation: bk-bar-grow .5s ease-out both;
+  animation-delay: calc(var(--i, 0) * 0.04s + .1s);
+}
+
+.bk-km-bar {
+  animation: bk-bar-rise .5s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-list .bk-card,
+  .bk-list .bk-cost-card,
+  .bk-list .bk-km-card,
+  .bk-list .bk-client-card,
+  .bk-cat-bar,
+  .bk-km-bar { animation: none; }
+}
+
 .bk-subnav {
   display: flex; gap: 6px;
   overflow-x: auto; padding: 2px 0 12px;
@@ -4993,3 +5063,32 @@ label.subtask {
 }
 .bk-wv-positive { color: var(--ok); }
 .bk-wv-negative { color: var(--danger); }
+
+/* ── Klanten ── */
+.bk-client-search-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-elev-2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 12px; margin-bottom: 14px;
+}
+.bk-client-search {
+  background: none; border: none; color: var(--text);
+  font-size: .9rem; flex: 1; font-family: inherit;
+}
+.bk-client-search:focus { outline: none; }
+.bk-client-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px; cursor: pointer;
+}
+.bk-client-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+.bk-client-detail { font-size: .78rem; color: var(--text-dim); margin-bottom: 2px; }
+.bk-client-count { font-size: .75rem; color: var(--text-faint); }
+.bk-client-inv-btn { transition: background var(--transition); }
+
+/* Client picker */
+.bk-cp-row {
+  padding: 12px 14px; border-bottom: 1px solid var(--border-soft);
+  cursor: pointer; border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+.bk-cp-row:last-child { border-bottom: none; }
+.bk-cp-row:active { background: var(--bg-elev-2); }

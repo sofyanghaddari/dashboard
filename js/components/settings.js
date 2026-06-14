@@ -14,7 +14,7 @@ import { openWeeklyReview } from './weekly-review.js';
 import { getCustomShame, setCustomShame, customMascot, setCustomMascot } from '../mascot.js';
 import { getArabicSettings, saveArabicSettings, resetAllProgress as resetArabicProgress, DEFAULT_ARABIC_SETTINGS } from '../modules/arabic-srs.js';
 
-const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots', 'invoices', 'purchase_invoices', 'km_log'];
+const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots', 'invoices', 'purchase_invoices', 'km_log', 'clients'];
 
 export async function openGistPicker() {
   const backdrop = document.createElement('div');
@@ -111,7 +111,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v61';
+const APP_VERSION = 'v63';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
