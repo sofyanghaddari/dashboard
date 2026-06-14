@@ -53,7 +53,7 @@ function _setTimer(id, title, dueDate) {
       new Notification('📅 Deadline vandaag', {
         body: title,
         tag: 'task-' + id,
-        icon: '/icons/icon-192.png',
+        icon: './icons/icon-192.png',
       });
     } catch (_) {}
     delete _timers[id];
@@ -80,7 +80,7 @@ export function checkPendingNotifications() {
             new Notification('📅 Deadline vandaag', {
               body: n.title,
               tag: 'task-' + n.id,
-              icon: '/icons/icon-192.png',
+              icon: './icons/icon-192.png',
             });
           } catch (_) {}
         });
