@@ -28,8 +28,8 @@ export async function getGmailToken() {
   if (_accessToken && Date.now() < _tokenExpiry) return _accessToken;
   await loadGSI();
   return new Promise((resolve, reject) => {
-    google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
+    const tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId.trim(),
       scope: 'https://www.googleapis.com/auth/gmail.send',
       callback(resp) {
         if (resp.error) { reject(new Error(resp.error_description || resp.error)); return; }
@@ -37,8 +37,13 @@ export async function getGmailToken() {
         _tokenExpiry  = Date.now() + ((resp.expires_in ?? 3600) - 60) * 1000;
         resolve(_accessToken);
       },
-      error_callback: (e) => reject(new Error(e?.message || 'OAuth mislukt')),
-    }).requestToken();
+      error_callback: (e) => reject(new Error(e?.type === 'popup_closed' ? 'Popup gesloten — probeer opnieuw' : e?.message || 'OAuth mislukt')),
+    });
+    if (!tokenClient) {
+      reject(new Error('Ongeldig Client ID — controleer ⚙️ Instellingen → Data (moet eindigen op .apps.googleusercontent.com)'));
+      return;
+    }
+    tokenClient.requestToken();
   });
 }
 
