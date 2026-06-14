@@ -125,7 +125,7 @@ function renderInkomenHero(rides, cutoff, period) {
     const days_n = +period;
     const d2 = new Date(); d2.setDate(d2.getDate() - days_n * 2);
     const cutoff2 = ymd(d2);
-    const prev = rides.filter(r => r.date && r.date >= cutoff2 && r.date < cutoff)
+    const prev = rides.filter(r => r.date && r.date.slice(0,10) >= cutoff2 && r.date.slice(0,10) < cutoff)
       .reduce((s, r) => s + (r.amount || 0), 0);
     if (prev > 0) {
       const pct = Math.round((total - prev) / prev * 100);

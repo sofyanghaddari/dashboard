@@ -1,22 +1,36 @@
 import { all } from '../db.js';
 import { fmtMoney, ymd, escapeHTML } from '../utils.js';
 
+function calcYearlyTaxiCosts(year) {
+  try {
+    const exp = JSON.parse(localStorage.getItem('taxiExpenses') || '[]');
+    return exp.reduce((s, e) => {
+      const amt = Number(e.amount) || 0;
+      if (e.frequency === 'eenmalig') {
+        if (e.date && new Date(e.date).getFullYear() === year) return s + amt;
+        return s;
+      }
+      if (e.frequency === 'weekly') return s + amt * 52;
+      return s + amt * 12; // monthly default
+    }, 0);
+  } catch { return 0; }
+}
+
 export async function openYearReview() {
-  const [rides, expenses, hizb, cards, todos] = await Promise.all([
-    all('rides'), all('expenses'), all('hizb_log'), all('cards'), all('todos'),
+  const [rides, hizb, cards, todos] = await Promise.all([
+    all('rides'), all('hizb_log'), all('cards'), all('todos'),
   ]);
   const now = new Date();
   const year = now.getFullYear();
   const isYear = (d) => new Date(d).getFullYear() === year;
 
   const yRides = rides.filter(r => isYear(r.date));
-  const yExp = expenses.filter(e => isYear(e.date));
   const yHizb = hizb.filter(h => h.date.startsWith(year + '-'));
   const yCards = cards.filter(c => c.createdAt && isYear(c.createdAt));
   const yTodos = todos.filter(t => t.completedAt && isYear(t.completedAt));
 
   const bruto = yRides.reduce((s, r) => s + Number(r.amount || 0), 0);
-  const uitgaven = yExp.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const uitgaven = calcYearlyTaxiCosts(year);
   const netto = bruto - uitgaven;
 
   // Beste maand
