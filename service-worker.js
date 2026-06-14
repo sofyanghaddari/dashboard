@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v74';
+const CACHE = 'dashboard-v75';
 const ASSETS = [
   './',
   './index.html',
@@ -58,6 +58,7 @@ const ASSETS = [
   './js/modules/notes.js',
   './js/modules/boekhouding.js',
   './js/invoice-nlp.js',
+  './js/gmail.js',
   './js/components/calendar.js',
   './js/components/year-review.js',
   './js/data/arabic-words.js',

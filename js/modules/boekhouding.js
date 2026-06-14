@@ -2,6 +2,7 @@ import { all, put, del, add } from '../db.js';
 import { uid, fmtMoney, parseAmount, escapeHTML, ymd } from '../utils.js';
 import { ok, err } from '../components/toast.js';
 import { parseInvoiceText } from '../invoice-nlp.js';
+import { sendInvoiceEmail, gmailConfigured } from '../gmail.js';
 
 // Escape-toets sluit het bovenste boekhouding-modal (eenmalig geregistreerd).
 if (!window._bkEscapeRegistered) {
@@ -2358,6 +2359,17 @@ async function sharePDF(inv, bedrijf) {
   }
 }
 
+async function sendViaGmail(inv, bedrijf) {
+  if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
+  try {
+    const blob = await generateInvoicePDF(inv, bedrijf);
+    await sendInvoiceEmail(inv, bedrijf, blob);
+    ok(`Factuur ${inv.number} verstuurd naar ${inv.client?.email} ✓`);
+  } catch (e) {
+    if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Onbekende fout'));
+  }
+}
+
 function openInvoiceViewer(inv, bedrijf) {
   if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
   const html = generateInvoiceHTML(inv, bedrijf);
@@ -2425,11 +2437,20 @@ function openSendModal(inv, bedrijf, container) {
       </div>
 
       <div class="bk-send-actions">
-        <button class="bk-send-btn bk-send-primary" id="snd-pdf">
+        ${gmailConfigured() && clientEmail ? `
+        <button class="bk-send-btn bk-send-primary" id="snd-gmail">
+          <span class="bk-send-icon">📧</span>
+          <div>
+            <div class="bk-send-label">Verstuur via Gmail</div>
+            <div class="bk-send-sub">${escapeHTML(clientEmail)} — PDF als bijlage, direct verstuurd</div>
+          </div>
+        </button>` : ''}
+
+        <button class="bk-send-btn${gmailConfigured() && clientEmail ? '' : ' bk-send-primary'}" id="snd-pdf">
           <span class="bk-send-icon">📄</span>
           <div>
-            <div class="bk-send-label">PDF maken &amp; versturen</div>
-            <div class="bk-send-sub">Deel als PDF via WhatsApp, Mail of AirDrop</div>
+            <div class="bk-send-label">PDF opslaan / delen</div>
+            <div class="bk-send-sub">Deel via WhatsApp, Mail, AirDrop of sla op</div>
           </div>
         </button>
 
@@ -2473,6 +2494,8 @@ function openSendModal(inv, bedrijf, container) {
   backdrop.querySelector('#snd-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 
+  const gmailBtn = backdrop.querySelector('#snd-gmail');
+  if (gmailBtn) gmailBtn.onclick = async () => { backdrop.remove(); await sendViaGmail(inv, bedrijf); };
   backdrop.querySelector('#snd-pdf').onclick  = async () => { backdrop.remove(); await sharePDF(inv, bedrijf); };
   backdrop.querySelector('#snd-view').onclick = () => { backdrop.remove(); openInvoiceViewer(inv, bedrijf); };
 

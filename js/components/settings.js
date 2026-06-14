@@ -111,7 +111,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v74';
+const APP_VERSION = 'v75';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
@@ -588,6 +588,48 @@ export async function openSettings(onClose) {
         `}
       </div>
 
+      <!-- GMAIL -->
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-icon">📧</span>
+          <div>
+            <div class="settings-section-title">Gmail automatisch versturen</div>
+            <div class="settings-section-desc">${localStorage.getItem('gmailClientId') ? '✓ Gekoppeld — facturen worden direct verstuurd' : 'Koppel Gmail om facturen automatisch te mailen'}</div>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
+            <div class="settings-row-title">Google OAuth Client ID</div>
+            <input type="text" id="gmail-client-id"
+                   placeholder="123456789-xxx.apps.googleusercontent.com"
+                   value="${escapeHTML(localStorage.getItem('gmailClientId') || '')}"
+                   style="padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.85rem;width:100%;box-sizing:border-box" />
+            <div style="font-size:.78rem;color:var(--text-dim);line-height:1.5">
+              Maak aan via <strong>Google Cloud Console</strong> → APIs &amp; Services → Credentials → OAuth 2.0 Client IDs (type: Webapplicatie).
+              Voeg als authorized JavaScript origin toe: <code style="background:rgba(0,0,0,.1);padding:1px 5px;border-radius:4px">https://sofyanghaddari.github.io</code>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Status</div>
+              <div class="settings-row-sub muted" id="gmail-status">${localStorage.getItem('gmailClientId') ? '✓ Client ID opgeslagen' : 'Niet ingesteld'}</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+              <button type="button" class="btn secondary" id="gmail-save">Opslaan</button>
+              ${localStorage.getItem('gmailClientId') ? '<button type="button" class="btn secondary" id="gmail-test">Test</button>' : ''}
+            </div>
+          </div>
+          ${localStorage.getItem('gmailClientId') ? `
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Verbinding verbreken</div>
+              <div class="settings-row-sub muted">Client ID verwijderen uit instellingen</div>
+            </div>
+            <button type="button" class="btn secondary" id="gmail-disconnect" style="flex-shrink:0">Verbreken</button>
+          </div>` : ''}
+        </div>
+      </div>
+
       <!-- DATA & EXPORT -->
       <div class="settings-section">
         <div class="settings-section-header">
@@ -977,6 +1019,44 @@ export async function openSettings(onClose) {
   if (ghEmail) ghEmail.onclick = () => { emailGistLink(); };
   const ghVer = backdrop.querySelector('#gh-versions');
   if (ghVer) ghVer.onclick = () => { close(); openVersionPicker(); };
+
+  // Gmail
+  backdrop.querySelector('#gmail-save').onclick = () => {
+    const val = (backdrop.querySelector('#gmail-client-id')?.value || '').trim();
+    if (val) {
+      localStorage.setItem('gmailClientId', val);
+      const el = backdrop.querySelector('#gmail-status');
+      if (el) el.textContent = '✓ Client ID opgeslagen';
+      ok('Gmail Client ID opgeslagen');
+    } else {
+      localStorage.removeItem('gmailClientId');
+      const el = backdrop.querySelector('#gmail-status');
+      if (el) el.textContent = 'Niet ingesteld';
+      ok('Gmail Client ID verwijderd');
+    }
+  };
+  const gmailTest = backdrop.querySelector('#gmail-test');
+  if (gmailTest) gmailTest.onclick = async () => {
+    gmailTest.disabled = true; gmailTest.textContent = 'Bezig…';
+    try {
+      const { getGmailToken } = await import('../gmail.js');
+      await getGmailToken();
+      const el = backdrop.querySelector('#gmail-status');
+      if (el) el.textContent = '✓ Verbonden met Google';
+      ok('Gmail-verbinding gelukt ✓');
+    } catch (e) {
+      err('Gmail: ' + (e.message || 'Verbinding mislukt'));
+    } finally {
+      gmailTest.disabled = false; gmailTest.textContent = 'Test';
+    }
+  };
+  const gmailDisc = backdrop.querySelector('#gmail-disconnect');
+  if (gmailDisc) gmailDisc.onclick = () => {
+    if (!confirm('Gmail-koppeling verwijderen?')) return;
+    localStorage.removeItem('gmailClientId');
+    ok('Gmail-koppeling verwijderd');
+    close();
+  };
 
   // Data & Export
   backdrop.querySelector('#export-ical').onclick = async () => {
