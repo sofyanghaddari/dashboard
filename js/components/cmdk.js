@@ -30,8 +30,8 @@ export async function openSearch() {
   document.body.appendChild(backdrop);
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeSearch(); });
 
-  const [rides, expenses, todos, goals, cards] = await Promise.all([
-    all('rides'), all('expenses'), all('todos'), all('goals'), all('cards'),
+  const [rides, expenses, todos, goals, cards, notes] = await Promise.all([
+    all('rides'), all('expenses'), all('todos'), all('goals'), all('cards'), all('notes'),
   ]);
 
   let selected = 0;
@@ -51,6 +51,10 @@ export async function openSearch() {
         { label: '📚 Arabisch', action: () => navigate('arabic') },
         { label: '🎯 Doelen', action: () => navigate('goals') },
         { label: '✅ To-do', action: () => navigate('todo') },
+        { label: '📝 Notities', action: () => navigate('notes') },
+        { label: '🗓 Week', action: () => navigate('agenda') },
+        { label: '📊 Stats', action: () => navigate('stats') },
+        { label: '🧾 Boekhouding', action: () => navigate('boekhouding') },
       ];
     } else {
       todos.filter(t => t.title.toLowerCase().includes(f)).forEach(t => {
@@ -67,6 +71,9 @@ export async function openSearch() {
       });
       expenses.filter(e => (e.note || '').toLowerCase().includes(f) || (e.category || '').includes(f)).slice(0, 8).forEach(e => {
         items.push({ label: `💸 ${fmtMoney(e.amount)} · ${e.category}`, action: () => navigate('taxi') });
+      });
+      notes.filter(n => (n.title || '').toLowerCase().includes(f) || (n.body || '').toLowerCase().includes(f)).slice(0, 5).forEach(n => {
+        items.push({ label: `📝 ${n.title || '(geen titel)'} — ${(n.body || '').slice(0, 40)}`, action: () => navigate('notes') });
       });
     }
     selected = 0;

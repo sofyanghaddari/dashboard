@@ -194,7 +194,7 @@ function renderWeekdayStats(rides, cutoff) {
   // Groepeer per weekdag: accumuleer totaal + unieke rijdagen
   const byWd = Array.from({ length: 7 }, () => ({ total: 0, days: new Set() }));
   filtered.forEach(r => {
-    const wd = new Date(r.date + 'T12:00:00').getDay(); // 0=zo, 6=za
+    const wd = new Date(r.date.slice(0, 10) + 'T12:00:00').getDay(); // 0=zo, 6=za
     byWd[wd].total += r.amount || 0;
     byWd[wd].days.add(r.date);
   });
