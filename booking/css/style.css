@@ -908,9 +908,10 @@ body::before {
   color: #fff;
   font-size: .9rem; font-weight: 700;
   box-shadow: 0 4px 20px rgba(37,211,102,.35), var(--shadow-lg);
-  transition: all var(--transition);
-  transform: translateY(0);
+  transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+  opacity: 0; pointer-events: none;
 }
+.fab-wa.fab-visible { opacity: 1; pointer-events: auto; }
 .fab-wa:hover {
   background: #1ebe5d;
   box-shadow: 0 6px 28px rgba(37,211,102,.5), var(--shadow-lg);
@@ -1012,4 +1013,15 @@ body::before {
   .btn-lg { padding: 13px 20px; font-size: .9rem; }
   .cta-btns { flex-direction: column; }
   .cta-btns .btn { justify-content: center; }
+}
+
+/* ── Validatie-animatie ── */
+.winput-error {
+  border-color: rgba(217,140,132,.6) !important;
+  animation: inputShake .4s var(--ease-out);
+}
+@keyframes inputShake {
+  0%,100% { transform: translateX(0); }
+  20%,60%  { transform: translateX(-5px); }
+  40%,80%  { transform: translateX(5px); }
 }

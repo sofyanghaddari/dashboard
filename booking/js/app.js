@@ -89,7 +89,8 @@ function detectZone(text) {
   if (t.includes('centraal') && (t.includes('amsterdam') || t.length < 20)) return 'centrum';
   if (t.includes('noord') || t.includes('ndsm')) return 'noord';
   if (t.includes('oost') || t.includes('watergraafsmeer') || t.includes('ijburg') || t.includes('olvg')) return 'oost';
-  if (t.includes('zuidoost') || t.includes('bijlmer') || t.includes('arena') || t.includes('rai') || t.includes('ziggo') || t.includes('afas') || t.includes('cruyff') || t.includes('amc') || t.includes('umc')) return 'zuidoost';
+  if (t.includes('amsterdam rai') || (t.includes(' rai') && !t.includes('station')) || t === 'amsterdam rai') return 'rai';
+  if (t.includes('zuidoost') || t.includes('bijlmer') || t.includes('arena') || t.includes('ziggo') || t.includes('afas') || t.includes('cruyff') || t.includes('amc') || t.includes('umc')) return 'zuidoost';
   if (t.includes('nieuw-west') || t.includes('nieuwwest') || t.includes('geuzenveld') || t.includes('slotervaart')) return 'nieuwwest';
   if (t.includes('west') || t.includes('jordaan') || t.includes('sloterdijk')) return 'west';
   if (t.includes('buitenveldert') || t.includes('rivierenbuurt') || t.includes('apollobuurt')) return 'zuid';
@@ -110,20 +111,15 @@ function detectZone(text) {
 function getPrice(fromZone, toZone, vehicle) {
   if (!fromZone || !toZone) return null;
   if (fromZone === toZone) {
-    // Stadrit zelfde zone
     if (fromZone === 'schiphol') return null;
-    return vehicle === 'bus' ? { bus: 45 } : { comfort: 15, business: 22 }[vehicle] != null
-      ? (vehicle === 'comfort' ? 15 : vehicle === 'business' ? 22 : 45)
-      : 15;
+    const stadRitten = { comfort: 15, business: 22, bus: 45 };
+    return stadRitten[vehicle] ?? 15;
   }
   const key1 = `${fromZone}-${toZone}`;
   const key2 = `${toZone}-${fromZone}`;
   const entry = PRICES[key1] || PRICES[key2];
   if (!entry) return null;
-  if (vehicle === 'bus') {
-    const base = entry.business || entry.comfort || 0;
-    return Math.round(base * 1.5);
-  }
+  if (vehicle === 'bus') return Math.round((entry.business || entry.comfort || 0) * 1.5);
   return entry[vehicle] || entry.comfort || null;
 }
 
@@ -196,12 +192,14 @@ function updatePriceEstimate() {
   if (price && pickup.length >= 3 && dropoff.length >= 3) {
     box.classList.add('visible');
     amountEl.textContent = `€ ${price}`;
+    amountEl.style.fontSize = '';
   } else if (pickup.length >= 3 && dropoff.length >= 3) {
     box.classList.add('visible');
     amountEl.textContent = 'Op aanvraag';
     amountEl.style.fontSize = '1.3rem';
   } else {
     box.classList.remove('visible');
+    amountEl.style.fontSize = '';
   }
 }
 
@@ -265,14 +263,26 @@ function initWidgetTabs() {
   });
 }
 
+// ── Veld-validatie (shake animatie) ──
+function shakeField(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('winput-error');
+  void el.offsetWidth;
+  el.classList.add('winput-error');
+  el.focus();
+  setTimeout(() => el.classList.remove('winput-error'), 800);
+}
+
 // ── Boek knop ──
 function initBookButton() {
   document.getElementById('btn-book')?.addEventListener('click', () => {
     const pickup     = document.getElementById('pickup')?.value?.trim() || '';
     const dropoff    = document.getElementById('dropoff')?.value?.trim() || '';
+    if (!pickup) { shakeField('pickup'); return; }
+    if (!dropoff) { shakeField('dropoff'); return; }
     const passengers = document.getElementById('passengers')?.value || '1';
     const vehicle    = document.getElementById('vehicle')?.value || 'business';
-
     const msg = buildWhatsAppMsg({ pickup, dropoff, passengers, vehicle });
     window.open(`https://wa.me/${PHONE}?text=${msg}`, '_blank', 'noopener');
   });
@@ -280,16 +290,12 @@ function initBookButton() {
   document.getElementById('btn-schedule')?.addEventListener('click', () => {
     const pickup     = document.getElementById('pickup-l')?.value?.trim() || '';
     const dropoff    = document.getElementById('dropoff-l')?.value?.trim() || '';
+    if (!pickup) { shakeField('pickup-l'); return; }
+    if (!dropoff) { shakeField('dropoff-l'); return; }
     const date       = document.getElementById('date-l')?.value || '';
     const time       = document.getElementById('time-l')?.value || '';
     const passengers = document.getElementById('passengers-l')?.value || '1';
     const vehicle    = document.getElementById('vehicle-l')?.value || 'business';
-
-    if (!pickup || !dropoff) {
-      alert('Vul alstublieft uw ophaaladres en bestemming in.');
-      return;
-    }
-
     const msg = buildWhatsAppMsg({ pickup, dropoff, passengers, vehicle, date, time });
     window.open(`https://wa.me/${PHONE}?text=${msg}`, '_blank', 'noopener');
   });
@@ -349,15 +355,17 @@ function initReveal() {
 
 // ── Smooth scroll voor anker-links ──
 function initSmoothScroll() {
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
+  document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(a => {
     a.addEventListener('click', e => {
-      const target = document.querySelector(a.getAttribute('href'));
-      if (target) {
-        e.preventDefault();
-        const offset = document.getElementById('nav')?.offsetHeight || 64;
-        const top = target.getBoundingClientRect().top + window.scrollY - offset;
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
+      try {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          const offset = document.getElementById('nav')?.offsetHeight || 64;
+          const top = target.getBoundingClientRect().top + window.scrollY - offset;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      } catch (_) { /* ignore invalid selectors */ }
     });
   });
 }
@@ -367,20 +375,18 @@ function initFabVisibility() {
   const fab = document.getElementById('fab-wa');
   if (!fab) return;
   window.addEventListener('scroll', () => {
-    fab.style.opacity = window.scrollY > 300 ? '1' : '0';
-    fab.style.pointerEvents = window.scrollY > 300 ? 'auto' : 'none';
+    fab.classList.toggle('fab-visible', window.scrollY > 300);
   }, { passive: true });
-  fab.style.opacity = '0';
-  fab.style.pointerEvents = 'none';
-  fab.style.transition = 'opacity .3s ease';
 }
 
 // ── Bootstrap ──
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
   initWidgetTabs();
-  setupAutocomplete('pickup', 'pickup-suggest');
-  setupAutocomplete('dropoff', 'dropoff-suggest');
+  setupAutocomplete('pickup',   'pickup-suggest');
+  setupAutocomplete('dropoff',  'dropoff-suggest');
+  setupAutocomplete('pickup-l', 'pickup-l-suggest');
+  setupAutocomplete('dropoff-l','dropoff-l-suggest');
   initBookButton();
   initDateMin();
   initCountUps();
