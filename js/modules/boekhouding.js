@@ -1766,8 +1766,8 @@ function openDetailModal(inv, container) {
 
       <button class="btn" id="det-send" style="width:100%;margin-bottom:10px;padding:14px;font-size:1rem;background:var(--accent);color:var(--on-accent);border-color:var(--accent)">📤 Factuur versturen</button>
       <div class="bk-detail-actions">
-        <button class="btn" id="det-edit"  style="flex:1">✏️ Bewerken</button>
-        <button class="btn" id="det-print" style="flex:1">🖨️ PDF</button>
+        <button class="btn" id="det-edit" style="flex:1">✏️ Bewerken</button>
+        <button class="btn" id="det-pdf"  style="flex:1;background:var(--accent);color:var(--on-accent);border-color:var(--accent)">📄 PDF</button>
         ${status !== 'betaald' ? `<button class="btn" id="det-paid" style="flex:1;background:rgba(154,179,140,.2);color:var(--ok);border-color:rgba(154,179,140,.4)">✓ Betaald</button>` : ''}
       </div>
       ${status !== 'betaald' ? `<button class="btn" id="det-remind" style="width:100%;margin-top:8px;background:rgba(191,176,154,.1);color:var(--accent);border-color:rgba(191,176,154,.3);font-size:.85rem">📋 Kopieer betalingsherinnering</button>` : ''}
@@ -1779,7 +1779,7 @@ function openDetailModal(inv, container) {
   backdrop.querySelector('#det-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
   backdrop.querySelector('#det-send').onclick  = () => { backdrop.remove(); openSendModal(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi, container); };
-  backdrop.querySelector('#det-print').onclick = () => printInvoice(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi);
+  backdrop.querySelector('#det-pdf').onclick = async () => { backdrop.remove(); await sharePDF(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi); };
 
   backdrop.querySelector('#det-edit').onclick = () => {
     backdrop.remove();
@@ -2190,6 +2190,143 @@ function printInvoice(inv, bedrijf) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
+// ── PDF generatie via jsPDF (lazy) ───────────────────────────────────────────
+
+let _jsPdfLoading = null;
+function loadJsPdf() {
+  if (window.jspdf?.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+  if (_jsPdfLoading) return _jsPdfLoading;
+  _jsPdfLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.onload  = () => { _jsPdfLoading = null; resolve(window.jspdf.jsPDF); };
+    s.onerror = () => { _jsPdfLoading = null; reject(new Error('PDF-bibliotheek kon niet laden — controleer je internetverbinding')); };
+    document.head.appendChild(s);
+  });
+  return _jsPdfLoading;
+}
+
+async function generateInvoicePDF(inv, bedrijf) {
+  const JsPDF = await loadJsPdf();
+  const doc   = new JsPDF({ unit: 'mm', format: 'a4' });
+  const line   = inv.lines?.[0] || {};
+  const client = inv.client  || {};
+  const L = 20, R = 190, W = 170;
+
+  // ── Bedrijfsnaam ──
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(26, 26, 26);
+  doc.text(bedrijf.naam, L, 22);
+
+  // ── Bedrijfsgegevens ──
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(102, 102, 102);
+  doc.text([bedrijf.adres, bedrijf.postcode, `BTW: ${bedrijf.btw}`, `KvK: ${bedrijf.kvk}`, `IBAN: ${fmtIBAN(bedrijf.iban)}`].join('\n'), L, 30, { lineHeightFactor: 1.65 });
+
+  // ── "FACTUUR" rechts ──
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(30);
+  doc.setTextColor(138, 126, 111);
+  doc.text('FACTUUR', R, 22, { align: 'right' });
+
+  // ── Factuurmeta rechts ──
+  let mY = 32;
+  [['Nummer:', inv.number || '—'], ['Datum:', fmtDateLong(inv.date)], ['Vervaldatum:', fmtDateLong(inv.dueDate)]].forEach(([lbl, val]) => {
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(102, 102, 102);
+    doc.text(lbl, R - 55, mY);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(26, 26, 26);
+    doc.text(val, R, mY, { align: 'right' });
+    mY += 5.5;
+  });
+
+  // ── Scheidingslijn ──
+  doc.setDrawColor(232, 228, 222); doc.setLineWidth(0.4); doc.line(L, 58, R, 58);
+
+  // ── Klantbox ──
+  doc.setFillColor(248, 247, 245); doc.roundedRect(L, 64, W, 36, 2, 2, 'F');
+  doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(153, 153, 153);
+  doc.text('FACTUUR AAN', L + 5, 71);
+  doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(26, 26, 26);
+  doc.text(client.name || '—', L + 5, 78);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(85, 85, 85);
+  const clientLines = [client.address, client.city, client.kvk ? `KvK: ${client.kvk}` : null, client.email].filter(Boolean);
+  if (clientLines.length) doc.text(clientLines.join('\n'), L + 5, 84, { lineHeightFactor: 1.55 });
+
+  // ── Tabelkop ──
+  const tY = 110;
+  doc.setFillColor(248, 247, 245); doc.rect(L, tY, W, 7, 'F');
+  doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(153, 153, 153);
+  doc.text('OMSCHRIJVING', L + 2, tY + 5);
+  doc.text('BTW', R - 56, tY + 5);
+  doc.text('EXCL. BTW', R - 28, tY + 5, { align: 'right' });
+  doc.text('TOTAAL INCL.', R, tY + 5, { align: 'right' });
+
+  // ── Tabelrij ──
+  doc.setDrawColor(240, 237, 232); doc.setLineWidth(0.25);
+  doc.line(L, tY + 7, R, tY + 7);
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(26, 26, 26);
+  doc.text(line.description || bedrijf.defaultDesc || 'Vervoersdienst', L + 2, tY + 14);
+  doc.setFontSize(9); doc.setTextColor(85, 85, 85);
+  doc.text(`${line.vatRate ?? 0}%`, R - 56, tY + 14);
+  doc.text(fmtMoney(inv.totalExcl || 0), R - 28, tY + 14, { align: 'right' });
+  doc.setFont('helvetica', 'bold'); doc.setTextColor(26, 26, 26);
+  doc.text(fmtMoney(inv.totalIncl || 0), R, tY + 14, { align: 'right' });
+  doc.line(L, tY + 18, R, tY + 18);
+
+  // ── Totalen ──
+  let tTY = tY + 26;
+  const totX = R - 72;
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(85, 85, 85);
+  [[`Subtotaal excl. BTW`, fmtMoney(inv.totalExcl || 0)],
+   [`BTW ${line.vatRate ?? 0}%`, fmtMoney(inv.totalVat || 0)]].forEach(([lbl, val]) => {
+    doc.text(lbl, totX, tTY); doc.text(val, R, tTY, { align: 'right' }); tTY += 5;
+  });
+  doc.setDrawColor(26, 26, 26); doc.setLineWidth(0.7); doc.line(totX, tTY + 1, R, tTY + 1);
+  tTY += 5;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(26, 26, 26);
+  doc.text('Totaal', totX, tTY);
+  doc.text(fmtMoney(inv.totalIncl || 0), R, tTY, { align: 'right' });
+
+  // ── Betaalinstructies ──
+  const pY = tTY + 12;
+  doc.setFillColor(248, 247, 245); doc.roundedRect(L, pY, W, 22, 2, 2, 'F');
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(85, 85, 85);
+  doc.text(`Gelieve ${fmtMoney(inv.totalIncl || 0)} voor ${fmtDateLong(inv.dueDate)} over te maken naar:`, L + 5, pY + 6);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(26, 26, 26);
+  doc.text(fmtIBAN(bedrijf.iban), L + 5, pY + 12);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(85, 85, 85);
+  doc.text(`t.n.v. ${bedrijf.naam}  o.v.v. ${inv.number || ''}`, L + 5, pY + 18);
+
+  // ── Footer ──
+  doc.setDrawColor(232, 228, 222); doc.setLineWidth(0.3); doc.line(L, 278, R, 278);
+  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(170, 170, 170);
+  doc.text(`${bedrijf.naam}  KvK ${bedrijf.kvk}  BTW ${bedrijf.btw}`, L, 283);
+  doc.text(inv.number || '', R, 283, { align: 'right' });
+
+  return doc.output('blob');
+}
+
+async function sharePDF(inv, bedrijf) {
+  if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
+  try {
+    const blob     = await generateInvoicePDF(inv, bedrijf);
+    const filename = `${inv.number || 'factuur'}.pdf`;
+    const file     = new File([blob], filename, { type: 'application/pdf' });
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ title: `Factuur ${inv.number}`, files: [file] });
+    } else {
+      const url = URL.createObjectURL(blob);
+      Object.assign(document.createElement('a'), { href: url, download: filename }).click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      ok('PDF opgeslagen ✓');
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') err('PDF: ' + (e.message || 'Onbekende fout'));
+  }
+}
+
 function openInvoiceViewer(inv, bedrijf) {
   if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
   const html = generateInvoiceHTML(inv, bedrijf);
@@ -2257,11 +2394,19 @@ function openSendModal(inv, bedrijf, container) {
       </div>
 
       <div class="bk-send-actions">
-        <button class="bk-send-btn" id="snd-view">
+        <button class="bk-send-btn bk-send-primary" id="snd-pdf">
           <span class="bk-send-icon">📄</span>
           <div>
-            <div class="bk-send-label">Factuur bekijken &amp; afdrukken</div>
-            <div class="bk-send-sub">Toont factuur in app — sla op als PDF of druk af</div>
+            <div class="bk-send-label">PDF maken &amp; versturen</div>
+            <div class="bk-send-sub">Deel als PDF via WhatsApp, Mail of AirDrop</div>
+          </div>
+        </button>
+
+        <button class="bk-send-btn" id="snd-wa">
+          <span class="bk-send-icon">💬</span>
+          <div>
+            <div class="bk-send-label">WhatsApp${clientPhone ? ' → ' + escapeHTML(clientPhone) : '-samenvatting'}</div>
+            <div class="bk-send-sub">${clientPhone ? 'Stuur betaalverzoek direct naar klant' : 'Betalingsinfo als WhatsApp-bericht'}</div>
           </div>
         </button>
 
@@ -2270,16 +2415,9 @@ function openSendModal(inv, bedrijf, container) {
           <span class="bk-send-icon">✉️</span>
           <div>
             <div class="bk-send-label">Mailen naar klant</div>
-            <div class="bk-send-sub">${escapeHTML(clientEmail)}</div>
+            <div class="bk-send-sub">${escapeHTML(clientEmail)} — factuurgegevens in berichttekst</div>
           </div>
-        </button>` : `
-        <div class="bk-send-btn bk-send-disabled">
-          <span class="bk-send-icon" style="opacity:.4">✉️</span>
-          <div>
-            <div class="bk-send-label" style="opacity:.5">Mailen naar klant</div>
-            <div class="bk-send-sub">Geen e-mailadres ingevuld voor deze klant</div>
-          </div>
-        </div>`}
+        </button>` : ''}
 
         <button class="bk-send-btn" id="snd-mail-self">
           <span class="bk-send-icon">📬</span>
@@ -2289,22 +2427,13 @@ function openSendModal(inv, bedrijf, container) {
           </div>
         </button>
 
-        <button class="bk-send-btn" id="snd-wa">
-          <span class="bk-send-icon">💬</span>
+        <button class="bk-send-btn" id="snd-view">
+          <span class="bk-send-icon">🖨️</span>
           <div>
-            <div class="bk-send-label">WhatsApp${clientPhone ? ' → ' + escapeHTML(clientPhone) : '-samenvatting'}</div>
-            <div class="bk-send-sub">${clientPhone ? 'Stuur direct naar klant' : 'Betalingsinfo als WhatsApp-bericht'}</div>
+            <div class="bk-send-label">Afdrukken / bekijken</div>
+            <div class="bk-send-sub">Open factuur in de app om te printen</div>
           </div>
         </button>
-
-        ${typeof navigator.share !== 'undefined' ? `
-        <button class="bk-send-btn" id="snd-share">
-          <span class="bk-send-icon">📤</span>
-          <div>
-            <div class="bk-send-label">Delen</div>
-            <div class="bk-send-sub">Via AirDrop, Mail, WhatsApp of andere apps</div>
-          </div>
-        </button>` : ''}
       </div>
     </div>
   `;
@@ -2313,6 +2442,7 @@ function openSendModal(inv, bedrijf, container) {
   backdrop.querySelector('#snd-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 
+  backdrop.querySelector('#snd-pdf').onclick  = async () => { backdrop.remove(); await sharePDF(inv, bedrijf); };
   backdrop.querySelector('#snd-view').onclick = () => { backdrop.remove(); openInvoiceViewer(inv, bedrijf); };
 
   if (clientEmail) {
@@ -2338,18 +2468,4 @@ function openSendModal(inv, bedrijf, container) {
     window.open(waUrl, '_blank');
   };
 
-  const shareBtn = backdrop.querySelector('#snd-share');
-  if (shareBtn) {
-    shareBtn.onclick = async () => {
-      try {
-        const html  = generateInvoiceHTML(inv, bedrijf);
-        const file  = new File([html], `${inv.number || 'factuur'}.html`, { type: 'text/html' });
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: subject });
-        } else {
-          await navigator.share({ title: subject, text: emailBody });
-        }
-      } catch (_) {}
-    };
-  }
 }

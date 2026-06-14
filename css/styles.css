@@ -4796,6 +4796,8 @@ label.subtask {
   transition: background .15s;
 }
 .bk-send-btn:active, .bk-send-btn:focus { background: var(--bg-elev-3); outline: none; }
+.bk-send-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.bk-send-primary:active, .bk-send-primary:focus { background: var(--accent); filter: brightness(1.1); }
 .bk-send-disabled {
   display: flex;
   align-items: center;
