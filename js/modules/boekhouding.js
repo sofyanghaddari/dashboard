@@ -307,9 +307,9 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
   const btwSaldo     = btwOntvangen - btwBetaald;
 
   // Openstaande/vervallen facturen eerst, daarna recente betaalde
-  const openInv  = invoices.filter(i => i._status === 'open' || i._status === 'overdue')
+  const openInv  = invoices.filter(i => i._status === 'open' || i._status === 'te-laat')
     .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-  const otherInv = invoices.filter(i => i._status !== 'open' && i._status !== 'overdue')
+  const otherInv = invoices.filter(i => i._status !== 'open' && i._status !== 'te-laat')
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   const recent = [...openInv, ...otherInv].slice(0, 5);
 
