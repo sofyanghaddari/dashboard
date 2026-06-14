@@ -491,16 +491,20 @@ function renderChart(content, rides) {
 }
 
 function exportCSV(rides) {
-  const rows = [['datum','bedrag','notitie']];
-  rides.forEach(r => rows.push([
-    new Date(r.date).toISOString().slice(0, 10), r.amount,
-    (r.note || '').replace(/[\r\n,]/g, ' '),
-  ]));
-  const csv  = rows.map(r => r.join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
+  const d    = new Date().toISOString().slice(0, 10);
+  const rows = [
+    'sep=;',   // Excel-hint
+    ['datum', 'bedrag', 'notitie'].join(';'),
+    ...rides.map(r => [
+      new Date(r.date).toISOString().slice(0, 10),
+      String(r.amount || 0).replace('.', ','),
+      '"' + (r.note || '').replace(/"/g, '""').replace(/[\r\n;]/g, ' ') + '"',
+    ].join(';')),
+  ];
+  const blob = new Blob(['﻿' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8' });
   const a    = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'taxi-inkomen-' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.href     = URL.createObjectURL(blob);
+  a.download = `taxi-inkomen-${d}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
 }

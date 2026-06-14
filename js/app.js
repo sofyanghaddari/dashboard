@@ -103,19 +103,31 @@ async function bootApp() {
     const elapsed = Date.now() - _appStartTime;
     const delay = Math.max(0, 8000 - elapsed);
     setTimeout(() => {
-      if (!_deferredInstall) return; // al gebruikt of afgewezen
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.id = 'install-btn';
-      btn.textContent = 'App installeren';
-      btn.style.cssText = 'position:fixed;top:8px;left:8px;z-index:30';
-      btn.onclick = async () => {
-        btn.remove();
+      if (!_deferredInstall) return;
+      if (document.getElementById('install-banner')) return;
+      const banner = document.createElement('div');
+      banner.id = 'install-banner';
+      banner.style.cssText = [
+        'position:fixed','bottom:80px','left:50%','transform:translateX(-50%)',
+        'background:var(--card)','border:1px solid var(--accent)','border-radius:14px',
+        'padding:12px 16px','z-index:9998','display:flex','align-items:center',
+        'gap:12px','box-shadow:0 4px 24px rgba(0,0,0,.4)','max-width:calc(100vw - 32px)',
+        'font-size:.9rem','animation:bk-fade-up .3s ease',
+      ].join(';');
+      banner.innerHTML = `
+        <span style="font-size:1.2rem">📲</span>
+        <span style="flex:1">Installeer de app op je homescreen</span>
+        <button class="btn" style="padding:6px 14px;font-size:.83rem;white-space:nowrap" id="install-yes">Installeren</button>
+        <button class="btn secondary" style="padding:6px 10px;font-size:.83rem" id="install-no">✕</button>
+      `;
+      banner.querySelector('#install-yes').onclick = async () => {
+        banner.remove();
         _deferredInstall.prompt();
         await _deferredInstall.userChoice;
         _deferredInstall = null;
       };
-      document.body.appendChild(btn);
+      banner.querySelector('#install-no').onclick = () => banner.remove();
+      document.body.appendChild(banner);
     }, delay);
   });
 

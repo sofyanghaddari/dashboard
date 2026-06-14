@@ -19,11 +19,15 @@ export async function render(container) {
         (n.body  || '').toLowerCase().includes(search.toLowerCase()))
     : pool;
 
-  const sorted = [...filtered].sort((a, b) =>
-    (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+  const sorted = [...filtered].sort((a, b) => {
+    // Gepinde notities bovenaan
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+  });
 
   container.innerHTML = `
-    <h1>Notities</h1>
+    <h1 class="page-title">Notities</h1>
 
     <div class="notes-search-wrap">
       <span class="notes-search-icon">🔍</span>
@@ -66,10 +70,11 @@ export async function render(container) {
         ? n.body.replace(/[#*`_]/g, '').replace(/\n/g, ' ').trim().slice(0, 120)
         : '';
       return `
-        <div class="note-card ${accentClass}" data-id="${n.id}">
+        <div class="note-card ${accentClass}${n.pinned ? ' note-pinned' : ''}" data-id="${n.id}">
           <div class="note-card-top">
-            <div class="note-card-title">${escapeHTML(n.title || '(geen titel)')}</div>
+            <div class="note-card-title">${n.pinned ? '📌 ' : ''}${escapeHTML(n.title || '(geen titel)')}</div>
             <div class="note-actions">
+              <button class="note-btn" data-pin="${n.id}" title="${n.pinned ? 'Losmaken' : 'Vastpinnen'}">${n.pinned ? '📌' : '☆'}</button>
               <button class="note-btn" data-edit="${n.id}" title="Bewerken">✎</button>
               <button class="note-btn del" data-del="${n.id}" title="Verwijderen">✕</button>
             </div>
@@ -81,10 +86,19 @@ export async function render(container) {
         </div>`;
     }).join('');
 
+    list.querySelectorAll('[data-pin]').forEach(b =>
+      b.onclick = async (e) => {
+        e.stopPropagation();
+        const n = notes.find(x => x.id === b.dataset.pin);
+        if (!n) return;
+        await put('notes', { ...n, pinned: !n.pinned });
+        render(container);
+      });
     list.querySelectorAll('[data-edit]').forEach(b =>
       b.onclick = () => openEditor(container, notes.find(n => n.id === b.dataset.edit)));
     list.querySelectorAll('[data-del]').forEach(b =>
-      b.onclick = async () => {
+      b.onclick = async (e) => {
+        e.stopPropagation();
         await del('notes', b.dataset.del);
         ok('Verwijderd');
         render(container);

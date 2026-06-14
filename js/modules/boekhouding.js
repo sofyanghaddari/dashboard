@@ -3,6 +3,16 @@ import { uid, fmtMoney, parseAmount, escapeHTML, ymd } from '../utils.js';
 import { ok, err } from '../components/toast.js';
 import { parseInvoiceText } from '../invoice-nlp.js';
 
+// Escape-toets sluit het bovenste boekhouding-modal (eenmalig geregistreerd).
+if (!window._bkEscapeRegistered) {
+  window._bkEscapeRegistered = true;
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const backdrop = [...document.querySelectorAll('.modal-backdrop')].pop();
+    if (backdrop) { e.preventDefault(); backdrop.remove(); }
+  });
+}
+
 // ─── ADMINISTRATIES ──────────────────────────────────────────────────────────
 const ADMINS = {
   taxi: {
@@ -179,6 +189,7 @@ function exportCSV(rows, filename) {
   if (!rows.length) { err('Geen data om te exporteren'); return; }
   const headers = Object.keys(rows[0]);
   const csv = [
+    'sep=;',           // Excel-hint: puntkomma als scheidingsteken
     headers.join(';'),
     ...rows.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(';')),
   ].join('\r\n');
@@ -1467,8 +1478,8 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       const email = inv.client.email;
       const name  = inv.client.name;
       const existing = savedClients.find(c =>
-        (email && c.email === email) ||
-        (c.name || '').toLowerCase() === name.toLowerCase()
+        (email && c.email && c.email.toLowerCase() === email.toLowerCase()) ||
+        (!email && (c.name || '').toLowerCase() === name.toLowerCase())
       );
       if (existing) {
         await put('clients', { ...existing, phone: inv.client.phone || existing.phone, lastUsed: Date.now() });
@@ -2315,9 +2326,14 @@ function openSendModal(inv, bedrijf, container) {
   };
 
   backdrop.querySelector('#snd-wa').onclick = () => {
-    const phone = clientPhone.replace(/\D/g, '');
+    let phone = clientPhone.replace(/\s/g, '');
+    if (phone && !phone.startsWith('+')) {
+      // Zet NL-nummers om naar E.164: 06... → +316..., 0... → +31...
+      phone = phone.replace(/^00/, '+').replace(/^0/, '+31');
+    }
+    phone = phone.replace(/[^+\d]/g, '');
     const waUrl = phone
-      ? `https://wa.me/${phone}?text=${waText}`
+      ? `https://wa.me/${phone.replace('+', '')}?text=${waText}`
       : `https://wa.me/?text=${waText}`;
     window.open(waUrl, '_blank');
   };

@@ -169,8 +169,11 @@ function applyFilters(items, filter, tagFilter) {
   let res = items;
   if (filter === 'today')
     res = res.filter(t => t.dueDate && t.dueDate <= today);
-  else if (filter === 'week')
-    res = res.filter(t => t.dueDate && new Date(t.dueDate) >= weekStart && new Date(t.dueDate) <= addDays(weekStart, 6));
+  else if (filter === 'week') {
+    const ws = ymd(weekStart);
+    const we = ymd(addDays(weekStart, 6));
+    res = res.filter(t => t.dueDate && t.dueDate >= ws && t.dueDate <= we);
+  }
   if (tagFilter) res = res.filter(t => (t.tags || []).includes(tagFilter));
   return res;
 }
@@ -181,11 +184,10 @@ function dueDateBadge(dueDate) {
   if (!dueDate) return null;
   const today    = ymd();
   const tomorrow = ymd(new Date(Date.now() + 86400000));
-  const bell = dueDate <= today ? '🔔' : '🔔';
-  if (dueDate < today)    return { label: `${bell} ⚠ ${dueDate}`, cls: 'task-badge-overdue' };
-  if (dueDate === today)  return { label: `${bell} Vandaag`,       cls: 'task-badge-today' };
-  if (dueDate === tomorrow) return { label: `${bell} Morgen`,      cls: 'task-badge-date' };
-  return { label: `${bell} ${dueDate}`, cls: 'task-badge-date' };
+  if (dueDate < today)      return { label: `🔴 ⚠ ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}`, cls: 'task-badge-overdue' };
+  if (dueDate === today)    return { label: `🔔 Vandaag`,  cls: 'task-badge-today' };
+  if (dueDate === tomorrow) return { label: `🔔 Morgen`,   cls: 'task-badge-date' };
+  return { label: `🔔 ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}`, cls: 'task-badge-date' };
 }
 
 function taskCard(t, bulkMode, idx = 0) {

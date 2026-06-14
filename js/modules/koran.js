@@ -171,7 +171,14 @@ async function renderHizb(container) {
     <!-- ACTIES + INSTELLINGEN -->
     <div class="card">
       <h2 class="card-title">Instellingen</h2>
-      <button class="btn secondary block" id="repair-day" style="margin-bottom:14px">🛠️ Gemiste dag goedmaken <span class="muted" style="font-size:.8em">(1× per maand)</span></button>
+      ${(() => {
+        const now2 = new Date();
+        const mk = `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, '0')}`;
+        const used = localStorage.getItem('lastStreakRepair') === mk;
+        return used
+          ? `<div class="repair-used-badge">✓ Goedmaken al gebruikt deze maand</div>`
+          : `<button class="btn secondary block" id="repair-day" style="margin-bottom:14px">🛠️ Gemiste dag goedmaken <span class="muted" style="font-size:.8em">(1× per maand)</span></button>`;
+      })()}
       <label>Herinneringstijd</label>
       <input type="time" id="reminder" value="${reminderTime}" />
       <label style="margin-top:12px">Startpunt</label>
@@ -222,7 +229,7 @@ async function renderHizb(container) {
     };
   }
 
-  el.querySelector('#repair-day').onclick = async () => {
+  el.querySelector('#repair-day')?.addEventListener('click', async () => {
     const now2 = new Date();
     const repairMonthKey = `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, '0')}`;
     if (localStorage.getItem('lastStreakRepair') === repairMonthKey) { err('Deze maand al gebruikt'); return; }
@@ -242,7 +249,7 @@ async function renderHizb(container) {
       ok(`Dag ${d.date} goedgemaakt`);
       render(container);
     });
-  };
+  });
 
   el.querySelector('#save-settings').onclick = () => {
     localStorage.setItem('hizbReminderTime', el.querySelector('#reminder').value);

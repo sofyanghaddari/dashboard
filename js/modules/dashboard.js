@@ -773,54 +773,48 @@ function speakText(text, lang, btn) {
 
 function wegWidget() {
   const now2 = new Date();
-  const h = now2.getHours();
-  const isNacht = h >= 22 || h < 6;
-  const isDiWo  = [2, 3].includes(now2.getDay());
+  const h    = now2.getHours();
+  const day  = now2.getDay(); // 0=zo
+  const isNacht   = h >= 22 || h < 6;
+  const isWeekend = day === 0 || day === 6;
 
-  // Sluitingsdatum A9: maandag 8 juni 2026 05:00
-  const a9Einde = new Date('2026-06-08T05:00:00');
-  const a9Actief = now2 < a9Einde;
+  // IJ-tunnel: nachtelijke sluitingen di/wo
+  const ijGesloten = [2, 3].includes(day) && isNacht;
 
   const items = [
-    ...(a9Actief ? [{
-      road: 'A9',
-      label: 'Gesloten',
-      info: 'Beide richtingen gesloten tussen knooppunt Badhoevedorp en Holendrecht. Omleiding via A2, A10 en A4. Extra reistijd 10–30 min.',
-      type: 'closed',
-      geldigTm: '8 juni 05:00',
-    }] : []),
-    { road: 'Coentunnel', label: 'Werkzaamheden', info: `Nachtelijke werkzaamheden — één rijstrook dicht.${isNacht ? ' Controleer actuele situatie.' : ''}`, type: 'work' },
-    { road: 'IJ-tunnel', label: isDiWo && isNacht ? 'Gesloten' : 'Werkzaamheden', info: `Periodieke nachtsluitingen.${isDiWo && isNacht ? ' Nu mogelijk gesloten — gebruik Piet Heintunnel.' : ' Controleer actueel.'}`, type: isDiWo && isNacht ? 'closed' : 'work' },
-    { road: 'A10', label: 'Werkzaamheden', info: 'Onderhoudswerkzaamheden diverse trajecten zomer 2026. Controleer actueel.', type: 'work' },
-    { road: 'A1', label: 'OK', info: 'Geen grote afsluitingen.', type: 'ok' },
-    { road: 'A2', label: 'OK', info: 'Geen grote afsluitingen.', type: 'ok' },
-    { road: 'A4', label: 'OK', info: 'Geen grote afsluitingen.', type: 'ok' },
+    { road: 'Coentunnel', label: 'Werkzaamheden', info: `Nachtelijke werkzaamheden${isNacht ? ' — controleer situatie.' : '.'}`, type: 'work' },
+    { road: 'IJ-tunnel',  label: ijGesloten ? 'Mogelijk gesloten' : 'Werkzaamheden', info: ijGesloten ? 'Di/wo nachten soms gesloten — gebruik Piet Heintunnel.' : 'Periodieke nachtsluitingen (di/wo). Controleer actueel.', type: ijGesloten ? 'closed' : 'work' },
+    { road: 'A10',        label: 'Werkzaamheden', info: 'Onderhoudswerk diverse trajecten. Controleer ANWB.', type: 'work' },
+    { road: 'A1', label: 'OK', info: 'Geen bekende grote afsluitingen.', type: 'ok' },
+    { road: 'A2', label: 'OK', info: 'Geen bekende grote afsluitingen.', type: 'ok' },
+    { road: 'A4', label: 'OK', info: 'Geen bekende grote afsluitingen.', type: 'ok' },
+    { road: 'A9', label: 'OK', info: 'Geen bekende grote afsluitingen.', type: 'ok' },
   ];
 
-  const hasBig = items.some(i => i.type === 'closed');
+  const hasBig    = items.some(i => i.type === 'closed');
   const bigItems  = items.filter(i => i.type === 'closed');
   const workItems = items.filter(i => i.type === 'work');
   const okItems   = items.filter(i => i.type === 'ok');
-
-  const labelFor = { closed: 'Gesloten', detour: 'Omrijden', work: 'Werkzaamheden', ok: 'OK' };
+  const labelFor  = { closed: 'Let op', work: 'Werkzaamheden', ok: 'OK' };
 
   const row = item => `
     <div class="weginfo-item">
-      <span class="weginfo-road ${item.type}">${labelFor[item.type]}</span>
+      <span class="weginfo-road ${item.type}">${labelFor[item.type] || item.label}</span>
       <div>
-        <div class="weginfo-item-road">${escapeHTML(item.road)}${item.geldigTm ? ` <span class="weginfo-validity">t/m ${escapeHTML(item.geldigTm)}</span>` : ''}</div>
+        <div class="weginfo-item-road">${escapeHTML(item.road)}</div>
         <div class="weginfo-item-info">${escapeHTML(item.info)}</div>
       </div>
     </div>`;
 
+  const dateStr = now2.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
   return `
     <div class="card weginfo-card">
       <h2 class="card-title">Weginfo Amsterdam</h2>
-      <div class="weginfo-meta">Bijgewerkt: 7 juni 2026 &nbsp;·&nbsp; <a href="https://www.anwb.nl/verkeer/amsterdam" target="_blank" rel="noopener" class="weginfo-meta-link">actuele info ANWB →</a></div>
-      ${!hasBig ? `<div class="weginfo-clear">Geen grote afsluitingen op de snelwegen rondom Amsterdam</div>` : ''}
+      <div class="weginfo-meta">${dateStr}${isWeekend ? ' · weekend' : ''} &nbsp;·&nbsp; <a href="https://www.anwb.nl/verkeer/amsterdam" target="_blank" rel="noopener" class="weginfo-meta-link">Actueel via ANWB →</a></div>
+      ${!hasBig ? `<div class="weginfo-clear">✓ Geen grote afsluitingen op de bekende snelwegen</div>` : ''}
       ${bigItems.map(row).join('')}
       ${workItems.length ? `<details class="weginfo-details"><summary>Werkzaamheden (${workItems.length})</summary>${workItems.map(row).join('')}</details>` : ''}
-      ${okItems.length ? `<details class="weginfo-details"><summary>Overige snelwegen (${okItems.length})</summary>${okItems.map(row).join('')}</details>` : ''}
+      ${okItems.length ? `<details class="weginfo-details"><summary>Snelwegen zonder meldingen (${okItems.length})</summary>${okItems.map(row).join('')}</details>` : ''}
     </div>`;
 }
 

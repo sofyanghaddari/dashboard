@@ -1,5 +1,5 @@
 import { all } from '../db.js';
-import { ymd, escapeHTML } from '../utils.js';
+import { ymd, escapeHTML, fmtMoney as fmtMoneyUtil } from '../utils.js';
 
 export async function render(container) {
   const period = container.dataset.statsPeriod || '30';
@@ -35,6 +35,7 @@ export async function render(container) {
 
   body.innerHTML =
     renderInkomenHero(rides, cutoff, period) +
+    renderWeekdayStats(rides, cutoff) +
     renderKoranRing(hizbLog) +
     renderArabicMastery(cards) +
     renderTakenDonut(todos, cutoff) +
@@ -84,9 +85,7 @@ function animateCount(el, target, isMoney = false, duration = 1500) {
   requestAnimationFrame(step);
 }
 
-function fmtMoney(n) {
-  return '€ ' + Math.round(n).toLocaleString('nl-NL');
-}
+function fmtMoney(n) { return fmtMoneyUtil(n); }
 
 function fmtDate(d) {
   return new Date(d + 'T12:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
@@ -181,6 +180,60 @@ function renderInkomenHero(rides, cutoff, period) {
       </div>
     </div>
   `;
+}
+
+// ── WEEKDAG ANALYSE ───────────────────────────────────────────────────────────
+
+function renderWeekdayStats(rides, cutoff) {
+  const filtered = rides.filter(r => r.date && inRange(r.date, cutoff));
+  if (filtered.length < 5) return ''; // Te weinig data
+
+  const WD_LABEL  = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
+  const WD_FULL   = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
+
+  // Groepeer per weekdag: accumuleer totaal + unieke rijdagen
+  const byWd = Array.from({ length: 7 }, () => ({ total: 0, days: new Set() }));
+  filtered.forEach(r => {
+    const wd = new Date(r.date + 'T12:00:00').getDay(); // 0=zo, 6=za
+    byWd[wd].total += r.amount || 0;
+    byWd[wd].days.add(r.date);
+  });
+
+  // Gemiddelde per rijdag
+  const stats = byWd.map((b, i) => ({
+    wd: i,
+    label: WD_LABEL[i],
+    full: WD_FULL[i],
+    avg: b.days.size > 0 ? b.total / b.days.size : 0,
+    cnt: b.days.size,
+  }));
+
+  // Volgorde Ma–Zo (i=1..6,0)
+  const ordered = [1,2,3,4,5,6,0].map(i => stats[i]);
+  const maxAvg  = Math.max(...ordered.map(s => s.avg), 1);
+  const best    = ordered.reduce((a, b) => b.avg > a.avg ? b : a, ordered[0]);
+  const worked  = ordered.filter(s => s.cnt > 0);
+  if (!worked.length) return '';
+
+  return `
+    <div class="stats-section-wrap" style="--i:1">
+      <div class="stats-card">
+        <div class="stats-card-title">Beste rijdagen</div>
+        <div class="wd-best-pill">🏆 ${best.full} — gem. ${fmtMoney(Math.round(best.avg))}/dag</div>
+        <div class="wd-bars">
+          ${ordered.map((s, i) => `
+            <div class="wd-col${s.wd === best.wd ? ' wd-best' : ''}${s.cnt === 0 ? ' wd-empty' : ''}"
+                 title="${s.full}: ${s.cnt > 0 ? 'gem. ' + fmtMoney(Math.round(s.avg)) + ' (' + s.cnt + ' dagen)' : 'Niet gereden'}">
+              <div class="wd-bar-wrap">
+                <div class="wd-bar" style="--h:${s.cnt > 0 ? Math.max(Math.round(s.avg / maxAvg * 100), 3) : 0}%;--i:${i}"></div>
+              </div>
+              <div class="wd-lbl">${s.label}</div>
+              ${s.cnt > 0 ? `<div class="wd-amt">${fmtMoney(Math.round(s.avg))}</div>` : '<div class="wd-amt wd-amt-none">—</div>'}
+            </div>`).join('')}
+        </div>
+        <div class="wd-note">Gemiddeld inkomen per dag gewerkt, per weekdag</div>
+      </div>
+    </div>`;
 }
 
 // ── KORAN RING ────────────────────────────────────────────────────────────────

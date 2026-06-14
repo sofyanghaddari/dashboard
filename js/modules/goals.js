@@ -14,7 +14,7 @@ export async function render(container) {
   const short = goals.filter(g => g.term === 'short');
 
   container.innerHTML = `
-    <h1>Doelen & Gewoontes</h1>
+    <h1 class="page-title">Doelen &amp; Gewoontes</h1>
 
     <div class="section-header" style="margin-top:4px">
       <h2>Lange termijn</h2>
@@ -130,8 +130,18 @@ function renderGoals(container, sel, items, totalRides) {
     };
     input.onchange = async () => {
       const g = items.find(x => x.id === input.dataset.progress);
-      if (g) await put('goals', { ...g, progress: parseInt(input.value, 10) });
-      render(container);
+      if (!g) return;
+      await put('goals', { ...g, progress: parseInt(input.value, 10) });
+      // Update badge only — geen volledige re-render voor één slider
+      const card = input.closest('.goal-card');
+      const newPct = parseInt(input.value, 10);
+      if (card && newPct >= 100) {
+        const statusEl = card.querySelector('.goal-status');
+        if (statusEl) {
+          statusEl.textContent = '✓ Voltooid';
+          statusEl.className = 'goal-status status-voltooid';
+        }
+      }
     };
   });
 }

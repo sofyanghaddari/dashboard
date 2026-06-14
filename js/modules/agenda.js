@@ -1,4 +1,4 @@
-import { uid, escapeHTML, ymd } from '../utils.js';
+import { uid, escapeHTML, ymd, fmtMoney } from '../utils.js';
 import { ok } from '../components/toast.js';
 import { all } from '../db.js';
 
@@ -73,7 +73,7 @@ export async function render(container) {
         return `<button class="agenda-day-tab ${isFocus ? 'active' : ''} ${isToday ? 'today' : ''}" data-day="${d}">
           <span class="adt-name">${DAY_NAMES[i]}</span>
           <span class="adt-date">${d.slice(8)}</span>
-          ${income > 0 ? `<span class="adt-income">€${income}</span>` : ''}
+          ${income > 0 ? `<span class="adt-income">${fmtMoney(income)}</span>` : ''}
         </button>`;
       }).join('')}
     </div>
@@ -120,7 +120,7 @@ function renderGrid(container, dates, focusDay, events, rides, isMobileMode) {
         const income = dayRides.reduce((s, r) => s + (r.amount || 0), 0);
         return `<div class="agenda-col-hd ${isToday ? 'today' : ''}">
           <span>${i >= 0 ? DAY_NAMES_FULL[i] : d}</span>
-          ${income > 0 ? `<span style="font-size:.72rem;color:var(--gold);display:block">€${income}</span>` : ''}
+          ${income > 0 ? `<span style="font-size:.72rem;color:var(--gold);display:block">${fmtMoney(income)}</span>` : ''}
         </div>`;
       }).join('')}
 
@@ -178,9 +178,11 @@ function renderGrid(container, dates, focusDay, events, rides, isMobileMode) {
 
 function eventChip(ev) {
   const cat = CATS[ev.category] || CATS.persoonlijk;
+  const durStr = ev.duration && ev.duration !== 60 ? ` · ${ev.duration >= 60 ? Math.round(ev.duration / 60 * 10) / 10 + 'u' : ev.duration + 'min'}` : '';
   return `<div class="agenda-chip" data-id="${ev.id}" style="background:${cat.color}22;border-left:3px solid ${cat.color}">
-    <span class="agenda-chip-time">${String(ev.hour).padStart(2,'0')}:${ev.minute ? String(ev.minute).padStart(2,'0') : '00'}</span>
+    <span class="agenda-chip-time">${String(ev.hour).padStart(2,'0')}:${ev.minute ? String(ev.minute).padStart(2,'0') : '00'}${durStr}</span>
     <span class="agenda-chip-title">${escapeHTML(ev.title)}</span>
+    ${ev.note ? `<span class="agenda-chip-note">${escapeHTML(ev.note)}</span>` : ''}
     <button class="agenda-chip-del" data-del="${ev.id}">✕</button>
   </div>`;
 }
@@ -188,7 +190,7 @@ function eventChip(ev) {
 function openEventForm(container, existing, events, isEdit = false) {
   const formEl = container.querySelector('#agenda-event-form');
   formEl.style.display = 'block';
-  const ev = isEdit ? existing : { id: uid(), date: existing.date, hour: existing.hour, minute: 0, title: '', category: 'werk', duration: 60 };
+  const ev = isEdit ? existing : { id: uid(), date: existing.date, hour: existing.hour, minute: 0, title: '', category: 'werk', duration: 60, note: '' };
 
   formEl.innerHTML = `
     <div class="card" style="margin-top:16px;border:1px solid var(--accent)">
@@ -213,8 +215,12 @@ function openEventForm(container, existing, events, isEdit = false) {
           </select>
         </div>
       </div>
+      <label style="margin-top:8px">Duur (minuten)</label>
+      <input id="ev-dur" type="number" min="15" max="480" step="15" value="${ev.duration || 60}" />
       <label style="margin-top:8px">Datum</label>
       <input id="ev-date" type="date" value="${ev.date}" />
+      <label style="margin-top:8px">Notitie <span style="font-weight:400;opacity:.6;text-transform:none;letter-spacing:0">(optioneel)</span></label>
+      <input id="ev-note" placeholder="Extra info…" value="${escapeHTML(ev.note || '')}" />
       <div style="display:flex;gap:8px;margin-top:14px">
         <button class="btn" id="ev-save" style="flex:1">Opslaan</button>
         ${isEdit ? `<button class="btn danger" id="ev-del" style="flex:0 0 auto;padding:12px 16px">Verwijder</button>` : ''}
@@ -235,16 +241,20 @@ function openEventForm(container, existing, events, isEdit = false) {
     };
   }
 
-  // Also bind chip delete buttons in grid
-  container.querySelectorAll('[data-del]').forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      const updated = events.filter(x => x.id !== btn.dataset.del);
-      saveEvents(updated);
-      ok('Verwijderd');
-      render(container);
-    };
-  });
+  // Bind chip delete buttons only inside the agenda grid (not form buttons)
+  const grid = container.querySelector('#agenda-grid');
+  if (grid) {
+    grid.querySelectorAll('[data-del]').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const current = getEvents();
+        const updated = current.filter(x => x.id !== btn.dataset.del);
+        saveEvents(updated);
+        ok('Verwijderd');
+        render(container);
+      };
+    });
+  }
 
   formEl.querySelector('#ev-save').onclick = () => {
     const title = formEl.querySelector('#ev-title').value.trim();
@@ -255,7 +265,9 @@ function openEventForm(container, existing, events, isEdit = false) {
       date: formEl.querySelector('#ev-date').value,
       hour: +formEl.querySelector('#ev-hour').value,
       minute: +formEl.querySelector('#ev-min').value,
+      duration: +formEl.querySelector('#ev-dur').value || 60,
       category: formEl.querySelector('#ev-cat').value,
+      note: formEl.querySelector('#ev-note').value.trim(),
     };
     const updated = isEdit
       ? events.map(x => x.id === ev.id ? newEv : x)

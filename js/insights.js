@@ -10,7 +10,7 @@ export function detectInsights(rides, hizb) {
   // === DAY-OF-WEEK INKOMEN ===
   const byDay = Array(7).fill(0).map(() => []);
   rides.forEach(r => {
-    const d = new Date(r.date).getDay();
+    const d = new Date(r.date + 'T12:00:00').getDay();
     byDay[d].push(Number(r.amount || 0));
   });
   const dayAvg = byDay.map((arr, i) => ({

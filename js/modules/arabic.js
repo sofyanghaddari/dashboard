@@ -36,7 +36,7 @@ export async function render(container) {
   const writingStats = getWritingStats(today);
 
   container.innerHTML = `
-    <h1>Arabisch</h1>
+    <h1 class="page-title">Arabisch</h1>
 
     <div class="srs-stats-grid">
       <div class="srs-stat">
