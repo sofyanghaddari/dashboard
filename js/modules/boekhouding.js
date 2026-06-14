@@ -229,9 +229,16 @@ export async function render(container) {
 
   container.querySelectorAll('.bk-admin-btn').forEach(btn => {
     btn.onclick = () => {
-      container.dataset.bkAdmin   = btn.dataset.admin;
-      container.dataset.bkTab     = 'overzicht';
-      container.dataset.invFilter = '';
+      container.dataset.bkAdmin     = btn.dataset.admin;
+      container.dataset.bkTab       = 'overzicht';
+      container.dataset.invFilter   = '';
+      container.dataset.invSearch   = '';
+      container.dataset.clientSearch = '';
+      container.dataset.kostenYear  = '';
+      container.dataset.kmYear      = '';
+      container.dataset.btwQ        = '';
+      container.dataset.btwY        = '';
+      container.dataset.wvYear      = '';
       localStorage.setItem('bkAdmin', btn.dataset.admin);
       render(container);
     };
@@ -1007,6 +1014,7 @@ function renderKlanten(view, clients, invoices, container) {
                 <div class="bk-client-name">${escapeHTML(c.name || '—')}</div>
                 ${c.city    ? `<div class="bk-client-detail">📍 ${escapeHTML(c.city)}</div>` : ''}
                 ${c.email   ? `<div class="bk-client-detail">✉️ ${escapeHTML(c.email)}</div>` : ''}
+                ${c.phone   ? `<div class="bk-client-detail">📞 ${escapeHTML(c.phone)}</div>` : ''}
                 ${c.kvk     ? `<div class="bk-client-detail">🏢 KvK: ${escapeHTML(c.kvk)}</div>` : ''}
               </div>
               <div style="text-align:right;flex-shrink:0;margin-left:10px">
@@ -1063,11 +1071,15 @@ function openClientDetailModal(client, invoices, container) {
   backdrop.innerHTML = `
     <div class="modal bk-modal">
       <button type="button" class="modal-close" id="cd-x">×</button>
-      <div style="font-size:1.25rem;font-weight:800;margin-bottom:4px">${escapeHTML(client.name || '—')}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div style="font-size:1.25rem;font-weight:800">${escapeHTML(client.name || '—')}</div>
+        <button class="btn" id="cd-edit" style="font-size:.8rem;padding:6px 12px">✏️ Bewerken</button>
+      </div>
       ${client.address ? `<div style="font-size:.85rem;color:var(--text-dim)">${escapeHTML(client.address)}</div>` : ''}
       ${client.city    ? `<div style="font-size:.85rem;color:var(--text-dim)">${escapeHTML(client.city)}</div>` : ''}
       ${client.kvk     ? `<div style="font-size:.85rem;color:var(--text-dim)">KvK: ${escapeHTML(client.kvk)}</div>` : ''}
-      ${client.email   ? `<div style="font-size:.85rem;color:var(--text-dim)">${escapeHTML(client.email)}</div>` : ''}
+      ${client.email   ? `<div style="font-size:.85rem;color:var(--text-dim)">✉️ ${escapeHTML(client.email)}</div>` : ''}
+      ${client.phone   ? `<div style="font-size:.85rem;color:var(--text-dim)">📞 ${escapeHTML(client.phone)}</div>` : ''}
 
       <button class="btn block" id="cd-new-inv" style="margin:16px 0 4px;padding:12px">🧾 Nieuwe factuur voor deze klant</button>
 
@@ -1097,6 +1109,11 @@ function openClientDetailModal(client, invoices, container) {
   backdrop.querySelector('#cd-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 
+  backdrop.querySelector('#cd-edit').onclick = () => {
+    backdrop.remove();
+    openEditClientModal(client, container);
+  };
+
   backdrop.querySelector('#cd-new-inv').onclick = () => {
     backdrop.remove();
     container.dataset.bkTab = 'facturen';
@@ -1109,6 +1126,56 @@ function openClientDetailModal(client, invoices, container) {
     if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
     await del('clients', client.id);
     ok('Klant verwijderd');
+    backdrop.remove();
+    render(container);
+  };
+}
+
+function openEditClientModal(client, container) {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal bk-modal">
+      <button type="button" class="modal-close" id="ec-x">×</button>
+      <h2 style="margin:0 0 16px">Klant bewerken</h2>
+      <form id="ec-form" autocomplete="off">
+        <div class="bk-form-section">
+          <label>Bedrijfsnaam / naam *</label>
+          <input id="ec-name"  type="text"  value="${escapeHTML(client.name    || '')}" required />
+          <label>Straat + huisnummer</label>
+          <input id="ec-addr"  type="text"  value="${escapeHTML(client.address || '')}" placeholder="Straatnaam 1" />
+          <label>Postcode + stad</label>
+          <input id="ec-city"  type="text"  value="${escapeHTML(client.city    || '')}" placeholder="1234 AB Amsterdam" />
+          <label>KvK-nummer</label>
+          <input id="ec-kvk"   type="text"  inputmode="numeric" value="${escapeHTML(client.kvk   || '')}" placeholder="12345678" />
+          <label>E-mailadres</label>
+          <input id="ec-email" type="email" value="${escapeHTML(client.email   || '')}" placeholder="info@bedrijf.nl" />
+          <label>Telefoon / WhatsApp</label>
+          <input id="ec-phone" type="tel"   inputmode="tel" value="${escapeHTML(client.phone || '')}" placeholder="+31 6 12345678" />
+        </div>
+        <button type="submit" class="btn block" style="margin-top:14px;padding:13px">💾 Klant opslaan</button>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('#ec-x').onclick = () => backdrop.remove();
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+
+  backdrop.querySelector('#ec-form').onsubmit = async e => {
+    e.preventDefault();
+    const name = backdrop.querySelector('#ec-name').value.trim();
+    if (!name) { err('Vul een naam in'); return; }
+    await put('clients', {
+      ...client,
+      name,
+      address: backdrop.querySelector('#ec-addr').value.trim(),
+      city:    backdrop.querySelector('#ec-city').value.trim(),
+      kvk:     backdrop.querySelector('#ec-kvk').value.trim(),
+      email:   backdrop.querySelector('#ec-email').value.trim(),
+      phone:   backdrop.querySelector('#ec-phone').value.trim(),
+    });
+    ok(`${name} bijgewerkt ✓`);
     backdrop.remove();
     render(container);
   };
@@ -1134,6 +1201,8 @@ function openNewClientModal(container) {
           <input id="nc-kvk" type="text" inputmode="numeric" placeholder="12345678" />
           <label>E-mailadres</label>
           <input id="nc-email" type="email" placeholder="info@bedrijf.nl" />
+          <label>Telefoon / WhatsApp</label>
+          <input id="nc-phone" type="tel" inputmode="tel" placeholder="+31 6 12345678" />
         </div>
         <button type="submit" class="btn block" style="margin-top:14px;padding:13px">👥 Klant opslaan</button>
       </form>
@@ -1155,6 +1224,7 @@ function openNewClientModal(container) {
       city:    backdrop.querySelector('#nc-city').value.trim(),
       kvk:     backdrop.querySelector('#nc-kvk').value.trim(),
       email:   backdrop.querySelector('#nc-email').value.trim(),
+      phone:   backdrop.querySelector('#nc-phone').value.trim(),
       lastUsed: Date.now(),
     });
     ok(`${name} opgeslagen ✓`);
@@ -1257,6 +1327,8 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
           <input id="bk-client-kvk" type="text" inputmode="numeric" placeholder="12345678" value="${escapeHTML(inv0.client?.kvk || '')}" />
           <label>E-mailadres</label>
           <input id="bk-client-email" type="email" placeholder="info@bedrijf.nl" value="${escapeHTML(inv0.client?.email || '')}" />
+          <label>Telefoon / WhatsApp</label>
+          <input id="bk-client-phone" type="tel" inputmode="tel" placeholder="+31 6 12345678" value="${escapeHTML(inv0.client?.phone || '')}" />
         </div>
 
         <div class="bk-form-section">
@@ -1281,7 +1353,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         <div class="bk-form-section">
           <div class="bk-section-title">Nummering &amp; datum</div>
           <label>Factuurnummer</label>
-          <input id="bk-number" type="text" value="${escapeHTML(number)}" required />
+          <input id="bk-number" type="text" value="${escapeHTML(number)}" ${isEdit ? 'readonly style="opacity:.6;cursor:default"' : ''} required />
           <label>Factuurdatum</label>
           <input id="bk-date" type="date" value="${isEdit ? (inv0.date || todayStr) : todayStr}" required />
           <label>Vervaldatum (${bedrijf.termijn} dagen)</label>
@@ -1292,7 +1364,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         <textarea id="bk-note" rows="2" style="resize:vertical" placeholder="Optioneel…">${escapeHTML(inv0.note || '')}</textarea>
 
         <button type="submit" class="btn block" style="margin-top:18px;padding:14px;font-size:1rem">
-          ${isEdit ? '💾 Factuur opslaan' : '🧾 Factuur aanmaken &amp; afdrukken'}
+          ${isEdit ? '💾 Factuur opslaan' : '🧾 Factuur aanmaken'}
         </button>
       </form>
     </div>
@@ -1311,6 +1383,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       backdrop.querySelector('#bk-client-city').value  = c.city    || '';
       backdrop.querySelector('#bk-client-kvk').value   = c.kvk     || '';
       backdrop.querySelector('#bk-client-email').value = c.email   || '';
+      backdrop.querySelector('#bk-client-phone').value = c.phone   || '';
     }
     if (prefillClient) fillClient(prefillClient);
 
@@ -1370,6 +1443,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         city:    backdrop.querySelector('#bk-client-city').value.trim(),
         kvk:     backdrop.querySelector('#bk-client-kvk').value.trim(),
         email:   backdrop.querySelector('#bk-client-email').value.trim(),
+        phone:   backdrop.querySelector('#bk-client-phone').value.trim(),
       },
       lines: [{
         description: backdrop.querySelector('#bk-desc').value.trim() || bedrijf.defaultDesc,
@@ -1397,10 +1471,10 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         (c.name || '').toLowerCase() === name.toLowerCase()
       );
       if (existing) {
-        await put('clients', { ...existing, lastUsed: Date.now() });
+        await put('clients', { ...existing, phone: inv.client.phone || existing.phone, lastUsed: Date.now() });
         ok(`Factuur ${inv.number} aangemaakt ✓`);
       } else if (name) {
-        await add('clients', { id: uid(), name, address: inv.client.address, city: inv.client.city, kvk: inv.client.kvk, email, lastUsed: Date.now() });
+        await add('clients', { id: uid(), name, address: inv.client.address, city: inv.client.city, kvk: inv.client.kvk, email, phone: inv.client.phone, lastUsed: Date.now() });
         ok(`Factuur ${inv.number} aangemaakt · ${name} opgeslagen als klant ✓`);
       } else {
         ok(`Factuur ${inv.number} aangemaakt ✓`);
@@ -2105,10 +2179,32 @@ function printInvoice(inv, bedrijf) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
+function openInvoiceViewer(inv, bedrijf) {
+  if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
+  const html = generateInvoiceHTML(inv, bedrijf);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'bk-invoice-overlay';
+  overlay.innerHTML = `
+    <div class="bk-ov-bar">
+      <button id="ov-close" class="bk-ov-close">← Terug</button>
+      <span class="bk-ov-title">${escapeHTML(inv.number || 'Factuur')}</span>
+      <a id="ov-dl" href="${url}" download="${escapeHTML(inv.number || 'factuur')}.html" class="bk-ov-dl">⬇ Opslaan</a>
+    </div>
+    <iframe src="${url}" class="bk-inv-frame" sandbox="allow-same-origin allow-scripts allow-popups"></iframe>
+  `;
+  document.body.appendChild(overlay);
+  const cleanup = () => { overlay.remove(); URL.revokeObjectURL(url); };
+  overlay.querySelector('#ov-close').onclick = cleanup;
+}
+
 function openSendModal(inv, bedrijf, container) {
   if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
   const clientName  = inv.client?.name  || '';
   const clientEmail = inv.client?.email || '';
+  const clientPhone = inv.client?.phone || '';
   const subject     = `Factuur ${inv.number} — ${bedrijf.naam}`;
   const ibanFmt     = fmtIBAN(bedrijf.iban);
 
@@ -2153,8 +2249,8 @@ function openSendModal(inv, bedrijf, container) {
         <button class="bk-send-btn" id="snd-view">
           <span class="bk-send-icon">📄</span>
           <div>
-            <div class="bk-send-label">Factuur bekijken / afdrukken</div>
-            <div class="bk-send-sub">Opent als PDF — sla op of druk af</div>
+            <div class="bk-send-label">Factuur bekijken &amp; afdrukken</div>
+            <div class="bk-send-sub">Toont factuur in app — sla op als PDF of druk af</div>
           </div>
         </button>
 
@@ -2185,8 +2281,8 @@ function openSendModal(inv, bedrijf, container) {
         <button class="bk-send-btn" id="snd-wa">
           <span class="bk-send-icon">💬</span>
           <div>
-            <div class="bk-send-label">WhatsApp-samenvatting</div>
-            <div class="bk-send-sub">Betalingsinfo als WhatsApp-bericht</div>
+            <div class="bk-send-label">WhatsApp${clientPhone ? ' → ' + escapeHTML(clientPhone) : '-samenvatting'}</div>
+            <div class="bk-send-sub">${clientPhone ? 'Stuur direct naar klant' : 'Betalingsinfo als WhatsApp-bericht'}</div>
           </div>
         </button>
 
@@ -2206,7 +2302,7 @@ function openSendModal(inv, bedrijf, container) {
   backdrop.querySelector('#snd-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 
-  backdrop.querySelector('#snd-view').onclick = () => printInvoice(inv, bedrijf);
+  backdrop.querySelector('#snd-view').onclick = () => { backdrop.remove(); openInvoiceViewer(inv, bedrijf); };
 
   if (clientEmail) {
     backdrop.querySelector('#snd-mail-client').onclick = () => {
@@ -2219,7 +2315,11 @@ function openSendModal(inv, bedrijf, container) {
   };
 
   backdrop.querySelector('#snd-wa').onclick = () => {
-    window.open(`https://wa.me/?text=${waText}`, '_blank');
+    const phone = clientPhone.replace(/\D/g, '');
+    const waUrl = phone
+      ? `https://wa.me/${phone}?text=${waText}`
+      : `https://wa.me/?text=${waText}`;
+    window.open(waUrl, '_blank');
   };
 
   const shareBtn = backdrop.querySelector('#snd-share');
