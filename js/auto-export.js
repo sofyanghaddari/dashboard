@@ -2,7 +2,7 @@
 import { all } from './db.js';
 import { getSetting } from './settings.js';
 
-const STORES = ['rides','expenses','hizb_log','cards','goals','todos','shifts','notes','habits','habit_log','pots'];
+const STORES = ['rides','expenses','hizb_log','cards','goals','todos','shifts','notes','habits','habit_log','pots','invoices','purchase_invoices','km_log','clients'];
 const WEEK_MS = 7 * 24 * 3600 * 1000;
 
 export async function maybeAutoExport() {
