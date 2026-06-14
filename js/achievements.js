@@ -13,12 +13,12 @@ export const BADGES = [
   { id: 'cards-50',    emoji: '📚', name: '50 woorden', desc: '50 Arabische kaarten' },
   { id: 'cards-200',   emoji: '🧠', name: '200 woorden', desc: '200 Arabische kaarten' },
   { id: 'goal-done',   emoji: '🎯', name: 'Doel behaald', desc: 'Eerste doel op 100%' },
-  { id: 'shifts-10',   emoji: '⏱️', name: '10 diensten', desc: '10 diensten afgerond' },
+  { id: 'daily-100',   emoji: '💪', name: 'Honderd euro dag', desc: 'Eerste dag met €100+ inkomen' },
 ];
 
 export async function computeEarnedBadges() {
-  const [rides, hizb, cards, goals, shifts] = await Promise.all([
-    all('rides'), all('hizb_log'), all('cards'), all('goals'), all('shifts'),
+  const [rides, hizb, cards, goals] = await Promise.all([
+    all('rides'), all('hizb_log'), all('cards'), all('goals'),
   ]);
   const earned = new Set();
   if (rides.length >= 1) earned.add('first-ride');
@@ -39,7 +39,10 @@ export async function computeEarnedBadges() {
   if (cards.length >= 200) earned.add('cards-200');
 
   if (goals.some(g => Number(g.progress) >= 100)) earned.add('goal-done');
-  if (shifts.filter(s => s.endTime).length >= 10) earned.add('shifts-10');
+  // Groepeer ritten per dag en check of er een dag is met 100+ inkomen
+  const byDay = {};
+  rides.forEach(r => { const d = r.date.slice(0, 10); byDay[d] = (byDay[d] || 0) + Number(r.amount || 0); });
+  if (Object.values(byDay).some(t => t >= 100)) earned.add('daily-100');
 
   return earned;
 }

@@ -70,7 +70,7 @@ function getCutoff(period) {
 
 function inRange(dateStr, cutoff) {
   if (!cutoff) return true;
-  return dateStr >= cutoff;
+  return dateStr.slice(0, 10) >= cutoff;
 }
 
 function animateCount(el, target, isMoney = false, duration = 1500) {
@@ -109,7 +109,10 @@ function renderInkomenHero(rides, cutoff, period) {
   const total = filtered.reduce((s, r) => s + (r.amount || 0), 0);
 
   const byDay = {};
-  filtered.forEach(r => { byDay[r.date] = (byDay[r.date] || 0) + (r.amount || 0); });
+  filtered.forEach(r => {
+    const dk = r.date.slice(0, 10);
+    byDay[dk] = (byDay[dk] || 0) + (r.amount || 0);
+  });
   const days = Object.keys(byDay);
   const avgDay = days.length ? total / days.length : 0;
   const bestEntry = Object.entries(byDay).sort((a, b) => b[1] - a[1])[0];
@@ -196,7 +199,7 @@ function renderWeekdayStats(rides, cutoff) {
   filtered.forEach(r => {
     const wd = new Date(r.date.slice(0, 10) + 'T12:00:00').getDay(); // 0=zo, 6=za
     byWd[wd].total += r.amount || 0;
-    byWd[wd].days.add(r.date);
+    byWd[wd].days.add(r.date.slice(0, 10));
   });
 
   // Gemiddelde per rijdag
@@ -480,7 +483,9 @@ function renderActivityGrid(rides) {
   startD.setDate(today.getDate() - dayOfWeek - (WEEKS - 1) * 7);
 
   const byDay = {};
-  rides.forEach(r => { if (r.date) byDay[r.date] = (byDay[r.date] || 0) + (r.amount || 0); });
+  rides.forEach(r => {
+    if (r.date) { const dk = r.date.slice(0, 10); byDay[dk] = (byDay[dk] || 0) + (r.amount || 0); }
+  });
 
   const allVals = Object.values(byDay).filter(v => v > 0);
   const maxVal  = allVals.length ? Math.max(...allVals) : 1;

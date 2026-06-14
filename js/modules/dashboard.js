@@ -508,7 +508,7 @@ function getTip({ rides, hizb, todos, todayHizb, todayIncome, dailyGoal, monthIn
       smart.push(`Nog ${daysLeft} dagen, ${fmtMoney(needed / daysLeft)}/dag nodig. Huidig gemiddelde ligt lager — plan extra uren.`);
   }
 
-  const todayDue = todos.filter(t => !t.done && t.dueDate === ymd(now));
+  const todayDue = todos.filter(t => !t.done && !t.savedForLater && t.dueDate === ymd(now));
   if (todayDue.length > 0)
     smart.push(`${todayDue.length} taak${todayDue.length > 1 ? 'en staan' : ' staat'} gepland voor vandaag.`);
 

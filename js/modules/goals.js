@@ -247,6 +247,7 @@ function renderPots(container, pots) {
           <div class="pot-actions">
             <button class="pot-btn" data-pot-add="${p.id}" title="Toevoegen">+</button>
             <button class="pot-btn" data-pot-sub="${p.id}" title="Afhalen">−</button>
+            <button class="pot-btn" data-pot-edit="${p.id}" title="Bewerken">✎</button>
             <button class="pot-btn del" data-pot-del="${p.id}" title="Verwijderen">✕</button>
           </div>
         </div>
@@ -286,6 +287,12 @@ function renderPots(container, pots) {
         ok(`${fmtMoney(amt)} afgehaald van ${p.name}`);
         render(container);
       });
+    };
+  });
+  el.querySelectorAll('[data-pot-edit]').forEach(b => {
+    b.onclick = () => {
+      const p = pots.find(x => x.id === b.dataset.potEdit);
+      if (p) openPotModal(container, p);
     };
   });
   el.querySelectorAll('[data-pot-del]').forEach(b =>

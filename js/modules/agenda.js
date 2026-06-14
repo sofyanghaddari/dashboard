@@ -41,14 +41,6 @@ export async function render(container) {
 
   // Load ride data for income display
   const rides = await all('rides').catch(() => []);
-  const hizbLog = JSON.parse(localStorage.getItem('hizb_log_cache') || '[]'); // fallback
-  // Check today's hizb
-  const hizb = await (async () => {
-    try {
-      const { get } = await import('../db.js');
-      return await get('hizb_log', today);
-    } catch { return null; }
-  })();
 
   container.innerHTML = `
     <h1 class="page-title">Week</h1>
