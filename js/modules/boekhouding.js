@@ -2,7 +2,8 @@ import { all, put, del, add } from '../db.js';
 import { uid, fmtMoney, parseAmount, escapeHTML, ymd } from '../utils.js';
 import { ok, err } from '../components/toast.js';
 import { parseInvoiceText } from '../invoice-nlp.js';
-import { sendInvoiceEmail, gmailConfigured } from '../gmail.js';
+
+function gmailConfigured() { return !!localStorage.getItem('gmailClientId'); }
 
 // Escape-toets sluit het bovenste boekhouding-modal (eenmalig geregistreerd).
 if (!window._bkEscapeRegistered) {
@@ -2361,10 +2362,19 @@ async function sharePDF(inv, bedrijf) {
 
 async function sendViaGmail(inv, bedrijf) {
   if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
+  if (!gmailConfigured()) {
+    err('Gmail niet ingesteld — ga naar ⚙️ → Data → Gmail');
+    return;
+  }
+  if (!inv.client?.email) {
+    err('Geen e-mailadres bij deze klant — vul het in bij de klant');
+    return;
+  }
   try {
     const blob = await generateInvoicePDF(inv, bedrijf);
+    const { sendInvoiceEmail } = await import('../gmail.js');
     await sendInvoiceEmail(inv, bedrijf, blob);
-    ok(`Factuur ${inv.number} verstuurd naar ${inv.client?.email} ✓`);
+    ok(`Factuur ${inv.number} verstuurd naar ${inv.client.email} ✓`);
   } catch (e) {
     if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Onbekende fout'));
   }
@@ -2437,16 +2447,15 @@ function openSendModal(inv, bedrijf, container) {
       </div>
 
       <div class="bk-send-actions">
-        ${gmailConfigured() && clientEmail ? `
         <button class="bk-send-btn bk-send-primary" id="snd-gmail">
           <span class="bk-send-icon">📧</span>
           <div>
             <div class="bk-send-label">Verstuur via Gmail</div>
-            <div class="bk-send-sub">${escapeHTML(clientEmail)} — PDF als bijlage, direct verstuurd</div>
+            <div class="bk-send-sub">${clientEmail ? escapeHTML(clientEmail) + ' — PDF als bijlage' : gmailConfigured() ? 'Voeg e-mailadres toe bij klant' : 'Stel Gmail in via ⚙️ → Data'}</div>
           </div>
-        </button>` : ''}
+        </button>
 
-        <button class="bk-send-btn${gmailConfigured() && clientEmail ? '' : ' bk-send-primary'}" id="snd-pdf">
+        <button class="bk-send-btn" id="snd-pdf">
           <span class="bk-send-icon">📄</span>
           <div>
             <div class="bk-send-label">PDF opslaan / delen</div>
