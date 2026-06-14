@@ -41,6 +41,8 @@ function getAdmin(container) {
   return ADMINS[container.dataset.bkAdmin || 'taxi'] || ADMINS.taxi;
 }
 
+const OWNER_EMAIL = 'sofyanghaddari@gmail.com';
+
 // ─── FISCALE CONSTANTEN 2025 ─────────────────────────────────────────────────
 const KM_VERGOEDING = 0.23;   // €0,23 per zakelijke km (2025)
 const ZELFST_AFTREK = 2470;   // zelfstandigenaftrek 2025
@@ -1406,7 +1408,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
 
       backdrop.remove();
       render(container);
-      printInvoice(inv, bedrijf);
+      setTimeout(() => openSendModal(inv, bedrijf, container), 150);
     }
   };
 }
@@ -1677,9 +1679,10 @@ function openDetailModal(inv, container) {
 
       ${inv.note ? `<div class="bk-detail-block"><div class="bk-detail-label">Notitie</div><div style="font-size:.88rem;color:var(--text-dim)">${escapeHTML(inv.note)}</div></div>` : ''}
 
+      <button class="btn" id="det-send" style="width:100%;margin-bottom:10px;padding:14px;font-size:1rem;background:var(--accent);color:var(--on-accent);border-color:var(--accent)">📤 Factuur versturen</button>
       <div class="bk-detail-actions">
         <button class="btn" id="det-edit"  style="flex:1">✏️ Bewerken</button>
-        <button class="btn" id="det-print" style="flex:1">🖨️ Afdrukken</button>
+        <button class="btn" id="det-print" style="flex:1">🖨️ PDF</button>
         ${status !== 'betaald' ? `<button class="btn" id="det-paid" style="flex:1;background:rgba(154,179,140,.2);color:var(--ok);border-color:rgba(154,179,140,.4)">✓ Betaald</button>` : ''}
       </div>
       ${status !== 'betaald' ? `<button class="btn" id="det-remind" style="width:100%;margin-top:8px;background:rgba(191,176,154,.1);color:var(--accent);border-color:rgba(191,176,154,.3);font-size:.85rem">📋 Kopieer betalingsherinnering</button>` : ''}
@@ -1690,7 +1693,8 @@ function openDetailModal(inv, container) {
   document.body.appendChild(backdrop);
   backdrop.querySelector('#det-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
-  backdrop.querySelector('#det-print').onclick = () => { backdrop.remove(); printInvoice(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi); };
+  backdrop.querySelector('#det-send').onclick  = () => { backdrop.remove(); openSendModal(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi, container); };
+  backdrop.querySelector('#det-print').onclick = () => printInvoice(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi);
 
   backdrop.querySelector('#det-edit').onclick = () => {
     backdrop.remove();
@@ -1982,15 +1986,13 @@ function openEditKmModal(k, container) {
   };
 }
 
-// ─── PDF PRINT ────────────────────────────────────────────────────────────────
+// ─── PDF / VERZENDEN ─────────────────────────────────────────────────────────
 
-function printInvoice(inv, bedrijf) {
-  if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
+function generateInvoiceHTML(inv, bedrijf) {
   const line    = inv.lines?.[0] || {};
   const client  = inv.client || {};
   const ibanFmt = fmtIBAN(bedrijf.iban);
-
-  const html = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -2084,9 +2086,154 @@ function printInvoice(inv, bedrijf) {
 <script>window.addEventListener('load', () => { window.focus(); window.print(); });<\/script>
 </body>
 </html>`;
+}
 
-  const win = window.open('', '_blank');
-  if (!win) { err('Sta pop-ups toe om de factuur af te drukken'); return; }
-  win.document.write(html);
-  win.document.close();
+function printInvoice(inv, bedrijf) {
+  if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
+  const html = generateInvoiceHTML(inv, bedrijf);
+  // Gebruik blob URL — werkt op iPhone Safari (window.open+document.write wordt geblokkeerd)
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const win  = window.open(url, '_blank');
+  if (!win) {
+    // Fallback: download als HTML-bestand
+    const a = Object.assign(document.createElement('a'), { href: url, download: `${inv.number || 'factuur'}.html` });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function openSendModal(inv, bedrijf, container) {
+  if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
+  const clientName  = inv.client?.name  || '';
+  const clientEmail = inv.client?.email || '';
+  const subject     = `Factuur ${inv.number} — ${bedrijf.naam}`;
+  const ibanFmt     = fmtIBAN(bedrijf.iban);
+
+  const emailBody = [
+    `Geachte ${clientName || 'relatie'},`,
+    '',
+    `Hierbij ontvangt u factuur ${inv.number} van ${bedrijf.naam}.`,
+    '',
+    `Factuurnummer : ${inv.number}`,
+    `Factuurdatum  : ${fmtDateLong(inv.date)}`,
+    `Vervaldatum   : ${fmtDateLong(inv.dueDate)}`,
+    `Bedrag        : ${fmtMoney(inv.totalIncl || 0)} (incl. BTW ${inv.lines?.[0]?.vatRate || 0}%)`,
+    `Omschrijving  : ${inv.lines?.[0]?.description || ''}`,
+    '',
+    'Betalingsgegevens:',
+    `IBAN : ${ibanFmt}`,
+    `T.n.v.: ${bedrijf.naam}`,
+    `O.v.v.: ${inv.number}`,
+    '',
+    `Gelieve het bedrag vóór ${fmtDateLong(inv.dueDate)} over te maken.`,
+    '',
+    'Met vriendelijke groet,',
+    bedrijf.naam,
+    `KvK: ${bedrijf.kvk} | BTW: ${bedrijf.btw}`,
+  ].join('\n');
+
+  const waText = encodeURIComponent(
+    `Hallo${clientName ? ' ' + clientName : ''}, hierbij de factuurgegevens van ${bedrijf.naam}:\n\nFactuur: ${inv.number}\nBedrag: ${fmtMoney(inv.totalIncl || 0)}\nVervaldatum: ${fmtDateLong(inv.dueDate)}\n\nBetalen via:\nIBAN: ${ibanFmt}\nt.n.v. ${bedrijf.naam}\no.v.v. ${inv.number}\n\nBedankt!`
+  );
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal bk-modal">
+      <button type="button" class="modal-close" id="snd-x">×</button>
+      <div style="margin-bottom:18px">
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:3px">Factuur versturen</div>
+        <div style="font-size:.82rem;color:var(--text-dim)">${escapeHTML(inv.number)} · ${escapeHTML(clientName || '—')} · <span class="money">${fmtMoney(inv.totalIncl || 0)}</span></div>
+      </div>
+
+      <div class="bk-send-actions">
+        <button class="bk-send-btn" id="snd-view">
+          <span class="bk-send-icon">📄</span>
+          <div>
+            <div class="bk-send-label">Factuur bekijken / afdrukken</div>
+            <div class="bk-send-sub">Opent als PDF — sla op of druk af</div>
+          </div>
+        </button>
+
+        ${clientEmail ? `
+        <button class="bk-send-btn" id="snd-mail-client">
+          <span class="bk-send-icon">✉️</span>
+          <div>
+            <div class="bk-send-label">Mailen naar klant</div>
+            <div class="bk-send-sub">${escapeHTML(clientEmail)}</div>
+          </div>
+        </button>` : `
+        <div class="bk-send-btn bk-send-disabled">
+          <span class="bk-send-icon" style="opacity:.4">✉️</span>
+          <div>
+            <div class="bk-send-label" style="opacity:.5">Mailen naar klant</div>
+            <div class="bk-send-sub">Geen e-mailadres ingevuld voor deze klant</div>
+          </div>
+        </div>`}
+
+        <button class="bk-send-btn" id="snd-mail-self">
+          <span class="bk-send-icon">📬</span>
+          <div>
+            <div class="bk-send-label">Kopie naar mijzelf</div>
+            <div class="bk-send-sub">${escapeHTML(OWNER_EMAIL)}</div>
+          </div>
+        </button>
+
+        <button class="bk-send-btn" id="snd-wa">
+          <span class="bk-send-icon">💬</span>
+          <div>
+            <div class="bk-send-label">WhatsApp-samenvatting</div>
+            <div class="bk-send-sub">Betalingsinfo als WhatsApp-bericht</div>
+          </div>
+        </button>
+
+        ${typeof navigator.share !== 'undefined' ? `
+        <button class="bk-send-btn" id="snd-share">
+          <span class="bk-send-icon">📤</span>
+          <div>
+            <div class="bk-send-label">Delen</div>
+            <div class="bk-send-sub">Via AirDrop, Mail, WhatsApp of andere apps</div>
+          </div>
+        </button>` : ''}
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('#snd-x').onclick = () => backdrop.remove();
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+
+  backdrop.querySelector('#snd-view').onclick = () => printInvoice(inv, bedrijf);
+
+  if (clientEmail) {
+    backdrop.querySelector('#snd-mail-client').onclick = () => {
+      window.location.href = `mailto:${encodeURIComponent(clientEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+    };
+  }
+
+  backdrop.querySelector('#snd-mail-self').onclick = () => {
+    window.location.href = `mailto:${encodeURIComponent(OWNER_EMAIL)}?subject=${encodeURIComponent('[Kopie] ' + subject)}&body=${encodeURIComponent(emailBody)}`;
+  };
+
+  backdrop.querySelector('#snd-wa').onclick = () => {
+    window.open(`https://wa.me/?text=${waText}`, '_blank');
+  };
+
+  const shareBtn = backdrop.querySelector('#snd-share');
+  if (shareBtn) {
+    shareBtn.onclick = async () => {
+      try {
+        const html  = generateInvoiceHTML(inv, bedrijf);
+        const file  = new File([html], `${inv.number || 'factuur'}.html`, { type: 'text/html' });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: subject });
+        } else {
+          await navigator.share({ title: subject, text: emailBody });
+        }
+      } catch (_) {}
+    };
+  }
 }
