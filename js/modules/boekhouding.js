@@ -2484,7 +2484,7 @@ function openSendModal(inv, bedrijf, container) {
           <span class="bk-send-icon">📬</span>
           <div>
             <div class="bk-send-label">Kopie naar mijzelf</div>
-            <div class="bk-send-sub">${escapeHTML(OWNER_EMAIL)}</div>
+            <div class="bk-send-sub">${gmailConfigured() ? escapeHTML(OWNER_EMAIL) + ' — PDF als bijlage' : 'PDF downloaden · mail openen'}</div>
           </div>
         </button>
 
@@ -2516,17 +2516,36 @@ function openSendModal(inv, bedrijf, container) {
 
   backdrop.querySelector('#snd-mail-self').onclick = async () => {
     backdrop.remove();
-    if (!gmailConfigured()) {
-      err('Gmail niet ingesteld — ga naar ⚙️ → Data → Gmail');
-      return;
-    }
-    try {
-      const blob = await generateInvoicePDF(inv, bedrijf);
-      const { sendInvoiceEmail } = await import('../gmail.js');
-      await sendInvoiceEmail(inv, bedrijf, blob, { to: OWNER_EMAIL, subjectPrefix: '[Kopie] ' });
-      ok('Kopie verstuurd naar ' + OWNER_EMAIL + ' ✓');
-    } catch (e) {
-      if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Onbekende fout'));
+    if (gmailConfigured()) {
+      // Gmail geconfigureerd → stuur email met PDF als bijlage
+      try {
+        const blob = await generateInvoicePDF(inv, bedrijf);
+        const { sendInvoiceEmail } = await import('../gmail.js');
+        await sendInvoiceEmail(inv, bedrijf, blob, { to: OWNER_EMAIL, subjectPrefix: '[Kopie] ' });
+        ok('Kopie verstuurd naar ' + OWNER_EMAIL + ' ✓');
+      } catch (e) {
+        if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Onbekende fout'));
+      }
+    } else {
+      // Geen Gmail → PDF downloaden/delen + mail openen voor tekst-kopie
+      try {
+        const blob = await generateInvoicePDF(inv, bedrijf);
+        const filename = `${inv.number || 'factuur'}.pdf`;
+        const file = new File([blob], filename, { type: 'application/pdf' });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ title: `Factuur ${inv.number}`, files: [file] });
+        } else {
+          const url = URL.createObjectURL(blob);
+          Object.assign(document.createElement('a'), { href: url, download: filename }).click();
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+          ok('PDF opgeslagen — voeg toe als bijlage in je mail ✓');
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') err('PDF: ' + (e.message || 'Onbekende fout'));
+      }
+      setTimeout(() => {
+        window.location.href = `mailto:${encodeURIComponent(OWNER_EMAIL)}?subject=${encodeURIComponent('[Kopie] ' + subject)}&body=${encodeURIComponent(emailBody)}`;
+      }, 600);
     }
   };
 

@@ -15,7 +15,7 @@ const LOCATIONS = [
   { label: 'Amsterdam Nieuw-West', icon: '📍', zone: 'nieuwwest' },
   { label: 'Amsterdam Zuidoost (Bijlmer)', icon: '📍', zone: 'zuidoost' },
   { label: 'Schiphol Airport', icon: '✈️', zone: 'schiphol' },
-  { label: 'Amsterdam RAI', icon: '🏢', zone: 'zuidoost' },
+  { label: 'Amsterdam RAI', icon: '🏢', zone: 'rai' },
   { label: 'Ziggo Dome', icon: '🎵', zone: 'zuidoost' },
   { label: 'Johan Cruyff ArenA', icon: '⚽', zone: 'zuidoost' },
   { label: 'AFAS Live', icon: '🎤', zone: 'zuidoost' },
