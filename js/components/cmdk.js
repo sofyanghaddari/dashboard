@@ -23,15 +23,15 @@ export async function openSearch() {
   backdrop.className = 'cmdk-backdrop';
   backdrop.innerHTML = `
     <div class="cmdk">
-      <input id="cmdk-input" placeholder="Zoek in alles… (ritten, taken, doelen, kaarten)" autofocus />
+      <input id="cmdk-input" placeholder="Zoek in alles… (taken, doelen, facturen, klanten, kaarten)" autofocus />
       <div id="cmdk-results" class="cmdk-results"></div>
       <div class="cmdk-hint">Esc om te sluiten · Pijltjes om te navigeren · Enter om te openen</div>
     </div>`;
   document.body.appendChild(backdrop);
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeSearch(); });
 
-  const [rides, expenses, todos, goals, cards, notes] = await Promise.all([
-    all('rides'), all('expenses'), all('todos'), all('goals'), all('cards'), all('notes'),
+  const [rides, todos, goals, cards, notes, invoices, clients] = await Promise.all([
+    all('rides'), all('todos'), all('goals'), all('cards'), all('notes'), all('invoices'), all('clients'),
   ]);
 
   let selected = 0;
@@ -66,11 +66,14 @@ export async function openSearch() {
       cards.filter(c => c.front.toLowerCase().includes(f) || c.back.toLowerCase().includes(f)).slice(0, 8).forEach(c => {
         items.push({ label: `📚 ${c.front} → ${c.back}`, action: () => navigate('arabic') });
       });
-      rides.filter(r => (r.note || '').toLowerCase().includes(f) || (r.source || '').includes(f) || String(r.amount).includes(f)).slice(0, 8).forEach(r => {
-        items.push({ label: `🚖 ${fmtMoney(r.amount)} · ${r.source} · ${new Date(r.date).toLocaleDateString('nl-NL')}`, action: () => navigate('taxi') });
+      rides.filter(r => (r.note || '').toLowerCase().includes(f) || String(r.amount).includes(f)).slice(0, 5).forEach(r => {
+        items.push({ label: `🚖 ${fmtMoney(r.amount)} · ${new Date(r.date).toLocaleDateString('nl-NL')}${r.note ? ' · ' + r.note : ''}`, action: () => navigate('taxi') });
       });
-      expenses.filter(e => (e.note || '').toLowerCase().includes(f) || (e.category || '').includes(f)).slice(0, 8).forEach(e => {
-        items.push({ label: `💸 ${fmtMoney(e.amount)} · ${e.category}`, action: () => navigate('taxi') });
+      invoices.filter(i => (i.client?.name || '').toLowerCase().includes(f) || (i.number || '').toLowerCase().includes(f) || (i.lines?.[0]?.description || '').toLowerCase().includes(f)).slice(0, 5).forEach(i => {
+        items.push({ label: `🧾 ${i.number} — ${i.client?.name || '—'} · ${fmtMoney(i.totalIncl || 0)}`, action: () => navigate('boekhouding') });
+      });
+      clients.filter(c => (c.name || '').toLowerCase().includes(f) || (c.email || '').toLowerCase().includes(f) || (c.city || '').toLowerCase().includes(f)).slice(0, 5).forEach(c => {
+        items.push({ label: `👥 ${c.name}${c.city ? ' · ' + c.city : ''}${c.email ? ' · ' + c.email : ''}`, action: () => navigate('boekhouding') });
       });
       notes.filter(n => (n.title || '').toLowerCase().includes(f) || (n.body || '').toLowerCase().includes(f)).slice(0, 5).forEach(n => {
         items.push({ label: `📝 ${n.title || '(geen titel)'} — ${(n.body || '').slice(0, 40)}`, action: () => navigate('notes') });
