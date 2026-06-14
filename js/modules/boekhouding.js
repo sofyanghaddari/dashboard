@@ -140,14 +140,11 @@ function inYear(dateStr, y) {
 async function nextInvoiceNumber(bedrijf) {
   const invoices = await all('invoices');
   const year = new Date().getFullYear();
-  const prefix = `${bedrijf.prefix}-${year}-`;
   const nums = invoices
     .filter(i => (i.adminId || 'taxi') === bedrijf.id)
-    .map(i => i.number || '')
-    .filter(n => n.startsWith(prefix))
-    .map(n => parseInt(n.replace(prefix, ''), 10) || 0);
+    .map(i => { const m = (i.number || '').match(/(\d+)$/); return m ? parseInt(m[1], 10) : 0; });
   const next = nums.length ? Math.max(...nums) + 1 : 1;
-  return `${prefix}${String(next).padStart(3, '0')}`;
+  return `${year}-${String(next).padStart(3, '0')}`;
 }
 
 function cleanInv(inv) {
@@ -307,8 +304,12 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
   const btwBetaald   = purchases.filter(i => inQuarter(i.date, q, y)).reduce((s, i) => s + (i.vatAmount || 0), 0);
   const btwSaldo     = btwOntvangen - btwBetaald;
 
-  // Recent facturen (laatste 5)
-  const recent = [...invoices].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 5);
+  // Openstaande/vervallen facturen eerst, daarna recente betaalde
+  const openInv  = invoices.filter(i => i._status === 'open' || i._status === 'overdue')
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const otherInv = invoices.filter(i => i._status !== 'open' && i._status !== 'overdue')
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const recent = [...openInv, ...otherInv].slice(0, 5);
 
   view.innerHTML = `
     <div class="bk-kpi-grid">
@@ -519,7 +520,7 @@ function renderFacturen(view, invoices, container) {
     btn.onclick = e => {
       e.stopPropagation();
       const inv = invoices.find(i => i.id === btn.dataset.id);
-      if (inv) printInvoice(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi);
+      if (inv) sharePDF(inv, ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi);
     };
   });
 }
@@ -2208,101 +2209,131 @@ function loadJsPdf() {
 
 async function generateInvoicePDF(inv, bedrijf) {
   const JsPDF = await loadJsPdf();
-  const doc   = new JsPDF({ unit: 'mm', format: 'a4' });
+  const doc    = new JsPDF({ unit: 'mm', format: 'a4' });
   const line   = inv.lines?.[0] || {};
   const client = inv.client  || {};
   const L = 20, R = 190, W = 170;
+  const TAUPE = [138, 126, 111];
+  const DARK  = [26, 26, 26];
+  const MED   = [85, 85, 85];
+  const DIM   = [153, 153, 153];
+  const BG    = [248, 247, 245];
+
+  // ── Accent balk bovenin ──
+  doc.setFillColor(...TAUPE);
+  doc.rect(0, 0, 210, 6, 'F');
 
   // ── Bedrijfsnaam ──
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.setTextColor(26, 26, 26);
-  doc.text(bedrijf.naam, L, 22);
+  doc.setFontSize(15);
+  doc.setTextColor(...DARK);
+  doc.text(bedrijf.naam, L, 18);
 
   // ── Bedrijfsgegevens ──
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
-  doc.setTextColor(102, 102, 102);
-  doc.text([bedrijf.adres, bedrijf.postcode, `BTW: ${bedrijf.btw}`, `KvK: ${bedrijf.kvk}`, `IBAN: ${fmtIBAN(bedrijf.iban)}`].join('\n'), L, 30, { lineHeightFactor: 1.65 });
+  doc.setTextColor(...MED);
+  doc.text([bedrijf.adres, bedrijf.postcode, `KvK: ${bedrijf.kvk}   BTW: ${bedrijf.btw}`, `IBAN: ${fmtIBAN(bedrijf.iban)}`].join('\n'), L, 25, { lineHeightFactor: 1.6 });
 
-  // ── "FACTUUR" rechts ──
+  // ── "FACTUUR" + meta rechts ──
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(30);
-  doc.setTextColor(138, 126, 111);
-  doc.text('FACTUUR', R, 22, { align: 'right' });
+  doc.setFontSize(28);
+  doc.setTextColor(...TAUPE);
+  doc.text('FACTUUR', R, 18, { align: 'right' });
 
-  // ── Factuurmeta rechts ──
-  let mY = 32;
+  let mY = 27;
   [['Nummer:', inv.number || '—'], ['Datum:', fmtDateLong(inv.date)], ['Vervaldatum:', fmtDateLong(inv.dueDate)]].forEach(([lbl, val]) => {
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(102, 102, 102);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...DIM);
     doc.text(lbl, R - 55, mY);
-    doc.setFont('helvetica', 'bold'); doc.setTextColor(26, 26, 26);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
     doc.text(val, R, mY, { align: 'right' });
     mY += 5.5;
   });
 
   // ── Scheidingslijn ──
-  doc.setDrawColor(232, 228, 222); doc.setLineWidth(0.4); doc.line(L, 58, R, 58);
+  const sep1 = 52;
+  doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.4); doc.line(L, sep1, R, sep1);
 
-  // ── Klantbox ──
-  doc.setFillColor(248, 247, 245); doc.roundedRect(L, 64, W, 36, 2, 2, 'F');
-  doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(153, 153, 153);
-  doc.text('FACTUUR AAN', L + 5, 71);
-  doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(26, 26, 26);
-  doc.text(client.name || '—', L + 5, 78);
-  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(85, 85, 85);
-  const clientLines = [client.address, client.city, client.kvk ? `KvK: ${client.kvk}` : null, client.email].filter(Boolean);
-  if (clientLines.length) doc.text(clientLines.join('\n'), L + 5, 84, { lineHeightFactor: 1.55 });
+  // ── Klantbox (dynamische hoogte) ──
+  const clientInfoLines = [client.address, client.city, client.kvk ? `KvK: ${client.kvk}` : null, client.email, client.phone].filter(Boolean);
+  const boxH = 22 + clientInfoLines.length * 5;
+  const boxY = sep1 + 5;
+  doc.setFillColor(...BG);
+  doc.roundedRect(L, boxY, W, boxH, 2, 2, 'F');
+  doc.setFillColor(...TAUPE);
+  doc.rect(L, boxY, 3, boxH, 'F');
+
+  doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(...DIM);
+  doc.text('FACTUUR AAN', L + 7, boxY + 8);
+  doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
+  doc.text(client.name || '—', L + 7, boxY + 15);
+  if (clientInfoLines.length) {
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
+    doc.text(clientInfoLines.join('\n'), L + 7, boxY + 21, { lineHeightFactor: 1.55 });
+  }
 
   // ── Tabelkop ──
-  const tY = 110;
-  doc.setFillColor(248, 247, 245); doc.rect(L, tY, W, 7, 'F');
-  doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(153, 153, 153);
+  const tY = boxY + boxH + 10;
+  doc.setFillColor(...TAUPE);
+  doc.rect(L, tY, W, 7, 'F');
+  doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
   doc.text('OMSCHRIJVING', L + 2, tY + 5);
-  doc.text('BTW', R - 56, tY + 5);
-  doc.text('EXCL. BTW', R - 28, tY + 5, { align: 'right' });
+  doc.text('BTW', R - 53, tY + 5, { align: 'right' });
+  doc.text('EXCL. BTW', R - 27, tY + 5, { align: 'right' });
   doc.text('TOTAAL INCL.', R, tY + 5, { align: 'right' });
 
-  // ── Tabelrij ──
-  doc.setDrawColor(240, 237, 232); doc.setLineWidth(0.25);
+  // ── Tabelrij (met tekst-omloop) ──
+  const descText  = line.description || bedrijf.defaultDesc || 'Vervoersdienst';
+  const descLines = doc.splitTextToSize(descText, 90);
+  const rowH      = Math.max(12, descLines.length * 5 + 4);
+
+  doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
   doc.line(L, tY + 7, R, tY + 7);
-  doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(26, 26, 26);
-  doc.text(line.description || bedrijf.defaultDesc || 'Vervoersdienst', L + 2, tY + 14);
-  doc.setFontSize(9); doc.setTextColor(85, 85, 85);
-  doc.text(`${line.vatRate ?? 0}%`, R - 56, tY + 14);
-  doc.text(fmtMoney(inv.totalExcl || 0), R - 28, tY + 14, { align: 'right' });
-  doc.setFont('helvetica', 'bold'); doc.setTextColor(26, 26, 26);
-  doc.text(fmtMoney(inv.totalIncl || 0), R, tY + 14, { align: 'right' });
-  doc.line(L, tY + 18, R, tY + 18);
+
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(...DARK);
+  doc.text(descLines, L + 2, tY + 13);
+  const rowMidY = tY + 7 + rowH / 2 + 1.5;
+  doc.setFontSize(9); doc.setTextColor(...MED);
+  doc.text(`${line.vatRate ?? 0}%`, R - 53, rowMidY, { align: 'right' });
+  doc.text(fmtMoney(inv.totalExcl || 0), R - 27, rowMidY, { align: 'right' });
+  doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
+  doc.text(fmtMoney(inv.totalIncl || 0), R, rowMidY, { align: 'right' });
+
+  doc.line(L, tY + 7 + rowH, R, tY + 7 + rowH);
 
   // ── Totalen ──
-  let tTY = tY + 26;
-  const totX = R - 72;
-  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(85, 85, 85);
+  let tTY = tY + 7 + rowH + 9;
+  const totX = R - 75;
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
   [[`Subtotaal excl. BTW`, fmtMoney(inv.totalExcl || 0)],
    [`BTW ${line.vatRate ?? 0}%`, fmtMoney(inv.totalVat || 0)]].forEach(([lbl, val]) => {
-    doc.text(lbl, totX, tTY); doc.text(val, R, tTY, { align: 'right' }); tTY += 5;
+    doc.text(lbl, totX, tTY); doc.text(val, R, tTY, { align: 'right' }); tTY += 5.5;
   });
-  doc.setDrawColor(26, 26, 26); doc.setLineWidth(0.7); doc.line(totX, tTY + 1, R, tTY + 1);
-  tTY += 5;
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(26, 26, 26);
-  doc.text('Totaal', totX, tTY);
+  doc.setDrawColor(...TAUPE); doc.setLineWidth(0.8); doc.line(totX, tTY + 1, R, tTY + 1);
+  tTY += 6;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...DARK);
+  doc.text('Te betalen', totX, tTY);
+  doc.setFontSize(14); doc.setTextColor(...TAUPE);
   doc.text(fmtMoney(inv.totalIncl || 0), R, tTY, { align: 'right' });
 
   // ── Betaalinstructies ──
-  const pY = tTY + 12;
-  doc.setFillColor(248, 247, 245); doc.roundedRect(L, pY, W, 22, 2, 2, 'F');
-  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(85, 85, 85);
-  doc.text(`Gelieve ${fmtMoney(inv.totalIncl || 0)} voor ${fmtDateLong(inv.dueDate)} over te maken naar:`, L + 5, pY + 6);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(26, 26, 26);
-  doc.text(fmtIBAN(bedrijf.iban), L + 5, pY + 12);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(85, 85, 85);
-  doc.text(`t.n.v. ${bedrijf.naam}  o.v.v. ${inv.number || ''}`, L + 5, pY + 18);
+  const pY    = tTY + 12;
+  const pBoxH = 24;
+  doc.setFillColor(...BG);
+  doc.roundedRect(L, pY, W, pBoxH, 2, 2, 'F');
+  doc.setFillColor(...TAUPE);
+  doc.rect(L, pY, 3, pBoxH, 'F');
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
+  doc.text(`Gelieve ${fmtMoney(inv.totalIncl || 0)} voor ${fmtDateLong(inv.dueDate)} over te maken naar:`, L + 7, pY + 7);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...DARK);
+  doc.text(fmtIBAN(bedrijf.iban), L + 7, pY + 14);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MED);
+  doc.text(`t.n.v. ${bedrijf.naam}   o.v.v. ${inv.number || ''}`, L + 7, pY + 20);
 
   // ── Footer ──
-  doc.setDrawColor(232, 228, 222); doc.setLineWidth(0.3); doc.line(L, 278, R, 278);
-  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(170, 170, 170);
-  doc.text(`${bedrijf.naam}  KvK ${bedrijf.kvk}  BTW ${bedrijf.btw}`, L, 283);
+  doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.3); doc.line(L, 278, R, 278);
+  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(...DIM);
+  doc.text(`${bedrijf.naam}  ·  KvK ${bedrijf.kvk}  ·  BTW ${bedrijf.btw}`, L, 283);
   doc.text(inv.number || '', R, 283, { align: 'right' });
 
   return doc.output('blob');
