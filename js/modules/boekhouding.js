@@ -2514,8 +2514,20 @@ function openSendModal(inv, bedrijf, container) {
     };
   }
 
-  backdrop.querySelector('#snd-mail-self').onclick = () => {
-    window.location.href = `mailto:${encodeURIComponent(OWNER_EMAIL)}?subject=${encodeURIComponent('[Kopie] ' + subject)}&body=${encodeURIComponent(emailBody)}`;
+  backdrop.querySelector('#snd-mail-self').onclick = async () => {
+    backdrop.remove();
+    if (!gmailConfigured()) {
+      err('Gmail niet ingesteld — ga naar ⚙️ → Data → Gmail');
+      return;
+    }
+    try {
+      const blob = await generateInvoicePDF(inv, bedrijf);
+      const { sendInvoiceEmail } = await import('../gmail.js');
+      await sendInvoiceEmail(inv, bedrijf, blob, { to: OWNER_EMAIL, subjectPrefix: '[Kopie] ' });
+      ok('Kopie verstuurd naar ' + OWNER_EMAIL + ' ✓');
+    } catch (e) {
+      if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Onbekende fout'));
+    }
   };
 
   backdrop.querySelector('#snd-wa').onclick = () => {

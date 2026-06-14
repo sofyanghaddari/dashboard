@@ -183,12 +183,12 @@ function buildHtmlEmail(inv, bedrijf) {
 </html>`;
 }
 
-export async function sendInvoiceEmail(inv, bedrijf, pdfBlob) {
-  const to = inv.client?.email;
+export async function sendInvoiceEmail(inv, bedrijf, pdfBlob, options = {}) {
+  const to = options.to || inv.client?.email;
   if (!to) throw new Error('Geen e-mailadres bij deze klant');
 
   const filename = `${inv.number || 'factuur'}.pdf`;
-  const subject  = `Factuur ${inv.number} — ${bedrijf.naam}`;
+  const subject  = `${options.subjectPrefix || ''}Factuur ${inv.number} — ${bedrijf.naam}`;
   const htmlBody = buildHtmlEmail(inv, bedrijf);
   const pdfB64   = await blobToBase64Lines(pdfBlob);
   const outerB   = `----=_Mixed_${Math.random().toString(36).slice(2)}`;
