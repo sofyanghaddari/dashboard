@@ -59,6 +59,7 @@ const ASSETS = [
   './js/modules/boekhouding.js',
   './js/invoice-nlp.js',
   './js/gmail.js',
+  './js/qibla.js',
   './js/components/calendar.js',
   './js/components/year-review.js',
   './js/data/arabic-words.js',

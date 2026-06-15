@@ -5,6 +5,7 @@ import { celebrateTask } from '../components/celebrate.js';
 import { ok, err } from '../components/toast.js';
 import { HIZBS } from '../data/hizbs.js';
 import { initCountUps } from '../animate.js';
+import { openQibla } from '../qibla.js';
 
 let _reminderTimer = null;
 const CIRCUMFERENCE = 2 * Math.PI * 50;
@@ -25,6 +26,14 @@ export async function render(container) {
   const tab = container.dataset.koranTab || 'hizb';
   container.innerHTML = `
     <h1 class="page-title">Koran</h1>
+    <button id="koran-qibla-btn" style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 16px;margin-bottom:16px;cursor:pointer;color:#f5f0e8;text-align:left">
+      <span style="font-size:1.4rem">🧭</span>
+      <div style="flex:1">
+        <div style="font-size:.88rem;font-weight:600;letter-spacing:-.01em">Qibla kompas</div>
+        <div style="font-size:.74rem;color:#686868;margin-top:2px">Richting naar Mekka</div>
+      </div>
+      <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M1 1l5 5-5 5" stroke="#555" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     <div class="todo-seg" style="margin-bottom:16px">
       <button class="todo-seg-btn ${tab==='hizb'?'active':''}" id="ktab-hizb">📖 Hizb</button>
       <button class="todo-seg-btn ${tab==='soeras'?'active':''}" id="ktab-soeras">📋 Soera's</button>
@@ -32,6 +41,7 @@ export async function render(container) {
     <div id="koran-content"></div>
   `;
 
+  container.querySelector('#koran-qibla-btn').onclick = () => openQibla();
   container.querySelector('#ktab-hizb').onclick   = () => { container.dataset.koranTab = 'hizb';   render(container); };
   container.querySelector('#ktab-soeras').onclick = () => { container.dataset.koranTab = 'soeras'; render(container); };
 
