@@ -15,7 +15,7 @@ export async function render(container) {
   container.querySelectorAll('.geloof-sub-btn').forEach(btn => {
     btn.onclick = () => {
       container.dataset.geloofSub = btn.dataset.sub;
-      render(container);
+      render(container).catch(e => console.error('Geloof render fout:', e));
     };
   });
 

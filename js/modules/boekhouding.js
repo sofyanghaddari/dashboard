@@ -450,6 +450,7 @@ function renderFacturen(view, invoices, container) {
               <span class="bk-card-num">${escapeHTML(inv.number || '')}</span>
               <span>·</span>
               <span class="bk-card-date">${fmtDateLong(inv.date)}</span>
+              ${inv.sentAt ? `<span style="font-size:.68rem;color:var(--ok);margin-left:4px">✉ verstuurd</span>` : ''}
             </div>
             <div class="bk-card-bot">
               <div>
@@ -1833,7 +1834,8 @@ function openDetailModal(inv, container) {
         <div class="bk-detail-label">Data</div>
         <div class="bk-detail-row"><span>Factuurdatum</span><span>${fmtDateLong(inv.date)}</span></div>
         <div class="bk-detail-row"><span>Vervaldatum</span><span>${fmtDateLong(inv.dueDate)}</span></div>
-        ${inv.paidAt ? `<div class="bk-detail-row"><span>Betaald op</span><span>${fmtDateLong(inv.paidAt)}</span></div>` : ''}
+        ${inv.sentAt  ? `<div class="bk-detail-row"><span>Verstuurd op</span><span>${fmtDateLong(new Date(inv.sentAt).toISOString().slice(0,10))}</span></div>` : ''}
+        ${inv.paidAt  ? `<div class="bk-detail-row"><span>Betaald op</span><span>${fmtDateLong(inv.paidAt)}</span></div>` : ''}
       </div>
 
       <div class="bk-detail-block">
@@ -2496,6 +2498,7 @@ async function sendViaGmail(inv, bedrijf, opts = {}) {
     return;
   }
 
+  let mainSent = false;
   try {
     await sendInvoiceEmail(inv, bedrijf, blob, {
       to: recipient,
@@ -2503,18 +2506,26 @@ async function sendViaGmail(inv, bedrijf, opts = {}) {
       subject: subject || undefined,
       message: message || undefined,
     });
+    mainSent = true;
     ok(`Factuur ${inv.number} verstuurd naar ${recipient} ✓`);
+    // Markeer factuur als verstuurd
+    try { await put('invoices', { ...cleanInv(inv), sentAt: Date.now() }); } catch (_) {}
+  } catch (e) {
+    if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Inloggen mislukt of netwerk-fout'));
+    return;
+  }
 
-    if (selfCopy) {
+  if (selfCopy && mainSent) {
+    try {
       await sendInvoiceEmail(inv, bedrijf, blob, {
         to: OWNER_EMAIL,
         subject: `[Kopie] ${subject || `Factuur ${inv.number} — ${bedrijf.naam}`}`,
         message: message || undefined,
       });
       ok(`Kopie verstuurd naar ${OWNER_EMAIL} ✓`);
+    } catch (e) {
+      if (e.name !== 'AbortError') err('Kopie niet verstuurd: ' + (e.message || 'Gmail fout'));
     }
-  } catch (e) {
-    if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Onbekende fout'));
   }
 }
 

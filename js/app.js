@@ -38,8 +38,8 @@ async function bootApp() {
   register('dashboard', renderDashboard);
   register('taxi', renderTaxi);
   register('geloof', renderGeloof);
-  register('koran',  (v) => { document.getElementById('view').dataset.geloofSub = 'koran';  navigate('geloof'); });
-  register('arabic', (v) => { document.getElementById('view').dataset.geloofSub = 'arabic'; navigate('geloof'); });
+  register('koran',  (v) => { v.dataset.geloofSub = 'koran';  navigate('geloof'); });
+  register('arabic', (v) => { v.dataset.geloofSub = 'arabic'; navigate('geloof'); });
   register('goals', renderGoals);
   register('todo', renderTodo);
   register('notes', renderNotes);

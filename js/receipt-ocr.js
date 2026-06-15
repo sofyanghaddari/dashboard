@@ -84,8 +84,8 @@ export function parseReceiptText(rawText) {
       const rM = ll.match(/(\d+)\s*%/);
       const r  = rM ? parseInt(rM[1]) : null;
       if (r !== null && [0, 9, 21].includes(r)) {
-        // Take highest-rate BTW if multiple
-        if (!vatRate || r > vatRate) { vatRate = r; vatAmount = amt; }
+        // Take highest-rate BTW if multiple (vatRate===null means not yet set)
+        if (vatRate === null || r > vatRate) { vatRate = r; vatAmount = amt; }
       } else if (!vatAmount && amt > 0 && amt < 500) {
         vatAmount = amt; // Store without rate as candidate
       }
@@ -97,11 +97,11 @@ export function parseReceiptText(rawText) {
     totalAmount = Math.round((subtotal + vatAmount) * 100) / 100;
   }
   // Derive vat from total if vatRate known but vatAmount not
-  if (totalAmount && vatRate && !vatAmount) {
+  if (totalAmount && vatRate !== null && vatRate > 0 && vatAmount === null) {
     vatAmount = Math.round(totalAmount / (1 + vatRate / 100) * (vatRate / 100) * 100) / 100;
   }
-  // Default vatRate 21% (most common) when we have a vat amount but no rate
-  if (vatAmount && !vatRate) vatRate = 21;
+  // Default vatRate 21% (most common) when we have a vat amount but no rate at all
+  if (vatAmount && vatRate === null) vatRate = 21;
 
   // --- Leverancier: eerste alfanumerieke, niet-adres-achtige regel ---
   const skipRe = /^(btw|b\.t\.w|kvk|k\.v\.k|iban|bic|fax|tel|www\.|http|@|datum|bon |kassa|uw |kasticket|\d{4}\s*[a-z]{2}|\+31)/i;
