@@ -43,7 +43,7 @@ export async function getGmailToken() {
       reject(new Error('Ongeldig Client ID — controleer ⚙️ Instellingen → Data (moet eindigen op .apps.googleusercontent.com)'));
       return;
     }
-    tokenClient.requestToken();
+    tokenClient.requestAccessToken();
   });
 }
 
