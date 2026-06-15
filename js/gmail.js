@@ -22,6 +22,15 @@ export function gmailConfigured() {
   return !!localStorage.getItem('gmailClientId');
 }
 
+export function hasValidGmailToken() {
+  return !!(_accessToken && Date.now() < _tokenExpiry);
+}
+
+// Laad GSI alvast in de achtergrond — aanroepen zodra de modal opent
+export function preloadGSI() {
+  if (gmailConfigured()) loadGSI().catch(() => {});
+}
+
 export async function getGmailToken() {
   const clientId = localStorage.getItem('gmailClientId');
   if (!clientId) throw new Error('Gmail niet ingesteld — voeg Client ID toe in ⚙️ Instellingen → Data');
@@ -37,13 +46,21 @@ export async function getGmailToken() {
         _tokenExpiry  = Date.now() + ((resp.expires_in ?? 3600) - 60) * 1000;
         resolve(_accessToken);
       },
-      error_callback: (e) => reject(new Error(e?.type === 'popup_closed' ? 'Popup gesloten — probeer opnieuw' : e?.message || 'OAuth mislukt')),
+      error_callback: (e) => {
+        const msg = e?.type === 'popup_closed'
+          ? 'Popup gesloten — probeer opnieuw'
+          : (e?.message?.includes('popup') || e?.message?.includes('window'))
+            ? 'Popup geblokkeerd — zorg dat je ingelogd bent bij Google in Safari en probeer opnieuw'
+            : (e?.message || 'OAuth mislukt');
+        reject(new Error(msg));
+      },
     });
     if (!tokenClient) {
       reject(new Error('Ongeldig Client ID — controleer ⚙️ Instellingen → Data (moet eindigen op .apps.googleusercontent.com)'));
       return;
     }
-    tokenClient.requestAccessToken();
+    // Gebruik lege prompt zodat Google stille herauth gebruikt als sessie actief is
+    tokenClient.requestAccessToken({ prompt: '' });
   });
 }
 

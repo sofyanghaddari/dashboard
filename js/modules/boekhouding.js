@@ -2398,10 +2398,28 @@ async function sendViaGmail(inv, bedrijf, opts = {}) {
     return;
   }
 
-  try {
-    const blob = await generateInvoicePDF(inv, bedrijf);
-    const { sendInvoiceEmail } = await import('../gmail.js');
+  // Laad gmail.js module (is al in cache na openSendModal, dus vrijwel instant)
+  const { sendInvoiceEmail, getGmailToken } = await import('../gmail.js');
 
+  // Haal token op VÓÓR PDF-generatie — zo dicht mogelijk bij de gebruikersklik
+  // zodat iOS de OAuth-popup niet blokkeert
+  try {
+    await getGmailToken();
+  } catch (e) {
+    if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Inloggen mislukt'));
+    return;
+  }
+
+  // Nu pas de PDF genereren (token is gecached, geen popup meer nodig)
+  let blob;
+  try {
+    blob = await generateInvoicePDF(inv, bedrijf);
+  } catch (e) {
+    if (e.name !== 'AbortError') err('PDF: ' + (e.message || 'Onbekende fout'));
+    return;
+  }
+
+  try {
     await sendInvoiceEmail(inv, bedrijf, blob, {
       to: recipient,
       cc: cc || undefined,
@@ -2446,6 +2464,8 @@ function openInvoiceViewer(inv, bedrijf) {
 
 function openSendModal(inv, bedrijf, container) {
   if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
+  // Laad GSI alvast zodat requestAccessToken() snel beschikbaar is bij "Versturen"
+  if (gmailConfigured()) import('../gmail.js').then(m => m.preloadGSI()).catch(() => {});
   const clientName  = inv.client?.name  || '';
   const clientEmail = inv.client?.email || '';
   const clientPhone = inv.client?.phone || '';
