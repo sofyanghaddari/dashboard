@@ -5240,3 +5240,80 @@ label.subtask {
 }
 .bk-cp-row:last-child { border-bottom: none; }
 .bk-cp-row:active { background: var(--bg-elev-2); }
+
+/* ── Geloof sub-tabs ─────────────────────────────────────────────────────────── */
+.geloof-subnav {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 8px;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.geloof-sub-btn {
+  flex: 1;
+  padding: 10px 8px;
+  background: var(--bg-elev-2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: .9rem;
+  color: var(--text-dim);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+}
+.geloof-sub-btn.active {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+#geloof-sub-view { padding-top: 4px; }
+
+/* ── Bonnetje scanner ────────────────────────────────────────────────────────── */
+.rcpt-scan-wrap { margin-bottom: 16px; }
+.rcpt-scan-btn {
+  width: 100%;
+  padding: 13px;
+  background: var(--bg-elev-2);
+  border: 1.5px dashed var(--accent);
+  color: var(--accent);
+  font-size: .95rem;
+  font-weight: 600;
+  border-radius: 12px;
+}
+.rcpt-scan-btn:disabled { opacity: .5; }
+.rcpt-prog-wrap {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 10px 0 6px;
+}
+.rcpt-prog-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width .3s ease;
+  width: 0%;
+}
+.rcpt-status {
+  font-size: .82rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.rcpt-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.rcpt-tag {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: .8rem;
+  color: var(--text);
+}

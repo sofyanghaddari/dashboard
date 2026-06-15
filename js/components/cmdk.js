@@ -47,8 +47,8 @@ export async function openSearch() {
       items = [
         { label: '🏠 Dashboard', action: () => navigate('dashboard') },
         { label: '🚖 Taxi', action: () => navigate('taxi') },
-        { label: '📖 Koran', action: () => navigate('koran') },
-        { label: '📚 Arabisch', action: () => navigate('arabic') },
+        { label: '📖 Koran', action: () => { document.getElementById('view').dataset.geloofSub = 'koran'; navigate('geloof'); } },
+        { label: '📚 Arabisch', action: () => { document.getElementById('view').dataset.geloofSub = 'arabic'; navigate('geloof'); } },
         { label: '🎯 Doelen', action: () => navigate('goals') },
         { label: '✅ To-do', action: () => navigate('todo') },
         { label: '📝 Notities', action: () => navigate('notes') },
@@ -64,7 +64,7 @@ export async function openSearch() {
         items.push({ label: `🎯 ${g.title}`, action: () => navigate('goals') });
       });
       cards.filter(c => c.front.toLowerCase().includes(f) || c.back.toLowerCase().includes(f)).slice(0, 8).forEach(c => {
-        items.push({ label: `📚 ${c.front} → ${c.back}`, action: () => navigate('arabic') });
+        items.push({ label: `📚 ${c.front} → ${c.back}`, action: () => { document.getElementById('view').dataset.geloofSub = 'arabic'; navigate('geloof'); } });
       });
       rides.filter(r => (r.note || '').toLowerCase().includes(f) || String(r.amount).includes(f)).slice(0, 5).forEach(r => {
         items.push({ label: `🚖 ${fmtMoney(r.amount)} · ${new Date(r.date).toLocaleDateString('nl-NL')}${r.note ? ' · ' + r.note : ''}`, action: () => navigate('taxi') });

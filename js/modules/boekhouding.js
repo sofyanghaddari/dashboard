@@ -1560,6 +1560,20 @@ function openNewPurchaseModal(container) {
     <div class="modal bk-modal">
       <button type="button" class="modal-close" id="pk-x">×</button>
       <h2 style="margin:0 0 16px">Kosten boeken</h2>
+      <!-- Bonnetje scanner -->
+      <div class="rcpt-scan-wrap">
+        <input type="file" id="rcpt-file" accept="image/*" capture="environment" style="display:none" />
+        <button type="button" id="rcpt-btn" class="btn rcpt-scan-btn">
+          📷 Bonnetje scannen
+        </button>
+        <div id="rcpt-area" style="display:none">
+          <div id="rcpt-prog-wrap" class="rcpt-prog-wrap">
+            <div id="rcpt-prog-bar" class="rcpt-prog-bar"></div>
+          </div>
+          <div id="rcpt-status" class="rcpt-status">Scannen…</div>
+          <div id="rcpt-tags" class="rcpt-tags" style="display:none"></div>
+        </div>
+      </div>
       <form id="pk-form" autocomplete="off">
         <div class="bk-form-section">
           <div class="bk-section-title">Kosten</div>
@@ -1605,6 +1619,69 @@ function openNewPurchaseModal(container) {
   backdrop.querySelector('#pk-amount').addEventListener('input', refreshFn);
   backdrop.querySelector('#pk-vat').addEventListener('input', refreshFn);
   backdrop.querySelectorAll('input[name="pk-ie"]').forEach(r => r.addEventListener('change', refreshFn));
+
+  // ── Bonnetje scanner ──────────────────────────────────────────────────────
+  const rcptFile = backdrop.querySelector('#rcpt-file');
+  const rcptBtn  = backdrop.querySelector('#rcpt-btn');
+  const rcptArea = backdrop.querySelector('#rcpt-area');
+  const rcptProg = backdrop.querySelector('#rcpt-prog-bar');
+  const rcptStat = backdrop.querySelector('#rcpt-status');
+  const rcptTags = backdrop.querySelector('#rcpt-tags');
+
+  rcptBtn.onclick = () => rcptFile.click();
+
+  rcptFile.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    rcptArea.style.display = 'block';
+    rcptProg.style.width   = '0%';
+    rcptTags.style.display = 'none';
+    rcptBtn.disabled       = true;
+
+    const onProg = (msg, pct) => {
+      rcptStat.textContent = msg;
+      rcptProg.style.width = Math.round((pct || 0) * 100) + '%';
+    };
+
+    try {
+      const { ocrReceipt, parseReceiptText } = await import('../receipt-ocr.js');
+      const text   = await ocrReceipt(file, onProg);
+      const parsed = parseReceiptText(text);
+
+      // Auto-fill form
+      if (parsed.vendor)      backdrop.querySelector('#pk-vendor').value = parsed.vendor;
+      if (parsed.date)        backdrop.querySelector('#pk-date').value   = parsed.date;
+      if (parsed.totalAmount) {
+        backdrop.querySelector('#pk-amount').value = String(parsed.totalAmount).replace('.', ',');
+        backdrop.querySelector('input[name="pk-ie"][value="incl"]').checked = true;
+      }
+      if (parsed.vatRate !== null) backdrop.querySelector('#pk-vat').value = String(parsed.vatRate);
+      if (parsed.category)         backdrop.querySelector('#pk-cat').value = parsed.category;
+      refreshPurchaseCalc(backdrop);
+
+      // Show found tags
+      const tags = [
+        parsed.vendor      && `🏪 ${parsed.vendor}`,
+        parsed.totalAmount && `💶 ${parsed.totalAmount.toFixed(2).replace('.',',')}`,
+        parsed.vatRate     && `📋 BTW ${parsed.vatRate}%`,
+        parsed.date        && `📅 ${parsed.date}`,
+      ].filter(Boolean);
+
+      rcptProg.style.width   = '100%';
+      rcptStat.textContent   = tags.length ? '✓ Gevonden' : 'Controleer de velden hieronder';
+      rcptTags.style.display = 'flex';
+      rcptTags.innerHTML     = tags.length
+        ? tags.map(t => `<span class="rcpt-tag">${t}</span>`).join('')
+        : `<span class="rcpt-tag" style="color:var(--text-dim)">Niets gevonden — vul zelf in</span>`;
+
+    } catch (ex) {
+      rcptStat.textContent   = '❌ ' + (ex.message || 'Scan mislukt');
+      rcptTags.style.display = 'flex';
+      rcptTags.innerHTML     = `<span class="rcpt-tag" style="color:var(--danger)">Vul het bonnetje handmatig in</span>`;
+    } finally {
+      rcptBtn.disabled = false;
+    }
+  };
 
   backdrop.querySelector('#pk-form').onsubmit = async e => {
     e.preventDefault();

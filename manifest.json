@@ -24,14 +24,14 @@
       "name": "Hizb afvinken",
       "short_name": "Hizb",
       "description": "Dagelijkse hizb afvinken",
-      "url": "./#koran",
+      "url": "./#geloof",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Arabisch leren",
       "short_name": "Kaarten",
       "description": "Vandaag te leren kaarten",
-      "url": "./#arabic",
+      "url": "./#geloof",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     }
   ]

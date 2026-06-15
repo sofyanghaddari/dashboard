@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v84';
+const CACHE = 'dashboard-v85';
 const ASSETS = [
   './',
   './index.html',
@@ -64,6 +64,8 @@ const ASSETS = [
   './js/data/arabic-words.js',
   './js/data/hizbs.js',
   './js/vendor/motion.min.js',
+  './js/modules/geloof.js',
+  './js/receipt-ocr.js',
 ];
 
 self.addEventListener('install', (e) => {
