@@ -72,6 +72,7 @@ function encodeSubject(str) {
 }
 
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const nl2br = s => esc(s).replace(/\n/g, '<br>');
 
 function fmtDate(dateStr) {
   if (!dateStr) return '—';
@@ -79,10 +80,15 @@ function fmtDate(dateStr) {
   catch { return dateStr; }
 }
 
-function buildHtmlEmail(inv, bedrijf) {
-  const client = inv.client || {};
-  const line   = inv.lines?.[0] || {};
-  const TAUPE  = '#8a7e6f';
+function fmtIBANEmail(iban) { return iban.replace(/(.{4})/g, '$1 ').trim(); }
+
+function buildHtmlEmail(inv, bedrijf, options = {}) {
+  const client  = inv.client || {};
+  const line    = inv.lines?.[0] || {};
+  const TAUPE   = '#8a7e6f';
+  const opening = options.message
+    ? nl2br(options.message)
+    : `Beste${client.name ? ' ' + esc(client.name) : ''},<br><br>Gelieve bijgevoegde factuur voor de daarop vermelde datum te betalen.`;
 
   return `<!DOCTYPE html>
 <html lang="nl">
@@ -92,9 +98,8 @@ function buildHtmlEmail(inv, bedrijf) {
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:540px;margin:0 auto;padding:36px 20px">
     <tr><td>
 
-      <!-- Aanhef -->
-      <p style="margin:0 0 6px;font-size:16px">Beste${client.name ? ' ' + esc(client.name) : ''},</p>
-      <p style="margin:0 0 28px;font-size:15px;color:#444">Gelieve bijgevoegde factuur voor de daarop vermelde datum te betalen.</p>
+      <!-- Openingsbericht -->
+      <p style="margin:0 0 28px;font-size:15px;color:#444;line-height:1.6">${opening}</p>
 
       <!-- Factuurkaart -->
       <table width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -122,8 +127,8 @@ function buildHtmlEmail(inv, bedrijf) {
 
         <!-- Afzender-adres -->
         <tr>
-          <td colspan="2" style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;color:#2563eb;line-height:1.65">
-            ${esc(bedrijf.naam)}<br>
+          <td colspan="2" style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;color:#555;line-height:1.65">
+            <strong>${esc(bedrijf.naam)}</strong><br>
             ${esc(bedrijf.adres)}<br>
             ${esc(bedrijf.postcode)}<br>
             Nederland
@@ -161,9 +166,10 @@ function buildHtmlEmail(inv, bedrijf) {
       <table width="100%" cellpadding="0" cellspacing="0" border="0"
              style="background:#faf9f7;border-radius:10px;margin-bottom:24px">
         <tr>
-          <td style="padding:14px 16px;font-size:13px;color:#555;line-height:1.6">
+          <td style="padding:14px 16px;font-size:13px;color:#555;line-height:1.7">
             Maak het bedrag over vóór <strong>${esc(fmtDate(inv.dueDate))}</strong> naar:<br>
-            <strong>IBAN:</strong> ${esc(bedrijf.iban)}<br>
+            <strong>IBAN:</strong> ${esc(fmtIBANEmail(bedrijf.iban))}<br>
+            ${bedrijf.bic ? `<strong>BIC:</strong> ${esc(bedrijf.bic)}<br>` : ''}
             <strong>T.n.v.:</strong> ${esc(bedrijf.naam)}<br>
             <strong>O.v.v.:</strong> ${esc(inv.number || '—')}
           </td>
@@ -193,14 +199,15 @@ export async function sendInvoiceEmail(inv, bedrijf, pdfBlob, options = {}) {
   if (!to) throw new Error('Geen e-mailadres bij deze klant');
 
   const filename = `${inv.number || 'factuur'}.pdf`;
-  const subject  = `${options.subjectPrefix || ''}Factuur ${inv.number} — ${bedrijf.naam}`;
-  const htmlBody = buildHtmlEmail(inv, bedrijf);
+  const subject  = options.subject || `${options.subjectPrefix || ''}Factuur ${inv.number} — ${bedrijf.naam}`;
+  const htmlBody = buildHtmlEmail(inv, bedrijf, { message: options.message });
   const pdfB64   = await blobToBase64Lines(pdfBlob);
   const outerB   = `----=_Mixed_${Math.random().toString(36).slice(2)}`;
 
   const mime = [
     'From: me',
     `To: ${to}`,
+    ...(options.cc ? [`Cc: ${options.cc}`] : []),
     `Subject: ${encodeSubject(subject)}`,
     'MIME-Version: 1.0',
     `Content-Type: multipart/mixed; boundary="${outerB}"`,

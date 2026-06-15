@@ -27,6 +27,7 @@ const ADMINS = {
     btw:         'NL003042226B35',
     kvk:         '77755170',
     iban:        'NL67INGB0660701413',
+    bic:         'INGBNL2A',
     termijn:     30,
     prefix:      'WOOSH',
     defaultVat:  9,
@@ -42,6 +43,7 @@ const ADMINS = {
     btw:         'NL003042226B35',
     kvk:         '77755170',
     iban:        'NL67INGB0660701413',
+    bic:         'INGBNL2A',
     termijn:     14,
     prefix:      'OLIE',
     defaultVat:  21,
@@ -2320,7 +2322,7 @@ async function generateInvoicePDF(inv, bedrijf) {
 
   // ── Betaalinstructies ──
   const pY    = tTY + 12;
-  const pBoxH = 24;
+  const pBoxH = bedrijf.bic ? 30 : 24;
   doc.setFillColor(...BG);
   doc.roundedRect(L, pY, W, pBoxH, 2, 2, 'F');
   doc.setFillColor(...TAUPE);
@@ -2331,6 +2333,10 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.text(fmtIBAN(bedrijf.iban), L + 7, pY + 14);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MED);
   doc.text(`t.n.v. ${bedrijf.naam}   o.v.v. ${inv.number || ''}`, L + 7, pY + 20);
+  if (bedrijf.bic) {
+    doc.setTextColor(...DIM);
+    doc.text(`BIC: ${bedrijf.bic}`, L + 7, pY + 26);
+  }
 
   // ── Footer ──
   doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.3); doc.line(L, 278, R, 278);
@@ -2360,21 +2366,56 @@ async function sharePDF(inv, bedrijf) {
   }
 }
 
-async function sendViaGmail(inv, bedrijf) {
+async function sendViaGmail(inv, bedrijf, opts = {}) {
   if (!bedrijf) bedrijf = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
+  const { to, cc, selfCopy, subject, message } = opts;
+  const recipient = to || inv.client?.email;
+
   if (!gmailConfigured()) {
-    err('Gmail niet ingesteld — ga naar ⚙️ → Data → Gmail');
+    // Geen Gmail → PDF downloaden als fallback
+    try {
+      const blob = await generateInvoicePDF(inv, bedrijf);
+      const filename = `${inv.number || 'factuur'}.pdf`;
+      const file = new File([blob], filename, { type: 'application/pdf' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ title: `Factuur ${inv.number}`, files: [file] });
+      } else {
+        const url = URL.createObjectURL(blob);
+        Object.assign(document.createElement('a'), { href: url, download: filename }).click();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        ok('PDF opgeslagen — stel Gmail in via ⚙️ → Data voor volledig versturen');
+      }
+    } catch (e) {
+      if (e.name !== 'AbortError') err('PDF: ' + (e.message || 'Onbekende fout'));
+    }
     return;
   }
-  if (!inv.client?.email) {
-    err('Geen e-mailadres bij deze klant — vul het in bij de klant');
+
+  if (!recipient) {
+    err('Geen e-mailadres — vul in bij de klant of in het verzendscherm');
     return;
   }
+
   try {
     const blob = await generateInvoicePDF(inv, bedrijf);
     const { sendInvoiceEmail } = await import('../gmail.js');
-    await sendInvoiceEmail(inv, bedrijf, blob);
-    ok(`Factuur ${inv.number} verstuurd naar ${inv.client.email} ✓`);
+
+    await sendInvoiceEmail(inv, bedrijf, blob, {
+      to: recipient,
+      cc: cc || undefined,
+      subject: subject || undefined,
+      message: message || undefined,
+    });
+    ok(`Factuur ${inv.number} verstuurd naar ${recipient} ✓`);
+
+    if (selfCopy) {
+      await sendInvoiceEmail(inv, bedrijf, blob, {
+        to: OWNER_EMAIL,
+        subject: `[Kopie] ${subject || `Factuur ${inv.number} — ${bedrijf.naam}`}`,
+        message: message || undefined,
+      });
+      ok(`Kopie verstuurd naar ${OWNER_EMAIL} ✓`);
+    }
   } catch (e) {
     if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Onbekende fout'));
   }
@@ -2406,95 +2447,86 @@ function openSendModal(inv, bedrijf, container) {
   const clientName  = inv.client?.name  || '';
   const clientEmail = inv.client?.email || '';
   const clientPhone = inv.client?.phone || '';
-  const subject     = `Factuur ${inv.number} — ${bedrijf.naam}`;
   const ibanFmt     = fmtIBAN(bedrijf.iban);
 
-  const emailBody = [
-    `Geachte ${clientName || 'relatie'},`,
-    '',
-    `Hierbij ontvangt u factuur ${inv.number} van ${bedrijf.naam}.`,
-    '',
-    `Factuurnummer : ${inv.number}`,
-    `Factuurdatum  : ${fmtDateLong(inv.date)}`,
-    `Vervaldatum   : ${fmtDateLong(inv.dueDate)}`,
-    `Bedrag        : ${fmtMoney(inv.totalIncl || 0)} (incl. BTW ${inv.lines?.[0]?.vatRate || 0}%)`,
-    `Omschrijving  : ${inv.lines?.[0]?.description || ''}`,
-    '',
-    'Betalingsgegevens:',
-    `IBAN : ${ibanFmt}`,
-    `T.n.v.: ${bedrijf.naam}`,
-    `O.v.v.: ${inv.number}`,
-    '',
-    `Gelieve het bedrag vóór ${fmtDateLong(inv.dueDate)} over te maken.`,
-    '',
-    'Met vriendelijke groet,',
-    bedrijf.naam,
-    `KvK: ${bedrijf.kvk} | BTW: ${bedrijf.btw}`,
-  ].join('\n');
+  const SUBJECTS = {
+    normaal:     `Factuur ${inv.number} — ${bedrijf.naam}`,
+    herinnering: `Herinnering: Factuur ${inv.number} — ${bedrijf.naam}`,
+    aanmaning:   `Aanmaning: Factuur ${inv.number} — ${bedrijf.naam}`,
+  };
+
+  const MESSAGES = {
+    normaal:     `Geachte ${clientName || 'relatie'},\n\nGelieve bijgevoegde factuur voor de daarop vermelde datum te betalen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
+    herinnering: `Geachte ${clientName || 'relatie'},\n\nWij willen u vriendelijk herinneren dat factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0)} op ${fmtDateLong(inv.dueDate)} betaald diende te zijn.\n\nHebt u al betaald? Dan kunt u deze herinnering als niet verzonden beschouwen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
+    aanmaning:   `Geachte ${clientName || 'relatie'},\n\nOndanks onze eerdere herinnering staat factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0)} nog steeds open. Wij verzoeken u dringend het verschuldigde bedrag binnen 7 dagen te voldoen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
+  };
 
   const waText = encodeURIComponent(
-    `Hallo${clientName ? ' ' + clientName : ''}, hierbij de factuurgegevens van ${bedrijf.naam}:\n\nFactuur: ${inv.number}\nBedrag: ${fmtMoney(inv.totalIncl || 0)}\nVervaldatum: ${fmtDateLong(inv.dueDate)}\n\nBetalen via:\nIBAN: ${ibanFmt}\nt.n.v. ${bedrijf.naam}\no.v.v. ${inv.number}\n\nBedankt!`
+    `Hallo${clientName ? ' ' + clientName : ''}, hierbij de factuurgegevens van ${bedrijf.naam}:\n\nFactuur: ${inv.number}\nBedrag: ${fmtMoney(inv.totalIncl || 0)}\nVervaldatum: ${fmtDateLong(inv.dueDate)}\n\nBetalen via:\nIBAN: ${ibanFmt}${bedrijf.bic ? '\nBIC: ' + bedrijf.bic : ''}\nt.n.v. ${bedrijf.naam}\no.v.v. ${inv.number}\n\nBedankt!`
   );
 
+  const configured = gmailConfigured();
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
   backdrop.innerHTML = `
-    <div class="modal bk-modal">
+    <div class="modal bk-modal bk-send-modal">
       <button type="button" class="modal-close" id="snd-x">×</button>
-      <div style="margin-bottom:18px">
-        <div style="font-size:1.1rem;font-weight:700;margin-bottom:3px">Factuur versturen</div>
-        <div style="font-size:.82rem;color:var(--text-dim)">${escapeHTML(inv.number)} · ${escapeHTML(clientName || '—')} · <span class="money">${fmtMoney(inv.totalIncl || 0)}</span></div>
+      <div class="bk-send-hd">
+        <div style="font-weight:700;font-size:1.05rem">Versturen</div>
+        <div style="font-size:.82rem;color:var(--text-dim);margin-top:2px">${escapeHTML(inv.number)} · ${escapeHTML(clientName || '—')} · <span class="money">${fmtMoney(inv.totalIncl || 0)}</span></div>
       </div>
 
-      <div class="bk-send-actions">
-        <button class="bk-send-btn bk-send-primary" id="snd-gmail">
-          <span class="bk-send-icon">📧</span>
-          <div>
-            <div class="bk-send-label">Verstuur via Gmail</div>
-            <div class="bk-send-sub">${clientEmail ? escapeHTML(clientEmail) + ' — PDF als bijlage' : gmailConfigured() ? 'Voeg e-mailadres toe bij klant' : 'Stel Gmail in via ⚙️ → Data'}</div>
-          </div>
-        </button>
+      <div class="bk-sf-row">
+        <label class="bk-sf-label">Aan</label>
+        <input id="snd-to" type="email" class="bk-sf-input" value="${escapeHTML(clientEmail)}" placeholder="e-mailadres klant" />
+      </div>
 
-        <button class="bk-send-btn" id="snd-pdf">
-          <span class="bk-send-icon">📄</span>
-          <div>
-            <div class="bk-send-label">PDF opslaan / delen</div>
-            <div class="bk-send-sub">Deel via WhatsApp, Mail, AirDrop of sla op</div>
-          </div>
-        </button>
+      <label class="bk-sf-toggle-row">
+        <span>Stuur een kopie naar mijzelf</span>
+        <span class="bk-ios-tog">
+          <input type="checkbox" id="snd-self" ${configured ? 'checked' : ''} />
+          <span class="bk-tog-track"></span>
+        </span>
+      </label>
 
-        <button class="bk-send-btn" id="snd-wa">
-          <span class="bk-send-icon">💬</span>
-          <div>
-            <div class="bk-send-label">WhatsApp${clientPhone ? ' → ' + escapeHTML(clientPhone) : '-samenvatting'}</div>
-            <div class="bk-send-sub">${clientPhone ? 'Stuur betaalverzoek direct naar klant' : 'Betalingsinfo als WhatsApp-bericht'}</div>
-          </div>
-        </button>
+      <div class="bk-sf-row">
+        <label class="bk-sf-label">CC <span style="opacity:.5">(optioneel)</span></label>
+        <input id="snd-cc" type="email" class="bk-sf-input" placeholder="CC-adres" />
+      </div>
 
-        ${clientEmail ? `
-        <button class="bk-send-btn" id="snd-mail-client">
-          <span class="bk-send-icon">✉️</span>
-          <div>
-            <div class="bk-send-label">Mailen naar klant</div>
-            <div class="bk-send-sub">${escapeHTML(clientEmail)} — factuurgegevens in berichttekst</div>
-          </div>
-        </button>` : ''}
+      <div class="bk-sf-row">
+        <label class="bk-sf-label">Verstuur als</label>
+        <select id="snd-type" class="bk-sf-input">
+          <option value="normaal">📄 Normaal</option>
+          <option value="herinnering">🔔 Herinnering</option>
+          <option value="aanmaning">⚠️ Aanmaning</option>
+        </select>
+      </div>
 
-        <button class="bk-send-btn" id="snd-mail-self">
-          <span class="bk-send-icon">📬</span>
-          <div>
-            <div class="bk-send-label">Kopie naar mijzelf</div>
-            <div class="bk-send-sub">${gmailConfigured() ? escapeHTML(OWNER_EMAIL) + ' — PDF als bijlage' : 'PDF downloaden · mail openen'}</div>
-          </div>
-        </button>
+      <div class="bk-sf-row">
+        <label class="bk-sf-label">Onderwerp</label>
+        <input id="snd-subject" type="text" class="bk-sf-input" value="${escapeHTML(SUBJECTS.normaal)}" />
+      </div>
 
-        <button class="bk-send-btn" id="snd-view">
-          <span class="bk-send-icon">🖨️</span>
-          <div>
-            <div class="bk-send-label">Afdrukken / bekijken</div>
-            <div class="bk-send-sub">Open factuur in de app om te printen</div>
-          </div>
-        </button>
+      <div class="bk-sf-row">
+        <label class="bk-sf-label">Bericht</label>
+        <textarea id="snd-message" class="bk-sf-input bk-sf-textarea" rows="4">${escapeHTML(MESSAGES.normaal)}</textarea>
+      </div>
+
+      <div class="bk-sf-attach">
+        <span>📎</span>
+        <span>${escapeHTML(inv.number || 'factuur')}.pdf</span>
+      </div>
+
+      <button id="snd-send" class="btn block" style="margin-top:14px;padding:14px;font-size:1rem;font-weight:600">
+        Versturen
+      </button>
+      ${!configured ? `<p style="font-size:.78rem;color:var(--text-dim);text-align:center;margin:8px 0 0">Gmail instellen via ⚙️ → Data voor volledig versturen</p>` : ''}
+
+      <div class="bk-sf-sec">
+        <button id="snd-pdf" class="bk-sf-sec-btn">📄 PDF opslaan</button>
+        <button id="snd-wa"  class="bk-sf-sec-btn">💬 WhatsApp</button>
+        <button id="snd-view" class="bk-sf-sec-btn">🖨️ Bekijken</button>
       </div>
     </div>
   `;
@@ -2503,63 +2535,37 @@ function openSendModal(inv, bedrijf, container) {
   backdrop.querySelector('#snd-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 
-  const gmailBtn = backdrop.querySelector('#snd-gmail');
-  if (gmailBtn) gmailBtn.onclick = async () => { backdrop.remove(); await sendViaGmail(inv, bedrijf); };
+  // Wissel onderwerp/bericht bij type-keuze
+  backdrop.querySelector('#snd-type').addEventListener('change', e => {
+    const t = e.target.value;
+    backdrop.querySelector('#snd-subject').value = SUBJECTS[t] || SUBJECTS.normaal;
+    backdrop.querySelector('#snd-message').value = MESSAGES[t] || MESSAGES.normaal;
+  });
+
+  // Versturen
+  backdrop.querySelector('#snd-send').onclick = async () => {
+    const to       = backdrop.querySelector('#snd-to').value.trim();
+    const cc       = backdrop.querySelector('#snd-cc').value.trim();
+    const selfCopy = backdrop.querySelector('#snd-self').checked;
+    const subject  = backdrop.querySelector('#snd-subject').value.trim();
+    const message  = backdrop.querySelector('#snd-message').value.trim();
+    if (!to) { backdrop.querySelector('#snd-to').focus(); err('Vul een e-mailadres in'); return; }
+    backdrop.remove();
+    await sendViaGmail(inv, bedrijf, { to, cc: cc || undefined, selfCopy, subject, message });
+  };
+
+  // PDF opslaan / delen
   backdrop.querySelector('#snd-pdf').onclick  = async () => { backdrop.remove(); await sharePDF(inv, bedrijf); };
+
+  // Bekijken
   backdrop.querySelector('#snd-view').onclick = () => { backdrop.remove(); openInvoiceViewer(inv, bedrijf); };
 
-  if (clientEmail) {
-    backdrop.querySelector('#snd-mail-client').onclick = () => {
-      window.location.href = `mailto:${encodeURIComponent(clientEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
-    };
-  }
-
-  backdrop.querySelector('#snd-mail-self').onclick = async () => {
-    backdrop.remove();
-    if (gmailConfigured()) {
-      // Gmail geconfigureerd → stuur email met PDF als bijlage
-      try {
-        const blob = await generateInvoicePDF(inv, bedrijf);
-        const { sendInvoiceEmail } = await import('../gmail.js');
-        await sendInvoiceEmail(inv, bedrijf, blob, { to: OWNER_EMAIL, subjectPrefix: '[Kopie] ' });
-        ok('Kopie verstuurd naar ' + OWNER_EMAIL + ' ✓');
-      } catch (e) {
-        if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Onbekende fout'));
-      }
-    } else {
-      // Geen Gmail → PDF downloaden/delen + mail openen voor tekst-kopie
-      try {
-        const blob = await generateInvoicePDF(inv, bedrijf);
-        const filename = `${inv.number || 'factuur'}.pdf`;
-        const file = new File([blob], filename, { type: 'application/pdf' });
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ title: `Factuur ${inv.number}`, files: [file] });
-        } else {
-          const url = URL.createObjectURL(blob);
-          Object.assign(document.createElement('a'), { href: url, download: filename }).click();
-          setTimeout(() => URL.revokeObjectURL(url), 5000);
-          ok('PDF opgeslagen — voeg toe als bijlage in je mail ✓');
-        }
-      } catch (e) {
-        if (e.name !== 'AbortError') err('PDF: ' + (e.message || 'Onbekende fout'));
-      }
-      setTimeout(() => {
-        window.location.href = `mailto:${encodeURIComponent(OWNER_EMAIL)}?subject=${encodeURIComponent('[Kopie] ' + subject)}&body=${encodeURIComponent(emailBody)}`;
-      }, 600);
-    }
-  };
-
+  // WhatsApp
   backdrop.querySelector('#snd-wa').onclick = () => {
     let phone = clientPhone.replace(/\s/g, '');
-    if (phone && !phone.startsWith('+')) {
-      // Zet NL-nummers om naar E.164: 06... → +316..., 0... → +31...
-      phone = phone.replace(/^00/, '+').replace(/^0/, '+31');
-    }
+    if (phone && !phone.startsWith('+')) phone = phone.replace(/^00/, '+').replace(/^0/, '+31');
     phone = phone.replace(/[^+\d]/g, '');
-    const waUrl = phone
-      ? `https://wa.me/${phone.replace('+', '')}?text=${waText}`
-      : `https://wa.me/?text=${waText}`;
-    window.open(waUrl, '_blank');
+    const url = phone ? `https://wa.me/${phone.replace('+', '')}?text=${waText}` : `https://wa.me/?text=${waText}`;
+    window.open(url, '_blank');
   };
-
 }
