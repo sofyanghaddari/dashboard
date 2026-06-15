@@ -12,12 +12,16 @@ Lokaal: `/Users/soef/claude code`
 ## Stack
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
-- IndexedDB voor data (DB_VERSION=3), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: v55 — bump óók `APP_VERSION` in `js/components/settings.js`)
+- IndexedDB voor data (DB_VERSION=4), localStorage voor settings
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v85** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
+- jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
+- Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
+- Google Identity Services (GSI) wordt **lazy** geladen door `js/gmail.js` voor Gmail OAuth
 - Web App Manifest met shortcuts voor installeerbaarheid
 - Open-Meteo voor weer (geen API key, default Amsterdam centrum 52.3676, 4.9041)
 - GitHub Gist API voor encrypted auto-sync met versie-historie
+- Gmail API (`gmail.send` scope) voor factuur-verzending met PDF-bijlage
 - Web Crypto API voor AES-GCM versleuteling (PBKDF2 200k iter)
 - Motion One (lokaal gevendord in `js/vendor/motion.min.js`, geen build/CDN) voor subtiele scroll-in reveals via `js/motion.js` — respecteert prefers-reduced-motion
 - WebAuthn voor Face ID/Touch ID
@@ -33,17 +37,32 @@ Lokaal: `/Users/soef/claude code`
 - gh CLI staat in `~/bin/gh`, auth al ingesteld (user: sofyanghaddari)
 - Bij elke commit van static assets: bump `CACHE` versie in `service-worker.js`
 
-## Modules (9 tabs)
+## Modules (10 tabs)
 
 1. **🏠 Dashboard** — hero, weer-radar Amsterdam, kalender+jaaroverzicht, vandaag/maand-stats (tel-animaties), goal-trajectory SVG, doel-haalbaarheid, patroon-insights, 30-dagen heatmap, **Hadith- en Woord-van-de-dag met ‹ › dag-navigatie (vorige dagen herhalen) + 🔊 voorlees-knop** (hadith in Arabisch via `speechSynthesis` ar-SA, woord in NL nl-NL), koran/arabic/spaardoelen kaarten, top-prioriteit-taken, empty CTA
 2. **🚖 Taxi** — vereenvoudigd: alleen "+ Inkomen vandaag noteren" + maandkalender-grid waarop je per dag retroactief inkomen invult (klik dag → modal met items + add), CSV-export, jaarverloop bar-chart. **Geen** shift-tracker, source-breakdown, uitgaven of belasting-reserve meer
-3. **📖 Koran** — dagelijkse hizb afvinken + streak + 30-dagen grid + streak-repair (1× per maand gemiste dag goedmaken) + reminder-instellingen
-4. **📚 Arabisch** — SRS (SM-2 lite) met 4 knoppen, CSV-import (Anki tab/comma), sessies, kaarten-overzicht met search
-5. **🎯 Doelen** — lange/korte termijn met taxi-koppeling (% per rit + streefbedrag), gewoontes met chains + 14-dagen-strip, spaarpotjes (Bunq-style met current/target)
-6. **✅ To-do** — compacte layout (v54): header met open-teller-pill, quick-add + ＋-knop bovenaan, daaronder direct de taken; alléén niet-lege prioriteitsgroepen (geen lege placeholder-blokken), één scrollbare chip-rij (filters+tags+selecteer), horizontale actieknoppen op de kaart, afvink-animatie (check-pop + kaart glijdt uit), stagger-entree. Verder: prioriteit/medium/waiting, tags, subtaken, herhalend, bulk, undo, later-parkeren, quick-NL-input ("morgen 10:00 APK")
-7. **📝 Notities** — notities + ideeën sub-tabs, lichte markdown
-8. **🗓 Week** (`agenda.js`) — week-tijdrooster 06:00–24:00, dag-selector met dag-inkomen, blokken per categorie; tik een leeg tijdvak om te plannen (werkt op mobiel, geen hover nodig). Events in localStorage (`agenda_events`)
-9. **📊 Stats** (`stats.js`) — inkomen-inzichten met 7d/30d/90d/Alles filter, totalen + per-week bar-chart (WIP, serif titel)
+3. **🕌 Geloof** (`geloof.js`) — wrapper met twee sub-tabs:
+   - **📖 Koran** sub-tab: dagelijkse hizb afvinken + streak + 30-dagen grid + streak-repair (1× per maand gemiste dag goedmaken) + reminder-instellingen
+   - **📚 Arabisch** sub-tab: SRS (SM-2 lite) met 4 knoppen, CSV-import (Anki tab/comma), sessies, kaarten-overzicht met search
+   - Sub-tab staat opgeslagen in `container.dataset.geloofSub`; diep linken via `document.getElementById('view').dataset.geloofSub = 'koran'` vóór `navigate('geloof')`
+4. **🎯 Doelen** — lange/korte termijn met taxi-koppeling (% per rit + streefbedrag), gewoontes met chains + 14-dagen-strip, spaarpotjes (Bunq-style met current/target)
+5. **✅ To-do** — compacte layout (v54): header met open-teller-pill, quick-add + ＋-knop bovenaan, daaronder direct de taken; alléén niet-lege prioriteitsgroepen (geen lege placeholder-blokken), één scrollbare chip-rij (filters+tags+selecteer), horizontale actieknoppen op de kaart, afvink-animatie (check-pop + kaart glijdt uit), stagger-entree. Verder: prioriteit/medium/waiting, tags, subtaken, herhalend, bulk, undo, later-parkeren, quick-NL-input ("morgen 10:00 APK")
+6. **📝 Notities** — notities + ideeën sub-tabs, lichte markdown
+7. **🗓 Week** (`agenda.js`) — week-tijdrooster 06:00–24:00, dag-selector met dag-inkomen, blokken per categorie; tik een leeg tijdvak om te plannen (werkt op mobiel, geen hover nodig). Events in localStorage (`agenda_events`)
+8. **📊 Stats** (`stats.js`) — inkomen-inzichten met 7d/30d/90d/Alles filter, totalen + per-week bar-chart (WIP, serif titel)
+9. **🧾 Boekhouding** (`boekhouding.js`) — volledig boekhoudprogramma Moneybird-stijl:
+   - **Verkoopfacturen:** maak + verstuur facturen (Taxi-administratie of Olijfolie-bedrijf), PDF-generatie via jsPDF, HTML-print versie
+   - **Gmail-verzending:** OAuth2 via Google Identity Services, PDF als bijlage, CC-veld, "Stuur kopie naar mezelf" toggle (default ON → kopie naar sofyanghaddari@gmail.com)
+   - **CRITICAL:** NOOIT automatisch mailen — alleen na expliciete klik op "Versturen" knop
+   - **Send-modal Moneybird-stijl:** Aan / CC / Onderwerp / Bericht velden, PDF-preview chip, iOS-toggle voor zelfkopie
+   - **Inkoopfacturen:** bonnetjes registreren, BTW-berekening, categorisering
+   - **Bonnetje-scanner:** 📷 Foto → Tesseract.js OCR → auto-fill naam/bedrag/BTW/datum/categorie
+   - **Km-registratie:** zakenritten bijhouden
+   - **Klantenbeheer:** klanten CRM
+   - **BIC INGBNL2A:** staat in PDF betaalvak, HTML-print betaalbox, e-mail betaalinformatie, clipboard-herinnertekst, WhatsApp tekst
+   - **ADMINS object:** `{ taxi: { naam, kvk, iban, bic: 'INGBNL2A', ... }, olijfolie: { ... } }`
+   - **`OWNER_EMAIL`:** `'sofyanghaddari@gmail.com'` — ontvanger zelfkopie
+10. **📋 invoice-nlp.js** — NLP parser voor factuur-extractie uit tekst (los bestand, geen tab)
 
 ## Globale features
 
@@ -111,14 +130,14 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v85)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
   app.js                         — bootstrap + wiring
   router.js                      — tab navigation + staggerIn na render
-  db.js                          — IndexedDB wrapper (DB_VERSION=3) met _updatedAt injection + onWrite callback
-  utils.js                       — uid/fmtMoney/ymd/startOfWeek etc
+  db.js                          — IndexedDB wrapper (DB_VERSION=4) met _updatedAt injection + onWrite callback
+  utils.js                       — uid/fmtMoney/ymd/startOfWeek/parseAmount etc
   settings.js                    — localStorage helpers met defaults
   theme.js                       — dark/light/auto + accent + preset + density
   achievements.js                — 12 badges berekening
@@ -147,29 +166,34 @@ js/
   gestures.js                    — swipe-back van links
   longpress.js                   — long-press helper + context menu
   app-badge.js                   — navigator.setAppBadge
+  gmail.js                       — Gmail OAuth2 via GSI + sendInvoiceEmail() + buildHtmlEmail() + preloadGSI()
+  receipt-ocr.js                 — Tesseract.js OCR wrapper: ocrReceipt() + parseReceiptText()
+  invoice-nlp.js                 — NLP parser voor factuur-extractie
   modules/
     dashboard.js                 — home view, hero, weer, alles aggregatie
     taxi.js                      — alleen inkomen-kalender, geen shift
     koran.js                     — hizb afvinken + streak-repair
     arabic.js                    — SRS
+    geloof.js                    — wrapper: sub-tab Koran + Arabisch onder "Geloof" tab
     goals.js                     — doelen + habits chains + spaarpotjes
     todo.js                      — taken met smart filters
     notes.js                     — notes + ideas
     agenda.js                    — Week-tijdrooster (events in localStorage)
     stats.js                     — inkomen-inzichten + per-week bar-chart
     arabic-srs.js                — SRS-sessie helper voor arabic
+    boekhouding.js               — volledig boekhoudprogramma (facturen, klanten, km, kosten, Gmail)
   data/
     arabic-words.js              — Arabische woordenlijst
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
     suras.js                     — ⚠️ DEAD: 114 suras, niet meer geïmporteerd (oude soera-grid)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings)
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v85'
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
     pullrefresh.js               — pull-to-refresh
-    cmdk.js                      — ⌘K search palette
+    cmdk.js                      — ⌘K search palette (Koran/Arabisch navigeren via geloof sub-tab)
     undo.js                      — undo toast
     calendar.js                  — maandkalender modal
     year-review.js               — jaaroverzicht modal
@@ -182,7 +206,7 @@ docs/superpowers/
   plans/2026-06-04-personal-dashboard.md
 ```
 
-## IndexedDB stores (v3)
+## IndexedDB stores (v4)
 
 Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolution.
 
@@ -197,6 +221,10 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - `habits`: { id, name, emoji, after?(habitId for chain), createdAt }
 - `habit_log`: { id (date+habitId), date, habitId, done }
 - `pots`: { id, name, emoji, target, current, createdAt }
+- `invoices`: { id, number, adminId, clientId, date, dueDate, lines[], status, notes? } — boekhouding verkoopfacturen
+- `purchase_invoices`: { id, adminId, vendor, date, amount, vatRate, vatAmount, category, note?, receiptText? } — inkoop/bonnetjes
+- `km_log`: { id, date, from, to, km, purpose, adminId } — km-registratie
+- `clients`: { id, adminId, name, email, phone?, address?, kvk?, btw? } — klantenbeheer
 
 ## LocalStorage keys
 
@@ -216,6 +244,7 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - `userLocation`: { lat, lon } (default Amsterdam als geen permissie)
 - `weatherCache`: { ts, data } (30 min TTL)
 - `ghToken`, `ghGistId`, `ghGistIds[]`, `lastGhSync`
+- `gmailClientId`, `gmailClientSecret` — Google OAuth credentials (persistent in localStorage)
 - `pinHash` (SHA-256 hex)
 - `bioCredId` (WebAuthn credential ID, base64)
 - `lastUnlock` (grace-period timestamp)
@@ -233,6 +262,7 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 - UI strings in **Nederlands**
 - Money via `fmtMoney()` met goud-kleur (.money class) + serif font (Georgia)
+- **Bedragvelden ALTIJD `type="text" inputmode="decimal"` + `parseAmount()` in utils.js** (komma→punt) — NOOIT `type="number"` want NL-iPhone-toetsenbord typt komma's die number-velden stilletjes leegmaken
 - Modals hebben rechtsboven een ×-knop (`.modal-close`)
 - Card-titles `.card-title` class (uppercase, small, letterspacing)
 - Service worker CACHE versie bumpen bij elke wijziging van static assets — én `APP_VERSION` in `js/components/settings.js` gelijk houden
@@ -240,6 +270,20 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - `safe-area-inset-top` (--safe-top) voor alle floating top elementen
 - `_updatedAt` automatisch via `db.js put()` — niet handmatig zetten
 - Bij `onWrite` event auto-push naar GitHub na 8s debounce
+- **BIC INGBNL2A** — ING Bank BIC, moet staan in: PDF betaalvak, HTML-print betaalbox, e-mail betaalinfo, WhatsApp tekst, clipboard herinnertekst. ADMINS object heeft `bic: 'INGBNL2A'` voor beide bedrijven
+- **Gmail — NOOIT automatisch versturen.** E-mails alleen na expliciete klik op "Versturen" knop. Geen automatische e-mail workflows
+- **Gmail iOS popup fix:** `preloadGSI()` aanroepen bij het openen van de send-modal (als achtergrond, vóór user-gesture). In `sendViaGmail()`: eerst `getGmailToken()` aanroepen (dicht bij user-gesture), daarna pas PDF genereren. `requestAccessToken({ prompt: '' })` voor stille re-auth
+
+## Gmail OAuth setup (eenmalig door user)
+
+1. Google Cloud Console → project aanmaken
+2. APIs & Services → Enable Gmail API
+3. OAuth-toestemmingsscherm → extern → scopes: `gmail.send`
+4. Onder "Doelgroep": voeg `sofyanghaddari@gmail.com` toe als testgebruiker (anders 403 access_denied)
+5. Credentials → OAuth 2.0 Client-ID → Web application
+6. Authorized JavaScript origins: `https://sofyanghaddari.github.io`
+7. Authorized redirect URIs: `https://sofyanghaddari.github.io/dashboard/`
+8. Client ID + Client Secret invoeren in ⚙️ → Boekhouding tab
 
 ## Sync gedrag
 
@@ -251,6 +295,37 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++5. **Bonnetje-scanner + Geloof-tab v85 (15 juni 2026):**
+   - **🕌 Geloof-tab:** Koran en Arabisch samengevoegd onder één tab met twee sub-tabs. `js/modules/geloof.js` is de wrapper; delegeert naar `renderKoran`/`renderArabic`. Sub-tab staat in `container.dataset.geloofSub`. Oude routes `koran`/`arabic` blijven geregistreerd als redirects die `geloofSub` zetten vóór navigate. `manifest.json` shortcuts en `cmdk.js` bijgewerkt.
+   - **📷 Bonnetje-scanner in Boekhouding → Kosten:** Knop "📷 Bonnetje scannen" bovenaan nieuw-kosten-modal. Selecteer foto → Tesseract.js v5 laadt lazy van CDN → OCR met progress-bar → `parseReceiptText()` extraheert vendor/datum/totaal/BTW-tarief/BTW-bedrag/categorie → auto-fill formulier. Worker wordt gecacht voor hergebruik. Nieuw bestand `js/receipt-ocr.js`.
+   - **CSS:** `.geloof-subnav`/`.geloof-sub-btn` voor sub-tab nav, `.rcpt-scan-*` voor scanner UI, `.bk-send-modal`/`.bk-sf-*` voor Moneybird send-modal.
+   - **SW CACHE → v85**, `APP_VERSION → 'v85'`, `receipt-ocr.js` en `geloof.js` toegevoegd aan ASSETS.
+
++4. **Gmail OAuth popup-fix v84 (14 juni 2026):**
+   - **Probleem:** iOS PWA blokkeert `window.open()` als het te ver van de user-gesture vandaan staat (na meerdere awaits). Google's OAuth-library gebruikt intern `window.open()`.
+   - **Fix:** `preloadGSI()` exportfunctie in `gmail.js` — roep aan bij openen send-modal (achtergrond). In `sendViaGmail()`: `getGmailToken()` EERST aanroepen (vóór PDF-generatie), dan `generateInvoicePDF()`. Zo is de popup dicht bij de originele klik.
+   - **`requestAccessToken({ prompt: '' })`** — stille re-auth als Google-sessie al actief is.
+   - Verbeterde foutmelding bij popup-blokkering: "Popup geblokkeerd — zorg dat je ingelogd bent bij Google in Safari en probeer opnieuw".
+
++3. **Boekhouding volledig + Moneybird send-modal v83 (14 juni 2026):**
+   - **BIC INGBNL2A** toegevoegd aan: PDF-betaalvak, HTML-print betaalbox, e-mail betaalinfo, clipboard herinnertekst, WhatsApp tekst. ADMINS object heeft `bic: 'INGBNL2A'`.
+   - **Moneybird-stijl send-modal** (`openSendModal()`): velden Aan/CC/Onderwerp/Bericht/type, "Stuur een kopie naar mijzelf" iOS-toggle (default ON), PDF-preview chip. Enkel één "Versturen" knop — NOOIT automatisch.
+   - **Zelfkopie met PDF:** kopie naar `sofyanghaddari@gmail.com` via Gmail API met PDF-bijlage (was eerder mailto zonder bijlage).
+   - `OWNER_EMAIL = 'sofyanghaddari@gmail.com'` constante.
+
++2. **Gmail API factuur-verzending v80-v82 (13-14 juni 2026):**
+   - `js/gmail.js` — lazy laadt Google Identity Services, `getGmailToken()` via OAuth2 popup, `sendInvoiceEmail()` bouwt MIME multipart bericht met PDF-bijlage (base64), `buildHtmlEmail()` genereert HTML-factuur met BIC.
+   - **Bug v80:** `tokenClient.requestToken is not a function` — GSI-methode heet `requestAccessToken()`, niet `requestToken()`. Gecorrigeerd in v81.
+   - Google Auth Platform: moet in "Productie" staan OF `sofyanghaddari@gmail.com` als testgebruiker toegevoegd (anders 403 access_denied).
+   - `gmailClientId`/`gmailClientSecret` persistent in localStorage (niet meer sessie-only).
+
++1. **Boekhouding-module v78-v79 (12-13 juni 2026):**
+   - Nieuw `js/modules/boekhouding.js` — volledig boekhoudprogramma: verkoopfacturen (aanmaken, PDF, HTML-print, WhatsApp), inkoopfacturen/bonnetjes, km-registratie, klantenbeheer.
+   - jsPDF lazy geladen voor factuur-PDF's.
+   - Nieuwe IndexedDB stores: `invoices`, `purchase_invoices`, `km_log`, `clients` → DB_VERSION bump naar 4.
+   - `js/invoice-nlp.js` — NLP parser voor factuur-extractie.
+   - "Kopie naar mezelf" knop (later verbeterd naar Moneybird send-modal in v83).
 
 -4. **Dag-kaart navigatie + voorlezen + privacy-default v55 (12 juni 2026):**
    - **Hadith/Woord van de dag** hebben nu een `.daycard-head` met ‹ (vorige dag) · 🔊 (voorlezen) · › (volgende dag, disabled op vandaag) + dag-label ("Vandaag"/"Gisteren"/datum). Offsets in module-vars `_hadithOffset`/`_woordOffset` (sessie-only, reset bij reload). Arrays `HADITHS`/`WOORDEN` worden via `_HADITHS`/`_WOORDEN` aan de nav-handlers doorgegeven; index = `((dayOfYear+offset) % len + len) % len`. Generieke helpers `dayCard()`/`_dayInner()`/`bindDayWidgets()` in dashboard.js.
@@ -313,18 +388,17 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 ## Wat NIET gebouwd (en waarom)
 
 - **AI-chat met data** — vereist Claude API key + kost geld
-- **OCR bonnetjes** — Vision API kost
 - **Open banking** — PSD2 bureaucratie
 - **Multi-device QR-sync** — GitHub-Gist sync biedt al cross-device
 - **Pomodoro** — user wilde 'm uiteindelijk niet
 - **Shift-tracker** — user wilde 'm uiteindelijk niet
 - **Belasting-reservering** — user wilde 'm uiteindelijk niet
-- **Uitgaven UI** — user wilde alleen inkomen noteren
+- **Uitgaven UI** — user wilde alleen inkomen noteren (los van Boekhouding)
 - **Source-breakdown (Uber/Bolt/WhatsApp)** — user wilde simpeler
 
 ## User context
 
-- **Soef Ghaddari** — taxi in Amsterdam
+- **Soef Ghaddari** — taxi in Amsterdam, email: `sofyanghaddari@gmail.com`
 - Rijdt voor Uber/Bolt/WhatsApp (oorspronkelijk per-rit getrackt, nu alleen dagelijks totaal)
 - Moslim, dagelijkse hizb herhaling, kent 10 hizb tot Surah Al-Fath
 - Wil Arabisch leren via Anki-bulk-import van eigen kaarten
@@ -332,6 +406,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - GitHub gebruikersnaam: `sofyanghaddari`
 - Voorkeur: PWA op homescreen als primair, Safari als backup-view
 - Email-tip: éénmalig zichzelf de gist-ID mailen als noodgeval-backup
+- **Bankrekening:** ING, BIC INGBNL2A
+- **Kritische voorkeur:** NOOIT automatisch mailen zonder expliciete klik. Alles altijd bevestigd door de user.
 
 ## Hoe verder gaan
 
@@ -343,6 +419,7 @@ Bij nieuwe sessie:
 5. Push naar main → auto-deploy
 6. Werk altijd in Nederlands tegen de user
 7. Respecteer dat user géén shift-tracker, pomodoro, uitgaven of belasting-features wil terug
+8. **Verificeer API methode-namen zelf voor implementatie** — niet laten falen op simpele typo's (bv. `requestAccessToken()` niet `requestToken()`)
 
 ## Veelvoorkomende user-vragen
 
@@ -351,6 +428,7 @@ Bij nieuwe sessie:
 - "Wat moet ik bewaren?" → Eénmalig je gist-ID emailen naar jezelf, that's it
 - "Werkt het offline?" → Ja, volledig — installeer eerst op homescreen
 - "Hoe regel ik backup?" → ⚙️ → GitHub-token → klaar
+- "Gmail popup geblokkeerd / mislukt" → Zorg dat je bent ingelogd bij Google in Safari, dan opnieuw proberen. Als eerste keer: Google Auth Platform → Doelgroep → voeg je email toe als testgebruiker.
 
 ## Live preview server
 
