@@ -6,3 +6,4 @@ node_modules/
 .superpowers/
 .claude/nocache_server.py
 .worktrees
+.claude/worktrees/
