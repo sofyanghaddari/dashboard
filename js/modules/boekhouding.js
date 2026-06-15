@@ -1796,7 +1796,8 @@ function openDetailModal(inv, container) {
     remindBtn.onclick = () => {
       const clientName = inv.client?.name || 'Geachte relatie';
       const isLate = status === 'te-laat';
-      const text = `${isLate ? 'Herinnering' : 'Betalingsverzoek'}: Factuur ${inv.number}\n\nGeachte ${clientName},\n\n${isLate ? 'Wij constateren dat onderstaande factuur nog niet is voldaan.' : 'Wij verzoeken u vriendelijk het onderstaande bedrag te voldoen.'}\n\nFactuurnummer: ${inv.number}\nFactuurdatum: ${fmtDateLong(inv.date)}\nVervaldatum: ${fmtDateLong(inv.dueDate)}\nBedrag: ${fmtMoney(inv.totalIncl || 0)}\n\nOmschrijving: ${inv.lines?.[0]?.description || '—'}\n\nGelieve het bedrag over te maken naar:\nIBAN: ${fmtIBAN(ADMINS[inv.adminId || 'taxi']?.iban || '')}\nt.n.v. ${ADMINS[inv.adminId || 'taxi']?.naam || ''}\no.v.v. ${inv.number}\n\nMet vriendelijke groet,\n${ADMINS[inv.adminId || 'taxi']?.naam || ''}`;
+      const _remAdmin = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
+      const text = `${isLate ? 'Herinnering' : 'Betalingsverzoek'}: Factuur ${inv.number}\n\nGeachte ${clientName},\n\n${isLate ? 'Wij constateren dat onderstaande factuur nog niet is voldaan.' : 'Wij verzoeken u vriendelijk het onderstaande bedrag te voldoen.'}\n\nFactuurnummer: ${inv.number}\nFactuurdatum: ${fmtDateLong(inv.date)}\nVervaldatum: ${fmtDateLong(inv.dueDate)}\nBedrag: ${fmtMoney(inv.totalIncl || 0)}\n\nOmschrijving: ${inv.lines?.[0]?.description || '—'}\n\nGelieve het bedrag over te maken naar:\nIBAN: ${fmtIBAN(_remAdmin.iban || '')}${_remAdmin.bic ? '\nBIC: ' + _remAdmin.bic : ''}\nt.n.v. ${_remAdmin.naam || ''}\no.v.v. ${inv.number}\n\nMet vriendelijke groet,\n${_remAdmin.naam || ''}`;
       navigator.clipboard.writeText(text).then(() => ok('Herinneringstekst gekopieerd ✓')).catch(() => err('Kopiëren mislukt'));
     };
   }
@@ -2166,6 +2167,7 @@ function generateInvoiceHTML(inv, bedrijf) {
   <div class="pay-box">
     Gelieve het bedrag van <strong>${fmtMoney(inv.totalIncl || 0)}</strong> vóór <strong>${fmtDateLong(inv.dueDate)}</strong> over te maken naar:<br>
     <span class="pay-iban">${escapeHTML(ibanFmt)}</span> — t.n.v. ${escapeHTML(bedrijf.naam)}<br>
+    ${bedrijf.bic ? `BIC: <strong>${escapeHTML(bedrijf.bic)}</strong><br>` : ''}
     o.v.v. factuurnummer <strong>${escapeHTML(inv.number || '')}</strong>
   </div>
   <div class="footer">
