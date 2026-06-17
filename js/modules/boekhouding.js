@@ -415,6 +415,7 @@ function renderFacturen(view, invoices, container) {
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn" id="inv-csv-btn" style="background:var(--bg-elev-2);color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;font-size:.8rem">📊 CSV</button>
+        <button class="btn" id="rit-import-btn" style="background:var(--bg-elev-2);color:var(--accent);border:1.5px solid var(--accent);padding:8px 12px;font-size:.8rem">🚖 Ritten</button>
         <button class="btn bk-new-btn" id="new-inv-btn">+ Factuur</button>
       </div>
     </div>
@@ -470,7 +471,8 @@ function renderFacturen(view, invoices, container) {
     `}
   `;
 
-  view.querySelector('#new-inv-btn').onclick = () => openInvoiceModal(container);
+  view.querySelector('#new-inv-btn').onclick    = () => openInvoiceModal(container);
+  view.querySelector('#rit-import-btn').onclick = () => openRitImportModal(container);
 
   view.querySelector('#inv-csv-btn').onclick = () => exportCSV(
     invoices.map(i => ({
@@ -1295,6 +1297,254 @@ function openClientPicker(clients) {
       };
     });
   });
+}
+
+// ─── RITTEN IMPORTEREN ───────────────────────────────────────────────────────
+
+const MONTH_EN = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
+
+function _parseDateA(str) {
+  // "Sat, 16 May 2026 at 14:10 PM"
+  const m = str.match(/(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/);
+  if (!m) return null;
+  const month = MONTH_EN[m[2]];
+  if (!month) return null;
+  return `${m[3]}-${String(month).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+}
+
+function _parseDateB(str) {
+  // "16/05 16:00" or "16/05"
+  const m = str.match(/^(\d{1,2})\/(\d{2})/);
+  if (!m) return null;
+  return `${new Date().getFullYear()}-${m[2]}-${String(m[1]).padStart(2,'0')}`;
+}
+
+function _parseRideBlock(lines) {
+  let date = null, passenger = null, amount = null, location = null;
+
+  // Format A — starts with "Ride: XXX-XXX-XXXX"
+  if (/^Ride:\s*\d/.test(lines[0])) {
+    for (const line of lines) {
+      if (/^Pickup date and time:/i.test(line))
+        date = _parseDateA(line.replace(/^Pickup date and time:\s*/i, '').trim());
+      else if (/^Drop-off location:/i.test(line)) {
+        // First segment before comma, strip AMS prefix
+        let loc = line.replace(/^Drop-off location:\s*/i, '').trim();
+        loc = loc.split(',')[0].trim().replace(/^AMS\s*-\s*/i, '');
+        location = loc;
+      } else if (/^Passengers?:/i.test(line))
+        passenger = line.replace(/^Passengers?:\s*/i, '').trim();
+    }
+  } else {
+    // Format B — first line is date "16/05 16:00"
+    const dateMatch = lines[0].match(/^(\d{1,2})\/(\d{2})/);
+    if (dateMatch) {
+      date = _parseDateB(lines[0]);
+      // Second line: name unless it starts with +
+      const nameLine = lines[1] && !/^\+\d/.test(lines[1]) ? lines[1] : lines[2];
+      passenger = nameLine || null;
+      // Location: first line that is not phone/date/amount/company name
+      for (let i = 2; i < lines.length; i++) {
+        const l = lines[i];
+        if (/^\+\d/.test(l)) continue;
+        if (/^\d+([.,]\d+)?\s+(sgh\s+)?woosh/i.test(l)) continue;
+        location = l;
+        break;
+      }
+    }
+  }
+
+  // Amount: line matching number + (SGH )? WOOSH
+  for (const line of lines) {
+    const m = line.match(/^(\d+(?:[.,]\d+)?)\s+(?:sgh\s+)?woosh/i);
+    if (m) { amount = parseFloat(m[1].replace(',', '.')); break; }
+  }
+
+  if (!amount || amount <= 0) return null;
+  return { date, passenger: passenger?.trim() || null, amount, location: location?.trim() || null };
+}
+
+function parseRidesText(text) {
+  const blocks = text.trim().split(/\n{2,}/);
+  const rides = [];
+  for (const block of blocks) {
+    const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) continue;
+    const ride = _parseRideBlock(lines);
+    if (ride) rides.push(ride);
+  }
+  return rides;
+}
+
+function _renderRideTable(rides, backdrop) {
+  const wrap = backdrop.querySelector('#ri-table-wrap');
+
+  wrap.innerHTML = `
+    <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:8px">
+      <span>${rides.length} ritten gevonden</span>
+      <label style="margin-left:10px;cursor:pointer"><input type="checkbox" id="ri-check-all" checked /> Alles</label>
+    </div>
+    <div style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:10px">
+      <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+        <thead>
+          <tr style="text-align:left;color:var(--text-dim);font-size:.75rem;background:var(--bg-elev-2)">
+            <th style="padding:6px 8px">✓</th>
+            <th style="padding:6px 4px">Datum</th>
+            <th style="padding:6px 4px">Passagier</th>
+            <th style="padding:6px 4px">Bestemming</th>
+            <th style="padding:6px 8px;text-align:right">Bedrag</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rides.map((r, i) => `
+            <tr style="border-top:1px solid var(--border-faint)">
+              <td style="padding:7px 8px"><input type="checkbox" id="ri-check-${i}" checked /></td>
+              <td style="padding:7px 4px;white-space:nowrap;color:var(--text-dim);font-size:.8rem">${r.date ? fmtDateShort(r.date) : '—'}</td>
+              <td style="padding:7px 4px;font-weight:500">${escapeHTML(r.passenger || '—')}</td>
+              <td style="padding:7px 4px;font-size:.78rem;color:var(--text-dim);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(r.location || '—')}</td>
+              <td style="padding:7px 8px;text-align:right;font-weight:600">${fmtMoney(r.amount)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  const updateTotal = () => {
+    const sel = rides.filter((_, i) => backdrop.querySelector(`#ri-check-${i}`)?.checked);
+    const total = sel.reduce((s, r) => s + (r.amount || 0), 0);
+    backdrop.querySelector('#ri-totaal').innerHTML =
+      `<span style="color:var(--text-dim);font-size:.82rem">${sel.length} ritten geselecteerd ·</span> <span class="money" style="font-size:1rem">${fmtMoney(total)}</span> <span style="color:var(--text-dim);font-size:.8rem">incl. 9% BTW</span>`;
+  };
+
+  backdrop.querySelector('#ri-check-all').onchange = e => {
+    rides.forEach((_, i) => { const cb = backdrop.querySelector(`#ri-check-${i}`); if (cb) cb.checked = e.target.checked; });
+    updateTotal();
+  };
+  rides.forEach((_, i) => { const cb = backdrop.querySelector(`#ri-check-${i}`); if (cb) cb.onchange = updateTotal; });
+  updateTotal();
+}
+
+async function openRitImportModal(container) {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal bk-modal" style="max-width:540px">
+      <button type="button" class="modal-close" id="ri-x">×</button>
+      <h2 style="margin:0 0 4px">🚖 Ritten importeren</h2>
+      <p style="font-size:.83rem;color:var(--text-dim);margin:0 0 14px">Plak je notities (app of WhatsApp-formaat) — datum, naam en bedrag worden automatisch herkend.</p>
+
+      <div id="ri-step1">
+        <textarea id="ri-text" rows="7" style="width:100%;resize:vertical;background:var(--bg-elev-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:.88rem;color:var(--text);font-family:monospace;box-sizing:border-box"
+          placeholder="Ride: 337-175-6607&#10;Pickup date and time: Sat, 16 May 2026 at 14:10 PM&#10;Passengers: Graham Milton&#10;35 SGH WOOSH&#10;&#10;16/05 22:00&#10;Rein Strikwerda&#10;+31619015505&#10;Kinkerstraat&#10;50 SGH WOOSH"></textarea>
+        <button type="button" id="ri-parse-btn" class="btn block" style="margin-top:10px;padding:13px;font-size:.95rem">🔍 Analyseer ritten</button>
+      </div>
+
+      <div id="ri-step2" style="display:none">
+        <div id="ri-table-wrap"></div>
+
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+          <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:6px">Klant op factuur</div>
+          <button type="button" id="ri-pick-client" class="btn" style="width:100%;margin-bottom:8px;background:var(--bg-elev-2);border:1.5px solid var(--accent);color:var(--accent);padding:10px">
+            👥 Kies opgeslagen klant
+          </button>
+          <input id="ri-client-name" type="text" placeholder="Klantnaam *" style="width:100%;margin-bottom:6px;box-sizing:border-box" />
+          <input id="ri-client-email" type="email" placeholder="E-mailadres (optioneel)" style="width:100%;box-sizing:border-box" />
+        </div>
+
+        <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:12px">
+          <div id="ri-totaal"></div>
+          <button type="button" id="ri-create-btn" class="btn bk-new-btn" style="white-space:nowrap;padding:11px 18px">🧾 Maak factuur</button>
+        </div>
+
+        <button type="button" id="ri-back" class="btn" style="margin-top:10px;width:100%;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-size:.82rem;padding:8px">
+          ← Opnieuw plakken
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('#ri-x').onclick    = () => backdrop.remove();
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+
+  let parsedRides = [];
+
+  backdrop.querySelector('#ri-parse-btn').onclick = () => {
+    const text = backdrop.querySelector('#ri-text').value;
+    parsedRides = parseRidesText(text);
+    if (!parsedRides.length) { err('Geen ritten herkend — controleer het formaat en probeer opnieuw.'); return; }
+    _renderRideTable(parsedRides, backdrop);
+    backdrop.querySelector('#ri-step1').style.display = 'none';
+    backdrop.querySelector('#ri-step2').style.display = '';
+  };
+
+  backdrop.querySelector('#ri-back').onclick = () => {
+    backdrop.querySelector('#ri-step1').style.display = '';
+    backdrop.querySelector('#ri-step2').style.display = 'none';
+  };
+
+  backdrop.querySelector('#ri-pick-client').onclick = async () => {
+    const saved = await all('clients');
+    const chosen = await openClientPicker(saved);
+    if (chosen) {
+      backdrop.querySelector('#ri-client-name').value  = chosen.name  || '';
+      backdrop.querySelector('#ri-client-email').value = chosen.email || '';
+    }
+  };
+
+  backdrop.querySelector('#ri-create-btn').onclick = async () => {
+    const clientName = backdrop.querySelector('#ri-client-name').value.trim();
+    if (!clientName) { err('Vul een klantnaam in'); return; }
+
+    const selected = parsedRides.filter((_, i) => backdrop.querySelector(`#ri-check-${i}`)?.checked);
+    if (!selected.length) { err('Selecteer minimaal één rit'); return; }
+
+    const bedrijf  = getAdmin(container);
+    const number   = await nextInvoiceNumber(bedrijf);
+    const todayStr = ymd();
+    const dueStr   = addDays(todayStr, bedrijf.termijn);
+
+    const lines = selected.map(r => {
+      const parts = [
+        r.date      ? fmtDateShort(r.date) : null,
+        r.passenger || null,
+        r.location  || null,
+      ].filter(Boolean);
+      const description = parts.join(' — ') || bedrijf.defaultDesc;
+      const { amountExcl, vatAmount, amountIncl } = calcVat(r.amount, 9, true);
+      return { description, amountExcl, vatRate: 9, vatAmount, amountIncl };
+    });
+
+    const totalExcl = lines.reduce((s, l) => s + l.amountExcl, 0);
+    const totalVat  = lines.reduce((s, l) => s + l.vatAmount, 0);
+    const totalIncl = lines.reduce((s, l) => s + l.amountIncl, 0);
+
+    const clientEmail = backdrop.querySelector('#ri-client-email').value.trim();
+    const inv = {
+      id: uid(), adminId: bedrijf.id, number,
+      date: todayStr, dueDate: dueStr, status: 'open',
+      client: { name: clientName, email: clientEmail },
+      lines, totalExcl, totalVat, totalIncl,
+    };
+
+    await add('invoices', inv);
+
+    // Auto-save client
+    const savedClients = await all('clients');
+    const existing = savedClients.find(c =>
+      (clientEmail && c.email?.toLowerCase() === clientEmail.toLowerCase()) ||
+      c.name?.toLowerCase() === clientName.toLowerCase()
+    );
+    if (!existing) {
+      await add('clients', { id: uid(), name: clientName, email: clientEmail, lastUsed: Date.now() });
+    }
+
+    ok(`Factuur ${number} aangemaakt met ${lines.length} ritten ✓`);
+    backdrop.remove();
+    render(container);
+    setTimeout(() => openSendModal(inv, bedrijf, container), 150);
+  };
 }
 
 // ─── NIEUWE / BEWERK FACTUUR MODAL ──────────────────────────────────────────
