@@ -250,7 +250,7 @@ function openEventForm(container, existing, events, isEdit = false) {
 
   formEl.querySelector('#ev-save').onclick = () => {
     const title = formEl.querySelector('#ev-title').value.trim();
-    if (!title) { ok('Titel verplicht'); return; }
+    if (!title) { err('Titel verplicht'); return; }
     const newEv = {
       id: ev.id,
       title,
@@ -261,9 +261,11 @@ function openEventForm(container, existing, events, isEdit = false) {
       category: formEl.querySelector('#ev-cat').value,
       note: formEl.querySelector('#ev-note').value.trim(),
     };
+    // Lees events opnieuw (stale-closure fix: delete-knoppen kunnen events hebben verwijderd)
+    const freshEvents = getEvents();
     const updated = isEdit
-      ? events.map(x => x.id === ev.id ? newEv : x)
-      : [...events, newEv];
+      ? freshEvents.map(x => x.id === ev.id ? newEv : x)
+      : [...freshEvents, newEv];
     saveEvents(updated);
     ok(isEdit ? 'Bijgewerkt' : 'Toegevoegd');
     formEl.style.display = 'none';

@@ -262,6 +262,7 @@ function renderPots(container, pots) {
   el.querySelectorAll('[data-pot-add]').forEach(b => {
     b.onclick = () => {
       const p = pots.find(x => x.id === b.dataset.potAdd);
+      if (!p) return;
       openModal(`Toevoegen — ${escapeHTML(p.name)}`, `
         <label>Bedrag (€) *</label>
         <input name="amount" type="text" inputmode="decimal" autocomplete="off" required autofocus placeholder="0,00" />
@@ -277,6 +278,7 @@ function renderPots(container, pots) {
   el.querySelectorAll('[data-pot-sub]').forEach(b => {
     b.onclick = () => {
       const p = pots.find(x => x.id === b.dataset.potSub);
+      if (!p) return;
       openModal(`Afhalen — ${escapeHTML(p.name)}`, `
         <label>Bedrag (€) *</label>
         <input name="amount" type="text" inputmode="decimal" autocomplete="off" required autofocus placeholder="0,00" />

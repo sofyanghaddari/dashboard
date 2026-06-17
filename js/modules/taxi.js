@@ -410,7 +410,7 @@ function renderGrid(content, year, month, byDate) {
   const grid = content.querySelector('#income-grid');
   grid.innerHTML = cells.join('');
   grid.querySelectorAll('[data-day]').forEach(cell => {
-    cell.onclick = () => openDayModal(content.closest('[data-taxi-tab]') || document.querySelector('.view'), cell.dataset.day, byDate[cell.dataset.day]);
+    cell.onclick = () => openDayModal(content.closest('[data-taxi-tab]') || document.getElementById('view'), cell.dataset.day, byDate[cell.dataset.day]);
   });
 }
 

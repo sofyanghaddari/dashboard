@@ -146,7 +146,8 @@ async function nextInvoiceNumber(bedrijf) {
   const year = new Date().getFullYear();
   const nums = invoices
     .filter(i => (i.adminId || 'taxi') === bedrijf.id)
-    .map(i => { const m = (i.number || '').match(/(\d+)$/); return m ? parseInt(m[1], 10) : 0; });
+    .map(i => { const m = (i.number || '').match(/(\d+)$/); return m ? parseInt(m[1], 10) : 0; })
+    .filter(n => isFinite(n));
   const next = nums.length ? Math.max(...nums) + 1 : 1;
   return `${year}-${String(next).padStart(3, '0')}`;
 }

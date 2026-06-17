@@ -144,10 +144,11 @@ export async function render(container) {
       setTimeout(() => quick.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
     });
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        if (document.activeElement === quick)
-          quick.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
+      // Gebruik .onresize (assignment) zodat er nooit meer dan één handler actief is
+      window.visualViewport.onresize = () => {
+        if (document.activeElement?.id === 'quick-add')
+          document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
     }
   }
 

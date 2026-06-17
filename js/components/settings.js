@@ -37,7 +37,7 @@ export async function openGistPicker() {
     list.innerHTML = '<div class="list">' + gists.map(g => `
       <div class="list-item">
         <div style="flex:1;min-width:0">
-          <b>${escapeHTML(g.description)} ${g.isCurrent ? '<span class="pill" style="background:var(--ok);color:#000">huidig</span>' : ''}</b>
+          <b>${escapeHTML(g.description || '')} ${g.isCurrent ? '<span class="pill" style="background:var(--ok);color:#000">huidig</span>' : ''}</b>
           <div class="muted" style="font-size:.75rem;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.id}</div>
           <div class="muted" style="font-size:.72rem;margin-top:2px">${g.files.length} bestand${g.files.length===1?'':'en'} · laatst aangepast ${new Date(g.updated_at).toLocaleDateString('nl-NL')}</div>
         </div>
@@ -111,7 +111,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v87';
+const APP_VERSION = 'v88';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';

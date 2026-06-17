@@ -443,7 +443,9 @@ function scheduleReminder() {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   if (_reminderTimer) clearTimeout(_reminderTimer);
   const t = localStorage.getItem('hizbReminderTime') || '20:00';
-  const [h, m] = t.split(':').map(Number);
+  const parts = t.split(':');
+  const h = Number(parts[0]), m = Number(parts[1]);
+  if (!isFinite(h) || !isFinite(m)) return; // ongeldige tijdstring — sla over
   const now = new Date();
   const target = new Date(now);
   target.setHours(h, m, 0, 0);
