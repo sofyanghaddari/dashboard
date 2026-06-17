@@ -1,5 +1,5 @@
 import { uid, escapeHTML, ymd, fmtMoney } from '../utils.js';
-import { ok } from '../components/toast.js';
+import { ok, err } from '../components/toast.js';
 import { all } from '../db.js';
 
 const STORAGE_KEY = 'agenda_events';

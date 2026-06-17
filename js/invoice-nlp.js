@@ -14,17 +14,23 @@ export function parseInvoiceText(raw) {
   const vatM = text.match(/(\d+)\s*%\s*btw/i) || text.match(/btw\s*[:\s]*(\d+)\s*%/i);
   const vatRate = vatM ? parseInt(vatM[1]) : null;
 
-  // incl/excl — default incl
+  // incl/excl — only flag explicitly when mentioned
+  const _inclExplicit = /\b(incl|excl)\b/i.test(text);
   const isIncl = /excl/i.test(text) ? false : true;
 
-  // Amount: €320, €320,50, 320 euro
+  // Amount: €320, €320,50, €1.234,56
   let amount = null;
   const euroM = text.match(/€\s*(\d[\d,\.]*)/);
   if (euroM) {
-    amount = parseFloat(euroM[1].replace(',', '.'));
+    // Strip Dutch thousand-separator dots, then convert decimal comma to dot
+    const cleaned = euroM[1].replace(/\./g, '').replace(',', '.');
+    amount = parseFloat(cleaned);
   } else {
     const numM = text.match(/(\d[\d,\.]*)\s*(?:euro|eur)\b/i);
-    if (numM) amount = parseFloat(numM[1].replace(',', '.'));
+    if (numM) {
+      const cleaned = numM[1].replace(/\./g, '').replace(',', '.');
+      amount = parseFloat(cleaned);
+    }
   }
 
   // Description hint from "voor ..."
@@ -51,6 +57,7 @@ export function parseInvoiceText(raw) {
     clientKvk,
     vatRate,
     isIncl,
+    _inclExplicit,
     amount,
     description,
   };

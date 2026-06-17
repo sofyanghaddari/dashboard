@@ -57,11 +57,11 @@ export async function openSearch() {
         { label: '🧾 Boekhouding', action: () => navigate('boekhouding') },
       ];
     } else {
-      todos.filter(t => t.title.toLowerCase().includes(f)).forEach(t => {
-        items.push({ label: `✅ ${t.title} ${t.done ? '(afgerond)' : ''}`, action: () => navigate('todo') });
+      todos.filter(t => (t.title || '').toLowerCase().includes(f)).forEach(t => {
+        items.push({ label: `✅ ${t.title || '—'} ${t.done ? '(afgerond)' : ''}`, action: () => navigate('todo') });
       });
-      goals.filter(g => g.title.toLowerCase().includes(f)).forEach(g => {
-        items.push({ label: `🎯 ${g.title}`, action: () => navigate('goals') });
+      goals.filter(g => (g.title || '').toLowerCase().includes(f)).forEach(g => {
+        items.push({ label: `🎯 ${g.title || '—'}`, action: () => navigate('goals') });
       });
       cards.filter(c => c.front.toLowerCase().includes(f) || c.back.toLowerCase().includes(f)).slice(0, 8).forEach(c => {
         items.push({ label: `📚 ${c.front} → ${c.back}`, action: () => { document.getElementById('view').dataset.geloofSub = 'arabic'; navigate('geloof'); } });

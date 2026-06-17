@@ -144,8 +144,10 @@ function inYear(dateStr, y) {
 async function nextInvoiceNumber(bedrijf) {
   const invoices = await all('invoices');
   const year = new Date().getFullYear();
+  const yearStr = String(year);
+  // Only count invoices from the current year so the sequence resets each January
   const nums = invoices
-    .filter(i => (i.adminId || 'taxi') === bedrijf.id)
+    .filter(i => (i.adminId || 'taxi') === bedrijf.id && (i.number || '').startsWith(yearStr))
     .map(i => { const m = (i.number || '').match(/(\d+)$/); return m ? parseInt(m[1], 10) : 0; })
     .filter(n => isFinite(n));
   const next = nums.length ? Math.max(...nums) + 1 : 1;
@@ -769,16 +771,20 @@ function renderBTW(view, invoices, purchases, container) {
   const selQ   = container.dataset.btwQ !== undefined ? parseInt(container.dataset.btwQ) : curQ;
   const selY   = container.dataset.btwY ? parseInt(container.dataset.btwY) : curY;
 
-  // BTW over verkoopfacturen
-  const inv9  = invoices.filter(i => inQuarter(i.date, selQ, selY) && (i.lines?.[0]?.vatRate || 0) === 9);
-  const inv21 = invoices.filter(i => inQuarter(i.date, selQ, selY) && (i.lines?.[0]?.vatRate || 0) === 21);
-  const inv0  = invoices.filter(i => inQuarter(i.date, selQ, selY) && (i.lines?.[0]?.vatRate || 0) === 0);
-
-  const omzet9   = inv9.reduce((s, i)  => s + (i.totalExcl || 0), 0);
-  const btw9     = inv9.reduce((s, i)  => s + (i.totalVat  || 0), 0);
-  const omzet21  = inv21.reduce((s, i) => s + (i.totalExcl || 0), 0);
-  const btw21    = inv21.reduce((s, i) => s + (i.totalVat  || 0), 0);
-  const omzet0   = inv0.reduce((s, i)  => s + (i.totalExcl || 0), 0);
+  // BTW over verkoopfacturen — som per BTW-tarief over alle regels (niet alleen lines[0])
+  const qInvoices = invoices.filter(i => inQuarter(i.date, selQ, selY));
+  let omzet9 = 0, btw9 = 0, omzet21 = 0, btw21 = 0, omzet0 = 0;
+  const inv9Set = new Set(), inv21Set = new Set(), inv0Set = new Set();
+  for (const inv of qInvoices) {
+    for (const line of (inv.lines || [])) {
+      const rate = line.vatRate ?? 0;
+      const excl = line.amountExcl ?? 0;
+      const vat  = line.vatAmount  ?? 0;
+      if (rate === 9)       { omzet9  += excl; btw9  += vat; inv9Set.add(inv.id); }
+      else if (rate === 21) { omzet21 += excl; btw21 += vat; inv21Set.add(inv.id); }
+      else                  { omzet0  += excl;               inv0Set.add(inv.id); }
+    }
+  }
   const totOmzet = omzet9 + omzet21 + omzet0;
   const totBtwAf = btw9 + btw21;
 
@@ -825,13 +831,13 @@ function renderBTW(view, invoices, purchases, container) {
 
       <div class="bk-btw-row">
         <span class="bk-btw-rubriek">1a</span>
-        <span>Belast met 9% — ${inv9.length} facturen</span>
+        <span>Belast met 9% — ${inv9Set.size} facturen</span>
         <span class="money">${fmtMoney(omzet9)}</span>
         <span class="bk-btw-vat">${fmtMoney(btw9)}</span>
       </div>
       <div class="bk-btw-row">
         <span class="bk-btw-rubriek">1b</span>
-        <span>Belast met 21% — ${inv21.length} facturen</span>
+        <span>Belast met 21% — ${inv21Set.size} facturen</span>
         <span class="money">${fmtMoney(omzet21)}</span>
         <span class="bk-btw-vat">${fmtMoney(btw21)}</span>
       </div>
@@ -1340,11 +1346,17 @@ function _parseRideBlock(lines) {
     const dateMatch = lines[0].match(/^(\d{1,2})\/(\d{2})/);
     if (dateMatch) {
       date = _parseDateB(lines[0]);
-      // Second line: name unless it starts with +
-      const nameLine = lines[1] && !/^\+\d/.test(lines[1]) ? lines[1] : lines[2];
-      passenger = nameLine || null;
-      // Location: first line that is not phone/date/amount/company name
-      for (let i = 2; i < lines.length; i++) {
+      // Second line: name unless it starts with + (phone)
+      let nameIdx = -1;
+      if (lines[1] && !/^\+\d/.test(lines[1])) {
+        passenger = lines[1];
+        nameIdx   = 1;
+      } else if (lines[2] && !/^\+\d/.test(lines[2])) {
+        passenger = lines[2];
+        nameIdx   = 2;
+      }
+      // Location: first line after name that is not phone/amount
+      for (let i = nameIdx + 1; i < lines.length; i++) {
         const l = lines[i];
         if (/^\+\d/.test(l)) continue;
         if (/^\d+([.,]\d+)?\s+(sgh\s+)?woosh/i.test(l)) continue;
@@ -1505,6 +1517,7 @@ async function openRitImportModal(container) {
     const todayStr = ymd();
     const dueStr   = addDays(todayStr, bedrijf.termijn);
 
+    const vatRate = bedrijf.defaultVat ?? 9;
     const lines = selected.map(r => {
       const parts = [
         r.date      ? fmtDateShort(r.date) : null,
@@ -1512,8 +1525,8 @@ async function openRitImportModal(container) {
         r.location  || null,
       ].filter(Boolean);
       const description = parts.join(' — ') || bedrijf.defaultDesc;
-      const { amountExcl, vatAmount, amountIncl } = calcVat(r.amount, 9, true);
-      return { description, amountExcl, vatRate: 9, vatAmount, amountIncl };
+      const { amountExcl, vatAmount, amountIncl } = calcVat(r.amount, vatRate, true);
+      return { description, amountExcl, vatRate, vatAmount, amountIncl };
     });
 
     const totalExcl = lines.reduce((s, l) => s + l.amountExcl, 0);
@@ -1765,7 +1778,7 @@ function applyParsed(parsed, backdrop) {
   set('#bk-client-email', parsed.clientEmail);
   if (parsed.amount != null) set('#bk-amount', parsed.amount);
   if (parsed.vatRate != null) backdrop.querySelector('#bk-vat').value = String(parsed.vatRate);
-  if (parsed.isIncl !== null) {
+  if (parsed._inclExplicit) {
     const r = backdrop.querySelector(`input[name="bk-ie"][value="${parsed.isIncl ? 'incl' : 'excl'}"]`);
     if (r) r.checked = true;
   }
@@ -1775,7 +1788,7 @@ function applyParsed(parsed, backdrop) {
     parsed.clientName  && `<strong>${escapeHTML(parsed.clientName)}</strong>`,
     parsed.amount != null && `€${parsed.amount}`,
     parsed.vatRate != null && `${parsed.vatRate}% BTW`,
-    parsed.isIncl !== null && (parsed.isIncl ? 'incl.' : 'excl.'),
+    parsed._inclExplicit && (parsed.isIncl ? 'incl.' : 'excl.'),
   ].filter(Boolean);
 
   const preview = backdrop.querySelector('#bk-parsed-preview');
@@ -2090,10 +2103,16 @@ function openDetailModal(inv, container) {
       </div>
 
       <div class="bk-detail-block">
-        <div class="bk-detail-label">Bedragen</div>
-        <div class="bk-detail-row"><span>${escapeHTML(line.description || 'Vervoersdienst')}</span><span></span></div>
+        <div class="bk-detail-label">Regels</div>
+        ${(inv.lines || [line]).map(l => `
+          <div class="bk-detail-row" style="align-items:flex-start">
+            <span style="flex:1;padding-right:8px">${escapeHTML(l.description || 'Vervoersdienst')}</span>
+            <span style="white-space:nowrap">${fmtMoney(l.amountIncl ?? l.amountExcl ?? 0)}</span>
+          </div>
+        `).join('')}
+        <div style="border-top:1px solid var(--border-faint);margin:6px 0"></div>
         <div class="bk-detail-row"><span>Excl. BTW</span><span>${fmtMoney(inv.totalExcl || 0)}</span></div>
-        <div class="bk-detail-row"><span>BTW ${line.vatRate || 0}%</span><span>${fmtMoney(inv.totalVat || 0)}</span></div>
+        <div class="bk-detail-row"><span>BTW</span><span>${fmtMoney(inv.totalVat || 0)}</span></div>
         <div class="bk-detail-row bk-detail-total"><span>Totaal</span><span class="money">${fmtMoney(inv.totalIncl || 0)}</span></div>
       </div>
 
@@ -2410,7 +2429,7 @@ function openEditKmModal(k, container) {
 // ─── PDF / VERZENDEN ─────────────────────────────────────────────────────────
 
 function generateInvoiceHTML(inv, bedrijf) {
-  const line    = inv.lines?.[0] || {};
+  const lines   = inv.lines?.length ? inv.lines : [inv.lines?.[0] || {}];
   const client  = inv.client || {};
   const ibanFmt = fmtIBAN(bedrijf.iban);
   return `<!DOCTYPE html>
@@ -2482,16 +2501,18 @@ function generateInvoiceHTML(inv, bedrijf) {
       <th style="width:50%">Omschrijving</th>
       <th>BTW</th><th>Excl. BTW</th><th>Totaal incl.</th>
     </tr></thead>
-    <tbody><tr>
-      <td>${escapeHTML(line.description || 'Vervoersdienst')}</td>
-      <td>${line.vatRate || 0}%</td>
-      <td>${fmtMoney(inv.totalExcl || 0)}</td>
-      <td>${fmtMoney(inv.totalIncl || 0)}</td>
-    </tr></tbody>
+    <tbody>
+      ${lines.map(l => `<tr>
+        <td>${escapeHTML(l.description || 'Vervoersdienst')}</td>
+        <td>${l.vatRate ?? 0}%</td>
+        <td>${fmtMoney(l.amountExcl ?? 0)}</td>
+        <td>${fmtMoney(l.amountIncl ?? 0)}</td>
+      </tr>`).join('')}
+    </tbody>
   </table>
   <div class="totals">
     <div class="t-row"><span>Subtotaal excl. BTW</span><span>${fmtMoney(inv.totalExcl || 0)}</span></div>
-    <div class="t-row"><span>BTW ${line.vatRate || 0}%</span><span>${fmtMoney(inv.totalVat || 0)}</span></div>
+    <div class="t-row"><span>BTW</span><span>${fmtMoney(inv.totalVat || 0)}</span></div>
     <div class="t-grand"><span>Totaal</span><span>${fmtMoney(inv.totalIncl || 0)}</span></div>
   </div>
   <div class="pay-box">
@@ -2546,7 +2567,7 @@ function loadJsPdf() {
 async function generateInvoicePDF(inv, bedrijf) {
   const JsPDF = await loadJsPdf();
   const doc    = new JsPDF({ unit: 'mm', format: 'a4' });
-  const line   = inv.lines?.[0] || {};
+  const lines  = inv.lines?.length ? inv.lines : [inv.lines?.[0] || {}];
   const client = inv.client  || {};
   const L = 20, R = 190, W = 170;
   const TAUPE = [138, 126, 111];
@@ -2618,31 +2639,36 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.text('EXCL. BTW', R - 27, tY + 5, { align: 'right' });
   doc.text('TOTAAL INCL.', R, tY + 5, { align: 'right' });
 
-  // ── Tabelrij (met tekst-omloop) ──
-  const descText  = line.description || bedrijf.defaultDesc || 'Vervoersdienst';
-  const descLines = doc.splitTextToSize(descText, 90);
-  const rowH      = Math.max(12, descLines.length * 5 + 4);
-
+  // ── Tabelrijen — één per factuurregel ──
   doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
   doc.line(L, tY + 7, R, tY + 7);
 
-  doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(...DARK);
-  doc.text(descLines, L + 2, tY + 13);
-  const rowMidY = tY + 7 + rowH / 2 + 1.5;
-  doc.setFontSize(9); doc.setTextColor(...MED);
-  doc.text(`${line.vatRate ?? 0}%`, R - 53, rowMidY, { align: 'right' });
-  doc.text(fmtMoney(inv.totalExcl || 0), R - 27, rowMidY, { align: 'right' });
-  doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
-  doc.text(fmtMoney(inv.totalIncl || 0), R, rowMidY, { align: 'right' });
+  let rowEndY = tY + 7;
+  for (const l of lines) {
+    const descText  = l.description || bedrijf.defaultDesc || 'Vervoersdienst';
+    const descLines = doc.splitTextToSize(descText, 90);
+    const rowH      = Math.max(12, descLines.length * 5 + 4);
+    const rowTopY   = rowEndY;
+    const rowMidY   = rowTopY + rowH / 2 + 1.5;
 
-  doc.line(L, tY + 7 + rowH, R, tY + 7 + rowH);
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(...DARK);
+    doc.text(descLines, L + 2, rowTopY + 6);
+    doc.setFontSize(9); doc.setTextColor(...MED);
+    doc.text(`${l.vatRate ?? 0}%`, R - 53, rowMidY, { align: 'right' });
+    doc.text(fmtMoney(l.amountExcl ?? 0), R - 27, rowMidY, { align: 'right' });
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
+    doc.text(fmtMoney(l.amountIncl ?? 0), R, rowMidY, { align: 'right' });
+
+    rowEndY = rowTopY + rowH;
+    doc.line(L, rowEndY, R, rowEndY);
+  }
 
   // ── Totalen ──
-  let tTY = tY + 7 + rowH + 9;
+  let tTY = rowEndY + 9;
   const totX = R - 75;
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
   [[`Subtotaal excl. BTW`, fmtMoney(inv.totalExcl || 0)],
-   [`BTW ${line.vatRate ?? 0}%`, fmtMoney(inv.totalVat || 0)]].forEach(([lbl, val]) => {
+   [`BTW`, fmtMoney(inv.totalVat || 0)]].forEach(([lbl, val]) => {
     doc.text(lbl, totX, tTY); doc.text(val, R, tTY, { align: 'right' }); tTY += 5.5;
   });
   doc.setDrawColor(...TAUPE); doc.setLineWidth(0.8); doc.line(totX, tTY + 1, R, tTY + 1);
