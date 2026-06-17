@@ -2,7 +2,7 @@ import { all, put, clear } from '../db.js';
 import { escapeHTML } from '../utils.js';
 import { getSetting, setSetting } from '../settings.js';
 import { openModal } from './modal.js';
-import { setThemeMode, setAccent, ACCENT_NAMES, setPreset, THEME_PRESETS, setDensity, PRESET_DOT_COLORS } from '../theme.js';
+import { setDensity } from '../theme.js';
 import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
@@ -111,7 +111,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v90';
+const APP_VERSION = 'v91';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
@@ -126,9 +126,6 @@ const SETTINGS_TABS = [
 
 export async function openSettings(onClose) {
   const earned = await computeEarnedBadges();
-  const themeMode = getSetting('themeMode') || 'dark';
-  const accent = getSetting('accentColor') || 'gold';
-  const preset = getSetting('themePreset') || 'midnight';
   const sync = getSyncStatus();
   const lockOn = isLockEnabled();
   const userName = getSetting('userName') || '';
@@ -208,17 +205,6 @@ export async function openSettings(onClose) {
         <div class="settings-group">
           <div class="settings-row">
             <div class="settings-row-main">
-              <div class="settings-row-title">Kleurmodus</div>
-              <div class="settings-row-sub muted">Donker, licht of volg het systeem</div>
-            </div>
-            <select id="set-theme">
-              <option value="dark" ${themeMode==='dark'?'selected':''}>Donker</option>
-              <option value="light" ${themeMode==='light'?'selected':''}>Licht</option>
-              <option value="auto" ${themeMode==='auto'?'selected':''}>Automatisch</option>
-            </select>
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-main">
               <div class="settings-row-title">Dichtheid</div>
               <div class="settings-row-sub muted">Ruimte tussen elementen</div>
             </div>
@@ -227,33 +213,6 @@ export async function openSettings(onClose) {
               <button type="button" class="seg ${getSetting('density')==='compact'?'active':''}" data-density="compact">Compact</button>
             </div>
           </div>
-          <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:10px">
-            <div class="settings-row-main">
-              <div class="settings-row-title">Accent-kleur</div>
-              <div class="settings-row-sub muted">Hoofd-accentkleur door de hele app</div>
-            </div>
-            <div class="accent-picker" id="accent-picker">
-              ${ACCENT_NAMES.map(name => `
-                <button type="button" class="accent-swatch accent-${name} ${name===accent?'active':''}" data-accent="${name}" aria-label="${name}"></button>
-              `).join('')}
-            </div>
-          </div>
-          <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:10px">
-            <div class="settings-row-main">
-              <div class="settings-row-title">Sfeer-thema</div>
-              <div class="settings-row-sub muted">Basisstijl van je dashboard</div>
-            </div>
-            <div class="preset-picker">
-              ${THEME_PRESETS.map(p => `<button type="button" class="preset-chip preset-${p} ${p===preset?'active':''}" data-preset="${p}">${p}<span class="preset-dot" style="background:${PRESET_DOT_COLORS[p]||'currentColor'}"></span></button>`).join('')}
-            </div>
-          </div>
-          <label class="settings-row" style="text-transform:none;margin-top:4px">
-            <div class="settings-row-main">
-              <div class="settings-row-title">Automatisch dag/nacht</div>
-              <div class="settings-row-sub muted">06:00–20:00 licht (daylight) · 20:00–06:00 jouw donkere thema</div>
-            </div>
-            <span class="ios-switch"><input type="checkbox" id="set-auto-theme" ${getSetting('autoTheme') !== '0' ? 'checked' : ''} /><span></span></span>
-          </label>
         </div>
       </div>
       </div>
@@ -777,24 +736,6 @@ export async function openSettings(onClose) {
   });
 
   // Weergave
-  backdrop.querySelectorAll('[data-accent]').forEach(btn => {
-    btn.onclick = () => {
-      setAccent(btn.dataset.accent);
-      backdrop.querySelectorAll('.accent-swatch').forEach(s => s.classList.remove('active'));
-      btn.classList.add('active');
-    };
-  });
-  backdrop.querySelector('#set-theme').onchange = (e) => setThemeMode(e.target.value);
-  backdrop.querySelector('#set-auto-theme').onchange = (e) => {
-    setSetting('autoTheme', e.target.checked ? '1' : '0');
-  };
-  backdrop.querySelectorAll('[data-preset]').forEach(btn => {
-    btn.onclick = () => {
-      setPreset(btn.dataset.preset);
-      backdrop.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-    };
-  });
   backdrop.querySelectorAll('[data-density]').forEach(btn => {
     btn.onclick = () => {
       setDensity(btn.dataset.density);

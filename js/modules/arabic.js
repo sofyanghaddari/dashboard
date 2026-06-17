@@ -367,7 +367,8 @@ function startSession(container, queue, settings) {
           </div>
           <div class="srs-flashcard-back">
             ${settings.showTypeBadge && c.wordType ? `<div class="srs-type-badge srs-type-${c.wordType}" style="margin-bottom:12px">${TYPE_LABELS[c.wordType] || c.wordType}</div>` : ''}
-            <div class="srs-card-back-text ${c.backDir === 'rtl' ? 'arabic-text' : ''}" dir="${c.backDir}">${escapeHTML(c.back)}</div>
+            <div class="srs-card-back-dutch" dir="ltr">${escapeHTML(c.frontDir === 'rtl' ? c.back : c.front)}</div>
+            <div class="srs-card-back-arabic arabic-text" dir="rtl">${escapeHTML(c.frontDir === 'rtl' ? c.front : c.back)}</div>
             ${c.backTranslit ? `<div class="srs-translit">${escapeHTML(c.backTranslit)}</div>` : ''}
           </div>
         </div>
