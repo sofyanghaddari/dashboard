@@ -2,7 +2,7 @@ import { all, put, clear } from '../db.js';
 import { escapeHTML } from '../utils.js';
 import { getSetting, setSetting } from '../settings.js';
 import { openModal } from './modal.js';
-import { setDensity } from '../theme.js';
+import { setPreset, THEME_PRESETS, setDensity, PRESET_DOT_COLORS } from '../theme.js';
 import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
@@ -111,7 +111,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v91';
+const APP_VERSION = 'v92';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
@@ -126,6 +126,7 @@ const SETTINGS_TABS = [
 
 export async function openSettings(onClose) {
   const earned = await computeEarnedBadges();
+  const preset = getSetting('themePreset') || 'midnight';
   const sync = getSyncStatus();
   const lockOn = isLockEnabled();
   const userName = getSetting('userName') || '';
@@ -203,6 +204,15 @@ export async function openSettings(onClose) {
           </div>
         </div>
         <div class="settings-group">
+          <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:10px">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Thema</div>
+              <div class="settings-row-sub muted">Onyx · Midnight · Daylight</div>
+            </div>
+            <div class="preset-picker">
+              ${THEME_PRESETS.map(p => `<button type="button" class="preset-chip preset-${p} ${p===preset?'active':''}" data-preset="${p}">${p}<span class="preset-dot" style="background:${PRESET_DOT_COLORS[p]||'currentColor'}"></span></button>`).join('')}
+            </div>
+          </div>
           <div class="settings-row">
             <div class="settings-row-main">
               <div class="settings-row-title">Dichtheid</div>
@@ -213,6 +223,13 @@ export async function openSettings(onClose) {
               <button type="button" class="seg ${getSetting('density')==='compact'?'active':''}" data-density="compact">Compact</button>
             </div>
           </div>
+          <label class="settings-row" style="text-transform:none;margin-top:4px">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Automatisch dag/nacht</div>
+              <div class="settings-row-sub muted">06:00–20:00 daylight · 20:00–06:00 jouw donkere thema</div>
+            </div>
+            <span class="ios-switch"><input type="checkbox" id="set-auto-theme" ${getSetting('autoTheme') !== '0' ? 'checked' : ''} /><span></span></span>
+          </label>
         </div>
       </div>
       </div>
@@ -736,6 +753,17 @@ export async function openSettings(onClose) {
   });
 
   // Weergave
+  backdrop.querySelectorAll('[data-preset]').forEach(btn => {
+    btn.onclick = () => {
+      setPreset(btn.dataset.preset);
+      backdrop.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+    };
+  });
+  const autoThemeEl = backdrop.querySelector('#set-auto-theme');
+  if (autoThemeEl) autoThemeEl.onchange = (e) => {
+    setSetting('autoTheme', e.target.checked ? '1' : '0');
+  };
   backdrop.querySelectorAll('[data-density]').forEach(btn => {
     btn.onclick = () => {
       setDensity(btn.dataset.density);
