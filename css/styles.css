@@ -61,7 +61,7 @@
   --transition: 220ms cubic-bezier(.4,0,.2,1);
 
   /* Layout */
-  --tabbar-h: 58px;
+  --tabbar-h: 50px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }
@@ -112,7 +112,7 @@ body[data-preset="daylight"] .tabbar {
   background: rgba(240,235,226,.88);
   border-top-color: rgba(0,0,0,.08);
 }
-body[data-preset="daylight"] .tab { color: rgba(0,0,0,.38); }
+body[data-preset="daylight"] .tab { color: rgba(0,0,0,.35); }
 body[data-preset="daylight"] .btn.secondary {
   background: rgba(0,0,0,.07);
   color: var(--text);
@@ -539,20 +539,16 @@ label {
   color: rgba(255,255,255,.38);
   flex: 1 1 0;
   min-width: 0;
-  padding: 0 1px;
+  padding: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  font-size: 1.15rem; gap: 2px;
+  font-size: 1.3rem;
   cursor: pointer;
   font-family: inherit;
   transition: color var(--transition), transform var(--transition);
   position: relative;
   overflow: hidden;
 }
-.tab span { font-size: .52rem; letter-spacing: .03em; font-weight: 600; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-@media (max-width: 390px) {
-  .tab { font-size: 1.05rem; }
-  .tab span { font-size: 0; line-height: 0; overflow: hidden; height: 0; margin: 0; }
-}
+.tab span { display: none; }
 .tab.active { color: var(--gold); }
 .tab.active::before {
   content: '';
