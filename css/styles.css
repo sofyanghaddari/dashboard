@@ -61,7 +61,7 @@
   --transition: 220ms cubic-bezier(.4,0,.2,1);
 
   /* Layout */
-  --tabbar-h: 72px;
+  --tabbar-h: 58px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }
@@ -539,23 +539,18 @@ label {
   color: rgba(255,255,255,.38);
   flex: 1 1 0;
   min-width: 0;
-  padding: 0 2px;
+  padding: 0 1px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  font-size: 1.2rem; gap: 3px;
+  font-size: 1.15rem; gap: 2px;
   cursor: pointer;
   font-family: inherit;
   transition: color var(--transition), transform var(--transition);
   position: relative;
   overflow: hidden;
 }
-.tab span { font-size: .58rem; letter-spacing: .04em; font-weight: 600; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-@media (max-width: 380px) {
+.tab span { font-size: .52rem; letter-spacing: .03em; font-weight: 600; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+@media (max-width: 390px) {
   .tab { font-size: 1.05rem; }
-  .tab span { font-size: .53rem; letter-spacing: .01em; }
-}
-/* iPhone SE (375px) — hide tab labels */
-@media (max-width: 375px) {
-  .tab { font-size: 1rem; padding: 0 1px; }
   .tab span { font-size: 0; line-height: 0; overflow: hidden; height: 0; margin: 0; }
 }
 .tab.active { color: var(--gold); }

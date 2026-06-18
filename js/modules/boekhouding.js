@@ -1412,10 +1412,15 @@ function parseRidesText(text) {
   const blocks = text.trim().split(/\n[ \t]*\n/);
   const rides = [];
   for (const block of blocks) {
-    const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
+    const trimmed = block.trim();
+    if (!trimmed) continue;
+    const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
     if (lines.length < 1) continue;
     const ride = _parseRideBlock(lines);
-    if (ride) rides.push(ride);
+    if (ride) {
+      ride.rawText = trimmed; // bewaar originele tekst als factuur-omschrijving
+      rides.push(ride);
+    }
   }
   return rides;
 }
@@ -1424,31 +1429,32 @@ function _renderRideTable(rides, backdrop) {
   const wrap = backdrop.querySelector('#ri-table-wrap');
 
   wrap.innerHTML = `
-    <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:8px">
-      <span>${rides.length} ritten gevonden</span>
-      <label style="margin-left:10px;cursor:pointer"><input type="checkbox" id="ri-check-all" checked /> Alles</label>
+    <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:8px;display:flex;align-items:center;gap:10px">
+      <span>${rides.length} ritten gevonden — elk wordt één factuurlijn</span>
+      <label style="margin-left:auto;cursor:pointer;white-space:nowrap"><input type="checkbox" id="ri-check-all" checked /> Alles</label>
     </div>
-    <div style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:10px">
-      <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+    <div style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:10px">
+      <table style="width:100%;border-collapse:collapse;font-size:.83rem">
         <thead>
-          <tr style="text-align:left;color:var(--text-dim);font-size:.75rem;background:var(--bg-elev-2)">
+          <tr style="text-align:left;color:var(--text-dim);font-size:.72rem;background:var(--bg-elev-2);position:sticky;top:0">
             <th style="padding:6px 8px">✓</th>
-            <th style="padding:6px 4px">Datum</th>
-            <th style="padding:6px 4px">Passagier</th>
-            <th style="padding:6px 4px">Bestemming</th>
-            <th style="padding:6px 8px;text-align:right">Bedrag</th>
+            <th style="padding:6px 4px">Omschrijving (origineel)</th>
+            <th style="padding:6px 8px;text-align:right;white-space:nowrap">Bedrag incl.</th>
           </tr>
         </thead>
         <tbody>
-          ${rides.map((r, i) => `
+          ${rides.map((r, i) => {
+            const preview = escapeHTML((r.rawText || '').replace(/\n/g, ' · ').slice(0, 80) + ((r.rawText || '').length > 80 ? '…' : ''));
+            return `
             <tr style="border-top:1px solid var(--border-faint)">
-              <td style="padding:7px 8px"><input type="checkbox" id="ri-check-${i}" checked /></td>
-              <td style="padding:7px 4px;white-space:nowrap;color:var(--text-dim);font-size:.8rem">${r.date ? fmtDateShort(r.date) : '—'}</td>
-              <td style="padding:7px 4px;font-weight:500">${escapeHTML(r.passenger || '—')}</td>
-              <td style="padding:7px 4px;font-size:.78rem;color:var(--text-dim);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(r.location || '—')}</td>
-              <td style="padding:7px 8px;text-align:right;font-weight:600">${fmtMoney(r.amount)}</td>
-            </tr>
-          `).join('')}
+              <td style="padding:7px 8px;vertical-align:top"><input type="checkbox" id="ri-check-${i}" checked /></td>
+              <td style="padding:7px 4px;max-width:240px">
+                <div style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${preview}</div>
+                <div style="font-size:.72rem;color:var(--text-faint);margin-top:2px">${r.date ? fmtDateShort(r.date) : ''}${r.passenger ? ' · ' + escapeHTML(r.passenger) : ''}</div>
+              </td>
+              <td style="padding:7px 8px;text-align:right;font-weight:600;vertical-align:top;white-space:nowrap">${fmtMoney(r.amount)}</td>
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>
     </div>
@@ -1457,8 +1463,12 @@ function _renderRideTable(rides, backdrop) {
   const updateTotal = () => {
     const sel = rides.filter((_, i) => backdrop.querySelector(`#ri-check-${i}`)?.checked);
     const total = sel.reduce((s, r) => s + (r.amount || 0), 0);
+    const vatRate = 9;
+    const excl = total / (1 + vatRate / 100);
+    const vat  = total - excl;
     backdrop.querySelector('#ri-totaal').innerHTML =
-      `<span style="color:var(--text-dim);font-size:.82rem">${sel.length} ritten geselecteerd ·</span> <span class="money" style="font-size:1rem">${fmtMoney(total)}</span> <span style="color:var(--text-dim);font-size:.8rem">incl. 9% BTW</span>`;
+      `<div style="font-size:.8rem;color:var(--text-dim)">${sel.length} ritten · excl. BTW: <span class="money">${fmtMoney(excl)}</span> · BTW 9%: <span class="money">${fmtMoney(vat)}</span></div>
+       <div style="font-size:1rem;font-weight:600;margin-top:2px">Totaal incl.: <span class="money">${fmtMoney(total)}</span></div>`;
   };
 
   backdrop.querySelector('#ri-check-all').onchange = e => {
@@ -1551,12 +1561,12 @@ async function openRitImportModal(container) {
 
     const vatRate = bedrijf.defaultVat ?? 9;
     const lines = selected.map(r => {
-      const parts = [
-        r.date      ? fmtDateShort(r.date) : null,
+      // Gebruik originele tekst als omschrijving; één regel per rit op de factuur
+      const description = r.rawText || [
+        r.date ? fmtDateShort(r.date) : null,
         r.passenger || null,
         r.location  || null,
-      ].filter(Boolean);
-      const description = parts.join(' — ') || bedrijf.defaultDesc;
+      ].filter(Boolean).join(' — ') || bedrijf.defaultDesc;
       const { amountExcl, vatAmount, amountIncl } = calcVat(r.amount, vatRate, true);
       return { description, amountExcl, vatRate, vatAmount, amountIncl };
     });
