@@ -454,12 +454,12 @@ function renderFacturen(view, invoices, container) {
               <span class="bk-card-num">${escapeHTML(inv.number || '')}</span>
               <span>·</span>
               <span class="bk-card-date">${fmtDateLong(inv.date)}</span>
-              ${inv.sentAt ? `<span style="font-size:.68rem;color:var(--ok);margin-left:4px">✉ verstuurd</span>` : ''}
+              ${inv.sentAt ? `<span class="bk-sent-badge">✉ verstuurd</span>` : ''}
             </div>
             <div class="bk-card-bot">
               <div>
                 <div class="bk-card-amount money">${fmtMoney(inv.totalIncl || 0)}</div>
-                <div style="font-size:.72rem;color:var(--text-faint)">excl. ${fmtMoney(inv.totalExcl || 0)} · BTW ${fmtMoney(inv.totalVat || 0)}</div>
+                <div class="bk-amount-sub">excl. ${fmtMoney(inv.totalExcl || 0)} · BTW ${fmtMoney(inv.totalVat || 0)}</div>
               </div>
               <div class="bk-card-actions">
                 ${inv._status !== 'betaald' ? `<button class="bk-btn-paid" data-id="${escapeHTML(inv.id)}">✓</button>` : ''}
@@ -1045,7 +1045,7 @@ function renderKlanten(view, clients, invoices, container) {
               </div>
               <div style="text-align:right;flex-shrink:0;margin-left:10px">
                 <div class="bk-client-count">${c.invoiceCount} factuur${c.invoiceCount !== 1 ? 'en' : ''}</div>
-                ${c.invoiceCount > 0 ? `<div style="font-size:.72rem;color:var(--gold);font-family:Georgia,serif">${fmtMoney(c.totalIncl)}</div>` : ''}
+                ${c.invoiceCount > 0 ? `<div class="bk-client-amount">${fmtMoney(c.totalIncl)}</div>` : ''}
               </div>
             </div>
             <button class="btn bk-client-inv-btn" data-id="${escapeHTML(c.id)}" style="width:100%;margin-top:10px;font-size:.85rem;padding:8px">
@@ -1581,7 +1581,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       <h2 style="margin:0 0 16px">${isEdit ? 'Factuur bewerken' : 'Nieuwe factuur'}</h2>
 
       ${!isEdit ? `
-      <button type="button" id="bk-pick-client" class="btn" style="width:100%;margin-bottom:10px;background:var(--bg-elev-2);border:1.5px solid var(--accent);color:var(--accent)">
+      <button type="button" id="bk-pick-client" class="btn secondary bk-pick-client-btn">
         👥 Kies opgeslagen klant
       </button>
 
@@ -1644,7 +1644,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         <label>Interne notitie (staat niet op factuur)</label>
         <textarea id="bk-note" rows="2" style="resize:vertical" placeholder="Optioneel…">${escapeHTML(inv0.note || '')}</textarea>
 
-        <button type="submit" class="btn block" style="margin-top:18px;padding:14px;font-size:1rem">
+        <button type="submit" class="btn block bk-form-submit">
           ${isEdit ? '💾 Factuur opslaan' : '🧾 Factuur aanmaken'}
         </button>
       </form>
@@ -2077,10 +2077,10 @@ function openDetailModal(inv, container) {
   backdrop.innerHTML = `
     <div class="modal bk-modal">
       <button type="button" class="modal-close" id="det-x">×</button>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div class="bk-detail-hd">
         <div>
-          <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);margin-bottom:3px">Factuur</div>
-          <div style="font-size:1.2rem;font-weight:700">${escapeHTML(inv.number || '—')}</div>
+          <div class="bk-detail-label">Factuur</div>
+          <div class="bk-detail-num">${escapeHTML(inv.number || '—')}</div>
         </div>
         <span class="bk-status bk-status-${status}">${statusLabel(status)}</span>
       </div>
@@ -2116,9 +2116,9 @@ function openDetailModal(inv, container) {
         <div class="bk-detail-row bk-detail-total"><span>Totaal</span><span class="money">${fmtMoney(inv.totalIncl || 0)}</span></div>
       </div>
 
-      ${inv.note ? `<div class="bk-detail-block"><div class="bk-detail-label">Notitie</div><div style="font-size:.88rem;color:var(--text-dim)">${escapeHTML(inv.note)}</div></div>` : ''}
+      ${inv.note ? `<div class="bk-detail-block"><div class="bk-detail-label">Notitie</div><div class="bk-detail-note">${escapeHTML(inv.note)}</div></div>` : ''}
 
-      <button class="btn" id="det-send" style="width:100%;margin-bottom:10px;padding:14px;font-size:1rem;background:var(--accent);color:var(--on-accent);border-color:var(--accent)">📤 Factuur versturen</button>
+      <button class="btn block bk-detail-send-btn" id="det-send">📤 Factuur versturen</button>
       <div class="bk-detail-actions">
         <button class="btn" id="det-edit" style="flex:1">✏️ Bewerken</button>
         <button class="btn" id="det-pdf"  style="flex:1;background:var(--accent);color:var(--on-accent);border-color:var(--accent)">📄 PDF</button>
@@ -2859,8 +2859,8 @@ function openSendModal(inv, bedrijf, container) {
     <div class="modal bk-modal bk-send-modal">
       <button type="button" class="modal-close" id="snd-x">×</button>
       <div class="bk-send-hd">
-        <div style="font-weight:700;font-size:1.05rem">Versturen</div>
-        <div style="font-size:.82rem;color:var(--text-dim);margin-top:2px">${escapeHTML(inv.number)} · ${escapeHTML(clientName || '—')} · <span class="money">${fmtMoney(inv.totalIncl || 0)}</span></div>
+        <div class="bk-send-hd-title">Versturen</div>
+        <div class="bk-send-hd-meta">${escapeHTML(inv.number)} · ${escapeHTML(clientName || '—')} · <span class="money">${fmtMoney(inv.totalIncl || 0)}</span></div>
       </div>
 
       <div class="bk-sf-row">
@@ -2905,7 +2905,7 @@ function openSendModal(inv, bedrijf, container) {
         <span>${escapeHTML(inv.number || 'factuur')}.pdf</span>
       </div>
 
-      <button id="snd-send" class="btn block" style="margin-top:14px;padding:14px;font-size:1rem;font-weight:600">
+      <button id="snd-send" class="btn block bk-send-btn-primary">
         Versturen
       </button>
       ${!configured ? `<p style="font-size:.78rem;color:var(--text-dim);text-align:center;margin:8px 0 0">Gmail instellen via ⚙️ → Data voor volledig versturen</p>` : ''}

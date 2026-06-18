@@ -242,9 +242,9 @@ export async function render(container) {
     </div>
 
     <!-- KALENDER KNOPPEN -->
-    <div class="row" style="margin-bottom:14px;gap:8px">
-      <button class="btn secondary" id="open-calendar" style="flex:1;font-size:.875rem">📅 Kalender</button>
-      <button class="btn secondary" id="open-yr" style="flex:1;font-size:.875rem">📊 Jaar</button>
+    <div class="db-cal-btns">
+      <button class="btn secondary" id="open-calendar">📅 Kalender</button>
+      <button class="btn secondary" id="open-yr">📊 Jaar</button>
     </div>
 
     <!-- WEGWERKZAAMHEDEN -->
@@ -366,12 +366,12 @@ export async function render(container) {
         const pct   = Math.min(100, Math.round(saved / Number(g.target) * 100));
         const remaining = Math.max(0, Number(g.target) - saved);
         return `
-          <div style="margin-bottom:14px">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-              <b style="font-size:.95rem">${escapeHTML(g.title)}</b>
-              <span class="muted" style="font-size:.8rem">${pct}%</span>
+          <div class="db-goal-item">
+            <div class="db-goal-hd">
+              <b class="db-goal-title">${escapeHTML(g.title)}</b>
+              <span class="db-goal-pct">${pct}%</span>
             </div>
-            <div class="muted" style="font-size:.8rem;margin-bottom:6px"><span class="blurred-amount">${fmtMoney(saved)}</span> van <span class="blurred-amount">${fmtMoney(Number(g.target))}</span>${remaining>0?` · nog <span class="blurred-amount">${fmtMoney(remaining)}</span>`:' · behaald 🎉'}</div>
+            <div class="db-goal-detail"><span class="blurred-amount">${fmtMoney(saved)}</span> van <span class="blurred-amount">${fmtMoney(Number(g.target))}</span>${remaining>0?` · nog <span class="blurred-amount">${fmtMoney(remaining)}</span>`:' · behaald 🎉'}</div>
             <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
           </div>`;
       }).join('')}
