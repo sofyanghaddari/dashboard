@@ -1307,81 +1307,113 @@ function openClientPicker(clients) {
 
 // ─── RITTEN IMPORTEREN ───────────────────────────────────────────────────────
 
-const MONTH_EN = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
+const _MONTH_EN = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
 
-function _parseDateA(str) {
-  // "Sat, 16 May 2026 at 14:10 PM"
-  const m = str.match(/(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/);
-  if (!m) return null;
-  const month = MONTH_EN[m[2]];
-  if (!month) return null;
-  return `${m[3]}-${String(month).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+function _riExtractAmount(lines) {
+  for (const line of lines) {
+    let m;
+    // €95 / € 95 / €95.50 / € 95,50
+    m = line.match(/€\s*(\d+(?:[.,]\d+)?)/);
+    if (m) return parseFloat(m[1].replace(',', '.'));
+    // 35 SGH WOOSH / 35 Woosh-Amsterdam / 35 woosh
+    m = line.match(/(\d+(?:[.,]\d+)?)\s+(?:sgh\s+)?woosh(?:-\S+)?/i);
+    if (m) return parseFloat(m[1].replace(',', '.'));
+    // 80.00ROR / 80ROR
+    m = line.match(/(\d+(?:\.\d+)?)\s*ROR\b/i);
+    if (m) return parseFloat(m[1]);
+  }
+  // Standalone integer/decimal on its own line (anywhere in block)
+  for (const line of lines) {
+    const m = line.match(/^(\d+(?:[.,]\d+)?)$/);
+    if (m) return parseFloat(m[1].replace(',', '.'));
+  }
+  return null;
 }
 
-function _parseDateB(str) {
-  // "16/05 16:00" or "16/05"
-  const m = str.match(/^(\d{1,2})\/(\d{2})/);
-  if (!m) return null;
-  return `${new Date().getFullYear()}-${m[2]}-${String(m[1]).padStart(2,'0')}`;
+function _riExtractDate(lines) {
+  const yr = new Date().getFullYear();
+  for (const line of lines) {
+    let m;
+    // "Sat, 16 May 2026 at ..." or "16 May 2026"
+    m = line.match(/\b(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/);
+    if (m) {
+      const mon = _MONTH_EN[m[2].toLowerCase().slice(0,3)];
+      if (mon) return `${m[3]}-${String(mon).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+    }
+    // "16.05.2026" or "16.05.2026."
+    m = line.match(/\b(\d{1,2})\.(\d{2})\.(\d{4})/);
+    if (m) return `${m[3]}-${m[2]}-${String(m[1]).padStart(2,'0')}`;
+    // "16/05 16:00" or "16/05"
+    m = line.match(/^(\d{1,2})\/(\d{2})\b/);
+    if (m) return `${yr}-${m[2]}-${String(m[1]).padStart(2,'0')}`;
+    // "Sunday 17 May 2026" / "Monday 16 May"
+    m = line.match(/(?:mon|tue|wed|thu|fri|sat|sun)\w*\s+(\d{1,2})\s+([A-Za-z]{3,})(?:\s+(\d{4}))?/i);
+    if (m) {
+      const mon = _MONTH_EN[m[2].toLowerCase().slice(0,3)];
+      if (mon) return `${m[3] || yr}-${String(mon).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+    }
+  }
+  return new Date().toISOString().slice(0,10);
+}
+
+function _riIsLikelyName(str) {
+  if (!str || str.length < 3 || str.length > 50) return false;
+  if (/\d/.test(str)) return false;
+  if (/^[+@]/.test(str)) return false;
+  if (/^(pick|drop|van|naar|from|to|flight|booking|transfer|ride|passengers?|naam|klant|client|vehicle|km|pick-up|drop-off|arrival|departure|a |b )/i.test(str)) return false;
+  const words = str.trim().split(/\s+/);
+  if (words.length < 2 || words.length > 5) return false;
+  return words.every(w => /^[A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ]/.test(w));
+}
+
+function _riExtractPassenger(lines) {
+  for (const line of lines) {
+    const m = line.match(/^(?:passengers?|naam|client|klant):\s*(.+)/i);
+    if (m) return m[1].trim();
+  }
+  for (const line of lines) {
+    if (_riIsLikelyName(line)) return line.trim();
+  }
+  return null;
+}
+
+function _riExtractLocation(lines) {
+  let pickup = null, dropoff = null;
+  for (const line of lines) {
+    let m;
+    m = line.match(/^pick[-\s]?up(?:\s+location)?:\s*(.+)/i);
+    if (m) { pickup = m[1].trim(); continue; }
+    m = line.match(/^drop[-\s]?off(?:\s+location)?:\s*(.+)/i);
+    if (m) { dropoff = m[1].trim(); continue; }
+    m = line.match(/^A\s+(.+)/);
+    if (m) { pickup = m[1].trim(); continue; }
+    m = line.match(/^B\s+(.+)/);
+    if (m) { dropoff = m[1].trim(); continue; }
+    m = line.match(/^(?:Van|From):\s*(.+)/i);
+    if (m) { pickup = m[1].trim(); continue; }
+    m = line.match(/^(?:Naar|To):\s*(.+)/i);
+    if (m) { dropoff = m[1].trim(); continue; }
+  }
+  if (pickup && dropoff) return `${pickup} → ${dropoff}`;
+  return dropoff || pickup || null;
 }
 
 function _parseRideBlock(lines) {
-  let date = null, passenger = null, amount = null, location = null;
-
-  // Format A — starts with "Ride: XXX-XXX-XXXX"
-  if (/^Ride:\s*\d/.test(lines[0])) {
-    for (const line of lines) {
-      if (/^Pickup date and time:/i.test(line))
-        date = _parseDateA(line.replace(/^Pickup date and time:\s*/i, '').trim());
-      else if (/^Drop-off location:/i.test(line)) {
-        // First segment before comma, strip AMS prefix
-        let loc = line.replace(/^Drop-off location:\s*/i, '').trim();
-        loc = loc.split(',')[0].trim().replace(/^AMS\s*-\s*/i, '');
-        location = loc;
-      } else if (/^Passengers?:/i.test(line))
-        passenger = line.replace(/^Passengers?:\s*/i, '').trim();
-    }
-  } else {
-    // Format B — first line is date "16/05 16:00"
-    const dateMatch = lines[0].match(/^(\d{1,2})\/(\d{2})/);
-    if (dateMatch) {
-      date = _parseDateB(lines[0]);
-      // Second line: name unless it starts with + (phone)
-      let nameIdx = -1;
-      if (lines[1] && !/^\+\d/.test(lines[1])) {
-        passenger = lines[1];
-        nameIdx   = 1;
-      } else if (lines[2] && !/^\+\d/.test(lines[2])) {
-        passenger = lines[2];
-        nameIdx   = 2;
-      }
-      // Location: first line after name that is not phone/amount
-      for (let i = nameIdx + 1; i < lines.length; i++) {
-        const l = lines[i];
-        if (/^\+\d/.test(l)) continue;
-        if (/^\d+([.,]\d+)?\s+(sgh\s+)?woosh/i.test(l)) continue;
-        location = l;
-        break;
-      }
-    }
-  }
-
-  // Amount: line matching number + (SGH )? WOOSH
-  for (const line of lines) {
-    const m = line.match(/^(\d+(?:[.,]\d+)?)\s+(?:sgh\s+)?woosh/i);
-    if (m) { amount = parseFloat(m[1].replace(',', '.')); break; }
-  }
-
+  const amount = _riExtractAmount(lines);
   if (!amount || amount <= 0) return null;
-  return { date, passenger: passenger?.trim() || null, amount, location: location?.trim() || null };
+  const date = _riExtractDate(lines);
+  const passenger = _riExtractPassenger(lines);
+  const location = _riExtractLocation(lines);
+  return { date, passenger, amount, location };
 }
 
 function parseRidesText(text) {
-  const blocks = text.trim().split(/\n{2,}/);
+  // Blank line (or multiple blank lines) = rit-scheiding
+  const blocks = text.trim().split(/\n[ \t]*\n/);
   const rides = [];
   for (const block of blocks) {
     const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
-    if (!lines.length) continue;
+    if (lines.length < 1) continue;
     const ride = _parseRideBlock(lines);
     if (ride) rides.push(ride);
   }
