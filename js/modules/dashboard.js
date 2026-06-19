@@ -1,4 +1,4 @@
-import { all } from '../db.js';
+import { all, put } from '../db.js';
 import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML } from '../utils.js';
 import { getNumber, getSetting } from '../settings.js';
 import { celebrateGoalHit, celebrateStreak } from '../components/celebrate.js';
@@ -60,8 +60,9 @@ function weatherIcon(code) {
 }
 
 export async function render(container) {
-  const [rides, hizb, todos, cards, goals] = await Promise.all([
+  const [rides, hizb, todos, cards, goals, habits, habitLog] = await Promise.all([
     all('rides'), all('hizb_log'), all('todos'), all('cards'), all('goals'),
+    all('habits').catch(() => []), all('habit_log').catch(() => []),
   ]);
   const now = new Date();
   const today = ymd();
@@ -102,15 +103,20 @@ export async function render(container) {
   const monthDelta    = lastMonthAtPoint > 0 ? Math.round((monthIncome - lastMonthAtPoint) / lastMonthAtPoint * 100) : null;
   const projectedMonth = daysIntoMonth > 0 ? Math.round((monthIncome / daysIntoMonth) * daysInMonth) : 0;
 
-  // 30-dagen heatmap
-  const last30 = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now); d.setDate(d.getDate() - i);
-    const key = ymd(d);
-    const total = sum(rides.filter(r => ymd(new Date(r.date)) === key));
-    last30.push({ key, day: d.getDate(), total });
+  // Gewoontes vandaag
+  const doneHabitIds = new Set(habitLog.filter(l => l.date === today && l.done).map(l => l.habitId));
+  const habitsDoneToday = habits.filter(h => doneHabitIds.has(h.id)).length;
+
+  // Habit volgorde (chains)
+  function orderedHabits(all) {
+    const heads = all.filter(h => !h.after);
+    const followers = all.filter(h => h.after);
+    const out = [];
+    function add(h) { out.push(h); followers.filter(f => f.after === h.id).forEach(add); }
+    heads.forEach(add);
+    all.forEach(h => { if (!out.includes(h)) out.push(h); });
+    return out;
   }
-  const heatMax = Math.max(1, ...last30.map(d => d.total));
 
   // Hizb streak
   const todayHizb = hizb.some(h => h.date === today);
@@ -377,17 +383,30 @@ export async function render(container) {
       }).join('')}
     </div>` : ''}
 
-    <!-- 30-DAGEN HEATMAP -->
+    <!-- GEWOONTES VANDAAG -->
+    ${habits.length ? `
     <div class="card">
-      <h2 class="card-title">Inkomen — laatste 30 dagen</h2>
-      <div class="heatmap">
-        ${last30.map(d => {
-          const i = d.total > 0 ? Math.max(0.18, d.total / heatMax) : 0;
-          return `<div class="heat-cell" style="${i>0?`background:linear-gradient(135deg,rgba(212,176,107,${i.toFixed(2)}),rgba(212,176,107,${(i*.6).toFixed(2)}));`:''}" title="${d.key}: ${fmtMoney(d.total)}"></div>`;
-        }).join('')}
-      </div>
-      <div class="heat-legend" style="margin-top:6px"><span class="muted" style="font-size:.72rem">minder</span><span class="heat-spec"></span><span class="muted" style="font-size:.72rem">meer</span></div>
-    </div>
+      <h2 class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+        Gewoontes vandaag
+        <span style="font-weight:500;font-size:.8rem;color:${habitsDoneToday===habits.length?'var(--ok)':'var(--text-dim)'}">${habitsDoneToday}/${habits.length}</span>
+      </h2>
+      ${orderedHabits(habits).map(h => {
+        const done = doneHabitIds.has(h.id);
+        const strip = Array.from({length:14},(_,d) => {
+          const date = ymd(new Date(Date.now() - (13-d)*86400000));
+          const dd = habitLog.some(l => l.habitId===h.id && l.date===date && l.done);
+          return `<span class="hab-day ${dd?'done':''}" title="${date}"></span>`;
+        }).join('');
+        return `<div class="db-habit-row">
+          <button class="db-habit-check ${done?'done':''}" data-htoggle="${h.id}">${done?'✓':''}</button>
+          <div class="db-habit-body">
+            <div class="db-habit-name">${h.emoji||'✨'} ${escapeHTML(h.name)}</div>
+            <div class="habit-strip">${strip}</div>
+          </div>
+        </div>`;
+      }).join('')}
+      <button class="btn secondary block" style="margin-top:12px;font-size:.85rem" data-tab="doelen">Alle gewoontes →</button>
+    </div>` : ''}
 
     ${insights.length ? `
     <div class="card">
@@ -401,6 +420,18 @@ export async function render(container) {
       <p class="muted">Begin met het bijhouden van je eerste inkomen, hizb of taak via de tabs onderaan.</p>
     </div>` : ''}
   `;
+
+  // Habit toggle handlers
+  container.querySelectorAll('[data-htoggle]').forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.dataset.htoggle;
+      const key = today + ':' + id;
+      const existing = habitLog.find(l => l.id === key);
+      if (existing) await put('habit_log', { ...existing, done: !existing.done });
+      else          await put('habit_log', { id: key, date: today, habitId: id, done: true });
+      render(container);
+    };
+  });
 
   loadWeather(container);
   loadNs(container);

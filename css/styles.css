@@ -5139,3 +5139,71 @@ label.subtask {
 @media (max-width: 360px) {
   .bk-km-summary { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── NETTO MARGE GRAFIEK (stats.js) ─────────────────────────────────────── */
+.nbc-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 80px;
+}
+.nbc-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+.nbc-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+}
+.nbc-inc, .nbc-cost {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+  animation: barRise 600ms var(--ease-out) both;
+  animation-delay: calc(var(--i) * 25ms);
+}
+.nbc-inc  { background: var(--gold); height: var(--h, 0%); }
+.nbc-cost { background: var(--danger); opacity: .8; height: var(--h, 0%); }
+.nbc-lbl  { font-size: .56rem; color: var(--text-faint); white-space: nowrap; }
+.nbc-legend { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: .75rem; color: var(--text-dim); }
+.nbc-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.nbc-dot.inc  { background: var(--gold); }
+.nbc-dot.cost { background: var(--danger); opacity: .8; }
+.nbc-leg { margin-right: 10px; }
+
+/* ── GEWOONTES OP DASHBOARD ──────────────────────────────────────────────── */
+.db-habit-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.db-habit-row:last-of-type { border-bottom: none; }
+.db-habit-check {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-hi);
+  background: none;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .78rem;
+  color: var(--ok);
+  cursor: pointer;
+  margin-top: 1px;
+  transition: background var(--transition), border-color var(--transition);
+}
+.db-habit-check.done {
+  background: var(--ok);
+  color: #fff;
+  border-color: var(--ok);
+}
+.db-habit-body { flex: 1; min-width: 0; }
+.db-habit-name { font-size: .88rem; font-weight: 500; margin-bottom: 5px; }

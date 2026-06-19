@@ -23,11 +23,12 @@ export async function render(container) {
     btn.onclick = () => { container.dataset.statsPeriod = btn.dataset.p; render(container); };
   });
 
-  const [rides, hizbLog, cards, todos] = await Promise.all([
+  const [rides, hizbLog, cards, todos, purchases] = await Promise.all([
     all('rides').catch(() => []),
     all('hizb_log').catch(() => []),
     all('cards').catch(() => []),
     all('todos').catch(() => []),
+    all('purchase_invoices').catch(() => []),
   ]);
 
   const body = container.querySelector('#stats-body');
@@ -35,6 +36,7 @@ export async function render(container) {
 
   body.innerHTML =
     renderInkomenHero(rides, cutoff, period) +
+    renderNettoMarge(rides, purchases) +
     renderWeekdayStats(rides, cutoff) +
     renderKoranRing(hizbLog) +
     renderArabicMastery(cards) +
@@ -467,6 +469,67 @@ function renderTakenDonut(todos, cutoff) {
               <span class="ttl-cnt">${cnt}</span>
             </div>`).join('')}
         </div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+// ── NETTO MARGE ───────────────────────────────────────────────────────────────
+
+function renderNettoMarge(rides, purchases) {
+  const now = new Date();
+  const months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleDateString('nl-NL', { month: 'short' });
+    const income = rides.filter(r => r.date && r.date.startsWith(key)).reduce((s, r) => s + (r.amount || 0), 0);
+    const costs  = purchases.filter(p => p.date && p.date.startsWith(key)).reduce((s, p) => s + (p.amount || 0), 0);
+    months.push({ label, income, costs, netto: income - costs });
+  }
+
+  if (!months.some(m => m.income > 0 || m.costs > 0)) return '';
+
+  const maxVal = Math.max(...months.map(m => m.income), 1);
+  const totInc  = months.reduce((s, m) => s + m.income, 0);
+  const totNetto = months.reduce((s, m) => s + m.netto, 0);
+  const margin  = totInc > 0 ? Math.round(totNetto / totInc * 100) : 0;
+
+  return `
+    <div class="stats-section-wrap" style="--i:1">
+      <div class="stats-card">
+        <div class="stats-card-title">Netto marge — 12 maanden</div>
+        <div class="shero-grid" style="margin-bottom:16px">
+          <div class="shero-metric">
+            <div class="shero-metric-val" data-count="${Math.round(totInc)}" data-money>${fmtMoney(Math.round(totInc))}</div>
+            <div class="shero-metric-lbl">Totaal inkomen</div>
+          </div>
+          <div class="shero-metric">
+            <div class="shero-metric-val" data-count="${Math.round(totNetto)}" data-money>${fmtMoney(Math.round(totNetto))}</div>
+            <div class="shero-metric-lbl">Netto over</div>
+          </div>
+          <div class="shero-metric">
+            <div class="shero-metric-val plain">${margin}%</div>
+            <div class="shero-metric-lbl">Marge</div>
+          </div>
+        </div>
+        <div class="nbc-chart">
+          ${months.map((m, i) => {
+            const incH = Math.round(m.income / maxVal * 100);
+            const cosH = Math.round(m.costs  / maxVal * 100);
+            return `<div class="nbc-col" title="${m.label}: €${Math.round(m.income)} inkomen · €${Math.round(m.costs)} kosten · netto €${Math.round(m.netto)}">
+              <div class="nbc-bar-wrap">
+                <div class="nbc-inc" style="--h:${incH}%;--i:${i}"></div>
+                ${m.costs > 0 ? `<div class="nbc-cost" style="--h:${cosH}%;--i:${i}"></div>` : ''}
+              </div>
+              <div class="nbc-lbl">${m.label}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="nbc-legend">
+          <span class="nbc-dot inc"></span><span class="nbc-leg">Inkomen</span>
+          <span class="nbc-dot cost"></span><span class="nbc-leg">Kosten</span>
+        </div>
       </div>
     </div>
   `;
