@@ -323,22 +323,22 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
     <div class="bk-kpi-grid">
       <div class="bk-kpi">
         <div class="bk-kpi-label">Omzet ${y}</div>
-        <div class="bk-kpi-val money blurred-amount" data-bk-count="${omzetYear}">${fmtMoney(omzetYear)}</div>
+        <div class="bk-kpi-val money blurred-amount" data-bk-count="${omzetYear}">${fmtMoney(omzetYear, true)}</div>
         <div class="bk-kpi-sub">excl. BTW</div>
       </div>
       <div class="bk-kpi">
         <div class="bk-kpi-label">Kosten ${y}</div>
-        <div class="bk-kpi-val money blurred-amount" style="color:var(--danger)" data-bk-count="${kostenYear}">${fmtMoney(kostenYear)}</div>
+        <div class="bk-kpi-val money blurred-amount" style="color:var(--danger)" data-bk-count="${kostenYear}">${fmtMoney(kostenYear, true)}</div>
         <div class="bk-kpi-sub">excl. BTW</div>
       </div>
       <div class="bk-kpi">
         <div class="bk-kpi-label">Winst ${y}</div>
-        <div class="bk-kpi-val money blurred-amount" style="color:${winstYear >= 0 ? 'var(--ok)' : 'var(--danger)'}" data-bk-count="${winstYear}">${fmtMoney(winstYear)}</div>
+        <div class="bk-kpi-val money blurred-amount" style="color:${winstYear >= 0 ? 'var(--ok)' : 'var(--danger)'}" data-bk-count="${winstYear}">${fmtMoney(winstYear, true)}</div>
         <div class="bk-kpi-sub">excl. aftrekken</div>
       </div>
       <div class="bk-kpi">
         <div class="bk-kpi-label">BTW Q${q + 1}</div>
-        <div class="bk-kpi-val money blurred-amount" style="color:var(--accent)" data-bk-count="${btwSaldo}">${fmtMoney(btwSaldo)}</div>
+        <div class="bk-kpi-val money blurred-amount" style="color:var(--accent)" data-bk-count="${btwSaldo}">${fmtMoney(btwSaldo, true)}</div>
         <div class="bk-kpi-sub">te betalen</div>
       </div>
     </div>
@@ -2795,9 +2795,9 @@ async function generateInvoicePDF(inv, bedrijf) {
     // Bedragen rechts, verticaal gecentreerd
     doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
     doc.text(`${l.vatRate ?? 0}%`, R - 53, rowMidY, { align: 'right' });
-    doc.text(fmtMoney(l.amountExcl ?? 0), R - 27, rowMidY, { align: 'right' });
+    doc.text(fmtMoney(l.amountExcl ?? 0, true), R - 27, rowMidY, { align: 'right' });
     doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
-    doc.text(fmtMoney(l.amountIncl ?? 0), R, rowMidY, { align: 'right' });
+    doc.text(fmtMoney(l.amountIncl ?? 0, true), R, rowMidY, { align: 'right' });
 
     rowEndY = rowTopY + rowH;
     doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
@@ -2811,8 +2811,8 @@ async function generateInvoicePDF(inv, bedrijf) {
   let tTY = rowEndY + 9;
   const totX = R - 75;
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
-  [[`Subtotaal excl. BTW`, fmtMoney(inv.totalExcl || 0)],
-   [`BTW`,                 fmtMoney(inv.totalVat  || 0)]].forEach(([lbl, val]) => {
+  [[`Subtotaal excl. BTW`, fmtMoney(inv.totalExcl || 0, true)],
+   [`BTW`,                 fmtMoney(inv.totalVat  || 0, true)]].forEach(([lbl, val]) => {
     doc.text(lbl, totX, tTY); doc.text(val, R, tTY, { align: 'right' }); tTY += 5.5;
   });
   doc.setDrawColor(...TAUPE); doc.setLineWidth(0.8); doc.line(totX, tTY + 1, R, tTY + 1);
@@ -2820,7 +2820,7 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...DARK);
   doc.text('Te betalen', totX, tTY);
   doc.setFontSize(14); doc.setTextColor(...TAUPE);
-  doc.text(fmtMoney(inv.totalIncl || 0), R, tTY, { align: 'right' });
+  doc.text(fmtMoney(inv.totalIncl || 0, true), R, tTY, { align: 'right' });
 
   // ── Betaalinstructies ──
   const pY    = tTY + 12;
@@ -2830,7 +2830,7 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.setFillColor(...TAUPE);
   doc.rect(L, pY, 3, pBoxH, 'F');
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
-  doc.text(`Gelieve ${fmtMoney(inv.totalIncl || 0)} voor ${fmtDateLong(inv.dueDate)} over te maken naar:`, L + 7, pY + 7);
+  doc.text(`Gelieve ${fmtMoney(inv.totalIncl || 0, true)} voor ${fmtDateLong(inv.dueDate)} over te maken naar:`, L + 7, pY + 7);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...DARK);
   doc.text(fmtIBAN(bedrijf.iban), L + 7, pY + 14);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MED);

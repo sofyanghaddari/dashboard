@@ -274,7 +274,7 @@ function renderPots(container, pots) {
         const amt = parseAmount(d.amount);
         if (!isFinite(amt) || amt <= 0) throw new Error('Bedrag moet groter dan 0 zijn');
         await put('pots', { ...p, current: Number(p.current || 0) + amt });
-        ok(`${fmtMoney(amt)} toegevoegd aan ${p.name}`);
+        ok(`${fmtMoney(amt)} toegevoegd aan ${escapeHTML(p.name)}`);
         render(container);
       });
     };
@@ -290,7 +290,7 @@ function renderPots(container, pots) {
         const amt = parseAmount(d.amount);
         if (!isFinite(amt) || amt <= 0) throw new Error('Bedrag moet groter dan 0 zijn');
         await put('pots', { ...p, current: Math.max(0, Number(p.current || 0) - amt) });
-        ok(`${fmtMoney(amt)} afgehaald van ${p.name}`);
+        ok(`${fmtMoney(amt)} afgehaald van ${escapeHTML(p.name)}`);
         render(container);
       });
     };

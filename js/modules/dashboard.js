@@ -108,13 +108,13 @@ export async function render(container) {
   const habitsDoneToday = habits.filter(h => doneHabitIds.has(h.id)).length;
 
   // Habit volgorde (chains)
-  function orderedHabits(all) {
-    const heads = all.filter(h => !h.after);
-    const followers = all.filter(h => h.after);
+  function orderedHabits(list) {
+    const heads = list.filter(h => !h.after);
+    const followers = list.filter(h => h.after);
     const out = [];
     function add(h) { out.push(h); followers.filter(f => f.after === h.id).forEach(add); }
     heads.forEach(add);
-    all.forEach(h => { if (!out.includes(h)) out.push(h); });
+    list.forEach(h => { if (!out.some(x => x.id === h.id)) out.push(h); });
     return out;
   }
 
@@ -424,12 +424,15 @@ export async function render(container) {
   // Habit toggle handlers
   container.querySelectorAll('[data-htoggle]').forEach(btn => {
     btn.onclick = async () => {
+      if (btn.disabled) return;
+      btn.disabled = true;
       const id = btn.dataset.htoggle;
       const key = today + ':' + id;
-      const existing = habitLog.find(l => l.id === key);
+      const cur = await all('habit_log');
+      const existing = cur.find(l => l.id === key);
       if (existing) await put('habit_log', { ...existing, done: !existing.done });
       else          await put('habit_log', { id: key, date: today, habitId: id, done: true });
-      render(container);
+      await render(container);
     };
   });
 
