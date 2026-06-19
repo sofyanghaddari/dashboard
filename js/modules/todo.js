@@ -388,7 +388,7 @@ async function completeTask(container, item) {
 }
 
 function addDaysISO(yyyymmdd, n) {
-  const d = new Date(yyyymmdd); d.setDate(d.getDate() + n); return ymd(d);
+  const d = new Date((yyyymmdd || ymd()) + 'T12:00:00'); d.setDate(d.getDate() + n); return ymd(d);
 }
 
 async function bulkAction(container, items, action) {

@@ -61,7 +61,7 @@
   --transition: 220ms cubic-bezier(.4,0,.2,1);
 
   /* Layout */
-  --tabbar-h: 50px;
+  --tabbar-h: 42px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }
@@ -3489,6 +3489,7 @@ label[for="import-csv"]:hover, label[for="import-pdf"]:hover, #add-card:hover {
 .hizb-day.catchup {
   background: linear-gradient(135deg, #f97316, #fb923c);
   border-color: rgba(249,115,22,.4);
+  color: rgba(0,0,0,.7);
 }
 
 /* ─── KORAN: SOERA GRID ─────────────────────────────────────────────────── */

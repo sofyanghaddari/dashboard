@@ -258,7 +258,7 @@ function renderRitten(content, container, year, month, byDate, rides, now) {
     <button class="btn secondary block" id="export-csv" style="margin-top:4px;font-size:.875rem">CSV exporteren</button>
   `;
 
-  renderGrid(content, year, month, byDate);
+  renderGrid(content, container, year, month, byDate);
   renderChart(content, rides);
 
   content.querySelector('#quick-today-r').onclick = () => openDayModal(container, ymd(now), byDate[ymd(now)]);
@@ -341,13 +341,18 @@ function renderKosten(content, container, expenses) {
     };
   });
 
-  // Preset buttons
+  // Preset buttons — vul formulier in, laat user bedrag aanpassen
   content.querySelectorAll('.expense-preset-btn').forEach(btn => {
     btn.onclick = () => {
-      const list = getExpenses();
-      list.push({ id: uid(), name: btn.dataset.presetName, amount: parseFloat(btn.dataset.presetAmount), frequency: btn.dataset.presetFreq });
-      saveExpenses(list);
-      render(container);
+      content.querySelector('#exp-name').value = btn.dataset.presetName;
+      content.querySelector('#exp-amount').value = '';
+      // Zet frequentie
+      content.querySelectorAll('[data-freq]').forEach(s => s.classList.remove('active'));
+      const freqBtn = content.querySelector(`[data-freq="${btn.dataset.presetFreq}"]`);
+      if (freqBtn) { freqBtn.classList.add('active'); selectedFreq = btn.dataset.presetFreq; }
+      // Scroll naar formulier en focus bedrag
+      content.querySelector('#add-expense-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      content.querySelector('#exp-amount').focus();
     };
   });
 
@@ -377,7 +382,7 @@ function renderKosten(content, container, expenses) {
 }
 
 // ─── HULPFUNCTIES ─────────────────────────────────────────────────────────
-function renderGrid(content, year, month, byDate) {
+function renderGrid(content, container, year, month, byDate) {
   const first        = new Date(year, month, 1);
   const lastDate     = new Date(year, month + 1, 0).getDate();
   const firstWeekday = (first.getDay() + 6) % 7;
@@ -410,7 +415,7 @@ function renderGrid(content, year, month, byDate) {
   const grid = content.querySelector('#income-grid');
   grid.innerHTML = cells.join('');
   grid.querySelectorAll('[data-day]').forEach(cell => {
-    cell.onclick = () => openDayModal(content.closest('[data-taxi-tab]') || document.getElementById('view'), cell.dataset.day, byDate[cell.dataset.day]);
+    cell.onclick = () => openDayModal(container, cell.dataset.day, byDate[cell.dataset.day]);
   });
 }
 

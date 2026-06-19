@@ -132,14 +132,18 @@ function renderGoals(container, sel, items, totalRides) {
       const g = items.find(x => x.id === input.dataset.progress);
       if (!g) return;
       await put('goals', { ...g, progress: parseInt(input.value, 10) });
-      // Update badge only — geen volledige re-render voor één slider
       const card = input.closest('.goal-card');
       const newPct = parseInt(input.value, 10);
-      if (card && newPct >= 100) {
+      if (card) {
         const statusEl = card.querySelector('.goal-status');
         if (statusEl) {
-          statusEl.textContent = '✓ Voltooid';
-          statusEl.className = 'goal-status status-voltooid';
+          if (newPct >= 100) {
+            statusEl.textContent = '✓ Voltooid';
+            statusEl.className = 'goal-status status-voltooid';
+          } else {
+            statusEl.textContent = '● Actief';
+            statusEl.className = 'goal-status status-actief';
+          }
         }
       }
     };

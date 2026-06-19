@@ -730,7 +730,9 @@ export async function openSettings(onClose) {
     </div>`;
   document.body.appendChild(backdrop);
 
-  const close = () => { backdrop.remove(); if (onClose) onClose(); };
+  const _settingsAbort = new AbortController();
+  const _settingsSig = { signal: _settingsAbort.signal };
+  const close = () => { _settingsAbort.abort(); backdrop.remove(); if (onClose) onClose(); };
   backdrop.querySelector('#close-settings').onclick = close;
   backdrop.querySelector('#close-settings-x').onclick = close;
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
@@ -1037,7 +1039,7 @@ export async function openSettings(onClose) {
   backdrop.querySelector('#set-auto-export').onchange = (e) => setSetting('autoExport', e.target.checked ? '1' : '0');
   backdrop.querySelector('#set-auto-pdf').onchange = (e) => setSetting('autoPdf', e.target.checked ? '1' : '0');
 
-  // Online/offline live updates
+  // Online/offline live updates — AbortController al gedeclareerd boven, cleanup bij sluiten
   const onlineRow = backdrop.querySelector('#online-status');
   if (onlineRow) {
     const updateOnline = () => {
@@ -1046,8 +1048,8 @@ export async function openSettings(onClose) {
       if (sub) sub.textContent = navigator.onLine ? 'Online' : 'Offline';
       if (icon) icon.textContent = navigator.onLine ? '🟢' : '🔴';
     };
-    window.addEventListener('online', updateOnline);
-    window.addEventListener('offline', updateOnline);
+    window.addEventListener('online', updateOnline, _settingsSig);
+    window.addEventListener('offline', updateOnline, _settingsSig);
   }
 
   // Sync buttons disabled when offline
@@ -1059,8 +1061,8 @@ export async function openSettings(onClose) {
     });
   };
   updateSyncBtns();
-  window.addEventListener('online', updateSyncBtns);
-  window.addEventListener('offline', updateSyncBtns);
+  window.addEventListener('online', updateSyncBtns, _settingsSig);
+  window.addEventListener('offline', updateSyncBtns, _settingsSig);
 
   // Opslag info
   if (navigator.storage && navigator.storage.estimate) {

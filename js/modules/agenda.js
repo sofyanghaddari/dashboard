@@ -145,6 +145,7 @@ function renderGrid(container, dates, focusDay, events, rides, isMobileMode) {
   grid.querySelectorAll('.agenda-cell').forEach(cell => {
     cell.onclick = (e) => {
       if (e.target.closest('.agenda-chip')) return; // editing handled by chip
+      if (e.target.closest('.agenda-add-btn')) return; // handled by button handler above
       openEventForm(container, { date: cell.dataset.date, hour: +cell.dataset.hour }, events);
     };
   });

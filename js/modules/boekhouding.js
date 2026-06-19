@@ -768,7 +768,7 @@ function renderBTW(view, invoices, purchases, container) {
   const now    = new Date();
   const curQ   = Math.floor(now.getMonth() / 3);
   const curY   = now.getFullYear();
-  const selQ   = container.dataset.btwQ !== undefined ? parseInt(container.dataset.btwQ) : curQ;
+  const selQ   = container.dataset.btwQ ? parseInt(container.dataset.btwQ) : curQ;
   const selY   = container.dataset.btwY ? parseInt(container.dataset.btwY) : curY;
 
   // BTW over verkoopfacturen — som per BTW-tarief over alle regels (niet alleen lines[0])

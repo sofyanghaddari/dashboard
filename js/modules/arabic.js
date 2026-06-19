@@ -469,7 +469,7 @@ async function gradeCard(card, grade, todayData, settings) {
     }
   } else {
     // Gebruikerskaart in IndexedDB
-    const gradeStr = grade <= 2 ? 'again' : grade === 4 ? 'good' : 'easy';
+    const gradeStr = grade === 1 ? 'again' : grade === 2 ? 'hard' : grade === 4 ? 'good' : 'easy';
     const updated = reviewUserCard(card.dbCard, gradeStr);
     await put('cards', updated);
   }

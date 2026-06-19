@@ -223,19 +223,19 @@ export async function render(container) {
 
     <!-- QUICK ACTIONS -->
     <div class="quick-actions">
-      <button class="quick-action-btn" data-tab="1">
+      <button class="quick-action-btn" data-tab="taxi">
         <div class="quick-action-icon">💰</div>
         <div class="quick-action-label">Inkomen<span class="quick-action-sub">Vandaag noteren</span></div>
       </button>
-      <button class="quick-action-btn" data-tab="5">
+      <button class="quick-action-btn" data-tab="todo">
         <div class="quick-action-icon">✅</div>
         <div class="quick-action-label">Taken<span class="quick-action-sub">${openTodos.length} open${todayTodos.length ? `, ${todayTodos.length} vandaag` : ''}</span></div>
       </button>
-      <button class="quick-action-btn" data-tab="2">
+      <button class="quick-action-btn" data-tab="geloof">
         <div class="quick-action-icon">📖</div>
         <div class="quick-action-label">Koran<span class="quick-action-sub">${todayHizb ? 'Vandaag ✓' : 'Nog open'}</span></div>
       </button>
-      <button class="quick-action-btn" data-tab="3">
+      <button class="quick-action-btn" data-tab="arabic">
         <div class="quick-action-icon">📚</div>
         <div class="quick-action-label">Arabisch<span class="quick-action-sub">${dueCards > 0 ? `${dueCards} te herhalen` : 'Alles bij'}</span></div>
       </button>
@@ -335,7 +335,7 @@ export async function render(container) {
           </div>
         </div>`).join('')}
       ${todayTodos.length ? `<div class="muted" style="font-size:.82rem;padding-top:4px"><b>${todayTodos.length}</b> taak${todayTodos.length>1?'en':''} gepland voor vandaag</div>` : ''}
-      <button class="btn secondary block" style="margin-top:12px;font-size:.85rem" data-tab="5">Alle taken →</button>
+      <button class="btn secondary block" style="margin-top:12px;font-size:.85rem" data-tab="todo">Alle taken →</button>
     </div>` : ''}
 
     <!-- KORAN PREVIEW -->
@@ -345,7 +345,7 @@ export async function render(container) {
         <div class="mpc-title">Koran hizb${todayHizb ? ' <span style="color:var(--ok)">✓</span>' : ''}</div>
         <div class="mpc-sub">Streak: <b>${streak} dag${streak===1?'':'en'}</b>${streak>0?' 🔥':''}</div>
       </div>
-      <button class="mpc-action${todayHizb?' primary':''}" data-tab="2">${todayHizb?'Open':'Afvinken'}</button>
+      <button class="mpc-action${todayHizb?' primary':''}" data-tab="geloof">${todayHizb?'Open':'Afvinken'}</button>
     </div>
 
     <!-- ARABISCH PREVIEW -->
@@ -355,7 +355,7 @@ export async function render(container) {
         <div class="mpc-title">Arabisch</div>
         <div class="mpc-sub">${dueCards>0?`<b>${dueCards}</b> kaart${dueCards>1?'en':''} klaar voor herhaling`:'Geen kaarten vandaag — je bent bij'}</div>
       </div>
-      <button class="mpc-action${dueCards>0?' primary':''}" data-tab="3">${dueCards>0?'Starten':'Open'}</button>
+      <button class="mpc-action${dueCards>0?' primary':''}" data-tab="arabic">${dueCards>0?'Starten':'Open'}</button>
     </div>
 
     ${taxiGoals.length ? `
@@ -411,9 +411,18 @@ export async function render(container) {
 
   container.querySelectorAll('[data-tab]').forEach(btn => {
     btn.onclick = () => {
-      const idx = parseInt(btn.dataset.tab);
-      const tabs = document.querySelectorAll('.tab');
-      if (tabs[idx]) tabs[idx].click();
+      const val = btn.dataset.tab;
+      if (val === 'arabic') {
+        // Geloof-tab openen op de Arabisch sub-tab
+        document.getElementById('view').dataset.geloofSub = 'arabic';
+        document.querySelector('.tab[data-route="geloof"]')?.click();
+      } else if (isNaN(+val)) {
+        // Route-naam: navigeer via tabbar
+        document.querySelector(`.tab[data-route="${val}"]`)?.click();
+      } else {
+        // Numerieke index (legacy)
+        document.querySelectorAll('.tab')[+val]?.click();
+      }
     };
   });
 

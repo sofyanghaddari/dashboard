@@ -78,7 +78,8 @@ self.addEventListener('activate', (e) => {
     caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ includeUncontrolled: true, type: 'window' }))
-      .then(clients => clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' })))
+      // Stuur update-melding alleen als er al bestaande clients zijn (niet bij eerste installatie)
+      .then(clients => { if (clients.length > 0) clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' })); })
   );
 });
 
@@ -101,7 +102,7 @@ function scheduleHizbAlarm(time) {
         body: 'Tijd voor je dagelijkse hizb. 📖',
         icon: './icons/icon-192.png',
         tag: 'hizb-reminder',
-        renotify: false,
+        renotify: true,
       });
     }
     scheduleHizbAlarm(time); // reschedule for tomorrow
