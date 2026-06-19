@@ -61,7 +61,7 @@
   --transition: 220ms cubic-bezier(.4,0,.2,1);
 
   /* Layout */
-  --tabbar-h: 42px;
+  --tabbar-h: 36px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }
@@ -541,7 +541,7 @@ label {
   min-width: 0;
   padding: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   cursor: pointer;
   font-family: inherit;
   transition: color var(--transition), transform var(--transition);
