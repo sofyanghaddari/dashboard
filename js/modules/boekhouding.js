@@ -1561,12 +1561,27 @@ async function openRitImportModal(container) {
 
     const vatRate = bedrijf.defaultVat ?? 9;
     const lines = selected.map(r => {
-      // Gebruik originele tekst als omschrijving; één regel per rit op de factuur
-      const description = r.rawText || [
-        r.date ? fmtDateShort(r.date) : null,
+      // Bouw nette omschrijving: regel 1 = passagier + datum (vet in PDF),
+      // daarna de originele regels als detail (kleiner). Zo staat alles op de factuur.
+      const header = [
         r.passenger || null,
-        r.location  || null,
-      ].filter(Boolean).join(' — ') || bedrijf.defaultDesc;
+        r.date ? fmtDateShort(r.date) : null,
+      ].filter(Boolean).join(' · ');
+
+      // Originele tekst als detail (laat technische/bedrag-regels weg)
+      const rawLines = (r.rawText || '').split('\n').map(s => s.trim()).filter(Boolean);
+      const detailLines = rawLines.filter(line => {
+        if (/^\d+(?:[.,]\d+)?\s*(?:sgh\s+)?woosh/i.test(line)) return false;
+        if (/^\d+(?:\.\d+)?\s*ROR\b/i.test(line)) return false;
+        if (/^€\s*\d+/.test(line)) return false;
+        if (/^special request:\s*none/i.test(line)) return false;
+        if (/^vehicle type:/i.test(line)) return false;
+        if (/^type of luggage:/i.test(line)) return false;
+        return true;
+      });
+
+      const description = [header, ...detailLines].filter(Boolean).join('\n')
+        || bedrijf.defaultDesc || 'Vervoersdienst';
       const { amountExcl, vatAmount, amountIncl } = calcVat(r.amount, vatRate, true);
       return { description, amountExcl, vatRate, vatAmount, amountIncl };
     });
@@ -2681,36 +2696,96 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.text('EXCL. BTW', R - 27, tY + 5, { align: 'right' });
   doc.text('TOTAAL INCL.', R, tY + 5, { align: 'right' });
 
-  // ── Tabelrijen — één per factuurregel ──
+  // ── Tabelrijen — één per factuurregel, met automatische paginaovergang ──
+  const PAGE_H     = 297;
+  const FOOT_H     = 22;   // footer-hoogte (altijd gereserveerd onderaan)
+  const DESC_W     = 108;  // breedte beschrijving-kolom (mm)
+  let rowEndY      = tY + 7;
+  let pageCount    = 1;
   doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
-  doc.line(L, tY + 7, R, tY + 7);
+  doc.line(L, rowEndY, R, rowEndY);
 
-  let rowEndY = tY + 7;
+  const _footer = () => {
+    doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.3);
+    doc.line(L, PAGE_H - FOOT_H + 2, R, PAGE_H - FOOT_H + 2);
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(...DIM);
+    doc.text(`${bedrijf.naam}  ·  KvK ${bedrijf.kvk}  ·  BTW ${bedrijf.btw}`, L, PAGE_H - 8);
+    doc.text(`${inv.number || ''}   ·   Pagina ${pageCount}`, R, PAGE_H - 8, { align: 'right' });
+  };
+
+  const _newPage = () => {
+    _footer();
+    doc.addPage();
+    pageCount++;
+    // Mini-header
+    doc.setFillColor(...TAUPE); doc.rect(0, 0, 210, 4, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
+    doc.text(bedrijf.naam, L, 11);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(...DIM);
+    doc.text(`Factuur ${inv.number || ''}`, R, 11, { align: 'right' });
+    // Tabelkop
+    const hY = 15;
+    doc.setFillColor(...TAUPE); doc.rect(L, hY, W, 7, 'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+    doc.text('OMSCHRIJVING', L + 2, hY + 5);
+    doc.text('BTW',          R - 53, hY + 5, { align: 'right' });
+    doc.text('EXCL. BTW',   R - 27, hY + 5, { align: 'right' });
+    doc.text('TOTAAL INCL.', R,     hY + 5, { align: 'right' });
+    rowEndY = hY + 7;
+    doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
+    doc.line(L, rowEndY, R, rowEndY);
+  };
+
   for (const l of lines) {
-    const descText  = l.description || bedrijf.defaultDesc || 'Vervoersdienst';
-    const descLines = doc.splitTextToSize(descText, 90);
-    const rowH      = Math.max(12, descLines.length * 5 + 4);
-    const rowTopY   = rowEndY;
-    const rowMidY   = rowTopY + rowH / 2 + 1.5;
+    const descText = l.description || bedrijf.defaultDesc || 'Vervoersdienst';
+    // Splits in regels, filter leeg
+    const rawLines = descText.split('\n').map(s => s.trim()).filter(Boolean);
 
-    doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(...DARK);
-    doc.text(descLines, L + 2, rowTopY + 6);
-    doc.setFontSize(9); doc.setTextColor(...MED);
+    // Eerste regel = vette kop (passagier/referentie)
+    const mainWrapped   = doc.splitTextToSize(rawLines[0] || descText, DESC_W);
+    // Overige regels = details kleiner
+    const detailText    = rawLines.slice(1).join('\n');
+    const detailWrapped = detailText ? doc.splitTextToSize(detailText, DESC_W) : [];
+
+    const mainH   = mainWrapped.length  * 5.5;
+    const detailH = detailWrapped.length * 4.2;
+    const rowH    = Math.max(14, mainH + (detailH > 0 ? detailH + 2 : 0) + 6);
+
+    if (rowEndY + rowH > PAGE_H - FOOT_H - 5) _newPage();
+
+    const rowTopY = rowEndY;
+    const rowMidY = rowTopY + rowH / 2 + 1;
+
+    // Beschrijving — vet hoofd
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
+    doc.text(mainWrapped, L + 2, rowTopY + 5.5);
+    // Detailregels dimmer + kleiner
+    if (detailWrapped.length) {
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
+      doc.text(detailWrapped, L + 2, rowTopY + 5.5 + mainH, { lineHeightFactor: 1.3 });
+    }
+
+    // Bedragen rechts, verticaal gecentreerd
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
     doc.text(`${l.vatRate ?? 0}%`, R - 53, rowMidY, { align: 'right' });
     doc.text(fmtMoney(l.amountExcl ?? 0), R - 27, rowMidY, { align: 'right' });
     doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
     doc.text(fmtMoney(l.amountIncl ?? 0), R, rowMidY, { align: 'right' });
 
     rowEndY = rowTopY + rowH;
+    doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
     doc.line(L, rowEndY, R, rowEndY);
   }
 
-  // ── Totalen ──
+  // ── Totalen — nieuwe pagina als geen ruimte meer ──
+  const TOTALS_H = 75;
+  if (rowEndY + TOTALS_H > PAGE_H - FOOT_H - 5) _newPage();
+
   let tTY = rowEndY + 9;
   const totX = R - 75;
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
   [[`Subtotaal excl. BTW`, fmtMoney(inv.totalExcl || 0)],
-   [`BTW`, fmtMoney(inv.totalVat || 0)]].forEach(([lbl, val]) => {
+   [`BTW`,                 fmtMoney(inv.totalVat  || 0)]].forEach(([lbl, val]) => {
     doc.text(lbl, totX, tTY); doc.text(val, R, tTY, { align: 'right' }); tTY += 5.5;
   });
   doc.setDrawColor(...TAUPE); doc.setLineWidth(0.8); doc.line(totX, tTY + 1, R, tTY + 1);
@@ -2738,11 +2813,8 @@ async function generateInvoicePDF(inv, bedrijf) {
     doc.text(`BIC: ${bedrijf.bic}`, L + 7, pY + 26);
   }
 
-  // ── Footer ──
-  doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.3); doc.line(L, 278, R, 278);
-  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(...DIM);
-  doc.text(`${bedrijf.naam}  ·  KvK ${bedrijf.kvk}  ·  BTW ${bedrijf.btw}`, L, 283);
-  doc.text(inv.number || '', R, 283, { align: 'right' });
+  // ── Footer laatste pagina ──
+  _footer();
 
   return doc.output('blob');
 }
