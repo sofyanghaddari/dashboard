@@ -323,22 +323,22 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
     <div class="bk-kpi-grid">
       <div class="bk-kpi">
         <div class="bk-kpi-label">Omzet ${y}</div>
-        <div class="bk-kpi-val money" data-bk-count="${omzetYear}">${fmtMoney(omzetYear)}</div>
+        <div class="bk-kpi-val money blurred-amount" data-bk-count="${omzetYear}">${fmtMoney(omzetYear)}</div>
         <div class="bk-kpi-sub">excl. BTW</div>
       </div>
       <div class="bk-kpi">
         <div class="bk-kpi-label">Kosten ${y}</div>
-        <div class="bk-kpi-val money" style="color:var(--danger)" data-bk-count="${kostenYear}">${fmtMoney(kostenYear)}</div>
+        <div class="bk-kpi-val money blurred-amount" style="color:var(--danger)" data-bk-count="${kostenYear}">${fmtMoney(kostenYear)}</div>
         <div class="bk-kpi-sub">excl. BTW</div>
       </div>
       <div class="bk-kpi">
         <div class="bk-kpi-label">Winst ${y}</div>
-        <div class="bk-kpi-val money" style="color:${winstYear >= 0 ? 'var(--ok)' : 'var(--danger)'}" data-bk-count="${winstYear}">${fmtMoney(winstYear)}</div>
+        <div class="bk-kpi-val money blurred-amount" style="color:${winstYear >= 0 ? 'var(--ok)' : 'var(--danger)'}" data-bk-count="${winstYear}">${fmtMoney(winstYear)}</div>
         <div class="bk-kpi-sub">excl. aftrekken</div>
       </div>
       <div class="bk-kpi">
         <div class="bk-kpi-label">BTW Q${q + 1}</div>
-        <div class="bk-kpi-val money" style="color:var(--accent)" data-bk-count="${btwSaldo}">${fmtMoney(btwSaldo)}</div>
+        <div class="bk-kpi-val money blurred-amount" style="color:var(--accent)" data-bk-count="${btwSaldo}">${fmtMoney(btwSaldo)}</div>
         <div class="bk-kpi-sub">te betalen</div>
       </div>
     </div>

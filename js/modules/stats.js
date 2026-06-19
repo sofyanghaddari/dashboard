@@ -518,7 +518,7 @@ function renderNettoMarge(rides, purchases) {
           ${months.map((m, i) => {
             const incH = Math.round(m.income / maxVal * 100);
             const cosH = Math.round(m.costs  / maxVal * 100);
-            return `<div class="nbc-col" title="${m.label}: €${Math.round(m.income)} inkomen · €${Math.round(m.costs)} kosten · netto €${Math.round(m.netto)}">
+            return `<div class="nbc-col" title="${m.label}: ${fmtMoney(m.income, true)} inkomen · ${fmtMoney(m.costs, true)} kosten · netto ${fmtMoney(m.netto, true)}">
               <div class="nbc-bar-wrap">
                 <div class="nbc-inc" style="--h:${incH}%;--i:${i}"></div>
                 ${m.costs > 0 ? `<div class="nbc-cost" style="--h:${cosH}%;--i:${i}"></div>` : ''}
