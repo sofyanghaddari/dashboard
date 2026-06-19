@@ -407,6 +407,9 @@ body.amounts-hidden .blurred-amount {
   filter: blur(8px);
   user-select: none;
 }
+body.amounts-hidden .blurred-amount .blurred-amount {
+  filter: none;
+}
 .privacy-toggle {
   background: none;
   border: none;

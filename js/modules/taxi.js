@@ -488,7 +488,7 @@ function renderChart(content, rides) {
       ${entries.map(b => {
         const h = Math.max(2, Math.round((b.in / max) * 110));
         return `<div class="bar-col">
-          <div class="bar" style="height:${h}px" title="${b.label}: ${fmtMoney(b.in)}"></div>
+          <div class="bar" style="height:${h}px" title="${b.label}: ${fmtMoney(b.in, true)}"></div>
           <div class="bar-label">${b.label}</div>
         </div>`;
       }).join('')}

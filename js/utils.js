@@ -1,7 +1,8 @@
 export function uid() { return crypto.randomUUID(); }
-export function fmtMoney(n) {
+export function fmtMoney(n, raw = false) {
   const v = isFinite(n) ? +n : 0;
-  return '€ ' + (Math.round(v * 100) / 100).toFixed(2);
+  const text = '€ ' + (Math.round(v * 100) / 100).toFixed(2);
+  return raw ? text : `<span class="blurred-amount">${text}</span>`;
 }
 // Bedrag-invoer tolerant parsen: het NL-toetsenbord op iPhone typt een KOMMA
 // ("187,50"); type="number"-velden maken de waarde dan stilletjes leeg.

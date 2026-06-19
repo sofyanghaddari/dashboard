@@ -81,13 +81,14 @@ function animateCount(el, target, isMoney = false, duration = 1500) {
     const p = Math.min((now - start) / duration, 1);
     const ease = 1 - Math.pow(1 - p, 3);
     const val = Math.round(target * ease);
-    el.textContent = isMoney ? fmtMoney(val) : val.toLocaleString('nl-NL');
+    if (isMoney) el.innerHTML = fmtMoney(val);
+    else el.textContent = val.toLocaleString('nl-NL');
     if (p < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 }
 
-function fmtMoney(n) { return fmtMoneyUtil(n); }
+function fmtMoney(n, raw) { return fmtMoneyUtil(n, raw); }
 
 function fmtDate(d) {
   return new Date(d + 'T12:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
@@ -174,7 +175,7 @@ function renderInkomenHero(rides, cutoff, period) {
         <div class="shero-chart-title">Inkomen per week</div>
         <div class="shero-barchart">
           ${weekBars.map((b, i) => `
-            <div class="shbc-col" title="${b.label}: ${fmtMoney(b.value)}">
+            <div class="shbc-col" title="${b.label}: ${fmtMoney(b.value, true)}">
               <div class="shbc-bar-wrap">
                 <div class="shbc-bar ${b.current ? 'current' : ''}"
                      style="--h:${Math.max(Math.round(b.value / barMax * 100), b.value > 0 ? 2 : 0)}%;--i:${i}"></div>
@@ -228,7 +229,7 @@ function renderWeekdayStats(rides, cutoff) {
         <div class="wd-bars">
           ${ordered.map((s, i) => `
             <div class="wd-col${s.wd === best.wd ? ' wd-best' : ''}${s.cnt === 0 ? ' wd-empty' : ''}"
-                 title="${s.full}: ${s.cnt > 0 ? 'gem. ' + fmtMoney(Math.round(s.avg)) + ' (' + s.cnt + ' dagen)' : 'Niet gereden'}">
+                 title="${s.full}: ${s.cnt > 0 ? 'gem. ' + fmtMoney(Math.round(s.avg), true) + ' (' + s.cnt + ' dagen)' : 'Niet gereden'}">
               <div class="wd-bar-wrap">
                 <div class="wd-bar" style="--h:${s.cnt > 0 ? Math.max(Math.round(s.avg / maxAvg * 100), 3) : 0}%;--i:${i}"></div>
               </div>
@@ -582,7 +583,7 @@ function renderActivityGrid(rides) {
                 ${col.map((cell, d) => cell.level < 0
                   ? `<div class="activity-cell future" style="--row:${d};--col:${w}"></div>`
                   : `<div class="activity-cell level-${cell.level}" style="--row:${d};--col:${w}"
-                          title="${cell.key}${cell.amt ? ': ' + fmtMoney(cell.amt) : ''}"></div>`
+                          title="${cell.key}${cell.amt ? ': ' + fmtMoney(cell.amt, true) : ''}"></div>`
                 ).join('')}
               </div>`).join('')}
           </div>
