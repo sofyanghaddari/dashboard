@@ -134,51 +134,30 @@ async function bootApp() {
   });
 
   if ('serviceWorker' in navigator) {
+    let _swRefreshing = false;
+    // Zodra de controller wisselt (nieuwe SW actief) → direct herladen
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!_swRefreshing) { _swRefreshing = true; window.location.reload(); }
+    });
+
     navigator.serviceWorker.register('./service-worker.js').then(reg => {
-      // Luister naar SW-berichten (bijv. SW_UPDATED)
-      navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data?.type === 'SW_UPDATED') {
-          _showUpdateBanner(reg);
-        }
-      });
-      // Als er al een wachtende SW is bij registratie
-      if (reg.waiting) {
-        _showUpdateBanner(reg);
-      }
-      // Nieuwe SW geïnstalleerd terwijl pagina open is
+      const _activate = (sw) => sw?.postMessage({ type: 'SKIP_WAITING' });
+
+      // Al een wachtende SW aanwezig bij openen → meteen activeren
+      if (reg.waiting) _activate(reg.waiting);
+
+      // Nieuwe SW geïnstalleerd terwijl pagina open is → meteen activeren
       reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        if (!newWorker) return;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            _showUpdateBanner(reg);
-          }
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) _activate(nw);
         });
       });
-    }).catch(err => console.warn('SW error', err));
-  }
 
-  function _showUpdateBanner(reg) {
-    if (document.getElementById('sw-update-banner')) return; // al zichtbaar
-    const banner = document.createElement('div');
-    banner.id = 'sw-update-banner';
-    banner.style.cssText = [
-      'position:fixed','bottom:80px','left:50%','transform:translateX(-50%)',
-      'background:var(--card)','border:1px solid var(--accent)','border-radius:12px',
-      'padding:12px 16px','z-index:9999','display:flex','align-items:center',
-      'gap:12px','box-shadow:0 4px 20px rgba(0,0,0,.35)','max-width:calc(100vw - 32px)',
-      'font-size:.93rem'
-    ].join(';');
-    banner.innerHTML = `
-      <span>Nieuwe versie beschikbaar</span>
-      <button class="btn" style="padding:6px 14px;font-size:.88rem" id="sw-reload-btn">Herladen</button>
-    `;
-    document.body.appendChild(banner);
-    banner.querySelector('#sw-reload-btn').onclick = () => {
-      const sw = reg.waiting || (reg.active);
-      if (sw) sw.postMessage({ type: 'SKIP_WAITING' });
-      window.location.reload();
-    };
+      // Controleer elke 5 minuten op nieuwe versie (handig als PWA lang open staat)
+      setInterval(() => reg.update(), 5 * 60 * 1000);
+    }).catch(err => console.warn('SW error', err));
   }
 }
 
