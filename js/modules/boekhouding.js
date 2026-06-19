@@ -91,12 +91,13 @@ function statusLabel(s) {
 }
 
 function calcVat(amount, vatRate, isIncl) {
+  const r2 = v => Math.round(v * 100) / 100;
   if (isIncl) {
-    const excl = amount / (1 + vatRate / 100);
-    return { amountExcl: excl, vatAmount: amount - excl, amountIncl: amount };
+    const excl = r2(amount / (1 + vatRate / 100));
+    return { amountExcl: excl, vatAmount: r2(amount - excl), amountIncl: r2(amount) };
   }
-  const vat = amount * (vatRate / 100);
-  return { amountExcl: amount, vatAmount: vat, amountIncl: amount + vat };
+  const vat = r2(amount * (vatRate / 100));
+  return { amountExcl: r2(amount), vatAmount: vat, amountIncl: r2(amount + vat) };
 }
 
 function fmtDateLong(iso) {
@@ -143,15 +144,15 @@ function inYear(dateStr, y) {
 
 async function nextInvoiceNumber(bedrijf) {
   const invoices = await all('invoices');
-  const year = new Date().getFullYear();
-  const yearStr = String(year);
-  // Only count invoices from the current year so the sequence resets each January
+  const year    = new Date().getFullYear();
+  const prefix  = bedrijf.prefix || 'WOOSH';
+  const pattern = `${prefix}-${year}-`;
   const nums = invoices
-    .filter(i => (i.adminId || 'taxi') === bedrijf.id && (i.number || '').startsWith(yearStr))
+    .filter(i => (i.adminId || 'taxi') === bedrijf.id && (i.number || '').startsWith(pattern))
     .map(i => { const m = (i.number || '').match(/(\d+)$/); return m ? parseInt(m[1], 10) : 0; })
     .filter(n => isFinite(n));
   const next = nums.length ? Math.max(...nums) + 1 : 1;
-  return `${year}-${String(next).padStart(3, '0')}`;
+  return `${pattern}${String(next).padStart(3, '0')}`;
 }
 
 function cleanInv(inv) {
@@ -768,7 +769,7 @@ function renderBTW(view, invoices, purchases, container) {
   const now    = new Date();
   const curQ   = Math.floor(now.getMonth() / 3);
   const curY   = now.getFullYear();
-  const selQ   = container.dataset.btwQ ? parseInt(container.dataset.btwQ) : curQ;
+  const selQ   = (container.dataset.btwQ !== '' && container.dataset.btwQ != null) ? parseInt(container.dataset.btwQ, 10) : curQ;
   const selY   = container.dataset.btwY ? parseInt(container.dataset.btwY) : curY;
 
   // BTW over verkoopfacturen — som per BTW-tarief over alle regels (niet alleen lines[0])
@@ -1425,7 +1426,7 @@ function parseRidesText(text) {
   return rides;
 }
 
-function _renderRideTable(rides, backdrop) {
+function _renderRideTable(rides, backdrop, vatRate = 9) {
   const wrap = backdrop.querySelector('#ri-table-wrap');
 
   wrap.innerHTML = `
@@ -1463,11 +1464,10 @@ function _renderRideTable(rides, backdrop) {
   const updateTotal = () => {
     const sel = rides.filter((_, i) => backdrop.querySelector(`#ri-check-${i}`)?.checked);
     const total = sel.reduce((s, r) => s + (r.amount || 0), 0);
-    const vatRate = 9;
     const excl = total / (1 + vatRate / 100);
     const vat  = total - excl;
     backdrop.querySelector('#ri-totaal').innerHTML =
-      `<div style="font-size:.8rem;color:var(--text-dim)">${sel.length} ritten · excl. BTW: <span class="money">${fmtMoney(excl)}</span> · BTW 9%: <span class="money">${fmtMoney(vat)}</span></div>
+      `<div style="font-size:.8rem;color:var(--text-dim)">${sel.length} ritten · excl. BTW: <span class="money">${fmtMoney(excl)}</span> · BTW ${vatRate}%: <span class="money">${fmtMoney(vat)}</span></div>
        <div style="font-size:1rem;font-weight:600;margin-top:2px">Totaal incl.: <span class="money">${fmtMoney(total)}</span></div>`;
   };
 
@@ -1480,6 +1480,7 @@ function _renderRideTable(rides, backdrop) {
 }
 
 async function openRitImportModal(container) {
+  const bedrijf = getAdmin(container);
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
   backdrop.innerHTML = `
@@ -1528,7 +1529,7 @@ async function openRitImportModal(container) {
     const text = backdrop.querySelector('#ri-text').value;
     parsedRides = parseRidesText(text);
     if (!parsedRides.length) { err('Geen ritten herkend — controleer het formaat en probeer opnieuw.'); return; }
-    _renderRideTable(parsedRides, backdrop);
+    _renderRideTable(parsedRides, backdrop, bedrijf.defaultVat ?? 9);
     backdrop.querySelector('#ri-step1').style.display = 'none';
     backdrop.querySelector('#ri-step2').style.display = '';
   };
@@ -1554,7 +1555,6 @@ async function openRitImportModal(container) {
     const selected = parsedRides.filter((_, i) => backdrop.querySelector(`#ri-check-${i}`)?.checked);
     if (!selected.length) { err('Selecteer minimaal één rit'); return; }
 
-    const bedrijf  = getAdmin(container);
     const number   = await nextInvoiceNumber(bedrijf);
     const todayStr = ymd();
     const dueStr   = addDays(todayStr, bedrijf.termijn);
@@ -1606,7 +1606,9 @@ async function openRitImportModal(container) {
       (clientEmail && c.email?.toLowerCase() === clientEmail.toLowerCase()) ||
       c.name?.toLowerCase() === clientName.toLowerCase()
     );
-    if (!existing) {
+    if (existing) {
+      await put('clients', { ...existing, name: existing.name, email: clientEmail || existing.email, lastUsed: Date.now() });
+    } else {
       await add('clients', { id: uid(), name: clientName, email: clientEmail, lastUsed: Date.now() });
     }
 
@@ -1627,8 +1629,9 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
   const dueStr   = isEdit ? existingInv.dueDate : addDays(todayStr, bedrijf.termijn);
   const inv0     = existingInv || {};
 
-  const invVatRate = inv0.lines?.[0]?.vatRate ?? bedrijf.defaultVat;
-  const invDesc    = inv0.lines?.[0]?.description || bedrijf.defaultDesc;
+  const isMultiLine = isEdit && (existingInv.lines?.length || 0) > 1;
+  const invVatRate  = inv0.lines?.[0]?.vatRate ?? bedrijf.defaultVat;
+  const invDesc     = inv0.lines?.[0]?.description || bedrijf.defaultDesc;
 
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
@@ -1636,6 +1639,12 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
     <div class="modal bk-modal">
       <button type="button" class="modal-close" id="bk-x">×</button>
       <h2 style="margin:0 0 16px">${isEdit ? 'Factuur bewerken' : 'Nieuwe factuur'}</h2>
+
+      ${isMultiLine ? `
+      <div class="bk-multiline-notice">
+        📋 Ritten-factuur · ${existingInv.lines.length} regels · ${fmtMoney(existingInv.totalIncl || 0)} — bedragen en regels blijven ongewijzigd
+      </div>
+      ` : ''}
 
       ${!isEdit ? `
       <button type="button" id="bk-pick-client" class="btn secondary bk-pick-client-btn">
@@ -1669,13 +1678,14 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
           <input id="bk-client-phone" type="tel" inputmode="tel" placeholder="+31 6 12345678" value="${escapeHTML(inv0.client?.phone || '')}" />
         </div>
 
+        ${!isMultiLine ? `
         <div class="bk-form-section">
           <div class="bk-section-title">Factuurgegevens</div>
           <label>Omschrijving *</label>
-          <input id="bk-desc" type="text" placeholder="${escapeHTML(bedrijf.defaultDesc)}" value="${escapeHTML(invDesc)}" required />
+          <input id="bk-desc" type="text" placeholder="${escapeHTML(bedrijf.defaultDesc)}" value="${escapeHTML(invDesc)}" ${isMultiLine ? '' : 'required'} />
           <label>Bedrag *</label>
           <div class="bk-amount-row">
-            <input id="bk-amount" type="text" inputmode="decimal" placeholder="320" value="${isEdit ? (inv0.totalIncl || '') : ''}" required />
+            <input id="bk-amount" type="text" inputmode="decimal" placeholder="320" value="${isEdit ? (inv0.totalIncl || '') : ''}" ${isMultiLine ? '' : 'required'} />
             <label class="bk-radio"><input type="radio" name="bk-ie" value="incl" checked /> Incl. BTW</label>
             <label class="bk-radio"><input type="radio" name="bk-ie" value="excl" /> Excl. BTW</label>
           </div>
@@ -1687,6 +1697,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
           </select>
           <div id="bk-calc" class="bk-calc-preview" style="display:none"></div>
         </div>
+        ` : ''}
 
         <div class="bk-form-section">
           <div class="bk-section-title">Nummering &amp; datum</div>
@@ -1746,15 +1757,17 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
   }
 
   const refreshCalcFn = () => refreshCalc(backdrop);
-  backdrop.querySelector('#bk-amount').addEventListener('input', refreshCalcFn);
-  backdrop.querySelector('#bk-vat').addEventListener('input', refreshCalcFn);
-  backdrop.querySelectorAll('input[name="bk-ie"]').forEach(r => r.addEventListener('change', refreshCalcFn));
+  if (backdrop.querySelector('#bk-amount')) {
+    backdrop.querySelector('#bk-amount').addEventListener('input', refreshCalcFn);
+    backdrop.querySelector('#bk-vat').addEventListener('input', refreshCalcFn);
+    backdrop.querySelectorAll('input[name="bk-ie"]').forEach(r => r.addEventListener('change', refreshCalcFn));
+  }
   backdrop.querySelector('#bk-date').addEventListener('change', e => {
     backdrop.querySelector('#bk-due').value = addDays(e.target.value, bedrijf.termijn);
   });
 
-  // Show calc preview immediately if editing
-  if (isEdit) refreshCalc(backdrop);
+  // Show calc preview immediately if editing (only for single-line)
+  if (isEdit && !isMultiLine) refreshCalc(backdrop);
 
   backdrop.querySelector('#bk-form').onsubmit = async e => {
     e.preventDefault();
@@ -1763,9 +1776,27 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
     if (!clientName) { err('Vul een klantnaam in'); return; }
     if (!raw || isNaN(raw) || raw <= 0) { err('Vul een geldig bedrag in'); return; }
 
-    const vatRate = parseInt(backdrop.querySelector('#bk-vat').value);
-    const isIncl  = backdrop.querySelector('input[name="bk-ie"]:checked')?.value === 'incl';
-    const { amountExcl, vatAmount, amountIncl } = calcVat(raw, vatRate, isIncl);
+    const client = {
+      name:    clientName,
+      address: backdrop.querySelector('#bk-client-addr').value.trim(),
+      city:    backdrop.querySelector('#bk-client-city').value.trim(),
+      kvk:     backdrop.querySelector('#bk-client-kvk').value.trim(),
+      email:   backdrop.querySelector('#bk-client-email').value.trim(),
+      phone:   backdrop.querySelector('#bk-client-phone').value.trim(),
+    };
+
+    let lines, totalExcl, totalVat, totalIncl;
+    if (isMultiLine) {
+      // Preserve all original lines and totals; only update metadata
+      lines = existingInv.lines;
+      totalExcl = existingInv.totalExcl; totalVat = existingInv.totalVat; totalIncl = existingInv.totalIncl;
+    } else {
+      const vatRate = parseInt(backdrop.querySelector('#bk-vat').value);
+      const isIncl  = backdrop.querySelector('input[name="bk-ie"]:checked')?.value === 'incl';
+      const vat     = calcVat(raw, vatRate, isIncl);
+      lines     = [{ description: backdrop.querySelector('#bk-desc').value.trim() || bedrijf.defaultDesc, amountExcl: vat.amountExcl, vatRate, vatAmount: vat.vatAmount, amountIncl: vat.amountIncl }];
+      totalExcl = vat.amountExcl; totalVat = vat.vatAmount; totalIncl = vat.amountIncl;
+    }
 
     const inv = {
       id:      isEdit ? existingInv.id : uid(),
@@ -1775,25 +1806,11 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       dueDate: backdrop.querySelector('#bk-due').value,
       status:  isEdit ? (existingInv.status || 'open') : 'open',
       note:    backdrop.querySelector('#bk-note').value.trim(),
-      client:  {
-        name:    clientName,
-        address: backdrop.querySelector('#bk-client-addr').value.trim(),
-        city:    backdrop.querySelector('#bk-client-city').value.trim(),
-        kvk:     backdrop.querySelector('#bk-client-kvk').value.trim(),
-        email:   backdrop.querySelector('#bk-client-email').value.trim(),
-        phone:   backdrop.querySelector('#bk-client-phone').value.trim(),
-      },
-      lines: [{
-        description: backdrop.querySelector('#bk-desc').value.trim() || bedrijf.defaultDesc,
-        amountExcl, vatRate, vatAmount, amountIncl,
-      }],
-      totalExcl: amountExcl,
-      totalVat:  vatAmount,
-      totalIncl: amountIncl,
+      client, lines, totalExcl, totalVat, totalIncl,
     };
 
     if (isEdit) {
-      await put('invoices', { ...cleanInv(existingInv), ...inv });
+      await put('invoices', { ...cleanInv(existingInv), ...inv, paidAt: existingInv.paidAt, sentAt: existingInv.sentAt });
       ok(`Factuur ${inv.number} bijgewerkt ✓`);
       backdrop.remove();
       render(container);
@@ -1809,7 +1826,15 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         (!email && (c.name || '').toLowerCase() === name.toLowerCase())
       );
       if (existing) {
-        await put('clients', { ...existing, phone: inv.client.phone || existing.phone, lastUsed: Date.now() });
+        await put('clients', { ...existing,
+          name:    inv.client.name    || existing.name,
+          address: inv.client.address || existing.address,
+          city:    inv.client.city    || existing.city,
+          kvk:     inv.client.kvk     || existing.kvk,
+          email:   inv.client.email   || existing.email,
+          phone:   inv.client.phone   || existing.phone,
+          lastUsed: Date.now(),
+        });
         ok(`Factuur ${inv.number} aangemaakt ✓`);
       } else if (name) {
         await add('clients', { id: uid(), name, address: inv.client.address, city: inv.client.city, kvk: inv.client.kvk, email, phone: inv.client.phone, lastUsed: Date.now() });
@@ -2486,7 +2511,8 @@ function openEditKmModal(k, container) {
 // ─── PDF / VERZENDEN ─────────────────────────────────────────────────────────
 
 function generateInvoiceHTML(inv, bedrijf) {
-  const lines   = inv.lines?.length ? inv.lines : [inv.lines?.[0] || {}];
+  const _fallbackLine = { description: bedrijf?.defaultDesc || 'Vervoersdienst', vatRate: bedrijf?.defaultVat ?? 9, amountExcl: inv.totalExcl || 0, vatAmount: inv.totalVat || 0, amountIncl: inv.totalIncl || 0 };
+  const lines   = inv.lines?.length ? inv.lines : [_fallbackLine];
   const client  = inv.client || {};
   const ibanFmt = fmtIBAN(bedrijf.iban);
   return `<!DOCTYPE html>
@@ -2624,7 +2650,8 @@ function loadJsPdf() {
 async function generateInvoicePDF(inv, bedrijf) {
   const JsPDF = await loadJsPdf();
   const doc    = new JsPDF({ unit: 'mm', format: 'a4' });
-  const lines  = inv.lines?.length ? inv.lines : [inv.lines?.[0] || {}];
+  const _pdfFallback = { description: bedrijf?.defaultDesc || 'Vervoersdienst', vatRate: bedrijf?.defaultVat ?? 9, amountExcl: inv.totalExcl || 0, vatAmount: inv.totalVat || 0, amountIncl: inv.totalIncl || 0 };
+  const lines  = inv.lines?.length ? inv.lines : [_pdfFallback];
   const client = inv.client  || {};
   const L = 20, R = 190, W = 170;
   const TAUPE = [138, 126, 111];
@@ -2859,13 +2886,14 @@ async function sendViaGmail(inv, bedrijf, opts = {}) {
       }
     } catch (e) {
       if (e.name !== 'AbortError') err('PDF: ' + (e.message || 'Onbekende fout'));
+      return false;
     }
-    return;
+    return true;
   }
 
   if (!recipient) {
     err('Geen e-mailadres — vul in bij de klant of in het verzendscherm');
-    return;
+    return false;
   }
 
   // Laad gmail.js module (is al in cache na openSendModal, dus vrijwel instant)
@@ -2877,7 +2905,7 @@ async function sendViaGmail(inv, bedrijf, opts = {}) {
     await getGmailToken();
   } catch (e) {
     if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Inloggen mislukt'));
-    return;
+    return false;
   }
 
   // Nu pas de PDF genereren (token is gecached, geen popup meer nodig)
@@ -2886,7 +2914,7 @@ async function sendViaGmail(inv, bedrijf, opts = {}) {
     blob = await generateInvoicePDF(inv, bedrijf);
   } catch (e) {
     if (e.name !== 'AbortError') err('PDF: ' + (e.message || 'Onbekende fout'));
-    return;
+    return false;
   }
 
   let mainSent = false;
@@ -2903,7 +2931,7 @@ async function sendViaGmail(inv, bedrijf, opts = {}) {
     try { await put('invoices', { ...cleanInv(inv), sentAt: Date.now() }); } catch (_) {}
   } catch (e) {
     if (e.name !== 'AbortError') err('Gmail: ' + (e.message || 'Inloggen mislukt of netwerk-fout'));
-    return;
+    return false;
   }
 
   if (selfCopy && mainSent) {
@@ -2918,6 +2946,7 @@ async function sendViaGmail(inv, bedrijf, opts = {}) {
       if (e.name !== 'AbortError') err('Kopie niet verstuurd: ' + (e.message || 'Gmail fout'));
     }
   }
+  return true;
 }
 
 function openInvoiceViewer(inv, bedrijf) {
@@ -3051,8 +3080,17 @@ function openSendModal(inv, bedrijf, container) {
     const subject  = backdrop.querySelector('#snd-subject').value.trim();
     const message  = backdrop.querySelector('#snd-message').value.trim();
     if (!to) { backdrop.querySelector('#snd-to').focus(); err('Vul een e-mailadres in'); return; }
-    backdrop.remove();
-    await sendViaGmail(inv, bedrijf, { to, cc: cc || undefined, selfCopy, subject, message });
+    if (!to.includes('@')) { backdrop.querySelector('#snd-to').focus(); err('Vul een geldig e-mailadres in'); return; }
+    const btn = backdrop.querySelector('#snd-send');
+    btn.disabled = true;
+    btn.textContent = '⏳ Versturen…';
+    const success = await sendViaGmail(inv, bedrijf, { to, cc: cc || undefined, selfCopy, subject, message });
+    if (success !== false) {
+      backdrop.remove();
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Versturen';
+    }
   };
 
   // PDF opslaan / delen

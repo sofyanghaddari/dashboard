@@ -5007,3 +5007,135 @@ label.subtask {
   font-size: .8rem;
   color: var(--text);
 }
+
+/* ── BOEKHOUDING POLISH ───────────────────────────────────────────────────────── */
+
+/* Compact card variant (overzicht + klant-detail) */
+.bk-card-sm { padding: 10px 12px; }
+.bk-card-sm .bk-card-top { margin-bottom: 2px; }
+
+/* Date text in card-mid */
+.bk-card-date { color: var(--text-dim); font-size: .78rem; }
+
+/* Multi-line factuur notice */
+.bk-multiline-notice {
+  background: rgba(191,176,154,.1); border: 1px solid rgba(191,176,154,.3);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: .83rem; color: var(--accent); margin-bottom: 14px;
+}
+
+/* Hover / active states on all bk-cards */
+.bk-card:hover,
+.bk-cost-card:hover,
+.bk-km-card:hover,
+.bk-client-card:hover {
+  border-color: var(--border-hi);
+  box-shadow: var(--shadow-md, 0 4px 16px rgba(0,0,0,.25)), var(--shadow-inner, inset 0 1px 0 rgba(255,255,255,.05));
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.bk-card:active,
+.bk-cost-card:active,
+.bk-km-card:active,
+.bk-client-card:active {
+  transform: scale(.99);
+  opacity: .95;
+}
+
+/* Hover on navigation buttons */
+.bk-subnav-btn:hover:not(.active) {
+  background: var(--bg-elev-3);
+  color: var(--text);
+  border-color: var(--border-hi);
+}
+.bk-admin-btn:hover:not(.active) {
+  background: var(--bg-elev-3);
+  color: var(--text);
+}
+.bk-filter-chip:hover:not(.active) {
+  background: var(--bg-elev-3);
+  color: var(--text);
+  border-color: var(--border-hi);
+}
+.bk-qa:hover {
+  background: var(--bg-elev-3);
+  border-color: var(--border-hi);
+}
+
+/* Send modal — primary button visually prominent */
+.bk-send-btn-primary {
+  margin-top: 16px;
+  background: var(--ok);
+  color: #fff;
+  border-color: var(--ok);
+  padding: 13px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.bk-send-btn-primary:hover { filter: brightness(1.08); }
+.bk-send-btn-primary:disabled { opacity: .55; }
+
+/* Danger button reusable class */
+.bk-btn-danger {
+  width: 100%; margin-top: 8px;
+  background: rgba(217,140,132,.1);
+  color: var(--danger);
+  border: 1px solid rgba(217,140,132,.2);
+}
+.bk-btn-danger:active { background: rgba(217,140,132,.22); }
+
+/* Vervallen status — subtle pulse for urgency */
+@keyframes bk-overdue-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .55; }
+}
+.bk-status-te-laat {
+  animation: bk-overdue-pulse 2.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bk-status-te-laat { animation: none; }
+}
+
+/* BTW saldo + W&V result entrance animation */
+@keyframes bk-result-pulse {
+  0%   { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: none; }
+}
+.bk-btw-saldo,
+.bk-wv-result,
+.bk-wv-netto {
+  animation: bk-result-pulse .35s ease-out both;
+  animation-delay: .15s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bk-btw-saldo,
+  .bk-wv-result,
+  .bk-wv-netto { animation: none; }
+}
+
+/* Badge — positive variant (all paid) */
+.bk-badge-ok { background: rgba(154,179,140,.12); color: var(--ok); border-color: rgba(154,179,140,.3); }
+
+/* KPI stagger entrance */
+.bk-kpi {
+  animation: bk-fade-up .25s ease-out both;
+  animation-delay: calc(var(--i, 0) * 0.05s);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bk-kpi { animation: none; }
+}
+
+/* Status pill transition */
+.bk-status { transition: background .2s, color .2s; }
+
+/* Responsive: small screens */
+@media (max-width: 400px) {
+  .bk-cat-label { width: 110px; font-size: .72rem; }
+  .bk-cat-amt   { width: 58px;  font-size: .72rem; }
+}
+@media (max-width: 380px) {
+  .bk-btw-row { grid-template-columns: 2rem 1fr auto; }
+  .bk-btw-vat { display: none; }
+}
+@media (max-width: 360px) {
+  .bk-km-summary { grid-template-columns: 1fr 1fr; }
+}
