@@ -3062,6 +3062,14 @@ body[data-density="compact"] .circular-progress { width: 120px; height: 120px; }
   border-radius: 6px;
   border-left: 2px solid var(--border);
 }
+.woord-zin {
+  font-size: .8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 8px;
+  font-style: italic;
+  opacity: .85;
+}
 
 /* ── DAG-KAART CONTROLS (Hadith/Woord: vorige dag · voorlezen · volgende) ── */
 .daycard-head {
