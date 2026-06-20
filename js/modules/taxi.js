@@ -1,4 +1,4 @@
-import { all, put, del } from '../db.js';
+import { all, put, del, add } from '../db.js';
 import { initPrivacyToggle } from '../privacy.js';
 import { openModal } from '../components/modal.js';
 import { uid, fmtMoney, parseAmount, escapeHTML, ymd, startOfWeek, startOfMonth, monthKey } from '../utils.js';
@@ -6,15 +6,23 @@ import { getNumber } from '../settings.js';
 import { ok, err } from '../components/toast.js';
 import { initCountUps } from '../animate.js';
 
-const EXPENSES_KEY = 'taxiExpenses';
 const BREAKEVEN_KEY = 'breakEvenToastDate';
 
-function getExpenses() {
-  try { return JSON.parse(localStorage.getItem(EXPENSES_KEY) || '[]'); }
-  catch { return []; }
-}
-function saveExpenses(list) {
-  localStorage.setItem(EXPENSES_KEY, JSON.stringify(list));
+// Eenmalige migratie van localStorage → IndexedDB
+async function migrateExpenses() {
+  const raw = localStorage.getItem('taxiExpenses');
+  if (!raw) return;
+  try {
+    const items = JSON.parse(raw);
+    const existing = await all('taxi_expenses');
+    if (existing.length === 0 && items.length > 0) {
+      for (const item of items) {
+        if (!item.id) item.id = uid();
+        await put('taxi_expenses', item);
+      }
+    }
+    localStorage.removeItem('taxiExpenses');
+  } catch (_) {}
 }
 // Terugkerende maandkosten (maandelijks + wekelijks omgerekend). Eenmalige
 // kosten tellen NIET mee in het terugkerende totaal / de dagelijkse break-even.
@@ -50,7 +58,8 @@ function checkBreakEven(todayIncome, expenses) {
 }
 
 export async function render(container) {
-  const rides = await all('rides');
+  await migrateExpenses();
+  const [rides, expenses] = await Promise.all([all('rides'), all('taxi_expenses')]);
   const tab = container.dataset.taxiTab || 'overview';
   const state = container.dataset.taxiMonth ? new Date(container.dataset.taxiMonth) : new Date();
   const year  = state.getFullYear();
@@ -78,7 +87,6 @@ export async function render(container) {
   const daysInMonth    = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const projectedMonth = daysIntoMonth > 0 ? Math.round((monthIncome / daysIntoMonth) * daysInMonth) : 0;
 
-  const expenses = getExpenses();
   const monthlyExpenses = calcMonthlyTotal(expenses);
   const oneTimeThisMonth = calcOneTimeThisMonth(expenses, now);
   const totalCostThisMonth = monthlyExpenses + oneTimeThisMonth;
@@ -334,9 +342,8 @@ function renderKosten(content, container, expenses) {
 
   // Delete handler
   content.querySelectorAll('[data-del]').forEach(btn => {
-    btn.onclick = () => {
-      const list = getExpenses().filter(e => e.id !== btn.dataset.del);
-      saveExpenses(list);
+    btn.onclick = async () => {
+      await del('taxi_expenses', btn.dataset.del);
       render(container);
     };
   });
@@ -367,16 +374,14 @@ function renderKosten(content, container, expenses) {
   });
 
   // Save new expense
-  content.querySelector('#save-expense').onclick = () => {
+  content.querySelector('#save-expense').onclick = async () => {
     const name = content.querySelector('#exp-name').value.trim();
     const amount = parseAmount(content.querySelector('#exp-amount').value);
     if (!name) { content.querySelector('#exp-name').focus(); err('Vul eerst een naam in'); return; }
     if (!isFinite(amount) || amount <= 0) { content.querySelector('#exp-amount').focus(); err('Vul een geldig bedrag in'); return; }
-    const list = getExpenses();
     const item = { id: uid(), name, amount, frequency: selectedFreq };
-    if (selectedFreq === 'eenmalig') item.date = ymd(new Date()); // koppel aan de huidige maand
-    list.push(item);
-    saveExpenses(list);
+    if (selectedFreq === 'eenmalig') item.date = ymd(new Date());
+    await put('taxi_expenses', item);
     render(container);
   };
 }

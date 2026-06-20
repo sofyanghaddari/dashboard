@@ -1,8 +1,7 @@
 import { uid, escapeHTML, ymd, fmtMoney } from '../utils.js';
 import { ok, err } from '../components/toast.js';
-import { all } from '../db.js';
+import { all, put, del } from '../db.js';
 
-const STORAGE_KEY = 'agenda_events';
 const CATS = {
   werk:      { label: 'Werk',       color: '#6ec9ff' },
   leren:     { label: 'Leren',      color: '#a78bfa' },
@@ -12,11 +11,22 @@ const CATS = {
 };
 const HOURS = Array.from({ length: 19 }, (_, i) => i + 6); // 06–24
 
-function getEvents() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch { return []; }
+// Eenmalige migratie van localStorage → IndexedDB
+async function migrateEvents() {
+  const raw = localStorage.getItem('agenda_events');
+  if (!raw) return;
+  try {
+    const items = JSON.parse(raw);
+    const existing = await all('agenda_events');
+    if (existing.length === 0 && items.length > 0) {
+      for (const item of items) {
+        if (!item.id) item.id = uid();
+        await put('agenda_events', item);
+      }
+    }
+    localStorage.removeItem('agenda_events');
+  } catch (_) {}
 }
-function saveEvents(arr) { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
 
 function weekDates(offset = 0) {
   const today = new Date();
@@ -33,9 +43,10 @@ const DAY_NAMES = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
 const DAY_NAMES_FULL = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag'];
 
 export async function render(container) {
+  await migrateEvents();
   const weekOffset  = +(container.dataset.agendaWeek  || 0);
-  const focusDay    =   container.dataset.agendaDay   || null; // e.g. '2026-06-08'
-  const events      = getEvents();
+  const focusDay    =   container.dataset.agendaDay   || null;
+  const events      = await all('agenda_events');
   const dates       = weekDates(weekOffset);
   const today       = ymd();
 
@@ -48,104 +59,88 @@ export async function render(container) {
     <!-- WEEK NAVIGATOR -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <button class="btn secondary" id="prev-week" style="padding:8px 14px">‹</button>
-      <div style="text-align:center">
-        <div style="font-weight:700;font-size:.95rem">${formatWeekLabel(dates)}</div>
-        ${weekOffset !== 0 ? `<button class="btn secondary" id="today-btn" style="padding:4px 10px;font-size:.78rem;margin-top:4px">Naar vandaag</button>` : ''}
-      </div>
+      <div style="font-size:.85rem;color:var(--text-dim);text-align:center">${formatWeekLabel(dates)}</div>
       <button class="btn secondary" id="next-week" style="padding:8px 14px">›</button>
     </div>
 
-    <!-- DAY SELECTOR (mobile) -->
-    <div class="agenda-day-tabs">
+    <!-- DAG SELECTOR -->
+    <div class="agenda-day-row">
       ${dates.map((d, i) => {
         const isToday = d === today;
-        const isFocus = d === focusDay || (!focusDay && d === today);
-        const dayRides = rides.filter(r => r.date && r.date.startsWith(d));
-        const income = dayRides.reduce((s, r) => s + (r.amount || 0), 0);
-        return `<button class="agenda-day-tab ${isFocus ? 'active' : ''} ${isToday ? 'today' : ''}" data-day="${d}">
-          <span class="adt-name">${DAY_NAMES[i]}</span>
-          <span class="adt-date">${d.slice(8)}</span>
-          ${income > 0 ? `<span class="adt-income">${fmtMoney(income)}</span>` : ''}
+        const hasFocus = d === (focusDay || today);
+        const dayRides = rides.filter(r => ymd(new Date(r.date)) === d);
+        const income = dayRides.reduce((s, r) => s + Number(r.amount || 0), 0);
+        return `<button class="agenda-day-btn${hasFocus ? ' active' : ''}${isToday ? ' today' : ''}" data-day="${d}">
+          <span class="agenda-day-name">${DAY_NAMES[i]}</span>
+          <span class="agenda-day-num">${new Date(d + 'T12:00:00').getDate()}</span>
+          ${income > 0 ? `<span class="agenda-day-income">€${Math.round(income)}</span>` : ''}
         </button>`;
       }).join('')}
     </div>
 
-    <!-- WEEK GRID -->
-    <div id="agenda-grid"></div>
+    <!-- AGENDA GRID -->
+    <div id="agenda-grid" class="agenda-grid"></div>
 
-    <!-- MODAL PLACEHOLDER -->
+    <!-- EVENT FORM (hidden until needed) -->
     <div id="agenda-event-form" style="display:none"></div>
   `;
 
-  // Nav buttons
-  container.querySelector('#prev-week').onclick = () => { container.dataset.agendaWeek = weekOffset - 1; render(container); };
-  container.querySelector('#next-week').onclick = () => { container.dataset.agendaWeek = weekOffset + 1; render(container); };
-  const todayBtn = container.querySelector('#today-btn');
-  if (todayBtn) todayBtn.onclick = () => { container.dataset.agendaWeek = 0; container.dataset.agendaDay = today; render(container); };
-
-  // Day tabs
-  container.querySelectorAll('[data-day]').forEach(btn => {
-    btn.onclick = () => { container.dataset.agendaDay = btn.dataset.day; render(container); };
+  container.querySelector('#prev-week').onclick = () => {
+    container.dataset.agendaWeek = weekOffset - 1;
+    container.dataset.agendaDay  = '';
+    render(container);
+  };
+  container.querySelector('#next-week').onclick = () => {
+    container.dataset.agendaWeek = weekOffset + 1;
+    container.dataset.agendaDay  = '';
+    render(container);
+  };
+  container.querySelectorAll('.agenda-day-btn').forEach(btn => {
+    btn.onclick = () => {
+      container.dataset.agendaDay = btn.dataset.day;
+      render(container);
+    };
   });
 
-  const activeDays = focusDay ? [focusDay] : dates;
-  const activeDayMobile = focusDay || today;
-
-  renderGrid(container, dates, activeDayMobile, events, rides, container.dataset.agendaDay ? true : false);
+  renderGrid(container, events, dates, focusDay || today, today);
 }
 
-function renderGrid(container, dates, focusDay, events, rides, isMobileMode) {
+function renderGrid(container, events, dates, focusDay, today) {
+  const visibleDates = [focusDay];
   const grid = container.querySelector('#agenda-grid');
-  const today = ymd();
+  grid.innerHTML = '';
 
-  // On mobile: only show the focused day
-  const visibleDates = window.innerWidth < 600 ? [focusDay] : dates;
+  for (const hour of HOURS) {
+    const row = document.createElement('div');
+    row.className = 'agenda-row';
+    row.innerHTML = `<div class="agenda-hour">${String(hour).padStart(2,'0')}:00</div>`;
 
-  grid.innerHTML = `
-    <div class="agenda-grid" style="grid-template-columns: 44px ${visibleDates.map(() => '1fr').join(' ')}">
-      <!-- Header row -->
-      <div class="agenda-time-col"></div>
-      ${visibleDates.map(d => {
-        const i = dates.indexOf(d);
-        const isToday = d === today;
-        const dayRides = rides.filter(r => r.date && r.date.startsWith(d));
-        const income = dayRides.reduce((s, r) => s + (r.amount || 0), 0);
-        return `<div class="agenda-col-hd ${isToday ? 'today' : ''}">
-          <span>${i >= 0 ? DAY_NAMES_FULL[i] : d}</span>
-          ${income > 0 ? `<span style="font-size:.72rem;color:var(--gold);display:block">${fmtMoney(income)}</span>` : ''}
-        </div>`;
-      }).join('')}
+    for (const d of visibleDates) {
+      const cell = document.createElement('div');
+      cell.className = 'agenda-cell';
+      cell.dataset.date = d;
+      cell.dataset.hour = hour;
 
-      <!-- Time rows -->
-      ${HOURS.map(h => {
-        const timeStr = `${String(h).padStart(2,'0')}:00`;
-        return `
-          <div class="agenda-time-lbl">${timeStr}</div>
-          ${visibleDates.map(d => {
-            const dayEvents = events.filter(e => e.date === d && e.hour === h);
-            return `<div class="agenda-cell" data-date="${d}" data-hour="${h}">
-              ${dayEvents.map(e => eventChip(e)).join('')}
-              <button class="agenda-add-btn" data-date="${d}" data-hour="${h}" title="Toevoegen">+</button>
-            </div>`;
-          }).join('')}
-        `;
-      }).join('')}
-    </div>
-  `;
+      const hourEvents = events.filter(e => e.date === d && e.hour === hour);
+      cell.innerHTML = hourEvents.map(ev => eventChip(ev)).join('') +
+        `<button class="agenda-add-btn" aria-label="Voeg blok toe om ${String(hour).padStart(2,'0')}:00">＋</button>`;
+      row.appendChild(cell);
+    }
+    grid.appendChild(row);
+  }
 
   // Bind add buttons
   grid.querySelectorAll('.agenda-add-btn').forEach(btn => {
     btn.onclick = (e) => {
       e.stopPropagation();
-      openEventForm(container, { date: btn.dataset.date, hour: +btn.dataset.hour }, events);
+      const cell = btn.closest('.agenda-cell');
+      openEventForm(container, { date: cell.dataset.date, hour: +cell.dataset.hour }, events);
     };
   });
-
-  // Tap anywhere in an empty cell to add (mobile has no hover for the + button)
+  // Bind cell click (empty area)
   grid.querySelectorAll('.agenda-cell').forEach(cell => {
     cell.onclick = (e) => {
-      if (e.target.closest('.agenda-chip')) return; // editing handled by chip
-      if (e.target.closest('.agenda-add-btn')) return; // handled by button handler above
+      if (e.target.closest('.agenda-add-btn')) return;
       openEventForm(container, { date: cell.dataset.date, hour: +cell.dataset.hour }, events);
     };
   });
@@ -176,8 +171,7 @@ function eventChip(ev) {
     <span class="agenda-chip-time">${String(ev.hour).padStart(2,'0')}:${ev.minute ? String(ev.minute).padStart(2,'0') : '00'}${durStr}</span>
     <span class="agenda-chip-title">${escapeHTML(ev.title)}</span>
     <span class="agenda-chip-edit" aria-hidden="true">✏</span>
-    ${ev.note ? `<span class="agenda-chip-note">${escapeHTML(ev.note)}</span>` : ''}
-    <button class="agenda-chip-del" data-del="${ev.id}">✕</button>
+    <button class="agenda-chip-del" data-del="${ev.id}" aria-label="Verwijder ${escapeHTML(ev.title)}">✕</button>
   </div>`;
 }
 
@@ -226,31 +220,28 @@ function openEventForm(container, existing, events, isEdit = false) {
   formEl.querySelector('#ev-cancel').onclick = () => { formEl.style.display = 'none'; };
 
   if (isEdit) {
-    formEl.querySelector('#ev-del').onclick = () => {
-      const updated = events.filter(x => x.id !== ev.id);
-      saveEvents(updated);
+    formEl.querySelector('#ev-del').onclick = async () => {
+      await del('agenda_events', ev.id);
       ok('Blok verwijderd');
       formEl.style.display = 'none';
       render(container);
     };
   }
 
-  // Bind chip delete buttons only inside the agenda grid (not form buttons)
+  // Chip delete buttons inside the grid
   const grid = container.querySelector('#agenda-grid');
   if (grid) {
     grid.querySelectorAll('[data-del]').forEach(btn => {
-      btn.onclick = (e) => {
+      btn.onclick = async (e) => {
         e.stopPropagation();
-        const current = getEvents();
-        const updated = current.filter(x => x.id !== btn.dataset.del);
-        saveEvents(updated);
+        await del('agenda_events', btn.dataset.del);
         ok('Verwijderd');
         render(container);
       };
     });
   }
 
-  formEl.querySelector('#ev-save').onclick = () => {
+  formEl.querySelector('#ev-save').onclick = async () => {
     const title = formEl.querySelector('#ev-title').value.trim();
     if (!title) { err('Titel verplicht'); return; }
     const newEv = {
@@ -263,12 +254,7 @@ function openEventForm(container, existing, events, isEdit = false) {
       category: formEl.querySelector('#ev-cat').value,
       note: formEl.querySelector('#ev-note').value.trim(),
     };
-    // Lees events opnieuw (stale-closure fix: delete-knoppen kunnen events hebben verwijderd)
-    const freshEvents = getEvents();
-    const updated = isEdit
-      ? freshEvents.map(x => x.id === ev.id ? newEv : x)
-      : [...freshEvents, newEv];
-    saveEvents(updated);
+    await put('agenda_events', newEv);
     ok(isEdit ? 'Bijgewerkt' : 'Toegevoegd');
     formEl.style.display = 'none';
     render(container);

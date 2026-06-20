@@ -141,6 +141,11 @@ body {
   background-image: var(--bg-grad);
   background-attachment: fixed;
 }
+/* Zichtbare focusindicator voor toetsenbord- en VoiceOver-navigatie (touch/muis: geen ring) */
+:focus-visible {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 2px;
+}
 
 .view {
   padding: calc(68px + var(--safe-top)) var(--sp-5) calc(var(--tabbar-h) + var(--safe-bottom) + var(--sp-6));

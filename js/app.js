@@ -1,4 +1,5 @@
-import { openDB, onWrite } from './db.js';
+import { openDB, onWrite, onStorageError, all } from './db.js';
+import { err as toastErr, info as toastInfo } from './components/toast.js';
 import { initRealtimeSync, scheduleAutoPush } from './auto-realtime-sync.js';
 import { register, initRouter, navigate, currentRoute } from './router.js';
 import { openSettings } from './components/settings.js';
@@ -35,6 +36,15 @@ import { render as renderBoekhouding } from './modules/boekhouding.js';
 async function bootApp() {
   migrateSessionKeys(); // Promoveer ghToken/ghEncPwd eenmalig van sessionStorage naar localStorage
   await openDB();
+  onStorageError(() => toastErr('Opslag vol — maak ruimte vrij op je apparaat'));
+
+  // Lege DB detecteren: als backup geconfigureerd is maar data ontbreekt → herstel aanbieden
+  if (localStorage.getItem('ghGistId') && localStorage.getItem('ghToken')) {
+    const rides = await all('rides').catch(() => []);
+    if (rides.length === 0) {
+      setTimeout(() => toastInfo('DB lijkt leeg — ga naar ⚙️ → Data → Herstel om backup terug te zetten', { duration: 10000 }), 3000);
+    }
+  }
   register('dashboard', renderDashboard);
   register('taxi', renderTaxi);
   register('geloof', renderGeloof);

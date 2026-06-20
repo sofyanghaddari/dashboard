@@ -1,5 +1,5 @@
 const DB_NAME = 'dashboard';
-const DB_VERSION = 6;
+const DB_VERSION = 7;
 const STORES = {
   rides:             { keyPath: 'id',   indexes: [['date', 'date']] },
   expenses:          { keyPath: 'id',   indexes: [['date', 'date']] },
@@ -16,6 +16,8 @@ const STORES = {
   purchase_invoices: { keyPath: 'id',   indexes: [['date', 'date']] },
   km_log:            { keyPath: 'id',   indexes: [['date', 'date']] },
   clients:           { keyPath: 'id' },
+  taxi_expenses:     { keyPath: 'id' },
+  agenda_events:     { keyPath: 'id',   indexes: [['date', 'date']] },
 };
 
 let _dbPromise = null;
@@ -51,7 +53,9 @@ function p(req) {
 }
 
 let _onWrite = null;
+let _onStorageError = null;
 export function onWrite(cb) { _onWrite = cb; }
+export function onStorageError(cb) { _onStorageError = cb; }
 
 function injectUpdatedAt(value) {
   // Object-spread om mutatie van caller-object te vermijden
@@ -60,15 +64,25 @@ function injectUpdatedAt(value) {
 
 export async function put(store, value) {
   const v = injectUpdatedAt(value);
-  const res = await p((await tx(store, 'readwrite')).put(v));
-  if (_onWrite) _onWrite();
-  return res;
+  try {
+    const res = await p((await tx(store, 'readwrite')).put(v));
+    if (_onWrite) _onWrite();
+    return res;
+  } catch (e) {
+    if (e.name === 'QuotaExceededError' && _onStorageError) _onStorageError();
+    throw e;
+  }
 }
 export async function add(store, value) {
   const v = injectUpdatedAt(value);
-  const res = await p((await tx(store, 'readwrite')).add(v));
-  if (_onWrite) _onWrite();
-  return res;
+  try {
+    const res = await p((await tx(store, 'readwrite')).add(v));
+    if (_onWrite) _onWrite();
+    return res;
+  } catch (e) {
+    if (e.name === 'QuotaExceededError' && _onStorageError) _onStorageError();
+    throw e;
+  }
 }
 export async function get(store, key)   { return p((await tx(store)).get(key)); }
 export async function del(store, key)   {

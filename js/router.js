@@ -14,7 +14,9 @@ export async function navigate(name) {
   void view.offsetHeight;
   view.style.animation = '';
   document.querySelectorAll('.tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.route === route);
+    const active = t.dataset.route === route;
+    t.classList.toggle('active', active);
+    t.setAttribute('aria-selected', active ? 'true' : 'false');
   });
   currentView = route;
   location.hash = '#' + route;

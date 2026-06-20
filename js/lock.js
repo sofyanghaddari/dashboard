@@ -2,7 +2,11 @@
 import { isBiometricEnabled, verifyBiometric } from './biometric.js';
 import { getSetting } from './settings.js';
 
-const GRACE_KEY = 'lastUnlock';
+const GRACE_KEY    = 'lastUnlock';
+const FAIL_KEY     = 'pinFailCount';
+const LOCKOUT_KEY  = 'pinLockUntil';
+const MAX_FAILS    = 5;
+const LOCKOUT_MS   = 15 * 60 * 1000;
 
 function gracePeriodMs() {
   const min = parseInt(getSetting('lockGraceMin') || '5', 10);
@@ -10,12 +14,38 @@ function gracePeriodMs() {
 }
 
 function inGracePeriod() {
-  const last = parseInt(localStorage.getItem(GRACE_KEY) || '0', 10);
+  const last = parseInt(sessionStorage.getItem(GRACE_KEY) || '0', 10);
   return last > 0 && (Date.now() - last) < gracePeriodMs();
 }
 
 function markUnlocked() {
-  localStorage.setItem(GRACE_KEY, Date.now().toString());
+  sessionStorage.setItem(GRACE_KEY, Date.now().toString());
+}
+
+function isPinLockedOut() {
+  const until = parseInt(sessionStorage.getItem(LOCKOUT_KEY) || '0', 10);
+  return until > 0 && Date.now() < until;
+}
+
+function lockoutMinutes() {
+  const until = parseInt(sessionStorage.getItem(LOCKOUT_KEY) || '0', 10);
+  return Math.max(1, Math.ceil((until - Date.now()) / 60000));
+}
+
+function recordPinFail() {
+  const fails = parseInt(sessionStorage.getItem(FAIL_KEY) || '0', 10) + 1;
+  if (fails >= MAX_FAILS) {
+    sessionStorage.setItem(LOCKOUT_KEY, String(Date.now() + LOCKOUT_MS));
+    sessionStorage.removeItem(FAIL_KEY);
+  } else {
+    sessionStorage.setItem(FAIL_KEY, String(fails));
+  }
+  return fails;
+}
+
+function clearPinFails() {
+  sessionStorage.removeItem(FAIL_KEY);
+  sessionStorage.removeItem(LOCKOUT_KEY);
 }
 
 async function hash(str) {
@@ -44,7 +74,6 @@ export async function verifyPin(pin) {
 
 export async function lockScreen(onUnlock) {
   if (!anyLockEnabled()) { onUnlock(); return; }
-  // Grace-periode: nog steeds binnen tijdsvenster sinds laatste ontgrendeling?
   if (inGracePeriod()) { onUnlock(); return; }
 
   const overlay = document.createElement('div');
@@ -53,7 +82,7 @@ export async function lockScreen(onUnlock) {
   renderLock(overlay, () => { markUnlocked(); onUnlock(); });
 }
 
-export function clearUnlock() { localStorage.removeItem(GRACE_KEY); }
+export function clearUnlock() { sessionStorage.removeItem(GRACE_KEY); }
 
 function renderLock(overlay, onUnlock) {
   const hasBio = isBiometricEnabled();
@@ -88,7 +117,6 @@ function renderLock(overlay, onUnlock) {
     overlay.querySelector('#bio-try').onclick = tryBio;
     const showPin = overlay.querySelector('#show-pin');
     if (showPin) showPin.onclick = () => { showPinForm(overlay, onUnlock); };
-    // Probeer meteen
     setTimeout(tryBio, 200);
   } else {
     bindPinInput(overlay, onUnlock);
@@ -111,16 +139,47 @@ function showPinForm(overlay, onUnlock) {
 
 function bindPinInput(overlay, onUnlock) {
   const input = overlay.querySelector('#pin-input');
-  const err = overlay.querySelector('#pin-error');
+  const errEl = overlay.querySelector('#pin-error');
   setTimeout(() => input.focus(), 50);
+
+  // Check lockout state on bind
+  if (isPinLockedOut()) {
+    input.disabled = true;
+    errEl.textContent = `Te veel pogingen. Wacht ${lockoutMinutes()} min.`;
+    // Re-enable when lockout expires
+    const remaining = parseInt(sessionStorage.getItem(LOCKOUT_KEY) || '0', 10) - Date.now();
+    if (remaining > 0) setTimeout(() => {
+      input.disabled = false;
+      errEl.textContent = '';
+      clearPinFails();
+    }, remaining);
+    return;
+  }
+
   input.oninput = async () => {
-    err.textContent = '';
-    if (input.value.length >= 4) {
-      if (await verifyPin(input.value)) {
-        overlay.remove();
-        onUnlock();
-      } else if (input.value.length === 6) {
-        err.textContent = 'Onjuiste code';
+    errEl.textContent = '';
+    if (input.value.length < 4) return;
+
+    if (isPinLockedOut()) {
+      errEl.textContent = `Te veel pogingen. Wacht ${lockoutMinutes()} min.`;
+      input.value = '';
+      input.disabled = true;
+      return;
+    }
+
+    if (await verifyPin(input.value)) {
+      clearPinFails();
+      overlay.remove();
+      onUnlock();
+    } else if (input.value.length === 6) {
+      const fails = recordPinFail();
+      if (isPinLockedOut()) {
+        errEl.textContent = `Te veel pogingen. Vergrendeld voor ${lockoutMinutes()} min.`;
+        input.value = '';
+        input.disabled = true;
+      } else {
+        const left = MAX_FAILS - fails;
+        errEl.textContent = `Onjuiste code${left <= 2 ? ` · nog ${left} poging${left !== 1 ? 'en' : ''}` : ''}`;
         input.value = '';
       }
     }
