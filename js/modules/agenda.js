@@ -175,6 +175,7 @@ function eventChip(ev) {
   return `<div class="agenda-chip" data-id="${ev.id}" style="background:${cat.color}22;border-left:3px solid ${cat.color}">
     <span class="agenda-chip-time">${String(ev.hour).padStart(2,'0')}:${ev.minute ? String(ev.minute).padStart(2,'0') : '00'}${durStr}</span>
     <span class="agenda-chip-title">${escapeHTML(ev.title)}</span>
+    <span class="agenda-chip-edit" aria-hidden="true">✏</span>
     ${ev.note ? `<span class="agenda-chip-note">${escapeHTML(ev.note)}</span>` : ''}
     <button class="agenda-chip-del" data-del="${ev.id}">✕</button>
   </div>`;

@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v104';
+const CACHE = 'dashboard-v105';
 const ASSETS = [
   './',
   './index.html',
@@ -83,6 +83,33 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+// Weekly income summary alarm (SW-side).
+let _weeklyTimer = null;
+function scheduleWeeklySummary(income) {
+  if (_weeklyTimer) clearTimeout(_weeklyTimer);
+  const now = new Date();
+  const target = new Date(now);
+  // Next Sunday 18:00 (day 0 = Sunday)
+  const daysUntilSunday = (7 - now.getDay()) % 7 || 7;
+  target.setDate(target.getDate() + daysUntilSunday);
+  target.setHours(18, 0, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 7);
+  const ms = target - now;
+  _weeklyTimer = setTimeout(async () => {
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const anyFocused = clients.some(c => c.focused);
+    if (!anyFocused) {
+      self.registration.showNotification('Week overzicht 📊', {
+        body: `Je verdiende deze week € ${(income || 0).toFixed(2).replace('.', ',')}. Goed gedaan!`,
+        icon: './icons/icon-192.png',
+        tag: 'weekly-summary',
+        renotify: true,
+      });
+    }
+    scheduleWeeklySummary(income); // reschedule for next week
+  }, ms);
+}
+
 // Hizb reminder alarm (SW-side). Stored per-SW-install in memory; rehydrated on activate.
 let _hizbAlarmTimer = null;
 function scheduleHizbAlarm(time) {
@@ -115,6 +142,9 @@ self.addEventListener('message', (e) => {
   }
   if (e.data && e.data.type === 'SCHEDULE_HIZB_REMINDER') {
     scheduleHizbAlarm(e.data.time);
+  }
+  if (e.data && e.data.type === 'SCHEDULE_WEEKLY_SUMMARY') {
+    scheduleWeeklySummary(e.data.income || 0);
   }
 });
 

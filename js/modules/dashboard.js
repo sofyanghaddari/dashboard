@@ -1,5 +1,5 @@
 import { all, put } from '../db.js';
-import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML } from '../utils.js';
+import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML, orderedHabits } from '../utils.js';
 import { getNumber, getSetting } from '../settings.js';
 import { celebrateGoalHit, celebrateStreak } from '../components/celebrate.js';
 import { checkNewBadges } from '../achievements.js';
@@ -106,17 +106,6 @@ export async function render(container) {
   // Gewoontes vandaag
   const doneHabitIds = new Set(habitLog.filter(l => l.date === today && l.done).map(l => l.habitId));
   const habitsDoneToday = habits.filter(h => doneHabitIds.has(h.id)).length;
-
-  // Habit volgorde (chains)
-  function orderedHabits(list) {
-    const heads = list.filter(h => !h.after);
-    const followers = list.filter(h => h.after);
-    const out = [];
-    function add(h) { out.push(h); followers.filter(f => f.after === h.id).forEach(add); }
-    heads.forEach(add);
-    list.forEach(h => { if (!out.some(x => x.id === h.id)) out.push(h); });
-    return out;
-  }
 
   // Hizb streak
   const todayHizb = hizb.some(h => h.date === today);
@@ -278,6 +267,7 @@ export async function render(container) {
         <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
       </div>
       <div class="income-hero-amount big-money blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
+      ${todayIncome === 0 ? `<div class="income-zero-hint">🚖 Nog geen rit genoteerd — zet hem op nul!</div>` : ''}
       ${dailyGoal > 0 ? `
         <div class="income-hero-progress">
           <div class="progress-bar"><div class="progress-fill" style="width:${goalPct}%"></div></div>
@@ -435,6 +425,11 @@ export async function render(container) {
       await render(container);
     };
   });
+
+  // Schedule weekly income summary (Sunday 18:00) via service worker
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'SCHEDULE_WEEKLY_SUMMARY', income: weekIncome });
+  }
 
   loadWeather(container);
   loadNs(container);

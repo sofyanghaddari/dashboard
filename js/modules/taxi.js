@@ -495,21 +495,46 @@ function renderChart(content, rides) {
     </div>`;
 }
 
+function weekNum(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+}
+
 function exportCSV(rides) {
-  const d    = new Date().toISOString().slice(0, 10);
-  const rows = [
-    'sep=;',   // Excel-hint
-    ['datum', 'bedrag', 'notitie'].join(';'),
-    ...rides.map(r => [
-      new Date(r.date).toISOString().slice(0, 10),
+  const today = new Date().toISOString().slice(0, 10);
+  const WEEKDAG = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
+  const sorted  = [...rides].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const rows    = ['sep=;', ['datum', 'week', 'dag', 'bedrag', 'notitie'].join(';')];
+  let prevMonth = null, monthTotal = 0;
+
+  for (const r of sorted) {
+    const date     = new Date(r.date);
+    const monthKey = (r.date || '').slice(0, 7);
+    if (prevMonth !== null && monthKey !== prevMonth) {
+      rows.push([`Totaal ${prevMonth}`, '', '', (Math.round(monthTotal * 100) / 100).toFixed(2).replace('.', ','), ''].join(';'));
+      monthTotal = 0;
+    }
+    prevMonth   = monthKey;
+    monthTotal += (r.amount || 0);
+    rows.push([
+      (r.date || '').slice(0, 10),
+      `W${String(weekNum(date)).padStart(2, '0')}`,
+      WEEKDAG[date.getDay()],
       String(r.amount || 0).replace('.', ','),
       '"' + (r.note || '').replace(/"/g, '""').replace(/[\r\n;]/g, ' ') + '"',
-    ].join(';')),
-  ];
+    ].join(';'));
+  }
+  if (prevMonth !== null) {
+    rows.push([`Totaal ${prevMonth}`, '', '', (Math.round(monthTotal * 100) / 100).toFixed(2).replace('.', ','), ''].join(';'));
+  }
+
   const blob = new Blob(['﻿' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8' });
   const a    = document.createElement('a');
   a.href     = URL.createObjectURL(blob);
-  a.download = `taxi-inkomen-${d}.csv`;
+  a.download = `taxi-inkomen-${today}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
 }

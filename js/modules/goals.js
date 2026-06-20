@@ -1,6 +1,6 @@
 import { all, put, del } from '../db.js';
 import { openModal } from '../components/modal.js';
-import { uid, fmtMoney, parseAmount, escapeHTML, ymd } from '../utils.js';
+import { uid, fmtMoney, parseAmount, escapeHTML, ymd, orderedHabits } from '../utils.js';
 import { ok } from '../components/toast.js';
 import { celebrateTask } from '../components/celebrate.js';
 
@@ -165,15 +165,7 @@ function renderHabits(container, habits, log) {
   const today    = ymd();
   const doneToday = new Set(log.filter(l => l.date === today && l.done).map(l => l.habitId));
 
-  const heads    = habits.filter(h => !h.after);
-  const followers = habits.filter(h => h.after);
-  const ordered  = [];
-  function addChain(h) {
-    ordered.push(h);
-    followers.filter(f => f.after === h.id).forEach(addChain);
-  }
-  heads.forEach(addChain);
-  habits.forEach(h => { if (!ordered.includes(h)) ordered.push(h); });
+  const ordered = orderedHabits(habits);
 
   el.innerHTML = ordered.map(h => {
     const done   = doneToday.has(h.id);

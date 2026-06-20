@@ -4,6 +4,10 @@ import { ok, err } from '../components/toast.js';
 import { parseInvoiceText } from '../invoice-nlp.js';
 
 function gmailConfigured() { return !!localStorage.getItem('gmailClientId'); }
+function fmtMoneyPDF(n) {
+  const v = isFinite(n) ? +n : 0;
+  return '€ ' + v.toFixed(2).replace('.', ',');
+}
 
 // Escape-toets sluit het bovenste boekhouding-modal (eenmalig geregistreerd).
 if (!window._bkEscapeRegistered) {
@@ -370,7 +374,10 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
             </div>
             <div class="bk-card-bot" style="margin-top:6px">
               <span style="font-size:.78rem;color:var(--text-dim)">${escapeHTML(inv.number || '')} · ${fmtDateShort(inv.date)}</span>
-              <span class="bk-card-amount money">${fmtMoney(inv.totalIncl || 0)}</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="bk-card-amount money">${fmtMoney(inv.totalIncl || 0)}</span>
+                ${inv._status !== 'betaald' ? `<button class="bk-btn-paid" data-id="${escapeHTML(inv.id)}" style="font-size:.72rem;padding:3px 8px">✓</button>` : ''}
+              </div>
             </div>
           </div>
         `).join('')}
@@ -383,9 +390,21 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
   view.querySelector('#qa-km').onclick      = () => { container.dataset.bkTab = 'km';        render(container); setTimeout(() => openNewKmModal(container), 100); };
 
   view.querySelectorAll('.bk-card-sm').forEach(card => {
-    card.onclick = () => {
+    card.onclick = (e) => {
+      if (e.target.closest('.bk-btn-paid')) return;
       const inv = invoices.find(i => i.id === card.dataset.id);
       if (inv) openDetailModal(inv, container);
+    };
+  });
+
+  view.querySelectorAll('.bk-card-sm .bk-btn-paid').forEach(btn => {
+    btn.onclick = async e => {
+      e.stopPropagation();
+      const inv = invoices.find(i => i.id === btn.dataset.id);
+      if (!inv) return;
+      await put('invoices', { ...cleanInv(inv), status: 'betaald', paidAt: ymd() });
+      ok('Factuur gemarkeerd als betaald ✓');
+      render(container);
     };
   });
 }
@@ -2795,9 +2814,9 @@ async function generateInvoicePDF(inv, bedrijf) {
     // Bedragen rechts, verticaal gecentreerd
     doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
     doc.text(`${l.vatRate ?? 0}%`, R - 53, rowMidY, { align: 'right' });
-    doc.text(fmtMoney(l.amountExcl ?? 0, true), R - 27, rowMidY, { align: 'right' });
+    doc.text(fmtMoneyPDF(l.amountExcl ?? 0), R - 27, rowMidY, { align: 'right' });
     doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
-    doc.text(fmtMoney(l.amountIncl ?? 0, true), R, rowMidY, { align: 'right' });
+    doc.text(fmtMoneyPDF(l.amountIncl ?? 0), R, rowMidY, { align: 'right' });
 
     rowEndY = rowTopY + rowH;
     doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
@@ -2811,8 +2830,8 @@ async function generateInvoicePDF(inv, bedrijf) {
   let tTY = rowEndY + 9;
   const totX = R - 75;
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
-  [[`Subtotaal excl. BTW`, fmtMoney(inv.totalExcl || 0, true)],
-   [`BTW`,                 fmtMoney(inv.totalVat  || 0, true)]].forEach(([lbl, val]) => {
+  [[`Subtotaal excl. BTW`, fmtMoneyPDF(inv.totalExcl || 0)],
+   [`BTW`,                 fmtMoneyPDF(inv.totalVat  || 0)]].forEach(([lbl, val]) => {
     doc.text(lbl, totX, tTY); doc.text(val, R, tTY, { align: 'right' }); tTY += 5.5;
   });
   doc.setDrawColor(...TAUPE); doc.setLineWidth(0.8); doc.line(totX, tTY + 1, R, tTY + 1);
@@ -2820,7 +2839,7 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...DARK);
   doc.text('Te betalen', totX, tTY);
   doc.setFontSize(14); doc.setTextColor(...TAUPE);
-  doc.text(fmtMoney(inv.totalIncl || 0, true), R, tTY, { align: 'right' });
+  doc.text(fmtMoneyPDF(inv.totalIncl || 0), R, tTY, { align: 'right' });
 
   // ── Betaalinstructies ──
   const pY    = tTY + 12;
@@ -2830,7 +2849,7 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.setFillColor(...TAUPE);
   doc.rect(L, pY, 3, pBoxH, 'F');
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
-  doc.text(`Gelieve ${fmtMoney(inv.totalIncl || 0, true)} voor ${fmtDateLong(inv.dueDate)} over te maken naar:`, L + 7, pY + 7);
+  doc.text(`Gelieve ${fmtMoneyPDF(inv.totalIncl || 0)} voor ${fmtDateLong(inv.dueDate)} over te maken naar:`, L + 7, pY + 7);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...DARK);
   doc.text(fmtIBAN(bedrijf.iban), L + 7, pY + 14);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MED);

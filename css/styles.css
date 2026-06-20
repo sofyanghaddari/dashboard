@@ -3932,6 +3932,8 @@ label[for="import-csv"]:hover, label[for="import-pdf"]:hover, #add-card:hover {
   background: none; border: none; cursor: pointer; font-size: .7rem;
   color: var(--text-faint); padding: 0 1px; line-height: 1; flex-shrink: 0;
 }
+.agenda-chip-edit { font-size: .6rem; opacity: .35; flex-shrink: 0; pointer-events: none; }
+.income-zero-hint { font-size: .78rem; color: var(--text-dim); margin-top: 6px; font-style: italic; }
 
 /* ─── HIZB VOORTGANGSKAART ───────────────────────────────────────────────── */
 .hizb-voortgang-list { display: flex; flex-direction: column; gap: 6px; }

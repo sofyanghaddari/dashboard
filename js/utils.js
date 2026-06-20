@@ -31,3 +31,12 @@ export function monthKey(d) {
 export function escapeHTML(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 }
+export function orderedHabits(list) {
+  const heads = list.filter(h => !h.after);
+  const followers = list.filter(h => h.after);
+  const out = [];
+  function add(h) { out.push(h); followers.filter(f => f.after === h.id).forEach(add); }
+  heads.forEach(add);
+  list.forEach(h => { if (!out.some(x => x.id === h.id)) out.push(h); });
+  return out;
+}
