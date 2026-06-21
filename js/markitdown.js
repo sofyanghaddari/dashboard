@@ -1,5 +1,39 @@
 // markitdown.js — document-naar-Markdown converter voor de browser
-// Ondersteunt: .txt, .md, .html, .csv, .pdf, .docx, afbeeldingen (OCR)
+// Probeert eerst de lokale Python MarkItDown server (markitdown_server.py).
+// Valt daarna terug op browser-implementaties (pdf.js, mammoth.js, Tesseract.js).
+
+// ── Lokale Python server ──────────────────────────────────────────────────
+
+const LOCAL_SERVER = 'http://localhost:8765';
+
+async function tryLocalServer(file, onProgress) {
+  try {
+    onProgress?.('MarkItDown server controleren…', 0.02);
+    const ping = await fetch(`${LOCAL_SERVER}/ping`, {
+      signal: AbortSignal.timeout(800),
+    });
+    if (!ping.ok) return null;
+
+    onProgress?.(`Converteren via MarkItDown…`, 0.1);
+    const res = await fetch(`${LOCAL_SERVER}/convert`, {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'X-Filename':   file.name,
+      },
+      body:   file,
+      signal: AbortSignal.timeout(60_000),
+    });
+
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    onProgress?.('Klaar', 1);
+    return json.markdown || '';
+  } catch (e) {
+    if (e.name === 'TimeoutError' || e.name === 'TypeError') return null; // server niet actief
+    throw e;
+  }
+}
 
 // ── Lazy loaders ──────────────────────────────────────────────────────────
 
@@ -206,10 +240,11 @@ async function imageToMarkdown(file, onProgress) {
 // ── Hoofd-API ─────────────────────────────────────────────────────────────
 
 export const SUPPORTED_EXTENSIONS =
-  '.txt,.md,.html,.htm,.csv,.pdf,.docx,.jpg,.jpeg,.png,.gif,.webp,.bmp';
+  '.txt,.md,.html,.htm,.csv,.pdf,.docx,.xlsx,.xls,.pptx,.ppt,.jpg,.jpeg,.png,.gif,.webp,.bmp';
 
 /**
  * Converteert een bestand naar Markdown.
+ * Probeert eerst de lokale Python MarkItDown server; valt terug op browser-implementaties.
  * @param {File} file
  * @param {(status: string, progress: number) => void} [onProgress]
  * @returns {Promise<{ markdown: string, title: string }>}
@@ -221,6 +256,14 @@ export async function convertToMarkdown(file, onProgress) {
 
   onProgress?.('Bestand herkennen…', 0);
 
+  // Probeer eerst de lokale Python server (ondersteunt alle formaten)
+  const serverResult = await tryLocalServer(file, onProgress);
+  if (serverResult !== null) {
+    const title = name.replace(/\.[^.]+$/, '');
+    return { markdown: serverResult.trim(), title };
+  }
+
+  // Fallback: browser-implementaties
   let markdown;
 
   if (ext === 'md' || ext === 'markdown') {
