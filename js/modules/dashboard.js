@@ -435,6 +435,7 @@ export async function render(container) {
   loadNs(container);
   initCountUps(container);
   bindDayWidgets(container);
+  _injectArabicVoiceTip(container);
   container.querySelector('#open-calendar').onclick = () => window.openCalendar && window.openCalendar();
   container.querySelector('#open-yr').onclick = () => window.openYearReview && window.openYearReview();
 
@@ -782,12 +783,13 @@ function speakText(text, lang, btn) {
     const voices = synth.getVoices ? synth.getVoices() : [];
     const u = new SpeechSynthesisUtterance(text);
     u.lang  = lang === 'ar' ? 'ar-SA' : 'nl-NL';
-    u.rate  = lang === 'ar' ? 0.85 : 0.98;   // iets rustiger voor Arabisch = duidelijker
-    u.pitch = 1;
+    // Arabisch: trager tempo (recitatie-gevoel) + iets lagere toon (autoritairdere stem)
+    u.rate  = lang === 'ar' ? 0.72 : 0.98;
+    u.pitch = lang === 'ar' ? 0.88 : 1;
     const match = _pickVoice(voices, lang);
     if (match) u.voice = match;
     else if (lang === 'ar') {
-      toast('Geen Arabische stem op dit toestel. Voeg er één toe via iOS: Instellingen → Toegankelijkheid → Gesproken materiaal → Stemmen → Arabisch (kies "Majed").', { type: 'info', duration: 6000 });
+      toast('Geen Arabische stem gevonden. Download "Enhanced" via Instellingen → Toegankelijkheid → Gesproken inhoud → Stemmen → Arabisch.', { type: 'info', duration: 7000 });
     }
     const clear = () => { btn.classList.remove('speaking'); if (_ttsActiveBtn === btn) _ttsActiveBtn = null; };
     u.onend = clear;
@@ -807,6 +809,57 @@ function speakText(text, lang, btn) {
     setTimeout(() => { if (!done) { done = true; synth.onvoiceschanged = null; speakNow(); } }, 500);
   } else {
     speakNow();
+  }
+}
+
+// Voegt een wegklikbare gids toe aan de hadith-kaart als de best beschikbare
+// Arabische stem NIET "enhanced" is. Wacht asynchroon op stem-lijst (iOS laadt
+// ze laat). Slaat dismissal op in localStorage zodat de tip maar één keer
+// getoond wordt.
+function _injectArabicVoiceTip(container) {
+  if (localStorage.getItem('ar-voice-tip-ok')) return;
+  const run = () => {
+    const voices = window.speechSynthesis?.getVoices?.() || [];
+    const best   = _pickVoice(voices, 'ar');
+    const good   = best && (
+      /(enhanced|premium|neural|natural)/.test((best.name || '').toLowerCase()) ||
+      best.localService === false
+    );
+    if (good) return; // gebruiker heeft al een goede stem
+    const card = container.querySelector('.hadith-card');
+    if (!card || card.querySelector('.ar-voice-tip')) return;
+    const tip = document.createElement('div');
+    tip.className = 'ar-voice-tip';
+    tip.innerHTML = `
+      <div class="ar-voice-tip-inner">
+        <span class="ar-voice-tip-icon">🎙️</span>
+        <div class="ar-voice-tip-content">
+          <div class="ar-voice-tip-title">Verbeter de Arabische uitspraak</div>
+          <div class="ar-voice-tip-steps">
+            Instellingen → Toegankelijkheid → Gesproken inhoud → Stemmen → Arabisch
+            → tik op <strong>Verbeterd</strong> en download
+          </div>
+        </div>
+        <button class="ar-voice-tip-close" aria-label="Verberg tip">×</button>
+      </div>`;
+    tip.querySelector('.ar-voice-tip-close').onclick = () => {
+      tip.classList.add('ar-voice-tip-hiding');
+      setTimeout(() => tip.remove(), 260);
+      localStorage.setItem('ar-voice-tip-ok', '1');
+    };
+    card.appendChild(tip);
+  };
+
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  const current = synth.getVoices?.() || [];
+  if (current.length) { run(); return; }
+  if ('onvoiceschanged' in synth) {
+    const handler = () => { synth.removeEventListener('voiceschanged', handler); run(); };
+    synth.addEventListener('voiceschanged', handler);
+    setTimeout(run, 900); // fallback als event uitblijft
+  } else {
+    setTimeout(run, 600);
   }
 }
 
