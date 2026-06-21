@@ -2253,6 +2253,15 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .add-tile:hover .at-plus { transform: scale(1.12); }
 .add-tile:active { transform: scale(.99); }
 
+.notes-add-row {
+  display: flex; gap: 10px; align-items: stretch; margin-bottom: 18px;
+}
+.notes-add-row .add-tile { margin-bottom: 0; }
+.notes-import-btn {
+  flex-shrink: 0; white-space: nowrap;
+  padding: 0 16px; font-size: .85rem; border-radius: var(--radius-sm);
+}
+
 /* Compact per-section empty (Doelen) — replaces the dull dashed boxes */
 .section-empty {
   display: flex; align-items: center; gap: 13px;

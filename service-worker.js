@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v108';
+const CACHE = 'dashboard-v109';
 const ASSETS = [
   './',
   './index.html',
@@ -67,6 +67,7 @@ const ASSETS = [
   './js/vendor/motion.min.js',
   './js/modules/geloof.js',
   './js/receipt-ocr.js',
+  './js/markitdown.js',
 ];
 
 self.addEventListener('install', (e) => {

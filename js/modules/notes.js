@@ -1,6 +1,7 @@
 import { all, put, del } from '../db.js';
 import { uid, escapeHTML } from '../utils.js';
-import { ok } from '../components/toast.js';
+import { ok, err as toastErr } from '../components/toast.js';
+import { convertToMarkdown, SUPPORTED_EXTENSIONS } from '../markitdown.js';
 
 const ACCENTS = ['note-accent-0', 'note-accent-1', 'note-accent-2', 'note-accent-3'];
 
@@ -43,9 +44,15 @@ export async function render(container) {
       </button>
     </div>
 
-    <button class="add-tile" id="add">
-      <span class="at-plus">+</span> ${view === 'ideas' ? 'Nieuw idee' : 'Nieuwe notitie'}
-    </button>
+    <div class="notes-add-row">
+      <button class="add-tile" id="add" style="flex:1">
+        <span class="at-plus">+</span> ${view === 'ideas' ? 'Nieuw idee' : 'Nieuwe notitie'}
+      </button>
+      <button class="btn secondary notes-import-btn" id="import-doc" title="Document importeren als notitie">
+        📄 Importeren
+      </button>
+    </div>
+    <input type="file" id="import-file" accept="${SUPPORTED_EXTENSIONS}" style="display:none" />
 
     <div id="notes-list"></div>
   `;
@@ -131,6 +138,17 @@ export async function render(container) {
   searchInput.addEventListener('focus', () => {
     setTimeout(() => searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
   });
+
+  // ── Document importeren via MarkItDown ────────────────────────────────
+  const fileInput = container.querySelector('#import-file');
+  container.querySelector('#import-doc').onclick = () => fileInput.click();
+
+  fileInput.onchange = async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    fileInput.value = '';
+    openImportProgress(container, file, view === 'ideas');
+  };
 }
 
 // ── Helpers ───────────────────────────────────────────────
@@ -150,7 +168,44 @@ function relativeDate(iso) {
   return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
 }
 
-function openEditor(container, existing, isIdea = false) {
+function openImportProgress(container, file, isIdea) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-backdrop';
+  overlay.innerHTML = `
+    <div class="modal" style="text-align:center">
+      <h2>📄 Importeren</h2>
+      <p style="opacity:.7;font-size:.9rem;margin:.5rem 0 1.2rem">${escapeHTML(file.name)}</p>
+      <div class="rcpt-scan-bar" style="margin:0 auto 1rem">
+        <div class="rcpt-scan-fill" id="imp-fill" style="width:0%"></div>
+      </div>
+      <div id="imp-status" style="font-size:.85rem;opacity:.6">Bestand analyseren…</div>
+      <button class="btn secondary" id="imp-cancel" style="margin-top:1.4rem">Annuleren</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  let cancelled = false;
+  overlay.querySelector('#imp-cancel').onclick = () => { cancelled = true; overlay.remove(); };
+
+  const setProgress = (status, pct) => {
+    if (cancelled) return;
+    const fill = overlay.querySelector('#imp-fill');
+    if (fill) fill.style.width = `${Math.round(pct * 100)}%`;
+    const lbl  = overlay.querySelector('#imp-status');
+    if (lbl)  lbl.textContent = status;
+  };
+
+  convertToMarkdown(file, setProgress).then(({ markdown, title }) => {
+    if (cancelled) return;
+    overlay.remove();
+    openEditor(container, null, isIdea, { prefillTitle: title, prefillBody: markdown });
+  }).catch(e => {
+    if (cancelled) return;
+    overlay.remove();
+    toastErr(e.message || 'Importeren mislukt');
+  });
+}
+
+function openEditor(container, existing, isIdea = false, prefill = {}) {
   const editor = document.createElement('div');
   editor.className = 'modal-backdrop';
   editor.innerHTML = `
@@ -158,9 +213,9 @@ function openEditor(container, existing, isIdea = false) {
       <button type="button" class="modal-close" id="ed-x" aria-label="Sluiten">×</button>
       <h2>${existing ? 'Bewerken' : (isIdea ? 'Nieuw idee' : 'Nieuwe notitie')}</h2>
       <label>Titel</label>
-      <input id="ed-title" value="${existing ? escapeHTML(existing.title || '') : ''}" placeholder="${isIdea ? 'Idee…' : 'Titel…'}" />
+      <input id="ed-title" value="${existing ? escapeHTML(existing.title || '') : escapeHTML(prefill.prefillTitle || '')}" placeholder="${isIdea ? 'Idee…' : 'Titel…'}" />
       <label>Tekst <span style="font-weight:400;opacity:.6;font-size:.78rem;text-transform:none">(**vet**, *cursief*, # kop, - lijst)</span></label>
-      <textarea id="ed-body" rows="10" style="font-family:'SF Mono',Consolas,monospace;font-size:.9rem">${existing ? escapeHTML(existing.body || '') : ''}</textarea>
+      <textarea id="ed-body" rows="10" style="font-family:'SF Mono',Consolas,monospace;font-size:.9rem">${existing ? escapeHTML(existing.body || '') : escapeHTML(prefill.prefillBody || '')}</textarea>
       <div class="modal-footer row">
         <button type="button" class="btn secondary" id="ed-cancel">Annuleren</button>
         <button type="button" class="btn" id="ed-save">Opslaan</button>
