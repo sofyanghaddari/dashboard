@@ -5225,3 +5225,299 @@ label.subtask {
 }
 .db-habit-body { flex: 1; min-width: 0; }
 .db-habit-name { font-size: .88rem; font-weight: 500; margin-bottom: 5px; }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PREMIUM POLISH — pagina-overgangen, micro-interacties, laadstates
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. PAGINA EXIT ─────────────────────────────────────────────────────── */
+/* Tegengesteld aan viewIn: content schuift licht omhoog en fades uit       */
+@keyframes viewOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-7px) scale(.995); }
+}
+
+/* ── 2. TAB ICON BOUNCE ─────────────────────────────────────────────────── */
+/* Elastisch pop-effect op het icoon als je van tab wisselt                 */
+@keyframes tabIconPop {
+  0%   { transform: scale(1)    translateY(0); }
+  22%  { transform: scale(1.32) translateY(-4px); }
+  50%  { transform: scale(.91)  translateY(2px); }
+  75%  { transform: scale(1.07) translateY(-1px); }
+  100% { transform: scale(1)    translateY(0); }
+}
+.tab.tab-pop { animation: tabIconPop .5s var(--spring); }
+
+/* ── 3. SKELETON LOADERS ─────────────────────────────────────────────────── */
+/* Shimmer-effect voor laadstates — geeft gevoel van intentionaliteit       */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-elev-2) 25%,
+    var(--bg-elev-3) 50%,
+    var(--bg-elev-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  user-select: none;
+  color: transparent;
+}
+.skeleton-text  { height: .78em; margin: 8px 0; border-radius: 4px; }
+.skeleton-full  { width: 100%; }
+.skeleton-mid   { width: 62%; }
+.skeleton-short { width: 36%; }
+.skeleton-card  {
+  height: 88px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+}
+.skeleton-stat  { height: 72px; border-radius: var(--radius-sm); flex: 1; }
+.skeleton-stat-row { display: flex; gap: 10px; margin-bottom: 16px; }
+
+/* ── 4. SCROLLBAR ───────────────────────────────────────────────────────── */
+/* Subtiele, dunne scrollbalk — zichtbaar maar niet opdringerig              */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-hi);
+  border-radius: var(--radius-full);
+  transition: background .2s ease;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+.modal ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); }
+
+/* ── 5. MODAL CLOSE ANIMATIE ────────────────────────────────────────────── */
+/* Backdrop fades uit, modal schuift omlaag — voelt als native iOS sheet   */
+@keyframes backdropFadeOut { to { opacity: 0; } }
+@keyframes modalSlideDown  { to { transform: translateY(30px); opacity: 0; } }
+
+.modal-backdrop.closing {
+  animation: backdropFadeOut .2s ease forwards;
+  pointer-events: none;
+}
+.modal-backdrop.closing .modal {
+  animation: modalSlideDown .2s var(--ease-standard) forwards;
+}
+
+/* ── 6. MODAL SLUIT-KNOP HOVER ──────────────────────────────────────────── */
+/* Snel roterend ×-icoontje als je eroverheen zweeft — subtiel maar mooi   */
+.modal-close {
+  transition: transform .25s var(--spring), background var(--transition), border-color var(--transition);
+}
+.modal-close:hover {
+  background: var(--bg-elev-3);
+  border-color: var(--border-hi);
+  transform: rotate(90deg) scale(1.08);
+}
+
+/* ── 7. SECTIE DIVIDER ──────────────────────────────────────────────────── */
+/* Elegante lijn met uitvloeiers aan de zijkanten — beter dan een harde hr */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border) 20%,
+    var(--border) 80%,
+    transparent
+  );
+  border: none;
+  margin: var(--sp-5) 0;
+}
+
+/* ── 8. STATISTIEK-KAARTEN — gouden gloed bij hover ────────────────────── */
+@media (hover: hover) {
+  .stat-row .stat:hover {
+    border-color: rgba(201,167,90,.22);
+    box-shadow: 0 0 0 1px rgba(201,167,90,.07),
+                var(--shadow-md),
+                var(--shadow-inner);
+  }
+}
+
+/* ── 9. VOORTGANGSBALK — zachte adem-gloed ──────────────────────────────── */
+@keyframes progressPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--gold-glow); }
+  50%       { box-shadow: 0 0 22px var(--gold-glow-strong); }
+}
+/* Override eerdere progress-fill definitie: fill-animatie + zachte adem   */
+.progress-fill {
+  animation: fillIn .9s cubic-bezier(.34,1.56,.64,1),
+             progressPulse 4s ease-in-out 1s infinite;
+  transform-origin: left center;
+}
+
+/* ── 10. BADGE STAGGER ENTRANCE ─────────────────────────────────────────── */
+/* Badges poppen één voor één in als de instellingen openen                 */
+@keyframes badgeIn {
+  from { transform: scale(.78) translateY(6px); opacity: 0; }
+  to   { transform: scale(1)   translateY(0);   opacity: 1; }
+}
+.badge:not(.locked) {
+  animation: badgeIn .45s var(--spring) both;
+}
+.badge:nth-child(2)   { animation-delay:  45ms; }
+.badge:nth-child(3)   { animation-delay:  85ms; }
+.badge:nth-child(4)   { animation-delay: 118ms; }
+.badge:nth-child(5)   { animation-delay: 147ms; }
+.badge:nth-child(6)   { animation-delay: 172ms; }
+.badge:nth-child(7)   { animation-delay: 194ms; }
+.badge:nth-child(n+8) { animation-delay: 210ms; }
+
+/* ── 11. HERO SHEEN ─────────────────────────────────────────────────────── */
+/* Lichte goudkleurige glans glijdt langzaam over de hero elke paar sec    */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: -55%;
+  width: 35%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(201,167,90,.055),
+    transparent
+  );
+  pointer-events: none;
+  animation: heroSheen 8s ease-in-out 1.5s infinite;
+}
+@keyframes heroSheen {
+  0%   { transform: translateX(0);    opacity: 0; }
+  8%   { opacity: 1; }
+  52%  { transform: translateX(490%); opacity: .9; }
+  58%  { opacity: 0; }
+  100% { transform: translateX(490%); opacity: 0; }
+}
+
+/* ── 12. LEGE STATES ENTRANCE ───────────────────────────────────────────── */
+/* Lege placeholders verschijnen met een zachte pop — niet saai             */
+@keyframes emptyIn {
+  from { opacity: 0; transform: scale(.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+.section-empty, .notes-empty, .day-empty-hint {
+  animation: emptyIn .4s var(--spring);
+}
+
+/* ── 13. LOADING SPINNER ────────────────────────────────────────────────── */
+/* Dunne cirkel in goud voor inline laadstates (bv. Gmail knop)             */
+@keyframes spinRing { to { transform: rotate(360deg); } }
+.loading-ring {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border-hi);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spinRing .65s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* ── 14. PULL-TO-REFRESH UPGRADE ────────────────────────────────────────── */
+.pull-indicator { transition: opacity .2s ease, transform .2s ease; }
+.pull-indicator.refreshing {
+  border-color: var(--gold);
+  box-shadow: 0 0 18px var(--gold-glow), var(--shadow-md);
+}
+
+/* ── 15. KAART CONTENT FADE ─────────────────────────────────────────────── */
+/* Voeg .card-content-in toe aan dynamisch geladen kaart-inhoud             */
+@keyframes contentFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card-content-in { animation: contentFadeIn .3s var(--ease-out); }
+
+/* ── 16. GEAVANCEERDE STAGGER — capped exponentieel ────────────────────── */
+/* Snelle start, dan afnemen — voelt natuurlijker dan lineaire vertraging   */
+.stagger-in:nth-child(1)  { animation-delay:   0ms; }
+.stagger-in:nth-child(2)  { animation-delay:  38ms; }
+.stagger-in:nth-child(3)  { animation-delay:  71ms; }
+.stagger-in:nth-child(4)  { animation-delay:  99ms; }
+.stagger-in:nth-child(5)  { animation-delay: 123ms; }
+.stagger-in:nth-child(6)  { animation-delay: 143ms; }
+.stagger-in:nth-child(7)  { animation-delay: 160ms; }
+.stagger-in:nth-child(n+8){ animation-delay: 174ms; }
+
+/* ── 17. KNOP — veerend indruk-effect ──────────────────────────────────── */
+/* Snellere feedback op :active dan de standaard transition                 */
+.btn:active {
+  transform: scale(.956) !important;
+  transition-duration: 80ms !important;
+  transition-property: transform, box-shadow !important;
+}
+
+/* ── 18. FORMULIERVELD FOCUS — uitwaaierende glow ring ─────────────────── */
+/* De glow ring animeert in i.p.v. direct te springen                      */
+@keyframes focusRingIn {
+  from { box-shadow: 0 0 0 0   var(--gold-glow), inset 0 1px 2px rgba(0,0,0,.2); }
+  to   { box-shadow: 0 0 0 3px var(--gold-glow), inset 0 1px 2px rgba(0,0,0,.2); }
+}
+input:focus, select:focus, textarea:focus {
+  animation: focusRingIn .2s ease forwards;
+}
+
+/* ── 19. GETAL-STREAKS — pop bij wijziging ──────────────────────────────── */
+@keyframes streakPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+.streak-pop { animation: streakPop .38s var(--spring); }
+
+/* ── 20. BOEKHOUDING KAARTEN — subtiele entrée ──────────────────────────── */
+.bk-card, .bk-cost-card, .bk-km-card, .bk-client-card {
+  animation: cardIn .38s cubic-bezier(.16,1,.3,1) both;
+}
+/* Stagger de entrée binnen de boekhoud-lijsten */
+.bk-card:nth-child(2), .bk-cost-card:nth-child(2),
+.bk-km-card:nth-child(2), .bk-client-card:nth-child(2) { animation-delay: 40ms; }
+.bk-card:nth-child(3), .bk-cost-card:nth-child(3),
+.bk-km-card:nth-child(3), .bk-client-card:nth-child(3) { animation-delay: 75ms; }
+.bk-card:nth-child(4), .bk-cost-card:nth-child(4),
+.bk-km-card:nth-child(4), .bk-client-card:nth-child(4) { animation-delay: 105ms; }
+.bk-card:nth-child(n+5), .bk-cost-card:nth-child(n+5),
+.bk-km-card:nth-child(n+5), .bk-client-card:nth-child(n+5) { animation-delay: 130ms; }
+
+/* ── 21. TYPOGRAPHY VERFIJNING ──────────────────────────────────────────── */
+/* Subtielere letter-spacing op h2 voor meer elegantie                     */
+h2 { letter-spacing: -.024em; }
+
+/* Iets meer lucht in kaarten voor een premium gevoel */
+.card { padding: 22px; }
+.card.compact-card, body[data-density="compact"] .card { padding: 16px 18px; }
+
+/* ── 22. ONLINE / SYNC INDICATOR GLOW ──────────────────────────────────── */
+/* Groene gloed op de sync-pill bij succesvolle sync                        */
+@keyframes syncSuccess {
+  0%   { box-shadow: 0 0 0 0 rgba(91,184,122,.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(91,184,122,0); }
+  100% { box-shadow: 0 0 0 0 rgba(91,184,122,0); }
+}
+.sync-pill.synced-just-now { animation: syncSuccess .8s ease-out; }
+
+/* ── 23. PULL-REFRESH INDICATOR VERFIJNING ──────────────────────────────── */
+/* Draaiende cirkel in goud — duidelijker dan de standaard emoji             */
+.pull-indicator {
+  font-size: 0;          /* verberg de originele emoji tijdens refresh */
+  position: relative;
+}
+.pull-indicator::before {
+  content: '';
+  position: absolute; inset: 7px;
+  border: 2px solid var(--border-hi);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+}
+.pull-indicator.refreshing::before {
+  animation: spinRing .65s linear infinite;
+}
+.pull-indicator:not(.refreshing)::before { display: none; }
+.pull-indicator:not(.refreshing) { font-size: 1.1rem; } /* toon emoji als niet bezig */

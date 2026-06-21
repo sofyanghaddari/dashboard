@@ -1,4 +1,16 @@
 const FOCUSABLE = 'button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+const reduced = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
+// Animated dismiss — adds .closing class so CSS handles the fade+slide.
+function dismissBackdrop(backdrop, cleanup) {
+  if (reduced()) {
+    backdrop.remove();
+    cleanup?.();
+    return;
+  }
+  backdrop.classList.add('closing');
+  setTimeout(() => { backdrop.remove(); cleanup?.(); }, 210);
+}
 
 export function openModal(title, bodyHTML, onSubmit) {
   const backdrop = document.createElement('div');
@@ -14,19 +26,16 @@ export function openModal(title, bodyHTML, onSubmit) {
       </form>
     </div>`;
   document.body.appendChild(backdrop);
-  const modal = backdrop.querySelector('.modal');
-  const close = () => {
-    backdrop.remove();
-    document.removeEventListener('keydown', escHandler);
-  };
+
+  const escHandler = (e) => { if (e.key === 'Escape') close(); };
+  const close = () => dismissBackdrop(backdrop, () => document.removeEventListener('keydown', escHandler));
+
   backdrop.querySelector('#modal-cancel').onclick = close;
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
-
-  // Escape sluit modal
-  const escHandler = (e) => { if (e.key === 'Escape') close(); };
   document.addEventListener('keydown', escHandler);
 
   // Focus trap
+  const modal = backdrop.querySelector('.modal');
   modal.addEventListener('keydown', (e) => {
     if (e.key !== 'Tab') return;
     const items = [...modal.querySelectorAll(FOCUSABLE)];
@@ -38,7 +47,6 @@ export function openModal(title, bodyHTML, onSubmit) {
       if (document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
   });
-  // Initieel focussen
   setTimeout(() => { const f = modal.querySelector(FOCUSABLE); if (f) f.focus(); }, 50);
 
   backdrop.querySelector('#modal-form').onsubmit = async (e) => {
