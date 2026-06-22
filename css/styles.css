@@ -2070,33 +2070,22 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .srs-badge-learned  { background: rgba(93,212,154,.15); color: var(--ok); }
 
 /* 3D Flip flashcard */
+/* Kaart — geen 3D flip (setTimeout re-render maakt flip onmogelijk; gewone show/hide) */
 .srs-flashcard {
-  perspective: 1000px; min-height: 240px; margin-bottom: 20px; cursor: pointer;
+  margin-bottom: 16px; cursor: pointer;
+  background: linear-gradient(160deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.05);
 }
-.srs-flashcard-inner {
-  position: relative; width: 100%; min-height: 260px;
-  transform-style: preserve-3d;
-  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.srs-flashcard.flipped .srs-flashcard-inner { transform: rotateY(180deg); }
-.srs-flashcard[data-noflip] .srs-flashcard-inner { transition: none; }
+.srs-flashcard-inner { width: 100%; }
 .srs-flashcard-front, .srs-flashcard-back {
-  position: absolute; width: 100%; min-height: 260px;
-  backface-visibility: hidden; -webkit-backface-visibility: hidden;
-  background: var(--bg-elev); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 28px 20px;
-  text-align: center; box-shadow: var(--shadow-md);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 28px 20px; text-align: center; min-height: 200px;
 }
-.srs-flashcard-back { transform: rotateY(180deg); }
-.srs-flashcard[data-noflip] .srs-flashcard-back {
-  position: relative; transform: none;
-  display: none;
-}
-.srs-flashcard[data-noflip].flipped .srs-flashcard-front { display: none; }
-.srs-flashcard[data-noflip].flipped .srs-flashcard-back {
-  position: absolute; display: flex;
-}
+.srs-flashcard-back { display: none; }
+.srs-flashcard.flipped .srs-flashcard-front { display: none; }
+.srs-flashcard.flipped .srs-flashcard-back  { display: flex; }
 
 /* ── Antwoord-animaties: wegglijden + feedback-puls (60fps, transform/opacity) ── */
 .srs-flashcard.srs-exit-right { animation: srsExitRight .26s cubic-bezier(.4,0,.2,1) forwards; }
@@ -2105,17 +2094,14 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 @keyframes srsExitRight { to { transform: translateX(72px) rotate(3deg); opacity: 0; } }
 @keyframes srsExitLeft  { to { transform: translateX(-72px) rotate(-3deg); opacity: 0; } }
 @keyframes srsExitUp    { to { transform: translateY(-44px); opacity: 0; } }
-/* Zachte ring-puls als feedback op goed/fout */
-.srs-flashcard.srs-flash-good .srs-flashcard-front,
-.srs-flashcard.srs-flash-good .srs-flashcard-back  { animation: srsRingGood .42s ease-out; }
-.srs-flashcard.srs-flash-again .srs-flashcard-front,
-.srs-flashcard.srs-flash-again .srs-flashcard-back { animation: srsRingAgain .42s ease-out; }
-@keyframes srsRingGood  { from { box-shadow: var(--shadow-md), 0 0 0 0 rgba(154,179,140,.55); } to { box-shadow: var(--shadow-md), 0 0 0 14px rgba(154,179,140,0); } }
-@keyframes srsRingAgain { from { box-shadow: var(--shadow-md), 0 0 0 0 rgba(217,140,132,.55); } to { box-shadow: var(--shadow-md), 0 0 0 14px rgba(217,140,132,0); } }
+/* Zachte ring-puls als feedback op goed/fout — op de kaart zelf (achtergrond zit nu op .srs-flashcard) */
+.srs-flashcard.srs-flash-good  { animation: srsRingGood  .42s ease-out; }
+.srs-flashcard.srs-flash-again { animation: srsRingAgain .42s ease-out; }
+@keyframes srsRingGood  { from { box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.05), 0 0 0 0 rgba(154,179,140,.55); } to { box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.05), 0 0 0 14px rgba(154,179,140,0); } }
+@keyframes srsRingAgain { from { box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.05), 0 0 0 0 rgba(217,140,132,.55); } to { box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.05), 0 0 0 14px rgba(217,140,132,0); } }
 @media (prefers-reduced-motion: reduce) {
-  .srs-flashcard.srs-exit-right, .srs-flashcard.srs-exit-left, .srs-flashcard.srs-exit-up { animation: none !important; opacity: 0; }
-  .srs-flashcard.srs-flash-good .srs-flashcard-front, .srs-flashcard.srs-flash-good .srs-flashcard-back,
-  .srs-flashcard.srs-flash-again .srs-flashcard-front, .srs-flashcard.srs-flash-again .srs-flashcard-back { animation: none !important; }
+  .srs-flashcard.srs-exit-right, .srs-flashcard.srs-exit-left, .srs-flashcard.srs-exit-up,
+  .srs-flashcard.srs-flash-good, .srs-flashcard.srs-flash-again { animation: none !important; opacity: 0; }
 }
 
 .arabic-text {
@@ -3284,13 +3270,8 @@ body[data-density="compact"] .circular-progress { width: 120px; height: 120px; }
 .srs-word-row:hover .srs-word-arabic { filter: drop-shadow(0 0 10px var(--gold-glow, rgba(201,167,90,.5))); }
 @keyframes srsRowIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-/* Flashcard: simpele opacity-fade (geen scale/translateY = geen compositor-layer scheefheid) */
+/* Flashcard: fade-in animatie */
 .srs-flashcard { animation: srsCardIn .3s ease both; }
-.srs-flashcard-front, .srs-flashcard-back {
-  background: linear-gradient(160deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.05);
-}
-.srs-flashcard-front { border-color: var(--border); }
 .srs-flashcard .arabic-text {
   text-shadow: 0 0 24px rgba(201,167,90,.25);
 }
