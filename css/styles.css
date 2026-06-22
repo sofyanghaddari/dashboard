@@ -4133,13 +4133,7 @@ label.subtask {
   transition: opacity .24s ease, transform .24s ease;
 }
 
-/* ── TABBAR: icoon-pop bij tab-activatie ────────────────────── */
-.tab.active { animation: tabIconPop .4s var(--spring); }
-@keyframes tabIconPop {
-  0%   { transform: translateY(0) scale(1); }
-  45%  { transform: translateY(-3px) scale(1.08); }
-  100% { transform: none; }
-}
+/* ── TABBAR: icoon-pop bij tab-activatie (via JS .tab-pop class) ─ */
 
 /* ── INCOME HERO: eenmalige sheen-sweep bij binnenkomst ─────── */
 .income-hero::after {
