@@ -436,7 +436,7 @@ function openDayModal(container, dateKey, existing) {
   const dateObj    = new Date(dateKey + 'T12:00:00');
   const friendlyDate = dateObj.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  openModal(friendlyDate, `
+  const closeModal = openModal(friendlyDate, `
     ${items.length ? `
       <div style="margin-bottom:16px">
         <div class="card-title">Eerdere notities</div>
@@ -465,17 +465,16 @@ function openDayModal(container, dateKey, existing) {
     if (container) render(container);
   });
 
-  setTimeout(() => {
-    document.querySelectorAll('[data-del-line]').forEach(b => {
-      b.onclick = async (e) => {
-        e.preventDefault();
-        await del('rides', b.dataset.delLine);
-        document.querySelector('.modal-backdrop')?.remove();
-        ok('Verwijderd');
-        if (container) render(container);
-      };
-    });
-  }, 50);
+  // openModal voegt de backdrop synchroon toe — direct binden, geen setTimeout nodig
+  document.querySelectorAll('[data-del-line]').forEach(b => {
+    b.onclick = async (e) => {
+      e.preventDefault();
+      await del('rides', b.dataset.delLine);
+      closeModal();
+      ok('Verwijderd');
+      if (container) render(container);
+    };
+  });
 }
 
 function renderChart(content, rides) {
