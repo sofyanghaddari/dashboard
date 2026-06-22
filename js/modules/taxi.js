@@ -349,6 +349,9 @@ function renderKosten(content, container, expenses) {
     };
   });
 
+  // Frequency segmented control
+  let selectedFreq = 'monthly';
+
   // Preset buttons — vul formulier in, laat user bedrag aanpassen
   content.querySelectorAll('.expense-preset-btn').forEach(btn => {
     btn.onclick = () => {
@@ -363,9 +366,6 @@ function renderKosten(content, container, expenses) {
       content.querySelector('#exp-amount').focus();
     };
   });
-
-  // Frequency segmented control
-  let selectedFreq = 'monthly';
   content.querySelectorAll('[data-freq]').forEach(seg => {
     seg.onclick = () => {
       content.querySelectorAll('[data-freq]').forEach(s => s.classList.remove('active'));
