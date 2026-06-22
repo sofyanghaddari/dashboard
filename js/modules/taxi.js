@@ -1,7 +1,7 @@
 import { all, put, del, add } from '../db.js';
 import { initPrivacyToggle } from '../privacy.js';
 import { openModal } from '../components/modal.js';
-import { uid, fmtMoney, parseAmount, escapeHTML, ymd, startOfWeek, startOfMonth, monthKey } from '../utils.js';
+import { uid, fmtMoney, parseAmount, escapeHTML, ymd, startOfWeek, startOfMonth, monthKey, effectiveNow, effectiveDate } from '../utils.js';
 import { getNumber } from '../settings.js';
 import { ok, err } from '../components/toast.js';
 import { initCountUps } from '../animate.js';
@@ -49,7 +49,7 @@ function checkBreakEven(todayIncome, expenses) {
   const monthly = calcMonthlyTotal(expenses);
   if (monthly <= 0) return;
   const daily = monthly / 30;
-  const today = ymd(new Date());
+  const today = ymd(effectiveNow());
   if (localStorage.getItem(BREAKEVEN_KEY) === today) return;
   if (todayIncome >= daily) {
     localStorage.setItem(BREAKEVEN_KEY, today);
@@ -67,17 +67,18 @@ export async function render(container) {
 
   const byDate = {};
   rides.forEach(r => {
-    const k = ymd(new Date(r.date));
+    // Gebruik effectieve datum: rit om 01:30 valt onder de vorige dag
+    const k = ymd(effectiveDate(new Date(r.date)));
     if (!byDate[k]) byDate[k] = { total: 0, items: [] };
     byDate[k].total += Number(r.amount || 0);
     byDate[k].items.push(r);
   });
 
-  const now  = new Date();
+  const now  = effectiveNow(); // Dag begint om DAY_CUTOFF_HOUR, niet om 00:00
   const sum  = (arr, pred) => arr.filter(pred).reduce((s, r) => s + Number(r.amount || 0), 0);
-  const todayIncome = sum(rides, r => ymd(new Date(r.date)) === ymd(now));
-  const weekIncome  = sum(rides, r => new Date(r.date) >= startOfWeek(now));
-  const monthIncome = sum(rides, r => new Date(r.date) >= startOfMonth(now));
+  const todayIncome = sum(rides, r => ymd(effectiveDate(new Date(r.date))) === ymd(now));
+  const weekIncome  = sum(rides, r => effectiveDate(new Date(r.date)) >= startOfWeek(now));
+  const monthIncome = sum(rides, r => effectiveDate(new Date(r.date)) >= startOfMonth(now));
 
   const dailyGoal   = getNumber('dailyIncomeGoal');
   const monthlyGoal = getNumber('monthlyIncomeGoal');
@@ -391,7 +392,7 @@ function renderGrid(content, container, year, month, byDate) {
   const first        = new Date(year, month, 1);
   const lastDate     = new Date(year, month + 1, 0).getDate();
   const firstWeekday = (first.getDay() + 6) % 7;
-  const today        = ymd();
+  const today        = ymd(effectiveNow());
 
   const monthValues = [];
   for (let d = 1; d <= lastDate; d++) {

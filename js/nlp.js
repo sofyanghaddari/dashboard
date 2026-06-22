@@ -4,7 +4,7 @@
 //   "vrijdag boodschappen"       → { title: 'boodschappen', dueDate: friday }
 //   "elke maandag tanken checken" → { title: 'tanken checken', recurring: 'weekly', dueDate: monday }
 //   "prio belasting indienen"     → { title: 'belasting indienen', priority: 'high' }
-import { ymd } from './utils.js';
+import { ymd, effectiveNow } from './utils.js';
 
 const DAYS = { zondag:0, maandag:1, dinsdag:2, woensdag:3, donderdag:4, vrijdag:5, zaterdag:6 };
 
@@ -32,12 +32,12 @@ export function parseTaskInput(raw) {
   }
 
   // explicit date words
-  if (/^vandaag\b/i.test(s)) { out.dueDate = ymd(); s = s.replace(/^vandaag\s+/i, ''); }
+  if (/^vandaag\b/i.test(s)) { out.dueDate = ymd(effectiveNow()); s = s.replace(/^vandaag\s+/i, ''); }
   else if (/^morgen\b/i.test(s)) {
-    const d = new Date(); d.setDate(d.getDate() + 1);
+    const d = new Date(effectiveNow()); d.setDate(d.getDate() + 1);
     out.dueDate = ymd(d); s = s.replace(/^morgen\s+/i, '');
   } else if (/^overmorgen\b/i.test(s)) {
-    const d = new Date(); d.setDate(d.getDate() + 2);
+    const d = new Date(effectiveNow()); d.setDate(d.getDate() + 2);
     out.dueDate = ymd(d); s = s.replace(/^overmorgen\s+/i, '');
   } else {
     const dayWordMatch = s.match(/^(zondag|maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag)\s+/i);
@@ -55,7 +55,7 @@ export function parseTaskInput(raw) {
 }
 
 function nextWeekday(target) {
-  const d = new Date(); const cur = d.getDay();
+  const d = new Date(effectiveNow()); const cur = d.getDay();
   let diff = target - cur; if (diff <= 0) diff += 7;
   d.setDate(d.getDate() + diff);
   return ymd(d);

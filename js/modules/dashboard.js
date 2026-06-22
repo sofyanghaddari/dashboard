@@ -1,5 +1,5 @@
 import { all, put } from '../db.js';
-import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML, orderedHabits } from '../utils.js';
+import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML, orderedHabits, effectiveNow, effectiveDate } from '../utils.js';
 import { getNumber, getSetting } from '../settings.js';
 import { celebrateGoalHit, celebrateStreak } from '../components/celebrate.js';
 import { checkNewBadges } from '../achievements.js';
@@ -64,13 +64,13 @@ export async function render(container) {
     all('rides'), all('hizb_log'), all('todos'), all('cards'), all('goals'),
     all('habits').catch(() => []), all('habit_log').catch(() => []),
   ]);
-  const now = new Date();
-  const today = ymd();
+  const now = effectiveNow(); // Dag begint om DAY_CUTOFF_HOUR, niet om 00:00
+  const today = ymd(now);
 
   const sum = (arr) => arr.reduce((s, r) => s + Number(r.amount || 0), 0);
-  const todayIncome  = sum(rides.filter(r => sameDay(new Date(r.date), now)));
-  const weekIncome   = sum(rides.filter(r => new Date(r.date) >= startOfWeek(now)));
-  const monthIncome  = sum(rides.filter(r => new Date(r.date) >= startOfMonth(now)));
+  const todayIncome  = sum(rides.filter(r => sameDay(effectiveDate(new Date(r.date)), now)));
+  const weekIncome   = sum(rides.filter(r => effectiveDate(new Date(r.date)) >= startOfWeek(now)));
+  const monthIncome  = sum(rides.filter(r => effectiveDate(new Date(r.date)) >= startOfMonth(now)));
 
   const dailyGoal   = getNumber('dailyIncomeGoal');
   const monthlyGoal = getNumber('monthlyIncomeGoal');

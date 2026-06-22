@@ -1,6 +1,6 @@
 import { all, put, del } from '../db.js';
 import { openModal } from '../components/modal.js';
-import { uid, escapeHTML, ymd, startOfWeek } from '../utils.js';
+import { uid, escapeHTML, ymd, startOfWeek, effectiveNow } from '../utils.js';
 import { celebrateTask, celebrateAllDone } from '../components/celebrate.js';
 import { ok } from '../components/toast.js';
 import { enableSwipeDelete } from '../components/swipe.js';
@@ -27,7 +27,7 @@ export async function render(container) {
 
   const allTags = [...new Set(todos.flatMap(t => t.tags || []))].sort();
 
-  const today = ymd();
+  const today = ymd(effectiveNow());
   const dueToday = active.filter(t => t.dueDate && t.dueDate <= today).length;
 
   container.innerHTML = `
@@ -165,8 +165,8 @@ export async function render(container) {
 // ── Helpers ───────────────────────────────────────────────
 
 function applyFilters(items, filter, tagFilter) {
-  const today     = ymd();
-  const weekStart = startOfWeek();
+  const today     = ymd(effectiveNow());
+  const weekStart = startOfWeek(effectiveNow());
   let res = items;
   if (filter === 'today')
     res = res.filter(t => t.dueDate && t.dueDate <= today);
@@ -183,8 +183,9 @@ function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); retu
 
 function dueDateBadge(dueDate) {
   if (!dueDate) return null;
-  const today    = ymd();
-  const tomorrow = ymd(new Date(Date.now() + 86400000));
+  const now_     = effectiveNow();
+  const today    = ymd(now_);
+  const tomorrow = ymd(new Date(now_.getTime() + 86400000));
   if (dueDate < today)      return { label: `🔴 ⚠ ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}`, cls: 'task-badge-overdue' };
   if (dueDate === today)    return { label: `🔔 Vandaag`,  cls: 'task-badge-today' };
   if (dueDate === tomorrow) return { label: `🔔 Morgen`,   cls: 'task-badge-date' };

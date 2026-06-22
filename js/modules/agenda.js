@@ -1,4 +1,4 @@
-import { uid, escapeHTML, ymd, fmtMoney } from '../utils.js';
+import { uid, escapeHTML, ymd, fmtMoney, effectiveNow } from '../utils.js';
 import { ok, err } from '../components/toast.js';
 import { all, put, del } from '../db.js';
 
@@ -48,7 +48,7 @@ export async function render(container) {
   const focusDay    =   container.dataset.agendaDay   || null;
   const events      = await all('agenda_events');
   const dates       = weekDates(weekOffset);
-  const today       = ymd();
+  const today       = ymd(effectiveNow());
 
   // Load ride data for income display
   const rides = await all('rides').catch(() => []);
