@@ -60,9 +60,10 @@ function weatherIcon(code) {
 }
 
 export async function render(container) {
-  const [rides, hizb, todos, cards, goals, habits, habitLog] = await Promise.all([
+  const [rides, hizb, todos, cards, goals, habits, habitLog, taxiExpenses] = await Promise.all([
     all('rides'), all('hizb_log'), all('todos'), all('cards'), all('goals'),
     all('habits').catch(() => []), all('habit_log').catch(() => []),
+    all('taxi_expenses').catch(() => []),
   ]);
   const now = effectiveNow(); // Dag begint om DAY_CUTOFF_HOUR, niet om 00:00
   const today = ymd(now);
@@ -76,18 +77,12 @@ export async function render(container) {
   const monthlyGoal = getNumber('monthlyIncomeGoal');
   const goalPct      = dailyGoal > 0 ? Math.min(100, Math.round(todayIncome / dailyGoal * 100)) : 0;
 
-  // Netto vandaag berekenen via taxiExpenses (zelfde regels als taxi.js:
-  // eenmalige kosten zijn géén vaste maandlast en tellen hier niet mee)
-  let dailyCost = 0;
-  try {
-    const expenses = JSON.parse(localStorage.getItem('taxiExpenses') || '[]');
-    const monthly = expenses.reduce((s, e) => {
-      const a = Number(e.amount) || 0;
-      if (e.frequency === 'eenmalig') return s;
-      return s + (e.frequency === 'weekly' ? a * (52 / 12) : a);
-    }, 0);
-    dailyCost = monthly / 30;
-  } catch (_) {}
+  // Netto vandaag via IndexedDB taxi_expenses (eenmalige kosten tellen niet mee als vaste last)
+  const dailyCost = taxiExpenses.reduce((s, e) => {
+    const a = Number(e.amount) || 0;
+    if (e.frequency === 'eenmalig') return s;
+    return s + (e.frequency === 'weekly' ? a * (52 / 12) : a);
+  }, 0) / 30;
   const nettoToday = todayIncome - dailyCost;
   const monthGoalPct = monthlyGoal > 0 ? Math.min(100, Math.round(monthIncome / monthlyGoal * 100)) : 0;
 
