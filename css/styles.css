@@ -4085,6 +4085,13 @@ body::before {
 .chip-sep { width: 1px; height: 18px; background: var(--border); flex: 0 0 auto; margin: 0 2px; }
 .chip-spacer { flex: 1 0 8px; }
 
+.bulk-action-bar {
+  display: flex; gap: 8px; padding: 12px 0 4px;
+  position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 8px);
+  z-index: 10;
+}
+.bulk-action-bar .btn { flex: 1; }
+
 /* Compactere taakkaarten: acties horizontaal zodat ze de kaart niet oprekken */
 .task-card .task-actions {
   flex-direction: row;
