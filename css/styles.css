@@ -5545,3 +5545,228 @@ h2 { letter-spacing: -.024em; }
 }
 .pull-indicator:not(.refreshing)::before { display: none; }
 .pull-indicator:not(.refreshing) { font-size: 1.1rem; } /* toon emoji als niet bezig */
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MISSENDE ITEMS — DEEL 2: SWIPE, DIEPTE-SCHADUWEN, TYPOGRAFIE
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── SWIPE-TO-DELETE VISUELE FEEDBACK ───────────────────────────────────── */
+
+/* Basis list-item: altijd positie-context zodat ::after klopt              */
+.list-item { position: relative; }
+
+/* Tijdens veegbeweging: rode gradient vanuit rechts                        */
+.list-item.swiping {
+  border-right-color: rgba(224,104,95,.3);
+  background: linear-gradient(
+    to left,
+    rgba(224,104,95,.10) 0%,
+    var(--bg-elev) 55%
+  );
+}
+
+/* Over de drempelwaarde: roder + volle trashcan icoon                     */
+.list-item.swipe-confirm {
+  border-right-color: rgba(224,104,95,.55);
+  background: linear-gradient(
+    to left,
+    rgba(224,104,95,.22) 0%,
+    var(--bg-elev) 45%
+  );
+}
+
+/* Trashcan icoon dat achter het item verschijnt                            */
+.list-item.swiping::after,
+.list-item.swipe-confirm::after {
+  content: '🗑️';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .9rem;
+  pointer-events: none;
+  transition: opacity .12s ease;
+  line-height: 1;
+}
+.list-item.swiping::after      { opacity: .55; }
+.list-item.swipe-confirm::after { opacity: 1; }
+
+
+/* ── DIEPTE: KAARTEN ZWEVEN BOVEN HET OPPERVLAK ────────────────────────── */
+
+/* De border wordt ultra-subtiel; de schaduw draagt de diepte              */
+.card {
+  border-color: var(--border-soft);
+  box-shadow:
+    0 2px 10px rgba(0,0,0,.36),
+    0 1px 3px rgba(0,0,0,.24),
+    inset 0 1px 0 var(--border-hi);
+}
+.card:hover {
+  border-color: var(--border);
+  box-shadow:
+    0 6px 22px rgba(0,0,0,.44),
+    0 2px 6px rgba(0,0,0,.26),
+    inset 0 1px 0 var(--border-hi);
+}
+
+/* Statistiek-blokken: zelfde behandeling                                   */
+.stat-row .stat {
+  border-color: var(--border-soft);
+  box-shadow:
+    0 1px 6px rgba(0,0,0,.28),
+    inset 0 1px 0 var(--border-hi);
+}
+
+/* List items: lichtere schaduw, fijnere border                             */
+.list-item {
+  border-color: var(--border-soft);
+  box-shadow:
+    0 1px 5px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.03);
+}
+.list-item:hover {
+  border-color: var(--border);
+  box-shadow:
+    0 3px 12px rgba(0,0,0,.32),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+/* Daylight-thema: schaduwen in lichtkleur — anders zijn ze te zwaar       */
+body[data-preset="daylight"] .card {
+  border-color: var(--border);
+  box-shadow:
+    0 2px 10px rgba(0,0,0,.06),
+    0 1px 2px rgba(0,0,0,.04),
+    0 0 0 1px var(--border);
+}
+body[data-preset="daylight"] .card:hover {
+  box-shadow:
+    0 6px 22px rgba(0,0,0,.10),
+    0 2px 4px rgba(0,0,0,.06),
+    0 0 0 1px var(--border-hi);
+}
+body[data-preset="daylight"] .list-item {
+  box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 0 0 1px var(--border);
+}
+body[data-preset="daylight"] .stat-row .stat {
+  box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 0 0 1px var(--border);
+}
+
+
+/* ── TYPOGRAFIE HIËRARCHIE ──────────────────────────────────────────────── */
+
+/* Vier niveaus, consistent inzetbaar door de hele app                     */
+
+/* Niveau 1 — Caption: allerkleinste tekst, labels, metadata               */
+.text-caption {
+  font-size: var(--font-xs);     /* 0.72rem */
+  color: var(--text-faint);
+  line-height: 1.45;
+}
+
+/* Niveau 2 — Label: uppercase microtekst voor veldnamen en categorie      */
+.text-label {
+  font-size: var(--font-2xs);    /* 0.625rem */
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+/* Niveau 3 — Body small: secondaire inhoud, subtitels, beschrijvingen     */
+.text-body-sm {
+  font-size: var(--font-sm);     /* 0.825rem */
+  line-height: 1.52;
+  color: var(--text-dim);
+}
+
+/* Niveau 4 — Body: standaard leestekst                                    */
+.text-body {
+  font-size: var(--font-base);   /* 1rem */
+  line-height: 1.58;
+  color: var(--text);
+}
+
+/* Bestaande klassen verfijnd — consistente lijn-hoogte toegevoegd         */
+.muted {
+  font-size: var(--font-sm);
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+p { line-height: 1.58; }
+
+/* Section-header tekst: consistente stijl                                 */
+.section-header h2 {
+  font-size: var(--font-2xs);
+  letter-spacing: .10em;
+  color: var(--text-faint);
+}
+
+/* Card-titel: iets meer lucht                                             */
+.card-title { margin-bottom: 18px; }
+
+/* h3 subtiel verfijnd — rustiger dan h2                                   */
+h3 {
+  font-size: var(--font-sm);
+  color: var(--text-dim);
+  font-weight: 550;
+  letter-spacing: -.01em;
+}
+
+
+/* ── ARABISCHE STEM TIP ─────────────────────────────────────────────────── */
+/* Wegklikbare gids die verschijnt als de Arabische stem niet "Enhanced" is */
+.ar-voice-tip {
+  margin-top: 14px;
+  padding: 11px 14px;
+  background: rgba(201,167,90,.07);
+  border: 1px solid rgba(201,167,90,.16);
+  border-radius: var(--radius-sm);
+  transition: opacity .25s ease, transform .25s ease;
+}
+.ar-voice-tip-hiding {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+.ar-voice-tip-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.ar-voice-tip-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+  opacity: .8;
+}
+.ar-voice-tip-content { flex: 1; min-width: 0; }
+.ar-voice-tip-title {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+.ar-voice-tip-steps {
+  font-size: .72rem;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+.ar-voice-tip-steps strong { color: var(--text); font-weight: 600; }
+.ar-voice-tip-close {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  line-height: 1;
+  font-family: inherit;
+  align-self: flex-start;
+  margin-top: -1px;
+  transition: color var(--transition);
+}
+.ar-voice-tip-close:hover { color: var(--text); }
