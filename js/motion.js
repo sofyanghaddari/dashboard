@@ -1,12 +1,15 @@
-// Motion One wiring — subtle, restrained scroll-in reveals.
-// Vendored locally (js/vendor/motion.min.js) so the PWA keeps working offline.
-import { animate, inView } from './vendor/motion.min.js';
+// Motion One wiring — subtiele stagger-animatie bij pagina-wisseling.
+// Vendored locally (js/vendor/motion.min.js) zo dat de PWA offline blijft werken.
+//
+// BELANGRIJK: We gebruiken GEEN scroll-triggered inView-animaties.
+// InView/IntersectionObserver die stijlen aanpassen tijdens scrollen
+// cancelt iOS scroll-momentum → de gebruiker kan niet scrollen.
+// In plaats daarvan: alles gelijk animeren bij load, met CSS-stagger-delay.
+import { animate } from './vendor/motion.min.js';
 
 const prefersReduced = () =>
   window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Top-level blocks we reveal on entry. Kept to whole "cards/sections" so motion
-// stays calm — we never animate individual text runs.
 const REVEAL_SELECTOR = [
   '.card',
   '.goal-card',
@@ -27,45 +30,38 @@ const REVEAL_SELECTOR = [
 ].join(',');
 
 /**
- * Reveal the blocks inside a freshly-rendered view.
- * Fade + small upward translate, gentle per-item stagger, once on entry.
- * Respects prefers-reduced-motion (elements simply appear).
+ * Animeer alle blokken in de view tegelijk, met een lichte stagger-delay per element.
+ * Geen scroll-triggered IntersectionObserver — dit stoort iOS-scroll niet.
  */
 export function revealView(view) {
   if (!view) return;
+
   const els = Array.from(view.querySelectorAll(REVEAL_SELECTOR))
-    .filter(el => !el.closest('.modal-backdrop, .modal'));
+    .filter(el => !el.closest('.modal-backdrop, .modal'))
+    .slice(0, 12); // max 12 tegelijk om GPU-geheugen te sparen
 
   if (!els.length) return;
 
-  if (prefersReduced()) {
-    els.forEach(el => { el.style.opacity = ''; el.style.transform = ''; });
-    return;
-  }
-
-  const reveal = (el) => { el.style.willChange = ''; el.style.opacity = ''; el.style.transform = ''; };
+  if (prefersReduced()) return; // geen animatie bij reduced-motion
 
   try {
-    // Hidden start state, applied synchronously to avoid a flash.
-    els.forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(12px)';
-      el.style.willChange = 'opacity, transform';
-    });
-
     els.forEach((el, i) => {
-      const stop = inView(el, () => {
-        // `y` is Motion's transform shorthand → GPU-composited, transform+opacity only.
-        animate(
-          el,
-          { opacity: [0, 1], y: [12, 0] },
-          { duration: 0.42, delay: 0.045 * Math.min(i, 6), ease: [0.16, 1, 0.3, 1] }
-        ).finished.then(() => reveal(el)).catch(() => reveal(el));
-        stop(); // animate each element exactly once
-      }, { amount: 0.1 });
+      animate(
+        el,
+        { opacity: [0, 1], y: [10, 0] },
+        {
+          duration: 0.38,
+          delay:    0.04 * Math.min(i, 8),
+          ease:     [0.16, 1, 0.3, 1],
+        }
+      ).catch(() => {
+        // Ruim op als animatie faalt
+        el.style.opacity = '';
+        el.style.transform = '';
+      });
     });
   } catch (_) {
-    // If Motion ever fails, never leave content hidden.
-    els.forEach(reveal);
+    // Als Motion One beschikbaar is maar een onverwachte fout gooit
+    els.forEach(el => { el.style.opacity = ''; el.style.transform = ''; });
   }
 }
