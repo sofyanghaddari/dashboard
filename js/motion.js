@@ -32,6 +32,10 @@ const REVEAL_SELECTOR = [
 /**
  * Animeer alle blokken in de view tegelijk, met een lichte stagger-delay per element.
  * Geen scroll-triggered IntersectionObserver — dit stoort iOS-scroll niet.
+ *
+ * Na afloop verwijderen we de inline opacity/transform die Motion One achterlaat.
+ * Anders behoudt elk element een eigen compositor-layer (GPU-geheugen verspilling +
+ * potentiële scroll-stotter).
  */
 export function revealView(view) {
   if (!view) return;
@@ -42,11 +46,13 @@ export function revealView(view) {
 
   if (!els.length) return;
 
-  if (prefersReduced()) return; // geen animatie bij reduced-motion
+  if (prefersReduced()) return;
 
-  try {
-    els.forEach((el, i) => {
-      animate(
+  const cleanup = (el) => { el.style.opacity = ''; el.style.transform = ''; };
+
+  els.forEach((el, i) => {
+    try {
+      const anim = animate(
         el,
         { opacity: [0, 1], y: [10, 0] },
         {
@@ -54,14 +60,15 @@ export function revealView(view) {
           delay:    0.04 * Math.min(i, 8),
           ease:     [0.16, 1, 0.3, 1],
         }
-      ).catch(() => {
-        // Ruim op als animatie faalt
-        el.style.opacity = '';
-        el.style.transform = '';
-      });
-    });
-  } catch (_) {
-    // Als Motion One beschikbaar is maar een onverwachte fout gooit
-    els.forEach(el => { el.style.opacity = ''; el.style.transform = ''; });
-  }
+      );
+      // Motion One retourneert een AnimationPlaybackControls-object, geen Promise.
+      // .finished is de echte Promise; na afloop inline stijlen wissen zodat
+      // de cards geen onnodige compositor-layers behouden.
+      if (anim && anim.finished) {
+        anim.finished.then(() => cleanup(el), () => cleanup(el));
+      }
+    } catch (_) {
+      cleanup(el);
+    }
+  });
 }

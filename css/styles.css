@@ -239,7 +239,7 @@ body {
 .list-item {
   transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
 }
-.list-item:active { transform: scale(.98); }
+.list-item:active { opacity: .82; }
 
 /* ─────────────────────────────────────────────────────────────
    SITE-BREDE MICRO-INTERACTIES — consistent over álle tabs.
@@ -256,11 +256,16 @@ body {
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition), background var(--transition);
 }
 
-/* Tik-feedback (ook op touch): subtiele indruk */
-.card:active { transform: scale(.99); }
+/* Tik-feedback (ook op touch): subtiele indruk.
+   Gebruik opacity i.p.v. transform:scale() — scale() promotet een compositor-layer
+   op het moment dat de browser nog besluit of de touch een scroll of tap is,
+   wat iOS scroll-momentum kan cancelen. Opacity runt op de compositor zonder
+   nieuwe layer aan te maken. */
+.card:active { opacity: .88; }
 .note-card:active, .goal-card:active, .pot-item:active, .habit-item:active,
-.kpi-card:active, .expense-item:active, .task-card:active, .list-item:active,
-.agenda-day-tab:active { transform: scale(.985); }
+.kpi-card:active, .expense-item:active, .task-card:active,
+.agenda-day-tab:active { opacity: .85; }
+.list-item:active { opacity: .82; }
 
 /* Hover-lift (alleen pointer-apparaten — telefoons houden de :active-indruk) */
 @media (hover: hover) {
@@ -544,8 +549,8 @@ label {
   height: calc(var(--tabbar-h) + var(--safe-bottom));
   padding-bottom: var(--safe-bottom);
   background: rgba(10, 13, 18, .88);
-  -webkit-backdrop-filter: saturate(200%) blur(40px);
-  backdrop-filter: saturate(200%) blur(40px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
   border-top: .5px solid rgba(255,255,255,.07);
   display: flex; justify-content: space-around; align-items: stretch;
   z-index: 10;
