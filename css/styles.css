@@ -2071,17 +2071,17 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 
 /* 3D Flip flashcard */
 .srs-flashcard {
-  perspective: 1000px; min-height: 200px; margin-bottom: 20px; cursor: pointer;
+  perspective: 1000px; min-height: 240px; margin-bottom: 20px; cursor: pointer;
 }
 .srs-flashcard-inner {
-  position: relative; width: 100%; min-height: 220px;
+  position: relative; width: 100%; min-height: 260px;
   transform-style: preserve-3d;
   transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .srs-flashcard.flipped .srs-flashcard-inner { transform: rotateY(180deg); }
 .srs-flashcard[data-noflip] .srs-flashcard-inner { transition: none; }
 .srs-flashcard-front, .srs-flashcard-back {
-  position: absolute; width: 100%; min-height: 220px;
+  position: absolute; width: 100%; min-height: 260px;
   backface-visibility: hidden; -webkit-backface-visibility: hidden;
   background: var(--bg-elev); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 28px 20px;
@@ -2145,9 +2145,9 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 12px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);
   font-family: inherit; cursor: pointer;
-  transition: transform var(--transition), opacity var(--transition);
+  transition: opacity var(--transition);
 }
-.srs-grade-btn:active { transform: scale(.96); opacity: .9; }
+.srs-grade-btn:active { opacity: .75; }
 .grade-icon { font-size: 1.1rem; }
 .srs-grade-btn span:nth-child(2) { font-size: .88rem; font-weight: 600; }
 .grade-interval { font-size: .72rem; color: var(--text-faint); }
@@ -3284,35 +3284,28 @@ body[data-density="compact"] .circular-progress { width: 120px; height: 120px; }
 .srs-word-row:hover .srs-word-arabic { filter: drop-shadow(0 0 10px var(--gold-glow, rgba(201,167,90,.5))); }
 @keyframes srsRowIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-/* Flashcard: zachte entree + luxe gloed + groot Arabisch met glow */
-.srs-flashcard { animation: srsCardIn .5s var(--spring) both; }
+/* Flashcard: simpele opacity-fade (geen scale/translateY = geen compositor-layer scheefheid) */
+.srs-flashcard { animation: srsCardIn .3s ease both; }
 .srs-flashcard-front, .srs-flashcard-back {
   background: linear-gradient(160deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
   box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.05);
 }
 .srs-flashcard-front { border-color: var(--border); }
 .srs-flashcard .arabic-text {
-  text-shadow: 0 0 30px var(--gold-glow, rgba(201,167,90,.35));
-  animation: srsArabicGlow 3s ease-in-out infinite;
+  text-shadow: 0 0 24px rgba(201,167,90,.25);
 }
-@keyframes srsArabicGlow {
-  0%,100% { text-shadow: 0 0 24px rgba(201,167,90,.25); }
-  50%     { text-shadow: 0 0 40px rgba(201,167,90,.5); }
-}
-@keyframes srsCardIn { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes srsCardIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* Beoordeel-knoppen: rijker, met hover-lift + glow */
+/* Beoordeel-knoppen */
 .srs-grade-btn {
   position: relative; overflow: hidden;
-  transition: transform .22s var(--spring), box-shadow .25s ease, opacity .2s ease;
+  transition: box-shadow .25s ease, opacity .15s ease;
 }
-.srs-grade-btn:hover { transform: translateY(-2px); }
+.srs-grade-btn:hover { box-shadow: 0 4px 14px rgba(0,0,0,.2); }
 .srs-grade-again:hover   { box-shadow: 0 6px 18px rgba(255,107,112,.3); }
 .srs-grade-hard:hover    { box-shadow: 0 6px 18px rgba(0,0,0,.28); }
 .srs-grade-good:hover    { box-shadow: 0 6px 18px rgba(201,167,90,.3); }
 .srs-grade-perfect:hover { box-shadow: 0 6px 18px rgba(93,212,154,.32); }
-.srs-grade-perfect .grade-icon { animation: srsStarTwinkle 1.6s ease-in-out infinite; }
-@keyframes srsStarTwinkle { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25) rotate(12deg); opacity: .85; } }
 
 /* Tab-onderstreping: vloeiend goud */
 .srs-tab.active { text-shadow: 0 0 12px var(--gold-glow, rgba(201,167,90,.3)); }
