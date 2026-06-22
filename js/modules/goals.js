@@ -1,6 +1,6 @@
 import { all, put, del } from '../db.js';
 import { openModal } from '../components/modal.js';
-import { uid, fmtMoney, parseAmount, escapeHTML, ymd, orderedHabits } from '../utils.js';
+import { uid, fmtMoney, parseAmount, escapeHTML, ymd, orderedHabits, effectiveNow } from '../utils.js';
 import { ok } from '../components/toast.js';
 import { celebrateTask } from '../components/celebrate.js';
 
@@ -162,7 +162,8 @@ function renderHabits(container, habits, log) {
     </div>`);
     return;
   }
-  const today    = ymd();
+  const now      = effectiveNow();
+  const today    = ymd(now);
   const doneToday = new Set(log.filter(l => l.date === today && l.done).map(l => l.habitId));
 
   const ordered = orderedHabits(habits);
@@ -172,7 +173,7 @@ function renderHabits(container, habits, log) {
     const chained = !!h.after;
     const strip  = [];
     for (let d = 13; d >= 0; d--) {
-      const date  = ymd(new Date(Date.now() - d * 86400000));
+      const date  = ymd(new Date(now.getTime() - d * 86400000));
       const dDone = log.some(l => l.habitId === h.id && l.date === date && l.done);
       strip.push(`<span class="hab-day ${dDone ? 'done' : ''}" title="${date}"></span>`);
     }

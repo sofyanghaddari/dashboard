@@ -120,26 +120,32 @@ body[data-preset="daylight"] .btn.secondary {
 body[data-preset="daylight"] .card {
   box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 1px var(--border);
 }
-body[data-preset="daylight"] body::before { opacity: .045; }
+body[data-preset="daylight"]::before { opacity: .045; }
 
 
-html, body {
+html {
+  margin: 0; padding: 0;
+  /* overflow-x:hidden op html breekt iOS-scroll — gebruik clip zodat er
+     geen scroll-container ontstaat maar overflow wél afgekapt wordt */
+  overflow-x: clip;
+  background: transparent;
+}
+body {
   margin: 0; padding: 0;
   overflow-x: hidden;
+  overscroll-behavior-x: none;      /* voorkomt horizontale swipe-interferentie */
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   font-feature-settings: "tnum" 1, "ss01" 1;
 }
-/* Achtergrond alléén op body: html blijft transparant zodat de canvas-kleur
-   (ook bij overscroll/rubber-band op iOS) altijd het actieve preset-thema volgt
-   — body[data-preset] custom properties gelden niet op het html-element. */
-html { background: transparent; }
+/* background-attachment:fixed verwijderd: iOS Safari repaint op elke scroll-frame
+   waardoor scrollen stokt/blokkeert. Gradient scrollt mee met content (niet merkbaar
+   op korte views) — veel beter dan geblokkeerde scroll. */
 body {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   background-image: var(--bg-grad);
-  background-attachment: fixed;
 }
 /* Zichtbare focusindicator voor toetsenbord- en VoiceOver-navigatie (touch/muis: geen ring) */
 :focus-visible {
@@ -151,6 +157,8 @@ body {
   padding: calc(68px + var(--safe-top)) var(--sp-5) calc(var(--tabbar-h) + var(--safe-bottom) + var(--sp-6));
   max-width: 740px; margin: 0 auto;
   animation: viewIn .3s var(--ease-out);
+  /* Geef scroll-richting expliciet aan de browser (betere scroll-prestaties op iOS) */
+  touch-action: pan-y;
 }
 @keyframes viewIn {
   from { opacity: 0; transform: translateY(6px); }
@@ -231,7 +239,7 @@ body {
 .list-item {
   transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
 }
-.list-item:active { transform: scale(.98); }
+.list-item:active { opacity: .82; }
 
 /* ─────────────────────────────────────────────────────────────
    SITE-BREDE MICRO-INTERACTIES — consistent over álle tabs.
@@ -248,11 +256,16 @@ body {
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition), background var(--transition);
 }
 
-/* Tik-feedback (ook op touch): subtiele indruk */
-.card:active { transform: scale(.99); }
+/* Tik-feedback (ook op touch): subtiele indruk.
+   Gebruik opacity i.p.v. transform:scale() — scale() promotet een compositor-layer
+   op het moment dat de browser nog besluit of de touch een scroll of tap is,
+   wat iOS scroll-momentum kan cancelen. Opacity runt op de compositor zonder
+   nieuwe layer aan te maken. */
+.card:active { opacity: .88; }
 .note-card:active, .goal-card:active, .pot-item:active, .habit-item:active,
-.kpi-card:active, .expense-item:active, .task-card:active, .list-item:active,
-.agenda-day-tab:active { transform: scale(.985); }
+.kpi-card:active, .expense-item:active, .task-card:active,
+.agenda-day-tab:active { opacity: .85; }
+.list-item:active { opacity: .82; }
 
 /* Hover-lift (alleen pointer-apparaten — telefoons houden de :active-indruk) */
 @media (hover: hover) {
@@ -536,8 +549,8 @@ label {
   height: calc(var(--tabbar-h) + var(--safe-bottom));
   padding-bottom: var(--safe-bottom);
   background: rgba(10, 13, 18, .88);
-  -webkit-backdrop-filter: saturate(200%) blur(40px);
-  backdrop-filter: saturate(200%) blur(40px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
   border-top: .5px solid rgba(255,255,255,.07);
   display: flex; justify-content: space-around; align-items: stretch;
   z-index: 10;
@@ -636,6 +649,7 @@ label {
   padding: 0 var(--sp-5) calc(var(--sp-6) + var(--safe-bottom));
   max-height: 92vh; overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; /* voorkomt dat scrollen in modal de pagina mee scrollt */
   border-top: 1px solid rgba(255,255,255,.10);
   box-shadow: var(--shadow-lg);
   animation: slideUp .32s cubic-bezier(.4,0,.2,1);
@@ -904,7 +918,7 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
   border-radius: 0;
 }
 #cmdk-input:focus { box-shadow: none; }
-.cmdk-results { max-height: 50vh; overflow-y: auto; }
+.cmdk-results { max-height: 50vh; overflow-y: auto; overscroll-behavior: contain; }
 .cmdk-item {
   padding: 12px 20px;
   cursor: pointer;
@@ -2252,6 +2266,15 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .add-tile:hover { color: var(--text); border-color: var(--accent-dim); background: var(--bg-elev-2); }
 .add-tile:hover .at-plus { transform: scale(1.12); }
 .add-tile:active { transform: scale(.99); }
+
+.notes-add-row {
+  display: flex; gap: 10px; align-items: stretch; margin-bottom: 18px;
+}
+.notes-add-row .add-tile { margin-bottom: 0; }
+.notes-import-btn {
+  flex-shrink: 0; white-space: nowrap;
+  padding: 0 16px; font-size: .85rem; border-radius: var(--radius-sm);
+}
 
 /* Compact per-section empty (Doelen) — replaces the dull dashed boxes */
 .section-empty {
@@ -4307,6 +4330,7 @@ label.subtask {
   max-height: 88vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 .bk-modal label {
   display: block;
@@ -4956,8 +4980,8 @@ label.subtask {
   padding: 12px 16px 8px;
   background: var(--bg);
   position: sticky;
-  top: 0;
-  z-index: 10;
+  top: calc(58px + var(--safe-top)); /* onder de vaste knoppen (z-index:15) */
+  z-index: 5;
 }
 .geloof-sub-btn {
   flex: 1;

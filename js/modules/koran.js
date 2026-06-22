@@ -1,6 +1,6 @@
 import { all, put, get } from '../db.js';
 import { openModal } from '../components/modal.js';
-import { ymd, escapeHTML } from '../utils.js';
+import { ymd, escapeHTML, effectiveNow } from '../utils.js';
 import { celebrateTask } from '../components/celebrate.js';
 import { ok, err } from '../components/toast.js';
 import { HIZBS } from '../data/hizbs.js';
@@ -51,8 +51,9 @@ export async function render(container) {
 
 // ── HIZB TAB ─────────────────────────────────────────────────────────────────
 async function renderHizb(container) {
-  const today     = ymd();
-  const yesterday = ymd(new Date(Date.now() - 86400000));
+  const now       = effectiveNow(); // Dag begint om DAY_CUTOFF_HOUR, niet om 00:00
+  const today     = ymd(now);
+  const yesterday = ymd(new Date(now.getTime() - 86400000));
   const todayRec  = await get('hizb_log', today);
   const yestRec   = await get('hizb_log', yesterday);
   const log       = await all('hizb_log');
@@ -60,13 +61,12 @@ async function renderHizb(container) {
 
   // Streak calc (also counts catchup days)
   let streak = 0;
-  const cur = new Date();
+  const cur = new Date(now);
   while (doneSet.has(ymd(cur))) { streak++; cur.setDate(cur.getDate() - 1); }
 
   const reminderTime = localStorage.getItem('hizbReminderTime') || '20:00';
   const startPoint   = localStorage.getItem('hizbStartPoint') || 'Surah Al-Fath, 10 hizb';
 
-  const now = new Date();
   const daysIntoMonth  = now.getDate();
   const doneThisMonth  = log.filter(l => {
     const d = new Date(l.date + 'T12:00:00');
@@ -78,7 +78,7 @@ async function renderHizb(container) {
   const fillClass = todayRec ? 'cp-fill done' : 'cp-fill';
 
   // Feature 12: inhaal conditions
-  const canCatchup = todayRec && !yestRec && yesterday >= ymd(new Date(Date.now() - 2 * 86400000));
+  const canCatchup = todayRec && !yestRec && yesterday >= ymd(new Date(now.getTime() - 2 * 86400000));
   const todayCount = todayRec?.count || 1;
   const alreadyCaughtUp = yestRec?.catchup;
 
@@ -366,10 +366,10 @@ function renderHizbList(listEl, voortgang, container) {
 function renderChart30(container, doneSet, log) {
   const el    = container.querySelector('#chart30');
   if (!el) return;
-  const today = ymd();
+  const today = ymd(effectiveNow());
   const cells = [];
   for (let i = 29; i >= 0; i--) {
-    const d   = new Date();
+    const d   = new Date(effectiveNow());
     d.setDate(d.getDate() - i);
     const key = ymd(d);
     const done     = doneSet.has(key);

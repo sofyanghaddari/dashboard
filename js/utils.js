@@ -1,4 +1,20 @@
 export function uid() { return crypto.randomUUID(); }
+
+// Dag-cutoff: de nieuwe dag begint officieel om 02:00, niet om 00:00.
+// Zo telt 01:30 als 'gisteren' ipv 'vandaag' — handig voor taxiritten 's nachts.
+export const DAY_CUTOFF_HOUR = 2;
+
+// Geeft de huidige tijd terug, maar verschoven met de cutoff.
+// 01:30 → 23:30 vorige dag; 02:00 → 00:00 huidige dag.
+export function effectiveNow() {
+  return new Date(Date.now() - DAY_CUTOFF_HOUR * 3_600_000);
+}
+
+// Pas dezelfde verschuiving toe op een opgeslagen timestamp, zodat je kunt
+// bepalen op welke 'effectieve dag' een rit of log-entry valt.
+export function effectiveDate(d) {
+  return new Date(new Date(d).getTime() - DAY_CUTOFF_HOUR * 3_600_000);
+}
 export function fmtMoney(n, raw = false) {
   const v = isFinite(n) ? +n : 0;
   const text = '€ ' + (Math.round(v * 100) / 100).toFixed(2);

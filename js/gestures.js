@@ -1,7 +1,7 @@
 // Swipe-back vanaf links voor terug-navigatie (iOS-stijl)
 import { navigate, currentRoute } from './router.js';
 
-const ORDER = ['dashboard','taxi','koran','arabic','goals','todo','notes','agenda','stats','boekhouding'];
+const ORDER = ['dashboard','taxi','geloof','goals','todo','notes','agenda','stats','boekhouding'];
 
 export function initSwipeBack() {
   let startX = null, startY = null, dx = 0, dy = 0;
