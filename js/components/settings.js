@@ -1,7 +1,7 @@
 import { all, put, clear } from '../db.js';
 import { escapeHTML } from '../utils.js';
 import { getSetting, setSetting } from '../settings.js';
-import { openModal } from './modal.js';
+import { openModal, confirmModal } from './modal.js';
 import { setPreset, THEME_PRESETS, setDensity, PRESET_DOT_COLORS } from '../theme.js';
 import { BADGES, computeEarnedBadges } from '../achievements.js';
 import { ok, err } from './toast.js';
@@ -49,7 +49,7 @@ export async function openGistPicker() {
     `).join('') + '</div>';
     list.querySelectorAll('[data-use]').forEach(b => {
       b.onclick = async () => {
-        if (!confirm('Wissel naar deze gist? Eerst auto-merge zodat je niets verliest.')) return;
+        if (!await confirmModal('Wissel naar deze gist? Eerst auto-merge zodat je niets verliest.', { confirmLabel: 'Wisselen' })) return;
         try {
           useExistingGist(b.dataset.use);
           await syncMerge();
@@ -98,7 +98,7 @@ export async function openVersionPicker() {
     `).join('') + '</div>';
     list.querySelectorAll('[data-restore]').forEach(b => {
       b.onclick = async () => {
-        if (!confirm(`Backup van ${b.previousElementSibling.querySelector('b').textContent} herstellen? Huidige data wordt overschreven.`)) return;
+        if (!await confirmModal(`Backup van ${b.previousElementSibling.querySelector('b').textContent} herstellen? Huidige data wordt overschreven.`, { confirmLabel: 'Herstellen', danger: true })) return;
         try {
           await syncDown(b.dataset.restore);
           ok('Hersteld. Pagina ververst.');
@@ -813,8 +813,8 @@ export async function openSettings(onClose) {
     ok('Arabisch-instellingen opgeslagen');
   };
 
-  backdrop.querySelector('#ar-reset-all').onclick = () => {
-    if (!confirm('Alle Arabisch SRS-voortgang wissen? Je begint opnieuw. Dit kan niet ongedaan worden gemaakt.')) return;
+  backdrop.querySelector('#ar-reset-all').onclick = async () => {
+    if (!await confirmModal('Alle Arabisch SRS-voortgang wissen? Je begint opnieuw. Dit kan niet ongedaan worden gemaakt.', { confirmLabel: 'Wissen', danger: true })) return;
     resetArabicProgress();
     ok('Voortgang gewist');
   };
@@ -900,8 +900,8 @@ export async function openSettings(onClose) {
         catch (e) { err('Mislukt: ' + (e.message || e)); }
       };
       const offBtn = backdrop.querySelector('#bio-off');
-      if (offBtn) offBtn.onclick = () => {
-        if (!confirm('Face ID uitschakelen?')) return;
+      if (offBtn) offBtn.onclick = async () => {
+        if (!await confirmModal('Face ID uitschakelen?', { confirmLabel: 'Uitschakelen', danger: true })) return;
         disableBiometric();
         ok('Uitgeschakeld');
         refresh();
@@ -915,7 +915,7 @@ export async function openSettings(onClose) {
 
   const remBtn = backdrop.querySelector('#remove-pin');
   if (remBtn) remBtn.onclick = async () => {
-    if (!confirm('PIN verwijderen?')) return;
+    if (!await confirmModal('PIN verwijderen?', { confirmLabel: 'Verwijderen', danger: true })) return;
     await setPin(null);
     ok('PIN verwijderd');
     close();
@@ -949,7 +949,7 @@ export async function openSettings(onClose) {
   };
   const ghDown = backdrop.querySelector('#gh-sync-down');
   if (ghDown) ghDown.onclick = async () => {
-    if (!confirm('Online backup ophalen overschrijft lokale data. Doorgaan?')) return;
+    if (!await confirmModal('Online backup ophalen overschrijft lokale data. Doorgaan?', { confirmLabel: 'Ophalen', danger: true })) return;
     try { await syncDown(); ok('Opgehaald'); setTimeout(() => location.reload(), 500); }
     catch (e) { err(e.message); }
   };
@@ -974,15 +974,15 @@ export async function openSettings(onClose) {
     };
   });
   const ghDisc = backdrop.querySelector('#gh-disconnect');
-  if (ghDisc) ghDisc.onclick = () => {
-    if (!confirm('GitHub-verbinding verbreken? Je gists blijven op GitHub bestaan.')) return;
+  if (ghDisc) ghDisc.onclick = async () => {
+    if (!await confirmModal('GitHub-verbinding verbreken? Je gists blijven op GitHub bestaan.', { confirmLabel: 'Verbreken', danger: true })) return;
     setupGithub('');
     ok('Verbinding verbroken');
     close();
   };
   const ghMirror = backdrop.querySelector('#gh-mirror');
   if (ghMirror) ghMirror.onclick = async () => {
-    if (!confirm('Tweede gist aanmaken voor extra backup-redundantie?')) return;
+    if (!await confirmModal('Tweede gist aanmaken voor extra backup-redundantie?', { confirmLabel: 'Aanmaken' })) return;
     try { const id = await createSecondaryGist(); ok('Mirror aangemaakt: ' + id.slice(0,8) + '…'); close(); }
     catch (e) { err(e.message); }
   };
@@ -1022,8 +1022,8 @@ export async function openSettings(onClose) {
     }
   };
   const gmailDisc = backdrop.querySelector('#gmail-disconnect');
-  if (gmailDisc) gmailDisc.onclick = () => {
-    if (!confirm('Gmail-koppeling verwijderen?')) return;
+  if (gmailDisc) gmailDisc.onclick = async () => {
+    if (!await confirmModal('Gmail-koppeling verwijderen?', { confirmLabel: 'Verwijderen', danger: true })) return;
     localStorage.removeItem('gmailClientId');
     ok('Gmail-koppeling verwijderd');
     close();
@@ -1117,7 +1117,7 @@ export async function openSettings(onClose) {
   backdrop.querySelector('#import-data').onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!confirm('Importeren overschrijft al je huidige data. Doorgaan?')) return;
+    if (!await confirmModal('Importeren overschrijft al je huidige data. Doorgaan?', { confirmLabel: 'Importeren', danger: true })) return;
     try {
       const text = await file.text();
       const data = JSON.parse(text);
