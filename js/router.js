@@ -17,7 +17,14 @@ export async function navigate(name) {
     await new Promise(r => setTimeout(r, 145));
   }
 
-  view.innerHTML = '';
+  view.innerHTML = `
+    <div class="tab-skeleton">
+      <div class="sk-hero"></div>
+      <div class="sk-stats"><div class="sk-stat"></div><div class="sk-stat"></div></div>
+      <div class="sk-card"></div>
+      <div class="sk-card"></div>
+      <div class="sk-card"></div>
+    </div>`;
 
   // Re-trigger the CSS viewIn animation on .view
   view.style.animation = 'none';
