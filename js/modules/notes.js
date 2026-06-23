@@ -2,6 +2,7 @@ import { all, put, del } from '../db.js';
 import { uid, escapeHTML } from '../utils.js';
 import { ok, err as toastErr } from '../components/toast.js';
 import { convertToMarkdown, SUPPORTED_EXTENSIONS } from '../markitdown.js';
+import { undoable } from '../components/undo.js';
 
 const ACCENTS = ['note-accent-0', 'note-accent-1', 'note-accent-2', 'note-accent-3'];
 
@@ -106,8 +107,9 @@ export async function render(container) {
     list.querySelectorAll('[data-del]').forEach(b =>
       b.onclick = async (e) => {
         e.stopPropagation();
+        const n = notes.find(x => x.id === b.dataset.del);
         await del('notes', b.dataset.del);
-        ok('Verwijderd');
+        undoable('Notitie verwijderd', async () => { if (n) { await put('notes', n); render(container); } });
         render(container);
       });
 
@@ -131,9 +133,19 @@ export async function render(container) {
   container.querySelector('#add').onclick = () => openEditor(container, null, view === 'ideas');
 
   const searchInput = container.querySelector('#notes-search');
+  let _searchTimer = null;
   searchInput.oninput = (e) => {
-    container.dataset.notesSearch = e.target.value;
-    render(container);
+    const val = e.target.value;
+    container.dataset.notesSearch = val;
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(async () => {
+      await render(container);
+      const newInput = container.querySelector('#notes-search');
+      if (newInput && document.activeElement !== newInput) {
+        newInput.focus();
+        newInput.setSelectionRange(val.length, val.length);
+      }
+    }, 320);
   };
   searchInput.addEventListener('focus', () => {
     setTimeout(() => searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
