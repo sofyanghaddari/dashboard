@@ -61,7 +61,7 @@
   --transition: 220ms cubic-bezier(.4,0,.2,1);
 
   /* Layout */
-  --tabbar-h: 36px;
+  --tabbar-h: 44px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }
@@ -1661,7 +1661,7 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   padding: 3px; margin-bottom: 14px;
 }
 .todo-seg-btn {
-  flex: 1; padding: 8px 4px; border-radius: 7px;
+  flex: 1; padding: 12px 4px; border-radius: 7px;
   border: 0; background: transparent; color: var(--text-dim);
   font-size: .82rem; font-weight: 500; cursor: pointer;
   font-family: inherit; text-align: center; white-space: nowrap;
@@ -1671,7 +1671,7 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 
 .todo-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 .filter-chip {
-  padding: 6px 14px; border-radius: 999px;
+  padding: 10px 14px; border-radius: 999px;
   border: 1px solid var(--border); background: var(--bg-elev-2);
   color: var(--text-dim); font-size: .8rem; font-weight: 500;
   cursor: pointer; font-family: inherit;
@@ -1734,7 +1734,9 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   font-size: .8rem; color: transparent;
   transition: background .18s, border-color .18s, transform .12s;
   font-family: inherit; flex-shrink: 0; margin-top: 1px;
+  position: relative;
 }
+.task-chk::before { content: ''; position: absolute; inset: -11px; }
 [data-priority="high"]    .task-chk { border-color: rgba(255,107,112,.55); }
 [data-priority="medium"]  .task-chk { border-color: rgba(201,167,90,.55); }
 .task-chk:active { transform: scale(.86); }
@@ -1765,13 +1767,14 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; align-items: center;
 }
 .task-btn {
-  width: 30px; height: 30px; border-radius: 8px;
+  width: 36px; height: 36px; border-radius: 8px;
   background: var(--bg-elev-2); border: 1px solid var(--border);
   color: var(--text-dim); font-size: .82rem;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: background var(--transition), color var(--transition), transform var(--transition);
-  font-family: inherit;
+  font-family: inherit; position: relative;
 }
+.task-btn::before { content: ''; position: absolute; inset: -4px; }
 .task-btn:active { transform: scale(.9); }
 .task-btn.del { color: var(--danger); border-color: rgba(255,107,112,.2); }
 .task-btn.del:active { background: rgba(255,107,112,.1); }
@@ -1809,12 +1812,14 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .status-voltooid { background: rgba(201,167,90,.1); color: var(--gold); border: 1px solid rgba(201,167,90,.25); }
 .goal-actions { display: flex; gap: 5px; }
 .goal-btn {
-  width: 30px; height: 30px; border-radius: 8px;
+  width: 36px; height: 36px; border-radius: 8px;
   background: var(--bg-elev-2); border: 1px solid var(--border);
   color: var(--text-dim); font-size: .82rem;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: background var(--transition), transform var(--transition); font-family: inherit;
+  position: relative;
 }
+.goal-btn::before { content: ''; position: absolute; inset: -4px; }
 .goal-btn:active { transform: scale(.9); }
 .goal-btn.del { color: var(--danger); }
 
@@ -1849,7 +1854,7 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .habit-chain-arrow { font-size: .8rem; color: var(--text-faint); margin-right: 4px; }
 .habit-item-top { display: flex; align-items: center; gap: 10px; }
 .habit-check-btn {
-  width: 34px; height: 34px; border-radius: 50%;
+  width: 44px; height: 44px; border-radius: 50%;
   border: 2px solid var(--border); background: transparent;
   color: transparent; cursor: pointer; font-size: .95rem;
   display: flex; align-items: center; justify-content: center;
@@ -1889,12 +1894,14 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .pot-amount { font-size: .85rem; color: var(--text-dim); margin-top: 2px; font-variant-numeric: tabular-nums; }
 .pot-actions { display: flex; gap: 5px; }
 .pot-btn {
-  width: 32px; height: 32px; border-radius: 8px;
+  width: 36px; height: 36px; border-radius: 8px;
   background: var(--bg-elev-2); border: 1px solid var(--border);
   color: var(--text-dim); font-size: .85rem;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: background var(--transition), transform var(--transition); font-family: inherit;
+  position: relative;
 }
+.pot-btn::before { content: ''; position: absolute; inset: -4px; }
 .pot-btn:active { transform: scale(.9); }
 .pot-btn.del { color: var(--danger); }
 .pot-bar-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
@@ -2207,12 +2214,14 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .note-date { font-size: .72rem; color: var(--text-faint); }
 .note-actions { display: flex; gap: 5px; }
 .note-btn {
-  width: 30px; height: 30px; border-radius: 7px;
+  width: 36px; height: 36px; border-radius: 7px;
   background: var(--bg-elev-2); border: 1px solid var(--border);
   color: var(--text-dim); font-size: .8rem;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: background var(--transition), transform var(--transition); font-family: inherit;
+  position: relative;
 }
+.note-btn::before { content: ''; position: absolute; inset: -4px; }
 .note-btn:active { transform: scale(.9); }
 .note-btn.del { color: var(--danger); }
 
@@ -3088,7 +3097,7 @@ body[data-density="compact"] .circular-progress { width: 120px; height: 120px; }
 .daycard-head .card-title { margin: 0; }
 .daycard-controls { display: flex; gap: 6px; flex-shrink: 0; }
 .daycard-btn {
-  width: 30px; height: 30px; border-radius: 8px;
+  width: 44px; height: 44px; border-radius: 8px;
   background: var(--bg-elev-2); border: 1px solid var(--border);
   color: var(--text-dim); font-size: .92rem; line-height: 1;
   cursor: pointer; font-family: inherit;
