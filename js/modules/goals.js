@@ -77,7 +77,7 @@ function renderGoals(container, sel, items, totalRides) {
     const deadlineChip = g.deadline
       ? `<span class="goal-meta-chip">📅 ${g.deadline}</span>` : '';
     const taxiChip = isAutoTrack
-      ? `<span class="goal-meta-chip">🚖 ${taxiPct}% per rit · <b class="money">${fmtMoney(taxiSaved)}</b> / ${fmtMoney(target)}</span>` : '';
+      ? `<span class="goal-meta-chip">🚖 ${taxiPct}% per rit · <b class="money blurred-amount">${fmtMoney(taxiSaved)}</b> / <span class="blurred-amount">${fmtMoney(target)}</span></span>` : '';
 
     const progressControl = isAutoTrack
       ? `<div class="goal-progress-row">
@@ -245,8 +245,8 @@ function renderPots(container, pots) {
           <div class="pot-info">
             <div class="pot-name">${escapeHTML(p.name)}</div>
             <div class="pot-amount">
-              <b class="money">${fmtMoney(p.current)}</b>
-              ${p.target ? ` / <span class="muted">${fmtMoney(p.target)}</span>` : ''}
+              <b class="money blurred-amount">${fmtMoney(p.current)}</b>
+              ${p.target ? ` / <span class="muted blurred-amount">${fmtMoney(p.target)}</span>` : ''}
             </div>
           </div>
           <div class="pot-actions">

@@ -308,9 +308,9 @@ function renderKosten(content, container, expenses) {
   content.innerHTML = `
     <div class="card" style="padding:14px;margin-bottom:12px">
       <h2 class="card-title">Totaal maandkosten</h2>
-      <div style="font-size:1.6rem;font-family:Georgia,serif;font-weight:700;color:var(--danger);margin:6px 0 2px"><span data-countup="${monthly}">${fmtMoney(monthly)}</span><span style="font-size:.9rem;font-weight:400;color:var(--text-faint)">/maand</span></div>
-      <div style="font-size:.82rem;color:var(--text-faint)">Break-even per dag: <b style="color:var(--text)">${fmtMoney(monthly / 30)}</b></div>
-      ${oneTime > 0 ? `<div style="font-size:.82rem;color:var(--text-faint);margin-top:6px;padding-top:6px;border-top:1px solid var(--border-soft)">Eenmalig deze maand: <b style="color:var(--text)">${fmtMoney(oneTime)}</b></div>` : ''}
+      <div style="font-size:1.6rem;font-family:Georgia,serif;font-weight:700;color:var(--danger);margin:6px 0 2px"><span class="blurred-amount" data-countup="${monthly}">${fmtMoney(monthly)}</span><span style="font-size:.9rem;font-weight:400;color:var(--text-faint)">/maand</span></div>
+      <div style="font-size:.82rem;color:var(--text-faint)">Break-even per dag: <b class="blurred-amount" style="color:var(--text)">${fmtMoney(monthly / 30)}</b></div>
+      ${oneTime > 0 ? `<div style="font-size:.82rem;color:var(--text-faint);margin-top:6px;padding-top:6px;border-top:1px solid var(--border-soft)">Eenmalig deze maand: <b class="blurred-amount" style="color:var(--text)">${fmtMoney(oneTime)}</b></div>` : ''}
     </div>
 
     <div class="expense-list" id="expense-list">
@@ -318,7 +318,7 @@ function renderKosten(content, container, expenses) {
         <div class="expense-item" data-id="${e.id}">
           <div class="expense-item-name">${escapeHTML(e.name)}</div>
           <div>
-            <span class="expense-item-amount">${fmtMoney(e.amount)}</span>
+            <span class="expense-item-amount blurred-amount">${fmtMoney(e.amount)}</span>
             <span class="expense-item-freq">${freqLabel(e.frequency)}${e.frequency === 'eenmalig' && e.date ? ' · ' + new Date(e.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : ''}</span>
           </div>
           <button class="expense-item-del" data-del="${e.id}" title="Verwijder">×</button>
@@ -455,12 +455,12 @@ function openDayModal(container, dateKey, existing) {
         ${items.map(it => `
           <div class="list-item" style="margin-bottom:6px">
             <div>
-              <b class="money">${fmtMoney(it.amount)}</b>
+              <b class="money blurred-amount">${fmtMoney(it.amount)}</b>
               ${it.note ? `<div class="muted" style="font-size:.8rem;margin-top:2px">${escapeHTML(it.note)}</div>` : ''}
             </div>
             <button type="button" class="btn danger sm" data-del-line="${it.id}">×</button>
           </div>`).join('')}
-        <p class="muted" style="font-size:.85rem;margin-top:8px">Dagtotaal: <b class="money">${fmtMoney(total)}</b></p>
+        <p class="muted" style="font-size:.85rem;margin-top:8px">Dagtotaal: <b class="money blurred-amount">${fmtMoney(total)}</b></p>
       </div>` : ''}
     <label>Bedrag (€) *</label>
     <input name="amount" type="text" inputmode="decimal" autocomplete="off" required autofocus placeholder="0,00" />
