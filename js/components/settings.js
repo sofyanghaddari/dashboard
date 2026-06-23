@@ -487,8 +487,11 @@ export async function openSettings(onClose) {
               <input id="gh-existing-id" placeholder="abc123…" />
             </div>
           </div>
-          <button type="button" class="btn block" id="gh-setup" style="margin-top:8px">Verbind met GitHub</button>
-          <p class="muted" style="font-size:.76rem;margin-top:8px;padding:0 2px">💡 Zonder ID hergebruikt de app je bestaande dashboard-gist als die er is; alleen als er écht geen bestaat wordt er één aangemaakt.</p>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button type="button" class="btn block" id="gh-setup">Verbind met GitHub</button>
+            <button type="button" class="btn secondary" id="gh-test-conn" title="Test of het token + gist-ID kloppen">Test</button>
+          </div>
+          <p class="muted" style="font-size:.76rem;margin-top:8px;padding:0 2px">💡 Gebruik "Test" om te checken of je token en gist-ID kloppen voordat je verbindt.</p>
         ` : `
           <div class="settings-group">
             <div class="settings-row">
@@ -927,17 +930,57 @@ export async function openSettings(onClose) {
     const token = backdrop.querySelector('#gh-token').value.trim();
     const existingId = backdrop.querySelector('#gh-existing-id').value.trim();
     if (!token) { err('Geen token ingevuld'); return; }
+    // Sla token altijd op — NIET wissen als sync mislukt, zodat de user kan herproberen
     setupGithub(token, existingId);
     try {
       if (existingId) {
         await syncMerge();
-        ok('Verbonden met bestaande gist + gemerged');
+        ok('Verbonden met bestaande gist + gemerged ✓');
       } else {
         await syncUp();
-        ok('Verbonden + eerste backup gemaakt');
+        ok('Verbonden + eerste backup gemaakt ✓');
       }
       setTimeout(() => location.reload(), 400);
-    } catch (e) { err('Mislukt: ' + e.message); setupGithub(''); }
+    } catch (e) {
+      // Token/gist bewaren — user kan handmatig herproberen via Mergen-knop
+      err('Sync mislukt: ' + e.message);
+    }
+  };
+
+  const ghTestBtn = backdrop.querySelector('#gh-test-conn');
+  if (ghTestBtn) ghTestBtn.onclick = async () => {
+    const token = backdrop.querySelector('#gh-token')?.value.trim();
+    const gistId = backdrop.querySelector('#gh-existing-id')?.value.trim();
+    if (!token) { err('Vul eerst een token in'); return; }
+    ghTestBtn.textContent = '…';
+    ghTestBtn.disabled = true;
+    try {
+      // Test 1: token geldig?
+      const userRes = await fetch('https://api.github.com/user', {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' },
+      });
+      if (!userRes.ok) { err(`Token ongeldig (${userRes.status}) — maak een nieuw token aan met scope 'gist'`); return; }
+      const user = await userRes.json();
+      if (gistId) {
+        // Test 2: gist bereikbaar?
+        const gistRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' },
+        });
+        if (!gistRes.ok) { err(`Gist niet gevonden (${gistRes.status}) — controleer de ID`); return; }
+        const gist = await gistRes.json();
+        const files = Object.keys(gist.files || {});
+        const hasBackup = files.includes('dashboard-backup.json') || files.some(f => f.startsWith('backup-'));
+        if (!hasBackup) { err(`Gist gevonden maar bevat geen dashboard-backup — bestanden: ${files.join(', ') || 'leeg'}`); return; }
+        ok(`✓ Token OK (${user.login}) · Gist OK · Backup aanwezig`);
+      } else {
+        ok(`✓ Token OK — ingelogd als ${user.login}`);
+      }
+    } catch (e) {
+      err('Verbindingsfout: ' + e.message);
+    } finally {
+      ghTestBtn.textContent = 'Test';
+      ghTestBtn.disabled = false;
+    }
   };
 
   const ghFind = backdrop.querySelector('#gh-find');
