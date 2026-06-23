@@ -371,7 +371,7 @@ p { margin: 6px 0; line-height: 1.5; }
 }
 .stat-row .stat:hover { border-color: rgba(255,255,255,.1); }
 .stat-label { font-size: var(--font-xs); text-transform: uppercase; letter-spacing: .1em; color: var(--text-faint); font-weight: 600; }
-.stat-value { font-size: 1.2rem; font-weight: 650; color: var(--gold); margin-top: 3px; font-variant-numeric: tabular-nums; font-family: 'Georgia', 'Times New Roman', serif; letter-spacing: -.01em; }
+.stat-value { font-size: 1.2rem; font-weight: 650; color: var(--text); margin-top: 3px; font-variant-numeric: tabular-nums; font-family: 'Georgia', 'Times New Roman', serif; letter-spacing: -.01em; }
 .stat-value-sm { font-size: 1rem; font-weight: 650; color: var(--text); margin-top: 2px; font-variant-numeric: tabular-nums; font-family: 'Georgia', 'Times New Roman', serif; }
 .stat-trend { font-size: var(--font-xs); margin-top: 4px; font-weight: 500; }
 .stat-trend.up { color: var(--ok); }
@@ -385,8 +385,8 @@ p { margin: 6px 0; line-height: 1.5; }
 .card:hover { box-shadow: var(--shadow-md), var(--shadow-inner); }
 
 .accent-card {
-  background: linear-gradient(135deg, rgba(201,167,90,.08) 0%, var(--bg-elev) 60%);
-  border-color: rgba(201,167,90,.22);
+  background: linear-gradient(135deg, rgba(201,167,90,.04) 0%, var(--bg-elev) 60%);
+  border-color: rgba(201,167,90,.14);
   position: relative;
   overflow: hidden;
 }
@@ -406,12 +406,11 @@ p { margin: 6px 0; line-height: 1.5; }
 }
 .big-money {
   font-size: 2.6rem;
-  color: var(--gold-bright);
+  color: var(--gold);
   font-weight: 700;
   letter-spacing: -.035em;
   font-variant-numeric: tabular-nums;
   margin: 6px 0 8px;
-  text-shadow: 0 0 32px var(--gold-glow), 0 0 8px rgba(232,199,133,.1);
   font-family: 'Georgia', 'Times New Roman', serif;
   line-height: 1;
 }
@@ -462,7 +461,7 @@ body.amounts-hidden .blurred-amount .blurred-amount {
   box-shadow: 0 1px 0 rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.15);
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
 }
-.btn:hover { box-shadow: 0 4px 14px var(--gold-glow), inset 0 1px 0 rgba(255,255,255,.18); }
+.btn:hover { box-shadow: 0 4px 10px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.18); }
 .btn:active { transform: scale(.97); opacity: .9; box-shadow: 0 1px 0 rgba(0,0,0,.22); }
 .btn:disabled { opacity: .35; cursor: default; box-shadow: none; }
 .btn.secondary {
@@ -570,13 +569,13 @@ label {
   overflow: hidden;
 }
 .tab span { display: none; }
-.tab.active { color: var(--gold); }
+.tab.active { color: var(--text); }
 .tab.active::before {
   content: '';
   position: absolute; top: 0; left: 50%;
   transform: translateX(-50%);
-  width: 36px; height: 2.5px;
-  background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
+  width: 36px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-dim) 30%, var(--accent-dim) 70%, transparent);
   border-radius: 0 0 4px 4px;
 }
 .tab:active { transform: scale(.9); }
@@ -1376,12 +1375,12 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .splash-icon {
   font-size: 3.8rem;
   color: var(--gold);
-  text-shadow: 0 0 40px var(--gold-glow-strong), 0 0 80px var(--gold-glow);
+  text-shadow: 0 0 20px var(--gold-glow);
   animation: splashIconIn .6s var(--spring) both;
 }
 .splash-star {
   animation: starFlyIn 1.2s cubic-bezier(.34,.1,.68,1) both !important;
-  filter: drop-shadow(0 0 60px var(--gold-glow-strong));
+  filter: drop-shadow(0 0 20px var(--gold-glow));
 }
 @keyframes splashIconIn {
   from { transform: scale(.4) rotate(-20deg); opacity: 0; }
@@ -4187,7 +4186,7 @@ label.subtask {
   font-size: 1.05rem;
   font-family: Georgia, serif;
   font-weight: 600;
-  color: var(--gold);
+  color: var(--text);
   white-space: nowrap;
 }
 .bk-stat-sub {
@@ -5342,15 +5341,9 @@ label.subtask {
   }
 }
 
-/* ── 9. VOORTGANGSBALK — zachte adem-gloed ──────────────────────────────── */
-@keyframes progressPulse {
-  0%, 100% { box-shadow: 0 0 8px var(--gold-glow); }
-  50%       { box-shadow: 0 0 22px var(--gold-glow-strong); }
-}
-/* Override eerdere progress-fill definitie: fill-animatie + zachte adem   */
+/* ── 9. VOORTGANGSBALK — fill-animatie ──────────────────────────────────── */
 .progress-fill {
-  animation: fillIn .9s cubic-bezier(.34,1.56,.64,1),
-             progressPulse 4s ease-in-out 1s infinite;
+  animation: fillIn .9s cubic-bezier(.34,1.56,.64,1);
   transform-origin: left center;
 }
 
@@ -5895,13 +5888,13 @@ input, select, textarea {
 }
 .arabic-card-reveal { animation: cardReveal .25s var(--ease-out) both; }
 
-/* ── INCOME HERO NETTO GLOW BIJ WISSEL ───────────────────────────────────── */
+/* ── INCOME HERO NETTO HIGHLIGHT BIJ WISSEL ─────────────────────────────── */
 @keyframes nettoUpdate {
-  0%   { text-shadow: 0 0 32px var(--gold-glow), 0 0 8px rgba(232,199,133,.1); }
-  40%  { text-shadow: 0 0 48px rgba(201,167,90,.45), 0 0 16px rgba(232,199,133,.25); }
-  100% { text-shadow: 0 0 32px var(--gold-glow), 0 0 8px rgba(232,199,133,.1); }
+  0%   { opacity: 1; }
+  30%  { opacity: .7; }
+  100% { opacity: 1; }
 }
-.netto-update { animation: nettoUpdate .5s ease both; }
+.netto-update { animation: nettoUpdate .35s ease both; }
 
 /* ── TOAST VERBETERING: subtielere entree ────────────────────────────────── */
 .toast {
