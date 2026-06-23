@@ -239,7 +239,15 @@ function openEditor(container, existing, isIdea = false, prefill = {}) {
   const bodyInput  = editor.querySelector('#ed-body');
   if (!existing) setTimeout(() => titleInput.focus(), 100);
 
-  const close = () => editor.remove();
+  const initialTitle = existing ? (existing.title || '') : (prefill.prefillTitle || '');
+  const initialBody  = existing ? (existing.body  || '') : (prefill.prefillBody  || '');
+  let _saved = false;
+
+  const hasChanges = () => titleInput.value !== initialTitle || bodyInput.value !== initialBody;
+  const close = () => {
+    if (!_saved && hasChanges() && !window.confirm('Je hebt niet-opgeslagen wijzigingen. Toch sluiten?')) return;
+    editor.remove();
+  };
   editor.querySelector('#ed-cancel').onclick = close;
   editor.querySelector('#ed-x').onclick      = close;
   editor.addEventListener('click', e => { if (e.target === editor) close(); });
@@ -250,6 +258,7 @@ function openEditor(container, existing, isIdea = false, prefill = {}) {
     const now   = new Date().toISOString();
     const base  = existing || { id: uid(), createdAt: now, isIdea: existing?.isIdea ?? isIdea };
     await put('notes', { ...base, title, body, updatedAt: now });
+    _saved = true;
     ok('Opgeslagen');
     close();
     render(container);
