@@ -63,14 +63,14 @@ export async function render(container) {
     </div>
 
     ${view === 'active' ? `
-      <div class="todo-chiprow">
-        <button class="filter-chip ${filter==='all'  ?'active':''}" data-filter="all">Alle</button>
-        <button class="filter-chip ${filter==='today'?'active':''}" data-filter="today">Vandaag</button>
-        <button class="filter-chip ${filter==='week' ?'active':''}" data-filter="week">Week</button>
-        ${allTags.length ? `<span class="chip-sep"></span>
-          ${allTags.map(t => `<button class="filter-chip tag-chip ${tagFilter===t?'active':''}" data-tag="${tagFilter===t?'':escapeHTML(t)}">#${escapeHTML(t)}</button>`).join('')}` : ''}
-        <span class="chip-sep"></span>
-        <button class="filter-chip ${container.dataset.todoBulk==='1'?'active':''}" id="bulk-toggle">☑ Selecteren</button>
+      <div class="todo-chiprow" role="toolbar" aria-label="Filters">
+        <button class="filter-chip ${filter==='all'  ?'active':''}" data-filter="all" aria-pressed="${filter==='all'}">Alle</button>
+        <button class="filter-chip ${filter==='today'?'active':''}" data-filter="today" aria-pressed="${filter==='today'}">Vandaag</button>
+        <button class="filter-chip ${filter==='week' ?'active':''}" data-filter="week" aria-pressed="${filter==='week'}">Week</button>
+        ${allTags.length ? `<span class="chip-sep" role="separator"></span>
+          ${allTags.map(t => `<button class="filter-chip tag-chip ${tagFilter===t?'active':''}" data-tag="${tagFilter===t?'':escapeHTML(t)}" aria-pressed="${tagFilter===t}">#${escapeHTML(t)}</button>`).join('')}` : ''}
+        <span class="chip-sep" role="separator"></span>
+        <button class="filter-chip ${container.dataset.todoBulk==='1'?'active':''}" id="bulk-toggle" aria-pressed="${container.dataset.todoBulk==='1'}">☑ Selecteren</button>
       </div>
     ` : ''}
 
@@ -392,7 +392,7 @@ function renderArchive(container, items) {
         <div class="task-title">${escapeHTML(t.title)}</div>
         <div class="task-meta">
           <span class="task-badge" style="color:var(--ok);border-color:rgba(93,212,154,.2)">
-            Klaar ${t.completedAt ? '· ' + new Date(t.completedAt).toLocaleDateString('nl-NL') : ''}
+            Klaar${t.completedAt ? ' · ' + new Date(t.completedAt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : ''}
           </span>
         </div>
       </div>
@@ -503,9 +503,9 @@ function openTodoModal(container, existing = null) {
   `, async (d) => {
     if (!d.title) throw new Error('Titel verplicht');
     const tagsArr = (d.tags || '').split(',').map(s => s.trim()).filter(Boolean);
-    const subsArr = (d.subtasks || '').split('\n').map(s => s.trim()).filter(Boolean).map(title => {
-      const ex = existing?.subtasks?.find(s => s.title === title);
-      return ex || { title, done: false };
+    const subsArr = (d.subtasks || '').split('\n').map(s => s.trim()).filter(Boolean).map((title, i) => {
+      const ex = existing?.subtasks?.[i];
+      return { title, done: ex?.done ?? false };
     });
     const base = existing || { id: uid(), done: false, createdAt: new Date().toISOString() };
     const saved = {
