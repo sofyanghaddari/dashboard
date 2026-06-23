@@ -208,7 +208,15 @@ function renderHabits(container, habits, log) {
     };
   });
   el.querySelectorAll('[data-habit-del]').forEach(b =>
-    b.onclick = async () => { await del('habits', b.dataset.habitDel); render(container); });
+    b.onclick = async () => {
+      const deletedId = b.dataset.habitDel;
+      await del('habits', deletedId);
+      // Clear orphaned chain references that pointed to the deleted habit
+      await Promise.all(
+        habits.filter(h => h.after === deletedId).map(h => put('habits', { ...h, after: null }))
+      );
+      render(container);
+    });
   el.querySelectorAll('[data-habit-edit]').forEach(b =>
     b.onclick = () => {
       const h = habits.find(x => x.id === b.dataset.habitEdit);
@@ -331,7 +339,7 @@ function openPotModal(container, existing) {
     await put('pots', {
       ...base, name: d.name, emoji: d.emoji || '🏺',
       target: parseAmount(d.target) || 0,
-      current: parseAmount(d.current) || 0,
+      current: Math.max(0, parseAmount(d.current) || 0),
     });
     ok('Opgeslagen');
     render(container);
