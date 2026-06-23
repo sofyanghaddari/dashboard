@@ -1,7 +1,7 @@
 import { all, put } from '../db.js';
 import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML, orderedHabits, effectiveNow, effectiveDate } from '../utils.js';
 import { getNumber, getSetting } from '../settings.js';
-import { celebrateGoalHit, celebrateStreak } from '../components/celebrate.js';
+import { celebrateGoalHit, celebrateStreak, celebrateTask } from '../components/celebrate.js';
 import { checkNewBadges } from '../achievements.js';
 import { toast } from '../components/toast.js';
 import { getWeather, codeInfo, rideOpportunities } from '../weather.js';
@@ -406,7 +406,7 @@ export async function render(container) {
     </div>` : ''}
   `;
 
-  // Habit toggle handlers
+  // Habit toggle handlers — partial update only (no full re-render)
   container.querySelectorAll('[data-htoggle]').forEach(btn => {
     btn.onclick = async () => {
       if (btn.disabled) return;
@@ -415,9 +415,24 @@ export async function render(container) {
       const key = today + ':' + id;
       const cur = await all('habit_log');
       const existing = cur.find(l => l.id === key);
-      if (existing) await put('habit_log', { ...existing, done: !existing.done });
+      const newDone = existing ? !existing.done : true;
+      if (existing) await put('habit_log', { ...existing, done: newDone });
       else          await put('habit_log', { id: key, date: today, habitId: id, done: true });
-      await render(container);
+
+      // Partial DOM update — only mutate this button and the counter
+      btn.classList.toggle('done', newDone);
+      btn.textContent = newDone ? '✓' : '';
+      btn.disabled = false;
+      if (newDone) celebrateTask();
+
+      const allBtns = [...container.querySelectorAll('[data-htoggle]')];
+      const doneCount = allBtns.filter(b => b.classList.contains('done')).length;
+      const total = allBtns.length;
+      const countEl = btn.closest('.card')?.querySelector('.card-title span');
+      if (countEl) {
+        countEl.textContent = `${doneCount}/${total}`;
+        countEl.style.color = doneCount === total ? 'var(--ok)' : 'var(--text-dim)';
+      }
     };
   });
 
