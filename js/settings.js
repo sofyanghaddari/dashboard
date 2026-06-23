@@ -7,6 +7,7 @@ const DEFAULTS = {
   monthlyIncomeGoal: '5000',
   taxReservePercent: '25',
   lockGraceMin: '5',
+  autoPullOnOpen: '1',
 };
 
 // Niets staat nog sessie-only: zowel de PAT (ghToken) als het encryptie-wachtwoord

@@ -1,6 +1,7 @@
 // Sync-status pill bovenin (toont laatst gesynced + tap voor handmatige sync)
 import { getSyncStatus, syncUp, syncMerge } from '../github-sync.js';
 import { island } from './island.js';
+import { navigate, currentRoute } from '../router.js';
 
 let _el = null;
 let _refreshTimer = null;
@@ -49,6 +50,9 @@ async function manualSync() {
     await syncUp();
     island(`Gesynced (${merge.added} nieuw, ${merge.updated} bijgewerkt)`, { icon: '✓', kind: 'ok', duration: 2000 });
     refresh();
+    if (merge.added > 0 || merge.updated > 0) {
+      navigate(currentRoute() || 'dashboard');
+    }
   } catch (e) {
     _el.dataset.state = 'err';
     _el.innerHTML = '<span>⚠️</span><span>Mislukt</span>';

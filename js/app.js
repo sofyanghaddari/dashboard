@@ -15,7 +15,7 @@ import { updateBadge } from './app-badge.js';
 import { openCalendar } from './components/calendar.js';
 import { openYearReview } from './components/year-review.js';
 import { lockScreen } from './lock.js';
-import { maybeAutoSync, maybeAutoPullOnOpen } from './github-sync.js';
+import { maybeAutoSync, maybeAutoPullOnOpen, syncMerge, getSyncStatus } from './github-sync.js';
 import { migrateSessionKeys } from './settings.js';
 import { initSyncPill, refresh as refreshSyncPill } from './components/sync-pill.js';
 import { maybeAutoExport } from './auto-export.js';
@@ -38,11 +38,21 @@ async function bootApp() {
   await openDB();
   onStorageError(() => toastErr('Opslag vol — maak ruimte vrij op je apparaat'));
 
-  // Lege DB detecteren: als backup geconfigureerd is maar data ontbreekt → herstel aanbieden
-  if (localStorage.getItem('ghGistId') && localStorage.getItem('ghToken')) {
+  // Lege DB detecteren: als backup geconfigureerd is maar data ontbreekt → auto-herstel
+  if (getSyncStatus().enabled && navigator.onLine) {
     const rides = await all('rides').catch(() => []);
     if (rides.length === 0) {
-      setTimeout(() => toastInfo('DB lijkt leeg — ga naar ⚙️ → Data → Herstel om backup terug te zetten', { duration: 10000 }), 3000);
+      try {
+        await syncMerge();
+        toastInfo('Data opgehaald uit backup ☁️');
+      } catch (_) {
+        setTimeout(() => toastInfo('Geen data gevonden — voer je GitHub-token in via ⚙️ → Systeem → GitHub', { duration: 10000 }), 3000);
+      }
+    }
+  } else if (!getSyncStatus().enabled) {
+    const rides = await all('rides').catch(() => []);
+    if (rides.length === 0) {
+      setTimeout(() => toastInfo('Geen backup gekoppeld — voer je GitHub-token in via ⚙️ → Systeem → GitHub', { duration: 10000 }), 3000);
     }
   }
   register('dashboard', renderDashboard);
