@@ -12,7 +12,7 @@ export function newCard(front, back, note = null) {
 export function review(card, grade) {
   const c = { ...card };
   if (grade === 'again') {
-    c.interval = 0;
+    c.interval = 1;
     c.repetitions = 0;
     c.ease = Math.max(1.3, c.ease - 0.2);
   } else if (grade === 'hard') {

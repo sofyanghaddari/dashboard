@@ -242,12 +242,15 @@ function buildSessionQueue(settings, today, userCards) {
 
   const selectedNew = newIds.slice(0, newLimit);
   const selectedDue = dueIds.slice(0, reviewLimit);
+  // User cards share the same reviewLimit — fill remaining slots after builtin due cards
   const dueUserCards = userCards.filter(c => c.dueDate <= today);
+  const userReviewSlots = Math.max(0, reviewLimit - selectedDue.length);
+  const selectedUserCards = dueUserCards.slice(0, userReviewSlots);
 
   return {
     newInQueue: selectedNew.length,
-    reviewInQueue: selectedDue.length + dueUserCards.length,
-    total: selectedNew.length + selectedDue.length + dueUserCards.length,
+    reviewInQueue: selectedDue.length + selectedUserCards.length,
+    total: selectedNew.length + selectedDue.length + selectedUserCards.length,
   };
 }
 
@@ -298,7 +301,10 @@ async function buildFullQueue(settings, today, userCards) {
   };
 
   const dueUserCards = userCards.filter(c => c.dueDate <= today);
-  const userSessionCards = dueUserCards.map(c => ({
+  // User cards share reviewLimit — fill remaining slots after builtin due cards
+  const userReviewSlots = Math.max(0, reviewLimit - selectedDue.length);
+  const limitedDueUserCards = dueUserCards.slice(0, userReviewSlots);
+  const userSessionCards = limitedDueUserCards.map(c => ({
     id: `user_${c.id}`, dbId: c.id, dbCard: c,
     isBuiltin: false, isNew: c.repetitions === 0,
     front: c.front, frontDir: 'rtl',
