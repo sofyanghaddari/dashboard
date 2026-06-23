@@ -33,9 +33,10 @@ export function enableSwipeDelete(container, onDelete) {
       const curDy = e.touches[0].clientY - startY;
 
       // Slot vast op horizontale richting; verticaal scrollen wint altijd
+      // Drempel verhoogd van +4 naar +10 zodat licht diagonale scrollen niet als swipe wordt gelezen
       if (!locked) {
-        if (Math.abs(curDy) > Math.abs(curDx) + 4) { reset(); return; }
-        if (Math.abs(curDx) > 6) locked = true;
+        if (Math.abs(curDy) > Math.abs(curDx) + 10) { reset(); return; }
+        if (Math.abs(curDx) > 10) locked = true;
       }
       if (!locked) return;
 
