@@ -270,7 +270,7 @@ function renderPots(container, pots) {
     b.onclick = () => {
       const p = pots.find(x => x.id === b.dataset.potAdd);
       if (!p) return;
-      openModal(`Toevoegen — ${escapeHTML(p.name)}`, `
+      openModal(`Toevoegen — ${p.name}`, `
         <label>Bedrag (€) *</label>
         <input name="amount" type="text" inputmode="decimal" autocomplete="off" required autofocus placeholder="0,00" />
       `, async (d) => {
@@ -286,7 +286,7 @@ function renderPots(container, pots) {
     b.onclick = () => {
       const p = pots.find(x => x.id === b.dataset.potSub);
       if (!p) return;
-      openModal(`Afhalen — ${escapeHTML(p.name)}`, `
+      openModal(`Afhalen — ${p.name}`, `
         <label>Bedrag (€) *</label>
         <input name="amount" type="text" inputmode="decimal" autocomplete="off" required autofocus placeholder="0,00" />
       `, async (d) => {

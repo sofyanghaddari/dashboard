@@ -18,13 +18,14 @@ export function openModal(title, bodyHTML, onSubmit) {
   backdrop.innerHTML = `
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-label">
       <button type="button" class="modal-close" id="modal-cancel" aria-label="Sluiten">×</button>
-      <h2 id="modal-title-label">${title}</h2>
+      <h2 id="modal-title-label"></h2>
       <form id="modal-form">${bodyHTML}
         <div class="row" style="margin-top:16px">
           <button type="submit" class="btn block">Opslaan</button>
         </div>
       </form>
     </div>`;
+  backdrop.querySelector('#modal-title-label').textContent = title;
   document.body.appendChild(backdrop);
 
   const escHandler = (e) => { if (e.key === 'Escape') close(); };
