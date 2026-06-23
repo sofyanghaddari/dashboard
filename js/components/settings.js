@@ -950,8 +950,9 @@ export async function openSettings(onClose) {
 
   const ghTestBtn = backdrop.querySelector('#gh-test-conn');
   if (ghTestBtn) ghTestBtn.onclick = async () => {
-    const token = backdrop.querySelector('#gh-token')?.value.trim();
-    const gistId = backdrop.querySelector('#gh-existing-id')?.value.trim();
+    // Lees token + gist uit invoervelden (niet-verbonden) of uit opgeslagen settings (verbonden)
+    const token = (backdrop.querySelector('#gh-token')?.value.trim()) || getSetting('ghToken');
+    const gistId = (backdrop.querySelector('#gh-existing-id')?.value.trim()) || getSyncStatus().gistIds[0] || '';
     if (!token) { err('Vul eerst een token in'); return; }
     ghTestBtn.textContent = '…';
     ghTestBtn.disabled = true;
