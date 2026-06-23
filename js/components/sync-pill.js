@@ -50,9 +50,8 @@ async function manualSync() {
     await syncUp();
     island(`Gesynced (${merge.added} nieuw, ${merge.updated} bijgewerkt)`, { icon: '✓', kind: 'ok', duration: 2000 });
     refresh();
-    if (merge.added > 0 || merge.updated > 0) {
-      navigate(currentRoute() || 'dashboard');
-    }
+    // Altijd herladen na sync — ook als 0 nieuwe records (data was al aanwezig)
+    navigate(currentRoute() || 'dashboard');
   } catch (e) {
     _el.dataset.state = 'err';
     _el.innerHTML = '<span>⚠️</span><span>Mislukt</span>';
