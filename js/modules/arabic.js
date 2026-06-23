@@ -349,7 +349,7 @@ function startSession(container, queue, settings) {
     }
 
     const c = queue[idx];
-    const progress = Math.round((idx / queue.length) * 100);
+    const progress = Math.min(100, Math.round(((idx + 1) / startCount) * 100));
     const useFlip = settings.flipAnimation;
 
     container.innerHTML = `
@@ -447,7 +447,7 @@ function startSession(container, queue, settings) {
           grades.push({ id: c.id, grade });
           // Alleen "Opnieuw" (Again) komt later in deze sessie terug; de rest niet,
           // zodat je vlot door de set heen gaat.
-          if (grade === 1) queue.push({ ...c, _requeued: true });
+          if (grade === 1) queue.push({ ...c });
           idx++;
           revealed = false;
           if (fc && !reduce) setTimeout(showCard, 220); else showCard();
@@ -718,7 +718,7 @@ function dueBadge(dueDate, today) {
 
 function formatDate(iso) {
   if (!iso) return '';
-  const d = new Date(iso);
+  const d = new Date(iso + 'T12:00:00');
   return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
 }
 
@@ -869,7 +869,7 @@ function startWritingSession(container, words, today) {
         <div style="width:60px"></div>
       </div>
       <div class="progress-bar" style="margin-bottom:20px">
-        <div class="progress-fill" style="width:${Math.round(idx/words.length*100)}%;transition:width .4s"></div>
+        <div class="progress-fill" style="width:${Math.min(100, Math.round((idx+1)/words.length*100))}%;transition:width .4s"></div>
       </div>
       <div class="writing-prompt">
         <div class="writing-prompt-dutch">${escapeHTML(w.dutch)}</div>
