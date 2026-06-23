@@ -202,7 +202,7 @@ export async function render(container) {
         <span class="tip-label">${tip.isShame ? (tip.mascot || '') : 'Tip van de dag'}</span>
         ${!tip.isShame && !tip.smart ? `<button class="tip-next" id="tip-next-btn" title="Volgende tip">›</button>` : ''}
       </div>
-      <div class="tip-text" id="tip-text-content">${tip.text}</div>
+      <div class="tip-text" id="tip-text-content">${tip.isShame ? escapeHTML(tip.text) : tip.text}</div>
     </div>` : ''}
 
     <!-- HADITH VAN DE DAG -->

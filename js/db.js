@@ -52,10 +52,11 @@ function p(req) {
   });
 }
 
-let _onWrite = null;
+const _onWriteCbs = [];
 let _onStorageError = null;
-export function onWrite(cb) { _onWrite = cb; }
+export function onWrite(cb) { _onWriteCbs.push(cb); }
 export function onStorageError(cb) { _onStorageError = cb; }
+function fireWrite() { _onWriteCbs.forEach(cb => cb()); }
 
 function injectUpdatedAt(value) {
   // Object-spread om mutatie van caller-object te vermijden
@@ -66,7 +67,7 @@ export async function put(store, value) {
   const v = injectUpdatedAt(value);
   try {
     const res = await p((await tx(store, 'readwrite')).put(v));
-    if (_onWrite) _onWrite();
+    fireWrite();
     return res;
   } catch (e) {
     if (e.name === 'QuotaExceededError' && _onStorageError) _onStorageError();
@@ -77,7 +78,7 @@ export async function add(store, value) {
   const v = injectUpdatedAt(value);
   try {
     const res = await p((await tx(store, 'readwrite')).add(v));
-    if (_onWrite) _onWrite();
+    fireWrite();
     return res;
   } catch (e) {
     if (e.name === 'QuotaExceededError' && _onStorageError) _onStorageError();
@@ -87,12 +88,12 @@ export async function add(store, value) {
 export async function get(store, key)   { return p((await tx(store)).get(key)); }
 export async function del(store, key)   {
   const res = await p((await tx(store, 'readwrite')).delete(key));
-  if (_onWrite) _onWrite();
+  fireWrite();
   return res;
 }
 export async function all(store)        { return p((await tx(store)).getAll()); }
 export async function clear(store)      {
   const res = await p((await tx(store, 'readwrite')).clear());
-  if (_onWrite) _onWrite();
+  fireWrite();
   return res;
 }
