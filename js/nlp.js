@@ -47,8 +47,12 @@ export function parseTaskInput(raw) {
     }
   }
 
-  // strip leading time (we don't store time, just title)
-  s = s.replace(/^\d{1,2}[:.]\d{2}\s+/, '');
+  // capture and strip leading time
+  const timeMatch = s.match(/^(\d{1,2})[.:](\d{2})\s+/);
+  if (timeMatch) {
+    out.dueTime = `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+    s = s.replace(timeMatch[0], '');
+  }
 
   out.title = s.trim();
   return out;

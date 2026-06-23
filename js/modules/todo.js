@@ -9,6 +9,12 @@ import { logActivity } from '../activity.js';
 import { parseTaskInput } from '../nlp.js';
 import { scheduleTaskNotification, cancelTaskNotification, requestNotificationPermission } from '../notifications.js';
 
+let _restoreScroll = -1;
+async function renderKeepScroll(container) {
+  _restoreScroll = window.scrollY;
+  await render(container);
+}
+
 const BUCKET_META = {
   high:    { label: 'Prioriteit', dot: 'bucket-dot-high' },
   medium:  { label: 'Medium',     dot: 'bucket-dot-medium' },
@@ -143,7 +149,8 @@ export async function render(container) {
         id: uid(), title: parsed.title,
         note: null, priority: parsed.priority,
         done: false, savedForLater: false,
-        dueDate: parsed.dueDate, recurring: parsed.recurring,
+        dueDate: parsed.dueDate, dueTime: parsed.dueTime || null,
+        recurring: parsed.recurring,
         tags: [], subtasks: [],
         createdAt: new Date().toISOString(),
       });
@@ -169,9 +176,17 @@ export async function render(container) {
   container.querySelector('#tab-archive').onclick = () => { container.dataset.todoView = 'archive'; render(container); };
 
   container.querySelectorAll('[data-filter]').forEach(b =>
-    b.onclick = () => { container.dataset.todoFilter = b.dataset.filter; render(container); });
+    b.onclick = () => {
+      container.dataset.todoFilter = b.dataset.filter;
+      container.dataset.todoTag = '';
+      render(container);
+    });
   container.querySelectorAll('[data-tag]').forEach(el =>
-    el.onclick = () => { container.dataset.todoTag = el.dataset.tag; render(container); });
+    el.onclick = () => {
+      container.dataset.todoTag = el.dataset.tag;
+      if (el.dataset.tag) container.dataset.todoFilter = 'all';
+      render(container);
+    });
 
   const bulkToggle = container.querySelector('#bulk-toggle');
   if (bulkToggle) {
@@ -179,6 +194,12 @@ export async function render(container) {
       container.dataset.todoBulk = container.dataset.todoBulk === '1' ? '' : '1';
       render(container);
     };
+  }
+
+  if (_restoreScroll >= 0) {
+    const y = _restoreScroll;
+    _restoreScroll = -1;
+    requestAnimationFrame(() => window.scrollTo(0, y));
   }
 }
 
@@ -201,21 +222,22 @@ function applyFilters(items, filter, tagFilter) {
 
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
 
-function dueDateBadge(dueDate) {
+function dueDateBadge(dueDate, dueTime) {
   if (!dueDate) return null;
   const now_     = effectiveNow();
   const today    = ymd(now_);
   const tomorrow = ymd(new Date(now_.getTime() + 86400000));
-  if (dueDate < today)      return { label: `🔴 ⚠ ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}`, cls: 'task-badge-overdue' };
-  if (dueDate === today)    return { label: `🔔 Vandaag`,  cls: 'task-badge-today' };
-  if (dueDate === tomorrow) return { label: `🔔 Morgen`,   cls: 'task-badge-date' };
-  return { label: `🔔 ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}`, cls: 'task-badge-date' };
+  const timeSuffix = dueTime ? ` ${dueTime}` : '';
+  if (dueDate < today)      return { label: `🔴 ⚠ ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}${timeSuffix}`, cls: 'task-badge-overdue' };
+  if (dueDate === today)    return { label: `🔔 Vandaag${timeSuffix}`,  cls: 'task-badge-today' };
+  if (dueDate === tomorrow) return { label: `🔔 Morgen${timeSuffix}`,   cls: 'task-badge-date' };
+  return { label: `🔔 ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}${timeSuffix}`, cls: 'task-badge-date' };
 }
 
 function taskCard(t, bulkMode, idx = 0) {
   const subs    = t.subtasks || [];
   const subDone = subs.filter(s => s.done).length;
-  const badge   = dueDateBadge(t.dueDate);
+  const badge   = dueDateBadge(t.dueDate, t.dueTime);
   const tagsHTML = (t.tags || []).map(tag =>
     `<span class="task-badge">#${escapeHTML(tag)}</span>`).join('');
 
@@ -299,8 +321,8 @@ function bindRowEvents(container, el, items) {
       cancelTaskNotification(id);
       await del('todos', id);
       logActivity('task-del', t ? t.title : id);
-      undoable('Taak verwijderd', async () => { if (t) await put('todos', t); render(container); });
-      render(container);
+      undoable('Taak verwijderd', async () => { if (t) await put('todos', t); renderKeepScroll(container); });
+      renderKeepScroll(container);
     };
   });
   el.querySelectorAll('[data-later]').forEach(b => {
@@ -310,7 +332,7 @@ function bindRowEvents(container, el, items) {
       if (!t) return;
       await put('todos', { ...t, savedForLater: !t.savedForLater });
       ok(t.savedForLater ? 'Terug naar actief' : '🔖 Bewaard voor later');
-      render(container);
+      renderKeepScroll(container);
     };
   });
   el.querySelectorAll('[data-edit]').forEach(b => {
@@ -327,7 +349,7 @@ function bindRowEvents(container, el, items) {
       const subs = [...(t.subtasks || [])];
       subs[+idx] = { ...subs[+idx], done: cb.checked };
       await put('todos', { ...t, subtasks: subs });
-      render(container);
+      renderKeepScroll(container);
     };
   });
 }
@@ -466,6 +488,8 @@ function openTodoModal(container, existing = null) {
     </select>
     <label>Datum (optioneel)</label>
     <input name="dueDate" type="date" value="${existing?.dueDate || ''}" />
+    <label>Tijdstip (optioneel)</label>
+    <input name="dueTime" type="time" value="${existing?.dueTime || ''}" />
     <label>Herhalend (optioneel)</label>
     <select name="recurring">
       <option value="">Niet herhalend</option>
@@ -488,7 +512,8 @@ function openTodoModal(container, existing = null) {
       ...base,
       title: d.title, note: d.note || null,
       priority: d.priority,
-      dueDate: d.dueDate || null, recurring: d.recurring || null,
+      dueDate: d.dueDate || null, dueTime: d.dueTime || null,
+      recurring: d.recurring || null,
       tags: tagsArr, subtasks: subsArr,
       savedForLater: base.savedForLater || false,
     };
@@ -507,6 +532,6 @@ function openTodoModal(container, existing = null) {
     }
     logActivity(existing ? 'task-edit' : 'task-add', d.title);
     ok(existing ? 'Bijgewerkt' : 'Toegevoegd');
-    render(container);
+    renderKeepScroll(container);
   });
 }
