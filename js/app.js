@@ -46,13 +46,13 @@ async function bootApp() {
         await syncMerge();
         toastInfo('Data opgehaald uit backup ☁️');
       } catch (_) {
-        setTimeout(() => toastInfo('Geen data gevonden — voer je GitHub-token in via ⚙️ → Systeem → GitHub', { duration: 10000 }), 3000);
+        setTimeout(() => toastInfo('Geen data gevonden — voer je GitHub-token in via ⚙️ → Data', { duration: 10000 }), 3000);
       }
     }
   } else if (!getSyncStatus().enabled) {
     const rides = await all('rides').catch(() => []);
     if (rides.length === 0) {
-      setTimeout(() => toastInfo('Geen backup gekoppeld — voer je GitHub-token in via ⚙️ → Systeem → GitHub', { duration: 10000 }), 3000);
+      setTimeout(() => toastInfo('Geen backup gekoppeld — voer je GitHub-token in via ⚙️ → Data', { duration: 10000 }), 3000);
     }
   }
   register('dashboard', renderDashboard);
