@@ -591,19 +591,29 @@ async function importCSV(container, file) {
   const rawLines = text.split(/\r?\n/).filter(l => l.trim());
   if (!rawLines.length) { toastErr('Leeg bestand'); return; }
 
-  const delim = rawLines[0].includes('\t') ? '\t' : ',';
-  let imported = 0, skipped = 0;
+  // Auto-detect delimiter: tab > semicolon > comma (Dutch Excel uses ;)
+  const firstLine = rawLines[0];
+  const delim = firstLine.includes('\t') ? '\t' : firstLine.includes(';') ? ';' : ',';
+
+  // Deduplication: skip cards whose front already exists
+  const existing = await all('cards');
+  const existingFronts = new Set(existing.map(c => c.front.trim()));
+
+  let imported = 0, skipped = 0, dupes = 0;
   for (const line of rawLines) {
     const parts = line.split(delim).map(p => (p || '').trim());
     if (parts.length < 2) { skipped++; continue; }
     const [front, back, note] = parts;
     if (!front || !back) { skipped++; continue; }
+    if (existingFronts.has(front)) { dupes++; continue; }
     await put('cards', newCard(front, back, note || null));
+    existingFronts.add(front);
     imported++;
   }
 
-  if (imported === 0) toastErr('Geen geldige kaarten. Formaat: arabisch[tab]vertaling');
-  else if (skipped > 0) toastErr(`${imported} geïmporteerd, ${skipped} overgeslagen`);
+  if (imported === 0 && dupes === 0) toastErr('Geen geldige kaarten. Formaat: arabisch[tab]vertaling');
+  else if (dupes > 0 && imported === 0) toastOk(`Alles al aanwezig (${dupes} dubbelen overgeslagen)`);
+  else if (skipped > 0 || dupes > 0) toastOk(`${imported} geïmporteerd · ${dupes} dubbel · ${skipped} ongeldig`);
   else toastOk(`${imported} kaart${imported !== 1 ? 'en' : ''} geïmporteerd`);
   render(container);
 }
