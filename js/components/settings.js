@@ -111,7 +111,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v115';
+const APP_VERSION = 'v116';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
@@ -502,6 +502,7 @@ export async function openSettings(onClose) {
               <div class="row" style="flex-shrink:0;gap:6px">
                 <button type="button" class="btn" id="gh-sync-up">Pushen</button>
                 <button type="button" class="btn secondary" id="gh-sync-merge">Mergen</button>
+                <button type="button" class="btn secondary" id="gh-test-conn" title="Test of het token + gist-ID nog kloppen">Test</button>
               </div>
             </div>
             ${sync.gistIds.map(id => `
