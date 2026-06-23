@@ -60,8 +60,10 @@ async function renderHizb(container) {
   const doneSet   = new Set(log.map(l => l.date));
 
   // Streak calc (also counts catchup days)
+  // Start from yesterday if today isn't done yet — otherwise streak shows 0 all day
   let streak = 0;
   const cur = new Date(now);
+  if (!doneSet.has(today)) cur.setDate(cur.getDate() - 1);
   while (doneSet.has(ymd(cur))) { streak++; cur.setDate(cur.getDate() - 1); }
 
   const reminderTime = localStorage.getItem('hizbReminderTime') || '20:00';
@@ -77,8 +79,8 @@ async function renderHizb(container) {
   const dashFill = (fillPct / 100) * CIRCUMFERENCE;
   const fillClass = todayRec ? 'cp-fill done' : 'cp-fill';
 
-  // Feature 12: inhaal conditions
-  const canCatchup = todayRec && !yestRec;
+  // Feature 12: inhaal conditions — show banner whenever yesterday was missed
+  const canCatchup = !yestRec;
   const todayCount = todayRec?.count || 1;
   const alreadyCaughtUp = yestRec?.catchup;
 
@@ -96,6 +98,7 @@ async function renderHizb(container) {
 
   // Stats: perfect streaks vs. met inhaal
   const { perfectStreaks, catchupStreaks } = calcStreakStats(log);
+  const longestStreak = calcLongestStreak(log);
 
   const el = container.querySelector('#koran-content');
   el.innerHTML = `
@@ -164,7 +167,7 @@ async function renderHizb(container) {
           <div class="stat-mini-lbl">Huidige streak</div>
         </div>
         <div class="stat-mini-card">
-          <div class="stat-mini-num" data-countup="${calcLongestStreak(log)}" data-decimals="0" data-prefix="">${calcLongestStreak(log)}</div>
+          <div class="stat-mini-num" data-countup="${longestStreak}" data-decimals="0" data-prefix="">${longestStreak}</div>
           <div class="stat-mini-lbl">Langste streak ooit</div>
         </div>
         <div class="stat-mini-card">
@@ -182,7 +185,7 @@ async function renderHizb(container) {
     <div class="card">
       <h2 class="card-title">Instellingen</h2>
       ${(() => {
-        const now2 = new Date();
+        const now2 = effectiveNow();
         const mk = `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, '0')}`;
         const used = localStorage.getItem('lastStreakRepair') === mk;
         return used
@@ -205,10 +208,17 @@ async function renderHizb(container) {
   const catchupBtn = el.querySelector('#catchup-btn');
   if (catchupBtn) {
     catchupBtn.onclick = async () => {
-      if (!todayRec) { err('Doe vandaag eerst je hizb'); return; }
-      await put('hizb_log', { date: today, completed: true, count: 2 });
-      await put('hizb_log', { date: yesterday, completed: true, catchup: true });
-      ok('↩ Ingehaald! Streak blijft intact.');
+      if (todayRec) {
+        // Today already done — mark today count:2 and yesterday as catchup
+        await put('hizb_log', { date: today, completed: true, count: 2 });
+        await put('hizb_log', { date: yesterday, completed: true, catchup: true });
+        ok('↩ Ingehaald! Streak blijft intact. 🔥');
+      } else {
+        // Today not done yet — mark today done and yesterday as catchup
+        await put('hizb_log', { date: today, completed: true, count: 1 });
+        await put('hizb_log', { date: yesterday, completed: true, catchup: true });
+        ok('↩ Gisteren ingehaald én vandaag afgevinkt! 🔥');
+      }
       render(container);
     };
   }
@@ -240,20 +250,19 @@ async function renderHizb(container) {
   }
 
   el.querySelector('#repair-day')?.addEventListener('click', async () => {
-    const now2 = new Date();
+    const now2 = effectiveNow();
     const repairMonthKey = `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, '0')}`;
     if (localStorage.getItem('lastStreakRepair') === repairMonthKey) { err('Deze maand al gebruikt'); return; }
     openModal('Gemiste dag goedmaken', `
       <p class="muted" style="font-size:.875rem;margin:0 0 14px">Kies de dag die je wilt goedmaken. Dit kan slechts één keer per maand.</p>
       <label>Datum *</label>
-      <input name="date" type="date" required max="${ymd()}" />
+      <input name="date" type="date" required max="${ymd(new Date(now2.getTime() - 86400000))}" />
     `, async (d) => {
       if (!d.date) throw new Error('Kies een datum');
-      if (d.date > ymd()) throw new Error('Datum moet in het verleden liggen');
       const repairDate = new Date(d.date + 'T12:00:00');
       const isSameMonth = repairDate.getFullYear() === now2.getFullYear() && repairDate.getMonth() === now2.getMonth();
       if (isSameMonth) throw new Error('Je kunt alleen een dag uit een vorige maand goedmaken');
-      if (now2 - repairDate > 31 * 24 * 60 * 60 * 1000) throw new Error('Datum is meer dan 31 dagen geleden — te oud');
+      if (repairDate >= now2) throw new Error('Datum moet in het verleden liggen');
       await put('hizb_log', { date: d.date, completed: true, repaired: true });
       localStorage.setItem('lastStreakRepair', repairMonthKey);
       ok(`Dag ${d.date} goedgemaakt`);

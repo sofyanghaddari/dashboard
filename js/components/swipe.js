@@ -1,8 +1,8 @@
-// Swipe-to-delete voor .list-item elementen.
-// Voegt visuele rode feedback toe terwijl de gebruiker veegt.
-// Usage: enableSwipeDelete(containerEl, async (id) => { await del(id); })
-export function enableSwipeDelete(container, onDelete) {
-  container.querySelectorAll('.list-item').forEach(el => {
+// Swipe-to-delete voor lijst-elementen.
+// selector: CSS-selector voor de swipe-items (default '.list-item', gebruik '.task-card' voor todo)
+// Usage: enableSwipeDelete(containerEl, async (id) => { await del(id); }, '.task-card')
+export function enableSwipeDelete(container, onDelete, selector = '.list-item') {
+  container.querySelectorAll(selector).forEach(el => {
     if (el.dataset.swipeBound) return;
     el.dataset.swipeBound = '1';
 
