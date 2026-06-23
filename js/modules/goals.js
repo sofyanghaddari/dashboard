@@ -75,7 +75,7 @@ function renderGoals(container, sel, items, totalRides) {
     const status      = progress >= 100 ? 'voltooid' : 'actief';
 
     const deadlineChip = g.deadline
-      ? `<span class="goal-meta-chip">📅 ${g.deadline}</span>` : '';
+      ? `<span class="goal-meta-chip">📅 ${new Date(g.deadline + 'T12:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}</span>` : '';
     const taxiChip = isAutoTrack
       ? `<span class="goal-meta-chip">🚖 ${taxiPct}% per rit · <b class="money blurred-amount">${fmtMoney(taxiSaved)}</b> / <span class="blurred-amount">${fmtMoney(target)}</span></span>` : '';
 
@@ -140,6 +140,8 @@ function renderGoals(container, sel, items, totalRides) {
           if (newPct >= 100) {
             statusEl.textContent = '✓ Voltooid';
             statusEl.className = 'goal-status status-voltooid';
+            celebrateTask();
+            ok('🎉 Doel behaald!');
           } else {
             statusEl.textContent = '● Actief';
             statusEl.className = 'goal-status status-actief';
@@ -357,14 +359,19 @@ function openGoalModal(container, existing, term) {
     <input name="taxiPercent" type="text" inputmode="decimal" autocomplete="off" placeholder="bijv. 2,5" value="${existing?.taxiPercent || ''}" />
   `, async (d) => {
     if (!d.title) throw new Error('Titel verplicht');
+    if (d.taxiPercent) {
+      const pct = parseAmount(d.taxiPercent);
+      if (isNaN(pct) || pct < 0 || pct > 100) throw new Error('Percentage moet tussen 0 en 100 liggen');
+    }
     const base = existing || { id: uid(), term, progress: 0 };
     await put('goals', {
       ...base, title: d.title,
       description: d.description || '',
       deadline: d.deadline || null,
       target: d.target ? parseAmount(d.target) : null,
-      taxiPercent: d.taxiPercent ? parseAmount(d.taxiPercent) : null,
+      taxiPercent: d.taxiPercent ? Math.min(100, Math.max(0, parseAmount(d.taxiPercent))) : null,
     });
+    ok('Opgeslagen');
     render(container);
   });
 }
