@@ -152,7 +152,7 @@ function renderOverview(content, container, d) {
   const lastMonthEnd   = new Date(now.getFullYear(), now.getMonth(), 0);
   const sum = (arr, pred) => arr.filter(pred).reduce((s, r) => s + Number(r.amount || 0), 0);
   const lastMonthAtPos = sum(rides, r => {
-    const dt = new Date(r.date);
+    const dt = effectiveDate(new Date(r.date));
     return dt >= lastMonthStart && dt <= lastMonthEnd && dt.getDate() <= daysIntoMonth;
   });
   const trendPct = lastMonthAtPos > 0 ? Math.round((monthIncome - lastMonthAtPos) / lastMonthAtPos * 100) : null;
@@ -199,7 +199,7 @@ function renderOverview(content, container, d) {
     <!-- NETTO OVERZICHT (alleen als kosten ingesteld) -->
     ${totalCostThisMonth > 0 ? `
     <div class="netto-hero card">
-      <h2 class="card-title">Netto overzicht — ${new Date().toLocaleString('nl-NL', { month: 'long' })}</h2>
+      <h2 class="card-title">Netto overzicht — ${now.toLocaleString('nl-NL', { month: 'long' })}</h2>
       <div class="netto-row">
         <span class="netto-label">Bruto inkomen</span>
         <span class="netto-value gold blurred-amount">${fmtMoney(monthIncome)}</span>
@@ -492,7 +492,7 @@ function openDayModal(container, dateKey, existing) {
 
 function renderChart(content, rides) {
   const buckets = {};
-  const now = new Date();
+  const now = effectiveNow();
   for (let i = 11; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     buckets[monthKey(d)] = { in: 0, label: d.toLocaleString('nl-NL', { month: 'short' }) };

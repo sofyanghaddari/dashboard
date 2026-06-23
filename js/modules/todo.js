@@ -267,10 +267,11 @@ function renderBucket(container, p, items, bulkMode, offset = 0) {
   if (!bulkMode) {
     enableSwipeDelete(el, async (id) => {
       const t = items.find(x => x.id === id);
+      cancelTaskNotification(id);
       await del('todos', id);
       undoable('Taak verwijderd', async () => { if (t) await put('todos', t); render(container); });
       render(container);
-    });
+    }, '.task-card');
   }
 }
 
@@ -343,6 +344,13 @@ function renderLater(container, items) {
   }
   el.innerHTML = items.map((t, i) => taskCard(t, false, i)).join('');
   bindRowEvents(container, el, items);
+  enableSwipeDelete(el, async (id) => {
+    const t = items.find(x => x.id === id);
+    cancelTaskNotification(id);
+    await del('todos', id);
+    undoable('Taak verwijderd', async () => { if (t) await put('todos', t); render(container); });
+    render(container);
+  }, '.task-card');
 }
 
 function renderArchive(container, items) {
@@ -380,8 +388,17 @@ function renderArchive(container, items) {
     };
   });
   el.querySelectorAll('[data-del]').forEach(b => {
-    b.onclick = async () => { await del('todos', b.dataset.del); render(container); };
+    b.onclick = async () => {
+      cancelTaskNotification(b.dataset.del);
+      await del('todos', b.dataset.del);
+      render(container);
+    };
   });
+  enableSwipeDelete(el, async (id) => {
+    cancelTaskNotification(id);
+    await del('todos', id);
+    render(container);
+  }, '.task-card');
 }
 
 async function completeTask(container, item) {
@@ -391,8 +408,8 @@ async function completeTask(container, item) {
 
   if (item.recurring) {
     const next = { ...item, id: uid(), done: false, completedAt: null, createdAt: new Date().toISOString() };
-    if (item.recurring === 'daily')  next.dueDate = addDaysISO(item.dueDate || ymd(), 1);
-    if (item.recurring === 'weekly') next.dueDate = addDaysISO(item.dueDate || ymd(), 7);
+    if (item.recurring === 'daily')  next.dueDate = addDaysISO(item.dueDate || ymd(effectiveNow()), 1);
+    if (item.recurring === 'weekly') next.dueDate = addDaysISO(item.dueDate || ymd(effectiveNow()), 7);
     await put('todos', next);
   }
 
