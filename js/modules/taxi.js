@@ -14,11 +14,20 @@ async function migrateExpenses() {
   if (!raw) return;
   try {
     const items = JSON.parse(raw);
-    const existing = await all('taxi_expenses');
-    if (existing.length === 0 && items.length > 0) {
-      for (const item of items) {
-        if (!item.id) item.id = uid();
-        await put('taxi_expenses', item);
+    if (items.length > 0) {
+      const existing = await all('taxi_expenses');
+      if (existing.length === 0) {
+        for (const item of items) {
+          if (!item.id) item.id = uid();
+          await put('taxi_expenses', item);
+        }
+      } else {
+        // IDB already has data — only add items missing from IDB to avoid data loss
+        const existingIds = new Set(existing.map(e => e.id));
+        for (const item of items) {
+          if (!item.id) item.id = uid();
+          if (!existingIds.has(item.id)) await put('taxi_expenses', item);
+        }
       }
     }
     localStorage.removeItem('taxiExpenses');
@@ -431,6 +440,9 @@ function fmtMoneyCompact(n) {
 }
 
 function openDayModal(container, dateKey, existing) {
+  // Prevent double-open if a modal is already showing
+  if (document.querySelector('.modal-backdrop')) return;
+
   const items      = existing?.items || [];
   const total      = existing?.total || 0;
   const dateObj    = new Date(dateKey + 'T12:00:00');
@@ -465,8 +477,9 @@ function openDayModal(container, dateKey, existing) {
     if (container) render(container);
   });
 
-  // openModal voegt de backdrop synchroon toe — direct binden, geen setTimeout nodig
-  document.querySelectorAll('[data-del-line]').forEach(b => {
+  // Scope delete handlers to this modal's backdrop (openModal appends it synchronously)
+  const modalBackdrop = document.body.lastElementChild;
+  modalBackdrop.querySelectorAll('[data-del-line]').forEach(b => {
     b.onclick = async (e) => {
       e.preventDefault();
       await del('rides', b.dataset.delLine);
