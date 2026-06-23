@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v117';
+const CACHE = 'dashboard-v118';
 
 
 
@@ -205,7 +205,12 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
 
-  // Stale-while-revalidate voor API-calls (weer, externe data)
+  // GitHub API + raw content: NOOIT cachen, altijd direct naar netwerk
+  // (auth-headers, tijdgebonden tokens, private gists)
+  const isGitHub = url.hostname === 'api.github.com' || url.hostname.endsWith('.githubusercontent.com');
+  if (isGitHub) return;
+
+  // Stale-while-revalidate voor overige externe API-calls (weer, etc.)
   const isExternal = url.origin !== self.location.origin;
   if (isExternal) {
     e.respondWith(
@@ -214,7 +219,7 @@ self.addEventListener('fetch', (e) => {
           const fetchPromise = fetch(e.request).then(resp => {
             if (resp && resp.ok) { try { cache.put(e.request, resp.clone()); } catch (_) {} }
             return resp;
-          }).catch(() => cached);
+          }).catch(() => cached || new Response('', { status: 503, statusText: 'Offline' }));
           return cached || fetchPromise;
         })
       )
