@@ -2721,6 +2721,11 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   text-align: center;
   margin-top: 5px;
   letter-spacing: .02em;
+  white-space: nowrap; overflow: hidden;
+}
+/* On small screens (12-bar chart at 375px), hide alternate labels to prevent overlap */
+@media (max-width: 480px) {
+  .bar-col:nth-child(even) .bar-label { visibility: hidden; }
 }
 .bar-chart-wrap { margin-top: 8px; }
 
