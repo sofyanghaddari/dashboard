@@ -4085,6 +4085,13 @@ body::before {
 .chip-sep { width: 1px; height: 18px; background: var(--border); flex: 0 0 auto; margin: 0 2px; }
 .chip-spacer { flex: 1 0 8px; }
 
+.bulk-action-bar {
+  display: flex; gap: 8px; padding: 12px 0 4px;
+  position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 8px);
+  z-index: 10;
+}
+.bulk-action-bar .btn { flex: 1; }
+
 /* Compactere taakkaarten: acties horizontaal zodat ze de kaart niet oprekken */
 .task-card .task-actions {
   flex-direction: row;
@@ -4126,13 +4133,7 @@ label.subtask {
   transition: opacity .24s ease, transform .24s ease;
 }
 
-/* ── TABBAR: icoon-pop bij tab-activatie ────────────────────── */
-.tab.active { animation: tabIconPop .4s var(--spring); }
-@keyframes tabIconPop {
-  0%   { transform: translateY(0) scale(1); }
-  45%  { transform: translateY(-3px) scale(1.08); }
-  100% { transform: none; }
-}
+/* ── TABBAR: icoon-pop bij tab-activatie (via JS .tab-pop class) ─ */
 
 /* ── INCOME HERO: eenmalige sheen-sweep bij binnenkomst ─────── */
 .income-hero::after {
@@ -5744,3 +5745,170 @@ h3 {
   transition: color var(--transition);
 }
 .ar-voice-tip-close:hover { color: var(--text); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FASE 3 + 4 — VISUELE OVERHAUL + ANIMATIES
+   Skeletten, hover-lift, progress-animaties, confirm-modal, overgangen
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── TAB-SKELETON: verschijnt direct bij tab-wissel, vóór data geladen is ── */
+.tab-skeleton { padding: 4px 0 32px; }
+.sk-hero {
+  height: 168px; border-radius: var(--radius-lg); margin-bottom: 14px;
+  background: linear-gradient(90deg,
+    var(--bg-elev-2) 0%, var(--bg-elev-3) 48%, var(--bg-elev-2) 100%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+.sk-stats { display: flex; gap: 10px; margin-bottom: 14px; }
+.sk-stat {
+  flex: 1; height: 76px; border-radius: var(--radius-sm);
+  background: linear-gradient(90deg,
+    var(--bg-elev-2) 0%, var(--bg-elev-3) 48%, var(--bg-elev-2) 100%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+  animation-delay: 80ms;
+}
+.sk-card {
+  height: 100px; border-radius: var(--radius-lg); margin-bottom: 14px;
+  background: linear-gradient(90deg,
+    var(--bg-elev-2) 0%, var(--bg-elev-3) 48%, var(--bg-elev-2) 100%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+.sk-card:nth-child(2) { animation-delay: 60ms; }
+.sk-card:nth-child(3) { animation-delay: 120ms; height: 80px; }
+@media (prefers-reduced-motion: reduce) {
+  .sk-hero, .sk-stat, .sk-card { animation: none; }
+}
+
+/* ── KAART HOVER-LIFT (alleen pointer-apparaten) ────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-hi);
+    box-shadow: var(--shadow-md), var(--shadow-inner);
+  }
+  .kpi-card:hover    { transform: translateY(-2px); border-color: rgba(255,255,255,.1); }
+  .note-card:hover   { transform: translateY(-2px); }
+  .goal-card:hover   { transform: translateY(-1px); }
+  .task-card:hover   { transform: translateY(-1px); }
+}
+
+/* ── PROGRESS BAR FILL ANIMATIE ─────────────────────────────────────────── */
+@keyframes progressFill {
+  from { width: 0; }
+  to   { width: var(--fill-w, 100%); }
+}
+.progress-fill-anim {
+  animation: progressFill .55s var(--ease-out) forwards;
+}
+
+/* ── CONFIRM-MODAL STIJL ──────────────────────────────────────────────────── */
+.confirm-modal {
+  animation: modalIn .2s var(--ease-out) both;
+}
+.confirm-modal h2 {
+  font-size: var(--font-lg);
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+
+/* ── FORMULIERVELD OVERGANG BIJ FOCUS ───────────────────────────────────── */
+input, select, textarea {
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+/* ── LIST-ITEM ENTREE ANIMATIE ──────────────────────────────────────────── */
+@keyframes itemFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.item-enter {
+  animation: itemFadeIn .22s var(--ease-out) both;
+}
+
+/* ── SCORE/STREAK FLIP ANIMATIE ─────────────────────────────────────────── */
+@keyframes numFlip {
+  0%   { opacity: 0; transform: translateY(8px) scale(.9); }
+  60%  { transform: translateY(-2px) scale(1.04); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.num-flip { animation: numFlip .32s var(--spring) both; }
+
+/* ── TAB OVERGANG VERBETERD ──────────────────────────────────────────────── */
+#view {
+  animation-fill-mode: both;
+}
+
+/* ── BUTTON LOADING STATE ────────────────────────────────────────────────── */
+.btn.loading {
+  pointer-events: none;
+  opacity: .72;
+  position: relative;
+}
+.btn.loading::after {
+  content: '';
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: var(--on-accent);
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+}
+@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+/* ── INTERACTIEVE LIJST-ITEMS: opacity feedback (geen transform:scale —
+   dat cancelt iOS scroll-momentum) ──────────────────────────────────────── */
+.list-item { transition: background var(--transition), opacity var(--transition); }
+
+/* ── CARD ACTIVE PRESS: snellere feedback dan transition ─────────────────── */
+.card:active   { transition-duration: 60ms; }
+.task-card:active { transition-duration: 60ms; }
+.note-card:active { transition-duration: 60ms; }
+
+/* ── HIZB CHECK KNOP: puls bij aanraken ──────────────────────────────────── */
+.hizb-check-btn {
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.hizb-check-btn:active { transform: scale(.96); }
+
+/* ── FILTER-CHIP: vloeiendere overgang ──────────────────────────────────── */
+.filter-chip {
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition), transform var(--transition);
+}
+.filter-chip:active { transform: scale(.94); }
+
+/* ── GOAL PROGRESS BAR ANIMATIE ─────────────────────────────────────────── */
+.goal-progress-fill {
+  transition: width .6s var(--ease-out);
+}
+
+/* ── ARABISCHE KAART FLIP ────────────────────────────────────────────────── */
+@keyframes cardReveal {
+  from { opacity: 0; transform: scale(.97) translateY(4px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+.arabic-card-reveal { animation: cardReveal .25s var(--ease-out) both; }
+
+/* ── INCOME HERO NETTO GLOW BIJ WISSEL ───────────────────────────────────── */
+@keyframes nettoUpdate {
+  0%   { text-shadow: 0 0 32px var(--gold-glow), 0 0 8px rgba(232,199,133,.1); }
+  40%  { text-shadow: 0 0 48px rgba(201,167,90,.45), 0 0 16px rgba(232,199,133,.25); }
+  100% { text-shadow: 0 0 32px var(--gold-glow), 0 0 8px rgba(232,199,133,.1); }
+}
+.netto-update { animation: nettoUpdate .5s ease both; }
+
+/* ── TOAST VERBETERING: subtielere entree ────────────────────────────────── */
+.toast {
+  transition: opacity .22s ease, transform .22s var(--spring);
+}
+
+/* ── MODAL KNOP RIJEN: betere uitlijning ─────────────────────────────────── */
+.confirm-modal > div:last-child {
+  margin-top: 4px;
+}

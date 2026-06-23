@@ -2,6 +2,7 @@
 import { syncUp, syncMerge, getSyncStatus } from './github-sync.js';
 import { refresh as refreshPill } from './components/sync-pill.js';
 import { info } from './components/toast.js';
+import { navigate, currentRoute } from './router.js';
 
 let _pushTimer = null;
 let _lastSyncErrShown = 0;
@@ -33,9 +34,15 @@ export function initRealtimeSync() {
         try { await syncUp(); } catch (_) {}
       }
     } else {
-      // Bij weer-zichtbaar: merge remote in
+      // Bij weer-zichtbaar: merge remote in en herteken huidig scherm
       if (getSyncStatus().enabled && navigator.onLine) {
-        try { await syncMerge(); refreshPill(); } catch (_) {}
+        try {
+          const result = await syncMerge();
+          refreshPill();
+          if (result.added > 0 || result.updated > 0) {
+            navigate(currentRoute() || 'dashboard');
+          }
+        } catch (_) {}
       }
     }
   });

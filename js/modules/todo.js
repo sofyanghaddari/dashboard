@@ -63,6 +63,8 @@ export async function render(container) {
         <button class="filter-chip ${filter==='week' ?'active':''}" data-filter="week">Week</button>
         ${allTags.length ? `<span class="chip-sep"></span>
           ${allTags.map(t => `<button class="filter-chip tag-chip ${tagFilter===t?'active':''}" data-tag="${tagFilter===t?'':escapeHTML(t)}">#${escapeHTML(t)}</button>`).join('')}` : ''}
+        <span class="chip-sep"></span>
+        <button class="filter-chip ${container.dataset.todoBulk==='1'?'active':''}" id="bulk-toggle">☑ Selecteren</button>
       </div>
     ` : ''}
 
@@ -104,10 +106,20 @@ export async function render(container) {
             <div class="task-list" data-bucket="${p}"></div>
           </div>`;
       }).join('');
+      const bulkMode = container.dataset.todoBulk === '1';
       let idx = 0;
       for (const { p, items } of buckets) {
-        renderBucket(container, p, items, false, idx);
+        renderBucket(container, p, items, bulkMode, idx);
         idx += items.length;
+      }
+      if (bulkMode && displayed.length > 0) {
+        body.insertAdjacentHTML('beforeend', `
+          <div class="bulk-action-bar">
+            <button class="btn" id="bulk-done">✓ Klaar markeren</button>
+            <button class="btn secondary" id="bulk-del">✕ Verwijderen</button>
+          </div>`);
+        body.querySelector('#bulk-done').onclick = () => bulkAction(container, displayed, 'done');
+        body.querySelector('#bulk-del').onclick  = () => bulkAction(container, displayed, 'del');
       }
     }
   } else if (view === 'later') {
@@ -160,6 +172,14 @@ export async function render(container) {
     b.onclick = () => { container.dataset.todoFilter = b.dataset.filter; render(container); });
   container.querySelectorAll('[data-tag]').forEach(el =>
     el.onclick = () => { container.dataset.todoTag = el.dataset.tag; render(container); });
+
+  const bulkToggle = container.querySelector('#bulk-toggle');
+  if (bulkToggle) {
+    bulkToggle.onclick = () => {
+      container.dataset.todoBulk = container.dataset.todoBulk === '1' ? '' : '1';
+      render(container);
+    };
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────

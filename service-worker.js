@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v114';
+const CACHE = 'dashboard-v115';
 const ASSETS = [
   './',
   './index.html',
@@ -68,6 +68,9 @@ const ASSETS = [
   './js/modules/geloof.js',
   './js/receipt-ocr.js',
   './js/markitdown.js',
+  './icons/icon-96.png',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
 ];
 
 self.addEventListener('install', (e) => {
