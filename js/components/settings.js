@@ -13,6 +13,7 @@ import { exportMonthPDF } from '../pdf-export.js';
 import { openWeeklyReview } from './weekly-review.js';
 import { getCustomShame, setCustomShame, customMascot, setCustomMascot } from '../mascot.js';
 import { getArabicSettings, saveArabicSettings, resetAllProgress as resetArabicProgress, DEFAULT_ARABIC_SETTINGS } from '../modules/arabic-srs.js';
+import { requestNotificationPermission, checkPendingNotifications } from '../notifications.js';
 
 const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots', 'invoices', 'purchase_invoices', 'km_log', 'clients', 'taxi_expenses', 'agenda_events'];
 
@@ -111,7 +112,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v117';
+const APP_VERSION = 'v118';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
@@ -277,10 +278,27 @@ export async function openSettings(onClose) {
           <span class="settings-section-icon">🔔</span>
           <div>
             <div class="settings-section-title">Herinneringen</div>
-            <div class="settings-section-desc">Dagelijkse herinneringen en overzichten</div>
+            <div class="settings-section-desc">Pushmeldingen voor taken en Koran-herinnering</div>
           </div>
         </div>
         <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-main">
+              <div class="settings-row-title">Meldingen</div>
+              <div class="settings-row-sub muted" id="notif-status-label">${
+                !('Notification' in window) ? 'Niet ondersteund op dit apparaat' :
+                Notification.permission === 'granted' ? '✅ Ingeschakeld — je ontvangt meldingen' :
+                Notification.permission === 'denied'  ? '🚫 Geblokkeerd — zet aan via iPhone-instellingen → Safari' :
+                'Uit — tik om meldingen in te schakelen'
+              }</div>
+            </div>
+            ${'Notification' in window && Notification.permission !== 'denied' && Notification.permission !== 'granted'
+              ? `<button type="button" class="btn" id="notif-enable-btn" style="flex-shrink:0;white-space:nowrap">Inschakelen</button>`
+              : Notification.permission === 'granted'
+                ? `<span style="font-size:1.3rem">🔔</span>`
+                : `<button type="button" class="btn secondary" id="notif-settings-btn" style="flex-shrink:0;font-size:.8rem">Instellingen</button>`
+            }
+          </div>
           <div class="settings-row">
             <div class="settings-row-main">
               <div class="settings-row-title">Hizb-herinnering</div>
@@ -785,7 +803,35 @@ export async function openSettings(onClose) {
     ok('Doelen opgeslagen');
   };
 
-  // Herinneringen
+  // Herinneringen — notificatie-permissie
+  const notifEnableBtn = backdrop.querySelector('#notif-enable-btn');
+  if (notifEnableBtn) {
+    notifEnableBtn.onclick = async () => {
+      notifEnableBtn.disabled = true;
+      notifEnableBtn.textContent = '…';
+      const result = await requestNotificationPermission();
+      const label = backdrop.querySelector('#notif-status-label');
+      if (result === 'granted') {
+        checkPendingNotifications();
+        ok('Meldingen ingeschakeld 🔔');
+        if (label) label.textContent = '✅ Ingeschakeld — je ontvangt meldingen';
+        notifEnableBtn.replaceWith(Object.assign(document.createElement('span'), { textContent: '🔔', style: 'font-size:1.3rem' }));
+      } else if (result === 'denied') {
+        if (label) label.textContent = '🚫 Geblokkeerd — zet aan via iPhone-instellingen → Safari';
+        notifEnableBtn.remove();
+      } else {
+        notifEnableBtn.disabled = false;
+        notifEnableBtn.textContent = 'Inschakelen';
+      }
+    };
+  }
+  const notifSettingsBtn = backdrop.querySelector('#notif-settings-btn');
+  if (notifSettingsBtn) {
+    notifSettingsBtn.onclick = () => {
+      ok('Ga naar iPhone-instellingen → Sofyan → Meldingen om ze weer in te schakelen');
+    };
+  }
+
   backdrop.querySelector('#set-hizb-time').onchange = (e) => {
     setSetting('hizbReminderTime', e.target.value);
     ok('Herinnering bijgewerkt');

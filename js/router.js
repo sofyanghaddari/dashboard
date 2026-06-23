@@ -11,6 +11,9 @@ export async function navigate(name) {
   const route = routes[name] ? name : 'dashboard';
   const view = document.getElementById('view');
 
+  // Scroll direct naar boven bij tab-wissel (behavior instant = geen animatie-lag)
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
   // Exit animation — fade + slight upward drift (first load has no content → skip)
   if (view.children.length > 0 && !prefersReduced()) {
     view.style.animation = 'viewOut .16s var(--ease-standard) forwards';

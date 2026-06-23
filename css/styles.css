@@ -132,7 +132,10 @@ html {
 }
 body {
   margin: 0; padding: 0;
-  overflow-x: hidden;
+  /* overflow-x: hidden zou een scroll-container aanmaken op iOS PWA waardoor
+     de native momentum-scroll (rubber-band) kapot gaat — clip heeft hetzelfde
+     visuele effect maar creëert géén scroll-container */
+  overflow-x: clip;
   /* overscroll-behavior-x verwijderd: blokkeert iOS PWA gesture-systeem */
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
