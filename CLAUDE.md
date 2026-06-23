@@ -33,7 +33,8 @@ Lokaal: `/Users/soef/claude code`
 
 - Code wijzigingen lokaal in `/Users/soef/claude code`
 - Commits via `git commit`
-- Push naar `origin/main` — GitHub Pages bouwt binnen 1-2 min
+- **Push altijd direct naar `origin/main`** — GitHub Pages bouwt binnen 1-2 min. NOOIT alleen op een feature-branch laten staan; altijd afsluiten met push naar main.
+- In remote Claude Code sessies: na commits op feature-branch altijd mergen naar main en pushen (`git push origin HEAD:main` of `git push -u origin <branch>:main`)
 - gh CLI staat in `~/bin/gh`, auth al ingesteld (user: sofyanghaddari)
 - Bij elke commit van static assets: bump `CACHE` versie in `service-worker.js`
 
