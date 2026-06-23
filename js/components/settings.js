@@ -1146,6 +1146,7 @@ export async function openSettings(onClose) {
       // Taxikosten + custom personalisatie zitten in losse localStorage-keys
       try { data._taxiExpenses = JSON.parse(localStorage.getItem('taxiExpenses') || '[]'); } catch (_) {}
       try { data._customShame = JSON.parse(localStorage.getItem('customShame') || '[]'); } catch (_) {}
+      try { data._hizbVoortgang = JSON.parse(localStorage.getItem('hizb_voortgang') || '{}'); } catch (_) {}
       data._customMascot = localStorage.getItem('customMascot') || null;
       data._exportedAt = new Date().toISOString();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1175,6 +1176,7 @@ export async function openSettings(onClose) {
       }
       if (Array.isArray(data._taxiExpenses)) localStorage.setItem('taxiExpenses', JSON.stringify(data._taxiExpenses));
       if (Array.isArray(data._customShame) && data._customShame.length) localStorage.setItem('customShame', JSON.stringify(data._customShame));
+      if (data._hizbVoortgang && typeof data._hizbVoortgang === 'object') localStorage.setItem('hizb_voortgang', JSON.stringify(data._hizbVoortgang));
       if (data._customMascot) localStorage.setItem('customMascot', data._customMascot);
       ok('Geïmporteerd. Pagina ververst.');
       setTimeout(() => location.reload(), 500);

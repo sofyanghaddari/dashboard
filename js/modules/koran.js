@@ -392,8 +392,9 @@ function renderChart30(container, doneSet, log) {
     if (isToday) classes.push('today');
 
     const indicator = catchup ? '↩' : done ? '✓' : '';
-    cells.push(`<div class="${classes.join(' ')}" title="${key}${done ? ' ✓' : ''}">
-      ${indicator ? `<span style="color:rgba(0,0,0,.55);font-size:.62rem;line-height:1">${indicator}</span>` : ''}
+    const ariaLabel = `${key}: ${repaired ? 'hersteld' : catchup ? 'ingehaald' : done ? 'gedaan' : 'gemist'}`;
+    cells.push(`<div class="${classes.join(' ')}" title="${key}${done ? ' ✓' : ''}" role="img" aria-label="${ariaLabel}">
+      ${indicator ? `<span style="color:rgba(0,0,0,.55);font-size:.62rem;line-height:1" aria-hidden="true">${indicator}</span>` : ''}
     </div>`);
   }
   el.innerHTML = cells.join('');
@@ -463,8 +464,10 @@ function scheduleReminder() {
     new Notification('Koran herinnering', { body: 'Tijd voor je dagelijkse hizb.' });
     scheduleReminder();
   }, target - now);
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({ type: 'SCHEDULE_HIZB_REMINDER', time: t });
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      if (reg.active) reg.active.postMessage({ type: 'SCHEDULE_HIZB_REMINDER', time: t });
+    }).catch(() => {});
   }
 }
 
