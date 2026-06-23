@@ -186,6 +186,14 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+async function fetchRawUrl(rawUrl, token) {
+  const res = await fetch(rawUrl, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' },
+  });
+  if (!res.ok) throw new Error(`GitHub raw ${res.status}`);
+  return res.text();
+}
+
 async function fetchPayload(specificFile = LATEST_FILE) {
   const token = getSetting('ghToken');
   const ids = getGistIds();
@@ -195,17 +203,27 @@ async function fetchPayload(specificFile = LATEST_FILE) {
   for (const gistId of ids) {
     try {
       const gist = await api(`/gists/${gistId}`, token);
-      // Controleer alle bestanden — soms staat het bestand onder een andere naam
       const files = Object.keys(gist.files || {});
-      content = gist.files[specificFile]?.content;
+      const fileObj = gist.files[specificFile];
+      // GitHub geeft soms geen content mee als de gist groot is → haal dan via raw_url op
+      content = fileObj?.content || null;
+      if ((!content || fileObj?.truncated) && fileObj?.raw_url) {
+        content = await fetchRawUrl(fileObj.raw_url, token);
+      }
       if (!content && specificFile === LATEST_FILE) {
         // Probeer het nieuwste backup-bestand als fallback
         const latest = files.filter(f => f.startsWith('backup-')).sort().pop();
-        if (latest) content = gist.files[latest]?.content;
+        const latestObj = latest ? gist.files[latest] : null;
+        if (latestObj) {
+          content = latestObj.content || null;
+          if ((!content || latestObj.truncated) && latestObj.raw_url) {
+            content = await fetchRawUrl(latestObj.raw_url, token);
+          }
+        }
       }
       if (content) break;
       if (!files.length) lastApiError = 'Gist is leeg (geen bestanden)';
-      else lastApiError = `Gist gevonden maar geen dashboard-backup.json — bestanden: ${files.join(', ')}`;
+      else lastApiError = `Gist gevonden maar geen ${specificFile} — bestanden: ${files.join(', ')}`;
     } catch (e) {
       lastApiError = e.message;
     }
