@@ -191,14 +191,30 @@ async function fetchPayload(specificFile = LATEST_FILE) {
   const ids = getGistIds();
   if (!token || !ids.length) throw new Error('GitHub niet geconfigureerd');
   let content = null;
+  let lastApiError = null;
   for (const gistId of ids) {
     try {
       const gist = await api(`/gists/${gistId}`, token);
+      // Controleer alle bestanden — soms staat het bestand onder een andere naam
+      const files = Object.keys(gist.files || {});
       content = gist.files[specificFile]?.content;
+      if (!content && specificFile === LATEST_FILE) {
+        // Probeer het nieuwste backup-bestand als fallback
+        const latest = files.filter(f => f.startsWith('backup-')).sort().pop();
+        if (latest) content = gist.files[latest]?.content;
+      }
       if (content) break;
-    } catch (_) {}
+      if (!files.length) lastApiError = 'Gist is leeg (geen bestanden)';
+      else lastApiError = `Gist gevonden maar geen dashboard-backup.json — bestanden: ${files.join(', ')}`;
+    } catch (e) {
+      lastApiError = e.message;
+    }
   }
-  if (!content) throw new Error('Geen backup gevonden');
+  if (!content) {
+    throw new Error(lastApiError
+      ? `Backup niet gevonden: ${lastApiError}`
+      : 'Geen backup gevonden — controleer je Gist-ID en token');
+  }
   if (isEncrypted(content)) {
     const pwd = getSetting('ghEncPwd') || await askPassword();
     if (!pwd) throw new Error('Wachtwoord verplicht');

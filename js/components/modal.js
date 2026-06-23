@@ -68,3 +68,32 @@ export function openModal(title, bodyHTML, onSubmit) {
   };
   return close;
 }
+
+export function confirmModal(message, { title = 'Bevestigen', confirmLabel = 'Doorgaan', danger = false } = {}) {
+  return new Promise((resolve) => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    backdrop.innerHTML = `
+      <div class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="cm-title" style="max-width:360px">
+        <h2 id="cm-title" style="margin-bottom:10px">${escapeHTML(title)}</h2>
+        <p style="color:var(--text-dim);font-size:.92rem;line-height:1.5;margin-bottom:20px">${escapeHTML(message)}</p>
+        <div style="display:flex;gap:10px">
+          <button class="btn secondary block" id="cm-cancel">Annuleren</button>
+          <button class="btn block ${danger ? 'danger' : ''}" id="cm-ok">${escapeHTML(confirmLabel)}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(backdrop);
+
+    const finish = (result) => { dismissBackdrop(backdrop); resolve(result); };
+    backdrop.querySelector('#cm-cancel').onclick = () => finish(false);
+    backdrop.querySelector('#cm-ok').onclick     = () => finish(true);
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) finish(false); });
+    const esc = (e) => { if (e.key === 'Escape') { document.removeEventListener('keydown', esc); finish(false); } };
+    document.addEventListener('keydown', esc);
+    setTimeout(() => backdrop.querySelector('#cm-cancel').focus(), 50);
+  });
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}

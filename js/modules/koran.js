@@ -78,7 +78,7 @@ async function renderHizb(container) {
   const fillClass = todayRec ? 'cp-fill done' : 'cp-fill';
 
   // Feature 12: inhaal conditions
-  const canCatchup = todayRec && !yestRec && yesterday >= ymd(new Date(now.getTime() - 2 * 86400000));
+  const canCatchup = todayRec && !yestRec;
   const todayCount = todayRec?.count || 1;
   const alreadyCaughtUp = yestRec?.catchup;
 
