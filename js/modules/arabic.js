@@ -1,4 +1,5 @@
 import { all, put, del } from '../db.js';
+import { icon } from '../icons.js';
 import { openModal } from '../components/modal.js';
 import { newCard, review as reviewUserCard } from '../srs.js';
 import { ymd, escapeHTML } from '../utils.js';
@@ -79,7 +80,7 @@ export async function render(container) {
     <div id="tab-words">
       <div class="srs-filter-bar">
         <div class="notes-search-wrap" style="flex:1;margin-bottom:0">
-          <span class="notes-search-icon">🔍</span>
+          <span class="notes-search-icon">${icon('search')}</span>
           <input id="srs-search" placeholder="Zoek Arabisch of Nederlands…" />
         </div>
         <select id="srs-type-filter" style="min-width:140px">
@@ -162,7 +163,7 @@ function renderCustomList(container, userCards, today) {
   if (!userCards.length) {
     list.innerHTML = `
       <div class="notes-empty">
-        <div class="notes-empty-icon">📚</div>
+        <div class="notes-empty-icon">${icon('books')}</div>
         <div class="notes-empty-title">Nog geen eigen kaarten</div>
         <div class="notes-empty-sub">Voeg handmatig toe of importeer via CSV (Arabisch[tab]vertaling)</div>
       </div>`;
@@ -504,10 +505,10 @@ function gradeInterval(card, grade) {
 }
 
 // ── Afronden sessie ───────────────────────────────────────────
-const SRS_PERFECT_MSG = ['🏆 Vlekkeloos! Je bent een machine.', '🌟 100% — koninklijk gedaan.', '🦁 Geen enkele fout. Leeuwenwerk.', '🔥 Perfect! Je staat in lichterlaaie.'];
-const SRS_GREAT_MSG   = ['💪 Sterk gedaan, door op deze weg!', '🎯 Lekker bezig, bijna foutloos.', '⚡ Goeie sessie, kampioen.'];
-const SRS_OK_MSG      = ['📈 Elke herhaling telt. Door!', '🌱 Stap voor stap groei je.', '👏 Netjes — morgen weer scherper.'];
-const SRS_LOW_MSG     = ['💡 Niet erg, herhaling is de sleutel.', '🤝 Morgen pak je ze terug.', '🧠 Het brein leert juist van fouten.'];
+const SRS_PERFECT_MSG = ['Vlekkeloos! Je bent een machine.', '100% — koninklijk gedaan.', 'Geen enkele fout. Leeuwenwerk.', 'Perfect! Je staat in lichterlaaie.'];
+const SRS_GREAT_MSG   = ['Sterk gedaan, door op deze weg!', 'Lekker bezig, bijna foutloos.', 'Goeie sessie, kampioen.'];
+const SRS_OK_MSG      = ['Elke herhaling telt. Door!', 'Stap voor stap groei je.', 'Netjes — morgen weer scherper.'];
+const SRS_LOW_MSG     = ['Niet erg, herhaling is de sleutel.', 'Morgen pak je ze terug.', 'Het brein leert juist van fouten.'];
 function srsPick(a) { return a[Math.floor(Math.random() * a.length)]; }
 
 function showCompletion(container, grades, total) {
@@ -515,15 +516,15 @@ function showCompletion(container, grades, total) {
   const again = grades.filter(g => g.grade < 3).length;
   const score = total > 0 ? Math.round(correct / total * 100) : 0;
 
-  let icon, msg;
-  if (score === 100)     { icon = '🏆'; msg = srsPick(SRS_PERFECT_MSG); }
-  else if (score >= 80)  { icon = '🌟'; msg = srsPick(SRS_GREAT_MSG); }
-  else if (score >= 50)  { icon = '👍'; msg = srsPick(SRS_OK_MSG); }
-  else                   { icon = '🌱'; msg = srsPick(SRS_LOW_MSG); }
+  let compIcon, msg;
+  if (score === 100)     { compIcon = icon('trophy'); msg = srsPick(SRS_PERFECT_MSG); }
+  else if (score >= 80)  { compIcon = icon('star');   msg = srsPick(SRS_GREAT_MSG); }
+  else if (score >= 50)  { compIcon = icon('check');  msg = srsPick(SRS_OK_MSG); }
+  else                   { compIcon = icon('bulb');   msg = srsPick(SRS_LOW_MSG); }
 
   container.innerHTML = `
     <div class="srs-completion">
-      <div class="srs-completion-icon">${icon}</div>
+      <div class="srs-completion-icon">${compIcon}</div>
       <h2>Sessie klaar!</h2>
       <p class="muted">${msg}</p>
 
@@ -832,7 +833,7 @@ function renderWritingOverview(el, container, today) {
       </div>
     </div>
     <button class="btn block" id="start-writing" ${dueWords.length === 0 ? 'disabled' : ''} style="margin-bottom:16px;max-width:280px;margin-left:auto;margin-right:auto">
-      ${dueWords.length > 0 ? `✍️ Schrijfoefening starten (${dueWords.length})` : 'Niets te oefenen vandaag'}
+      ${dueWords.length > 0 ? `${icon('pencil')} Schrijfoefening starten (${dueWords.length})` : 'Niets te oefenen vandaag'}
     </button>
     <p class="muted" style="font-size:.82rem;text-align:center;margin-bottom:16px">
       Typ het Arabische woord bij de Nederlandse betekenis.<br>Diacritische tekens (harakat) worden genegeerd bij de beoordeling.
@@ -946,7 +947,7 @@ function showWritingCompletion(container, results, today) {
 
   container.innerHTML = `
     <div class="srs-completion">
-      <div class="srs-completion-icon">${score === 100 ? '✍️' : score >= 60 ? '📝' : '✏️'}</div>
+      <div class="srs-completion-icon">${score === 100 ? icon('pencil') : score >= 60 ? icon('note') : icon('edit')}</div>
       <h2>Schrijfoefening klaar!</h2>
       <p class="muted">${score === 100 ? 'Elke letter perfect! Je spelling is scherp.' : score >= 60 ? 'Goed gedaan, je hebt de meeste woorden goed.' : 'Herhaling is de sleutel — morgen weer scherper.'}</p>
       <div class="srs-completion-stats">

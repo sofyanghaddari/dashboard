@@ -1,4 +1,5 @@
 import { all } from '../db.js';
+import { icon } from '../icons.js';
 import { ymd, escapeHTML, fmtMoney as fmtMoneyUtil } from '../utils.js';
 
 export async function render(container) {
@@ -225,7 +226,7 @@ function renderWeekdayStats(rides, cutoff) {
     <div class="stats-section-wrap" style="--i:1">
       <div class="stats-card">
         <div class="stats-card-title">Beste rijdagen</div>
-        <div class="wd-best-pill">🏆 ${best.full} — gem. ${fmtMoney(Math.round(best.avg))}/dag</div>
+        <div class="wd-best-pill">${icon('trophy')} ${best.full} — gem. ${fmtMoney(Math.round(best.avg))}/dag</div>
         <div class="wd-bars">
           ${ordered.map((s, i) => `
             <div class="wd-col${s.wd === best.wd ? ' wd-best' : ''}${s.cnt === 0 ? ' wd-empty' : ''}"
@@ -298,7 +299,7 @@ function renderKoranRing(log) {
             </svg>
             <div class="koran-ring-inner">
               <div class="koran-streak-num" data-count="${streak}">${streak}</div>
-              <div class="koran-streak-lbl">🔥 streak</div>
+              <div class="koran-streak-lbl">${icon('flame')} streak</div>
             </div>
           </div>
           <div class="koran-ring-stats">

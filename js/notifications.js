@@ -61,7 +61,7 @@ function _setTimer(id, title, dueDate) {
   const delay = new Date(dueDate + 'T08:00:00') - Date.now();
   if (delay <= 0 || delay > 7 * 86400000) return;
   _timers[id] = setTimeout(() => {
-    _notify('task-' + id, '📅 Deadline vandaag', title);
+    _notify('task-' + id, 'Deadline vandaag', title);
     delete _timers[id];
   }, delay);
 }
@@ -75,7 +75,7 @@ async function checkArabicCards() {
   const due = cards.filter(c => !c.dueDate || c.dueDate <= _today());
   if (!due.length) return;
   _markNotifiedToday('arabic_due');
-  _notify('arabic_due', '📚 Arabische herhaling klaar',
+  _notify('arabic_due', 'Arabische herhaling klaar',
     `${due.length} kaart${due.length === 1 ? '' : 'en'} staat klaar — open Arabisch om te oefenen.`);
 }
 
@@ -107,10 +107,10 @@ async function checkMonthHalfway() {
   const tekort = monthGoal / 2 - total;
   localStorage.setItem('notif_halfway_' + monthKey, '1');
   if (tekort <= 0) {
-    _notify('month_halfway', '📈 Halverwege — je loopt voor!',
-      `€ ${total.toFixed(0)} van € ${monthGoal.toFixed(0)} — blijf rijden! 💪`);
+    _notify('month_halfway', 'Halverwege — je loopt voor!',
+      `€ ${total.toFixed(0)} van € ${monthGoal.toFixed(0)}`);
   } else {
-    _notify('month_halfway', '📈 Halverwege de maand',
+    _notify('month_halfway', 'Halverwege de maand',
       `€ ${total.toFixed(0)} van € ${monthGoal.toFixed(0)} — € ${tekort.toFixed(0)} tekort, gas erbij!`);
   }
 }
@@ -125,10 +125,10 @@ async function checkInvoices() {
   _markNotifiedToday('invoice_check');
   const followup = overdue.filter(inv => inv.dueDate < weekAgo);
   if (followup.length) {
-    _notify('invoice_check', '💸 Factuur follow-up nodig',
+    _notify('invoice_check', 'Factuur follow-up nodig',
       `${followup.length} factuur${followup.length === 1 ? '' : 'en'} al 7+ dagen onbetaald — stuur een herinnering.`);
   } else {
-    _notify('invoice_check', '📄 Factuur vervallen',
+    _notify('invoice_check', 'Factuur vervallen',
       `${overdue.length} openstaande factuur${overdue.length === 1 ? '' : 'en'} — herinner de klant.`);
   }
 }
@@ -150,7 +150,7 @@ async function checkGoalsBehind() {
   });
   if (!behind.length) return;
   _markNotifiedToday('goal_behind');
-  _notify('goal_behind', '📉 Doel loopt achter',
+  _notify('goal_behind', 'Doel loopt achter',
     `"${behind[0].title}" loopt achter op schema — tijd om bij te sturen.`);
 }
 
@@ -161,7 +161,7 @@ function checkBackupAge() {
   if (!lastSync) return;
   if ((Date.now() - new Date(lastSync).getTime()) < 7 * 86400000) return;
   _markNotifiedToday('backup_old');
-  _notify('backup_old', '☁️ Backup al 7 dagen oud',
+  _notify('backup_old', 'Backup al 7 dagen oud',
     'Tik op de sync-knop bovenin om je data veilig te stellen.');
 }
 
@@ -182,7 +182,7 @@ async function checkWeatherAlert() {
     };
     const desc = descs[code] || 'Slecht weer';
     _markNotifiedToday('weather_alert');
-    _notify('weather_alert', `🌧 Perfect taxiweer — ${desc}!`,
+    _notify('weather_alert', `Perfect taxiweer — ${desc}!`,
       'Mensen willen liever niet lopen. Goede kansen in Amsterdam!');
   } catch (_) {}
 }
@@ -236,7 +236,7 @@ export function checkPendingNotifications() {
     if (lastFired !== today) {
       localStorage.setItem('lastTaskNotifDate', today);
       setTimeout(() => todayTasks.forEach(n =>
-        _notify('task-' + n.id, '📅 Deadline vandaag', n.title)), 3000);
+        _notify('task-' + n.id, 'Deadline vandaag', n.title)), 3000);
     }
   }
   valid.forEach(n => _setTimer(n.id, n.title, n.dueDate));

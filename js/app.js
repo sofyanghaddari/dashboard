@@ -1,4 +1,5 @@
 import { openDB, onWrite, onStorageError, all } from './db.js';
+import { icon } from './icons.js';
 import { err as toastErr, info as toastInfo } from './components/toast.js';
 import { initRealtimeSync, scheduleAutoPush } from './auto-realtime-sync.js';
 import { register, initRouter, navigate, currentRoute } from './router.js';
@@ -44,15 +45,15 @@ async function bootApp() {
     if (rides.length === 0) {
       try {
         await syncMerge();
-        toastInfo('Data opgehaald uit backup ☁️');
+        toastInfo('Data opgehaald uit backup');
       } catch (_) {
-        setTimeout(() => toastInfo('Geen data gevonden — voer je GitHub-token in via ⚙️ → Data', { duration: 10000 }), 3000);
+        setTimeout(() => toastInfo('Geen data gevonden — voer je GitHub-token in via Instellingen → Data', { duration: 10000 }), 3000);
       }
     }
   } else if (!getSyncStatus().enabled) {
     const rides = await all('rides').catch(() => []);
     if (rides.length === 0) {
-      setTimeout(() => toastInfo('Geen backup gekoppeld — voer je GitHub-token in via ⚙️ → Data', { duration: 10000 }), 3000);
+      setTimeout(() => toastInfo('Geen backup gekoppeld — voer je GitHub-token in via Instellingen → Data', { duration: 10000 }), 3000);
     }
   }
   register('dashboard', renderDashboard);
@@ -138,7 +139,7 @@ async function bootApp() {
         'font-size:.9rem','animation:bk-fade-up .3s ease',
       ].join(';');
       banner.innerHTML = `
-        <span style="font-size:1.2rem">📲</span>
+        <span style="display:inline-flex;color:var(--accent)">${icon('download', 'ic-lg')}</span>
         <span style="flex:1">Installeer de app op je homescreen</span>
         <button class="btn" style="padding:6px 14px;font-size:.83rem;white-space:nowrap" id="install-yes">Installeren</button>
         <button class="btn secondary" style="padding:6px 10px;font-size:.83rem" id="install-no">✕</button>
