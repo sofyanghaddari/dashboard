@@ -54,6 +54,10 @@ const PATHS = {
   route:     '<circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="M8 6h6a3 3 0 0 1 0 6H10a3 3 0 0 0 0 6h6"/>',
   pin:       '<path d="M12 21s6-5.3 6-10.2A6 6 0 0 0 6 10.8C6 15.7 12 21 12 21z"/><circle cx="12" cy="10.6" r="2.2"/>',
   list:      '<path d="M9 6.5h10M9 12h10M9 17.5h10"/><circle cx="5" cy="6.5" r="1" fill="currentColor" stroke="none"/><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="5" cy="17.5" r="1" fill="currentColor" stroke="none"/>',
+  palette:   '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.3 0 2-1 2-2s.7-2 2-2h1.6A3 3 0 0 0 20.5 12 8.5 8.5 0 0 0 12 3.5z"/><circle cx="8" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="10.5" r="1" fill="currentColor" stroke="none"/>',
+  box:       '<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4"/><path d="M12 12.2V20"/>',
+  shield:    '<path d="M12 3.5l7 2.4v5.3c0 4.4-3 7.5-7 9.3-4-1.8-7-4.9-7-9.3V5.9z"/><path d="M9.2 12l2 2 3.6-3.8"/>',
+  database:  '<ellipse cx="12" cy="6" rx="6.5" ry="2.6"/><path d="M5.5 6v6c0 1.4 2.9 2.6 6.5 2.6s6.5-1.2 6.5-2.6V6"/><path d="M5.5 12v6c0 1.4 2.9 2.6 6.5 2.6s6.5-1.2 6.5-2.6v-6"/>',
   // weer
   'w-clear':   '<circle cx="12" cy="12" r="4"/><path d="M12 3.5v2.2M12 18.3v2.2M4.4 12h2.2M17.4 12h2.2M6.4 6.4l1.5 1.5M16.1 16.1l1.5 1.5M6.4 17.6l1.5-1.5M16.1 7.9l1.5-1.5"/>',
   'w-partly':  '<circle cx="8.5" cy="8" r="3"/><path d="M8.5 2.6v1.5M3.1 8h1.5M4.7 4.2l1 1M13 8.6a4 4 0 0 1 4.3 3.3 3 3 0 0 1-.5 6H8.4a3.4 3.4 0 0 1-.3-6.8A4.2 4.2 0 0 1 13 8.6z"/>',

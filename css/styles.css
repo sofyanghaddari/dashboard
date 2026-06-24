@@ -1167,6 +1167,9 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
 .sync-pill[data-state="err"] { color: var(--danger); border-color: var(--danger); }
 .sync-spin { display: inline-block; animation: spin 1s linear infinite; }
 .sync-ic { width: 14px; height: 14px; vertical-align: -0.12em; }
+.conn-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.conn-dot.on  { background: var(--ok);     box-shadow: 0 0 0 3px rgba(154,179,140,.18); }
+.conn-dot.off { background: var(--danger); box-shadow: 0 0 0 3px rgba(217,140,132,.18); }
 .island-icon .ic { width: 1em; height: 1em; vertical-align: -0.14em; }
 @keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
 
@@ -1446,7 +1449,9 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   background: var(--bg-elev-2); border: 1px solid var(--border);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.05rem; flex-shrink: 0;
+  color: var(--accent);
 }
+.settings-section-icon .ic { width: 19px; height: 19px; }
 .settings-section-title {
   font-size: .92rem; font-weight: 600; color: var(--text); letter-spacing: .01em;
 }
@@ -4059,7 +4064,8 @@ body::before {
   cursor: pointer;
   transition: background var(--transition), color var(--transition), transform var(--transition), box-shadow var(--transition);
 }
-.settings-tab-icon { font-size: 1.1rem; line-height: 1; }
+.settings-tab-icon { font-size: 1.1rem; line-height: 1; display: inline-flex; }
+.settings-tab-icon .ic { width: 18px; height: 18px; }
 .settings-tab.active {
   background: var(--bg-elev);
   color: var(--text);

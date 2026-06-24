@@ -45,7 +45,7 @@ export async function openGistPicker() {
         </div>
         <div class="row" style="flex:0 0 auto;gap:4px">
           ${g.isCurrent ? '' : `<button class="btn" data-use="${g.id}">Gebruik deze</button>`}
-          <button class="btn secondary" data-copy-id="${g.id}">📋</button>
+          <button class="btn secondary" data-copy-id="${g.id}">${icon('clipboard')}</button>
         </div>
       </div>
     `).join('') + '</div>';
@@ -119,11 +119,11 @@ const APP_VERSION = 'v123';
 let _lastSettingsTab = 'profiel';
 
 const SETTINGS_TABS = [
-  { id: 'profiel',  icon: '👤', label: 'Profiel' },
-  { id: 'weergave', icon: '🎨', label: 'Stijl' },
-  { id: 'doelen',   icon: '🎯', label: 'Doelen' },
-  { id: 'data',     icon: '☁️', label: 'Data' },
-  { id: 'systeem',  icon: '🔒', label: 'Systeem' },
+  { id: 'profiel',  icon: 'user',    label: 'Profiel' },
+  { id: 'weergave', icon: 'palette', label: 'Stijl' },
+  { id: 'doelen',   icon: 'target',  label: 'Doelen' },
+  { id: 'data',     icon: 'cloud',   label: 'Data' },
+  { id: 'systeem',  icon: 'lock',    label: 'Systeem' },
 ];
 
 export async function openSettings(onClose) {
@@ -146,7 +146,7 @@ export async function openSettings(onClose) {
       <div class="settings-tabs" role="tablist">
         ${SETTINGS_TABS.map(t => `
           <button type="button" role="tab" class="settings-tab ${t.id === activeTab ? 'active' : ''}" data-pane-btn="${t.id}" aria-selected="${t.id === activeTab}">
-            <span class="settings-tab-icon">${t.icon}</span><span>${t.label}</span>
+            <span class="settings-tab-icon">${icon(t.icon)}</span><span>${t.label}</span>
           </button>`).join('')}
       </div>
 
@@ -156,7 +156,7 @@ export async function openSettings(onClose) {
       <!-- PROFIEL -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">👤</span>
+          <span class="settings-section-icon">${icon('user')}</span>
           <div>
             <div class="settings-section-title">Profiel</div>
             <div class="settings-section-desc">Naam en persoonlijke stijl</div>
@@ -199,7 +199,7 @@ export async function openSettings(onClose) {
       <!-- WEERGAVE -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">🎨</span>
+          <span class="settings-section-icon">${icon('palette')}</span>
           <div>
             <div class="settings-section-title">Weergave</div>
             <div class="settings-section-desc">Thema, kleuren en dichtheid</div>
@@ -242,7 +242,7 @@ export async function openSettings(onClose) {
       <!-- DOELEN -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">🎯</span>
+          <span class="settings-section-icon">${icon('target')}</span>
           <div>
             <div class="settings-section-title">Doelen</div>
             <div class="settings-section-desc">Dagelijkse en maandelijkse inkomenstargets</div>
@@ -276,7 +276,7 @@ export async function openSettings(onClose) {
       <!-- HERINNERINGEN -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">🔔</span>
+          <span class="settings-section-icon">${icon('bell')}</span>
           <div>
             <div class="settings-section-title">Herinneringen</div>
             <div class="settings-section-desc">Pushmeldingen voor taken en Koran-herinnering</div>
@@ -288,15 +288,15 @@ export async function openSettings(onClose) {
               <div class="settings-row-title">Meldingen</div>
               <div class="settings-row-sub muted" id="notif-status-label">${
                 !('Notification' in window) ? 'Niet ondersteund op dit apparaat' :
-                Notification.permission === 'granted' ? '✅ Ingeschakeld — je ontvangt meldingen' :
-                Notification.permission === 'denied'  ? '🚫 Geblokkeerd — zet aan via iPhone-instellingen → Safari' :
+                Notification.permission === 'granted' ? 'Ingeschakeld — je ontvangt meldingen' :
+                Notification.permission === 'denied'  ? 'Geblokkeerd — zet aan via iPhone-instellingen → Safari' :
                 'Uit — tik om meldingen in te schakelen'
               }</div>
             </div>
             ${'Notification' in window && Notification.permission !== 'denied' && Notification.permission !== 'granted'
               ? `<button type="button" class="btn" id="notif-enable-btn" style="flex-shrink:0;white-space:nowrap">Inschakelen</button>`
               : Notification.permission === 'granted'
-                ? `<span style="font-size:1.3rem">🔔</span>`
+                ? `<span style="color:var(--ok);display:inline-flex">${icon('bell', 'ic-lg')}</span>`
                 : `<button type="button" class="btn secondary" id="notif-settings-btn" style="flex-shrink:0;font-size:.8rem">Instellingen</button>`
             }
           </div>
@@ -320,7 +320,7 @@ export async function openSettings(onClose) {
       <!-- ARABISCH LEREN -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">📚</span>
+          <span class="settings-section-icon">${icon('books')}</span>
           <div>
             <div class="settings-section-title">Arabisch leren</div>
             <div class="settings-section-desc">Spaced repetition — dagelijkse dosering en weergave</div>
@@ -424,7 +424,7 @@ export async function openSettings(onClose) {
       <!-- BEVEILIGING -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">🔒</span>
+          <span class="settings-section-icon">${icon('lock')}</span>
           <div>
             <div class="settings-section-title">Beveiliging</div>
             <div class="settings-section-desc">Vergrendel de app met PIN of biometrie</div>
@@ -476,7 +476,7 @@ export async function openSettings(onClose) {
       <!-- SYNCHRONISATIE -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">☁️</span>
+          <span class="settings-section-icon">${icon('cloud')}</span>
           <div>
             <div class="settings-section-title">Synchronisatie</div>
             <div class="settings-section-desc">
@@ -510,7 +510,7 @@ export async function openSettings(onClose) {
             <button type="button" class="btn block" id="gh-setup">Verbind met GitHub</button>
             <button type="button" class="btn secondary" id="gh-test-conn" title="Test of het token + gist-ID kloppen">Test</button>
           </div>
-          <p class="muted" style="font-size:.76rem;margin-top:8px;padding:0 2px">💡 Gebruik "Test" om te checken of je token en gist-ID kloppen voordat je verbindt.</p>
+          <p class="muted" style="font-size:.76rem;margin-top:8px;padding:0 2px">Gebruik "Test" om te checken of je token en gist-ID kloppen voordat je verbindt.</p>
         ` : `
           <div class="settings-group">
             <div class="settings-row">
@@ -590,7 +590,7 @@ export async function openSettings(onClose) {
       <!-- GMAIL -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">📧</span>
+          <span class="settings-section-icon">${icon('mail')}</span>
           <div>
             <div class="settings-section-title">Gmail automatisch versturen</div>
             <div class="settings-section-desc">${localStorage.getItem('gmailClientId') ? '✓ Gekoppeld — facturen worden direct verstuurd' : 'Koppel Gmail om facturen automatisch te mailen'}</div>
@@ -632,7 +632,7 @@ export async function openSettings(onClose) {
       <!-- DATA & EXPORT -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">📦</span>
+          <span class="settings-section-icon">${icon('box')}</span>
           <div>
             <div class="settings-section-title">Data &amp; Export</div>
             <div class="settings-section-desc">Importeer, exporteer en print je gegevens</div>
@@ -701,7 +701,7 @@ export async function openSettings(onClose) {
       <!-- BADGES -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">🏆</span>
+          <span class="settings-section-icon">${icon('trophy')}</span>
           <div>
             <div class="settings-section-title">Badges</div>
             <div class="settings-section-desc">${earned.size} van ${BADGES.length} behaald</div>
@@ -720,7 +720,7 @@ export async function openSettings(onClose) {
       <!-- OPSLAG & VERBINDING -->
       <div class="settings-section">
         <div class="settings-section-header">
-          <span class="settings-section-icon">📊</span>
+          <span class="settings-section-icon">${icon('stats')}</span>
           <div>
             <div class="settings-section-title">Opslag &amp; Verbinding</div>
             <div class="settings-section-desc">Apparaatstatus en offline-bescherming</div>
@@ -739,7 +739,7 @@ export async function openSettings(onClose) {
               <div class="settings-row-title">Verbinding</div>
               <div class="settings-row-sub muted">${navigator.onLine ? 'Online' : 'Offline'}</div>
             </div>
-            <span style="flex-shrink:0">${navigator.onLine ? '🟢' : '🔴'}</span>
+            <span class="conn-dot ${navigator.onLine ? 'on' : 'off'}" style="flex-shrink:0"></span>
           </div>
         </div>
         <div id="storage-info" class="muted" style="font-size:.82rem;margin-top:8px;padding:0 2px">Opslag laden…</div>
@@ -814,11 +814,11 @@ export async function openSettings(onClose) {
       const label = backdrop.querySelector('#notif-status-label');
       if (result === 'granted') {
         checkPendingNotifications();
-        ok('Meldingen ingeschakeld 🔔');
-        if (label) label.textContent = '✅ Ingeschakeld — je ontvangt meldingen';
-        notifEnableBtn.replaceWith(Object.assign(document.createElement('span'), { textContent: '🔔', style: 'font-size:1.3rem' }));
+        ok('Meldingen ingeschakeld');
+        if (label) label.textContent = 'Ingeschakeld — je ontvangt meldingen';
+        notifEnableBtn.replaceWith(Object.assign(document.createElement('span'), { innerHTML: icon('bell', 'ic-lg'), style: 'color:var(--ok);display:inline-flex' }));
       } else if (result === 'denied') {
-        if (label) label.textContent = '🚫 Geblokkeerd — zet aan via iPhone-instellingen → Safari';
+        if (label) label.textContent = 'Geblokkeerd — zet aan via iPhone-instellingen → Safari';
         notifEnableBtn.remove();
       } else {
         notifEnableBtn.disabled = false;
@@ -1136,9 +1136,9 @@ export async function openSettings(onClose) {
   if (onlineRow) {
     const updateOnline = () => {
       const sub = onlineRow.querySelector('.settings-row-sub');
-      const icon = onlineRow.querySelector('span:last-child');
+      const dot = onlineRow.querySelector('.conn-dot');
       if (sub) sub.textContent = navigator.onLine ? 'Online' : 'Offline';
-      if (icon) icon.textContent = navigator.onLine ? '🟢' : '🔴';
+      if (dot) dot.className = `conn-dot ${navigator.onLine ? 'on' : 'off'}`;
     };
     window.addEventListener('online', updateOnline, _settingsSig);
     window.addEventListener('offline', updateOnline, _settingsSig);
@@ -1165,7 +1165,7 @@ export async function openSettings(onClose) {
       const el = backdrop.querySelector('#storage-info');
       if (el) el.innerHTML = `
         Gebruikt: <b>${usedMB} MB</b> van ${quotaMB} MB beschikbaar
-        <div style="margin-top:4px">${persistent ? '🔒 Persistent — browser ruimt niet automatisch op' : '⚠️ Niet persistent — klik hieronder om te beschermen'}</div>
+        <div style="margin-top:4px;display:flex;align-items:center;gap:6px">${persistent ? `${icon('lock')} Persistent — browser ruimt niet automatisch op` : `${icon('warning')} Niet persistent — klik hieronder om te beschermen`}</div>
         ${!persistent && navigator.storage.persist ? '<button class="btn secondary" id="persist-btn" style="margin-top:8px">Maak opslag persistent</button>' : ''}
       `;
       const pb = backdrop.querySelector('#persist-btn');
