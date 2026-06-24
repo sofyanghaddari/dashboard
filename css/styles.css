@@ -4565,6 +4565,15 @@ label.subtask {
   transition: background .15s;
 }
 .bk-sf-sec-btn:active { background: var(--bg-elev-3); }
+.bk-sf-sec-btn { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.bk-sf-sec-btn svg { width: 15px; height: 15px; flex-shrink: 0; opacity: .8; }
+
+/* Detail-modal actieknoppen — consistente klassen i.p.v. inline styles */
+.bk-act { flex: 1; }
+.btn.bk-act-pay { color: var(--ok); border-color: rgba(154,179,140,.45); background: rgba(154,179,140,.10); }
+.bk-act-wide { width: 100%; margin-top: 8px; }
+.btn.bk-act-del { color: var(--danger); border-color: rgba(217,140,132,.35); background: rgba(217,140,132,.08); }
+.bk-detail-send-btn { display: flex; align-items: center; justify-content: center; gap: 7px; }
 
 /* Invoice overlay (in-app iframe viewer) */
 .bk-invoice-overlay {

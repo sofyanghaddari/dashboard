@@ -897,7 +897,7 @@ function renderBTW(view, invoices, purchases, container) {
       </div>
     </div>
 
-    <button class="btn" id="btw-copy" style="width:100%;margin-top:14px">📋 Kopieer aangifte-samenvatting</button>
+    <button class="btn secondary bk-act-wide" id="btw-copy" style="margin-top:14px">Kopieer aangifte-samenvatting</button>
 
     <div class="bk-btw-disclaimer">
       ℹ️ Dit is een indicatie. Controleer altijd via Mijn Belastingdienst Zakelijk. Aangifte uiterlijk ${fmtDateLong(deadline)}.
@@ -1125,7 +1125,7 @@ function openClientDetailModal(client, invoices, container) {
       <button type="button" class="modal-close" id="cd-x">×</button>
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
         <div style="font-size:1.25rem;font-weight:800">${escapeHTML(client.name || '—')}</div>
-        <button class="btn" id="cd-edit" style="font-size:.8rem;padding:6px 12px">✏️ Bewerken</button>
+        <button class="btn secondary" id="cd-edit" style="font-size:.8rem;padding:6px 12px">Bewerken</button>
       </div>
       ${client.address ? `<div style="font-size:.85rem;color:var(--text-dim)">${escapeHTML(client.address)}</div>` : ''}
       ${client.city    ? `<div style="font-size:.85rem;color:var(--text-dim)">${escapeHTML(client.city)}</div>` : ''}
@@ -1153,7 +1153,7 @@ function openClientDetailModal(client, invoices, container) {
         </div>
       ` : '<p class="muted" style="font-size:.85rem;margin-top:12px">Nog geen facturen voor deze klant</p>'}
 
-      <button class="btn" id="cd-del" style="width:100%;margin-top:16px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Klant verwijderen</button>
+      <button class="btn secondary bk-act-wide bk-act-del" id="cd-del" style="margin-top:16px">Klant verwijderen</button>
     </div>
   `;
 
@@ -1242,7 +1242,7 @@ function openNewClientModal(container) {
       <h2 style="margin:0 0 16px">Nieuwe klant</h2>
       <form id="nc-form" autocomplete="off">
         <div class="bk-form-section">
-          <div class="bk-section-title">Klantgegevens</div>
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"/></svg>Klantgegevens</div>
           <label>Bedrijfsnaam / naam *</label>
           <input id="nc-name" type="text" placeholder="Bedrijfsnaam" required />
           <label>Straat + huisnummer</label>
@@ -1948,7 +1948,7 @@ function openNewPurchaseModal(container) {
       </div>
       <form id="pk-form" autocomplete="off">
         <div class="bk-form-section">
-          <div class="bk-section-title">Kosten</div>
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5a2 2 0 0 1 2-2h5.2a2 2 0 0 1 1.4.6l6.4 6.4a1.8 1.8 0 0 1 0 2.5l-4.8 4.8a1.8 1.8 0 0 1-2.5 0L5.3 13.4A2 2 0 0 1 4 11.5z"/><circle cx="8.4" cy="9.4" r="1.1" fill="currentColor" stroke="none"/></svg>Kosten</div>
           <label>Leverancier / winkel *</label>
           <input id="pk-vendor" type="text" placeholder="bijv. Shell, Gamma, …" required />
           <label>Omschrijving</label>
@@ -1972,7 +1972,7 @@ function openNewPurchaseModal(container) {
           <div id="pk-calc" class="bk-calc-preview" style="display:none"></div>
         </div>
         <div class="bk-form-section">
-          <div class="bk-section-title">Datum</div>
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.2" width="16" height="14.6" rx="2"/><path d="M4 9.4h16"/><path d="M8 3.4v3.2"/><path d="M16 3.4v3.2"/></svg>Datum</div>
           <label>Datum</label>
           <input id="pk-date" type="date" value="${todayStr}" required />
           <label>Factuurnummer leverancier (optioneel)</label>
@@ -2112,7 +2112,7 @@ function openNewKmModal(container) {
       <h2 style="margin:0 0 16px">Rit registreren</h2>
       <form id="km-form" autocomplete="off">
         <div class="bk-form-section">
-          <div class="bk-section-title">Ritgegevens</div>
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l1.5-4.2A2 2 0 0 1 8.4 7.4h7.2a2 2 0 0 1 1.9 1.4L19 13"/><rect x="3.6" y="12.8" width="16.8" height="4" rx="1.2"/><circle cx="7.4" cy="18" r="1.4"/><circle cx="16.6" cy="18" r="1.4"/></svg>Ritgegevens</div>
           <label>Datum *</label>
           <input id="km-date" type="date" value="${todayStr}" required />
           <label>Van *</label>
@@ -2225,14 +2225,16 @@ function openDetailModal(inv, container) {
 
       ${inv.note ? `<div class="bk-detail-block"><div class="bk-detail-label">Notitie</div><div class="bk-detail-note">${escapeHTML(inv.note)}</div></div>` : ''}
 
-      <button class="btn block bk-detail-send-btn" id="det-send">📤 Factuur versturen</button>
+      <button class="btn block bk-detail-send-btn" id="det-send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M20 4 11 13"/><path d="M20 4l-6 16-3.5-7.5L3 9z"/></svg>
+        Factuur versturen</button>
       <div class="bk-detail-actions">
-        <button class="btn" id="det-edit" style="flex:1">✏️ Bewerken</button>
-        <button class="btn" id="det-pdf"  style="flex:1;background:var(--accent);color:var(--on-accent);border-color:var(--accent)">📄 PDF</button>
-        ${status !== 'betaald' ? `<button class="btn" id="det-paid" style="flex:1;background:rgba(154,179,140,.2);color:var(--ok);border-color:rgba(154,179,140,.4)">✓ Betaald</button>` : ''}
+        <button class="btn secondary bk-act" id="det-edit">Bewerken</button>
+        <button class="btn secondary bk-act" id="det-pdf">PDF</button>
+        ${status !== 'betaald' ? `<button class="btn secondary bk-act bk-act-pay" id="det-paid">Betaald</button>` : ''}
       </div>
-      ${status !== 'betaald' ? `<button class="btn" id="det-remind" style="width:100%;margin-top:8px;background:rgba(191,176,154,.1);color:var(--accent);border-color:rgba(191,176,154,.3);font-size:.85rem">📋 Kopieer betalingsherinnering</button>` : ''}
-      <button class="btn" id="det-del" style="width:100%;margin-top:8px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
+      ${status !== 'betaald' ? `<button class="btn secondary bk-act-wide" id="det-remind">Kopieer betalingsherinnering</button>` : ''}
+      <button class="btn secondary bk-act-wide bk-act-del" id="det-del">Verwijderen</button>
     </div>
   `;
 
@@ -2306,8 +2308,8 @@ function openPurchaseDetailModal(purchase, container) {
         <div class="bk-detail-row bk-detail-total"><span>Totaal incl.</span><span class="money" style="color:var(--danger)">${fmtMoney(purchase.amountIncl || 0)}</span></div>
       </div>
 
-      <button class="btn" id="pd-edit" style="width:100%;margin-top:12px">✏️ Bewerken</button>
-      <button class="btn" id="pd-del" style="width:100%;margin-top:8px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
+      <button class="btn secondary bk-act-wide" id="pd-edit" style="margin-top:12px">Bewerken</button>
+      <button class="btn secondary bk-act-wide bk-act-del" id="pd-del">Verwijderen</button>
     </div>
   `;
 
@@ -2339,7 +2341,7 @@ function openEditPurchaseModal(purchase, container) {
       <h2 style="margin:0 0 16px">Kosten bewerken</h2>
       <form id="epk-form" autocomplete="off">
         <div class="bk-form-section">
-          <div class="bk-section-title">Kosten</div>
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5a2 2 0 0 1 2-2h5.2a2 2 0 0 1 1.4.6l6.4 6.4a1.8 1.8 0 0 1 0 2.5l-4.8 4.8a1.8 1.8 0 0 1-2.5 0L5.3 13.4A2 2 0 0 1 4 11.5z"/><circle cx="8.4" cy="9.4" r="1.1" fill="currentColor" stroke="none"/></svg>Kosten</div>
           <label>Leverancier / winkel *</label>
           <input id="epk-vendor" type="text" placeholder="bijv. Shell, Gamma, …" value="${escapeHTML(purchase.vendor || '')}" required />
           <label>Omschrijving</label>
@@ -2363,7 +2365,7 @@ function openEditPurchaseModal(purchase, container) {
           <div id="epk-calc" class="bk-calc-preview" style="display:none"></div>
         </div>
         <div class="bk-form-section">
-          <div class="bk-section-title">Datum</div>
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.2" width="16" height="14.6" rx="2"/><path d="M4 9.4h16"/><path d="M8 3.4v3.2"/><path d="M16 3.4v3.2"/></svg>Datum</div>
           <label>Datum</label>
           <input id="epk-date" type="date" value="${escapeHTML(purchase.date || ymd())}" required />
           <label>Factuurnummer leverancier (optioneel)</label>
@@ -2440,8 +2442,8 @@ function openKmDetailModal(k, container) {
         ${k.purpose ? `<div class="bk-detail-row"><span>Doel</span><span>${escapeHTML(k.purpose)}</span></div>` : ''}
         ${!k.isPrivate ? `<div class="bk-detail-row bk-detail-total"><span>Aftrek (€0,23/km)</span><span class="money" style="color:var(--ok)">${fmtMoney((Number(k.km) || 0) * KM_VERGOEDING)}</span></div>` : ''}
       </div>
-      <button class="btn" id="kd-edit" style="width:100%;margin-top:12px">✏️ Bewerken</button>
-      <button class="btn" id="kd-del" style="width:100%;margin-top:8px;background:rgba(217,140,132,.1);color:var(--danger);border:1px solid rgba(217,140,132,.2)">🗑️ Verwijderen</button>
+      <button class="btn secondary bk-act-wide" id="kd-edit" style="margin-top:12px">Bewerken</button>
+      <button class="btn secondary bk-act-wide bk-act-del" id="kd-del">Verwijderen</button>
     </div>
   `;
 
@@ -2473,7 +2475,7 @@ function openEditKmModal(k, container) {
       <h2 style="margin:0 0 16px">Rit bewerken</h2>
       <form id="ekm-form" autocomplete="off">
         <div class="bk-form-section">
-          <div class="bk-section-title">Ritgegevens</div>
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l1.5-4.2A2 2 0 0 1 8.4 7.4h7.2a2 2 0 0 1 1.9 1.4L19 13"/><rect x="3.6" y="12.8" width="16.8" height="4" rx="1.2"/><circle cx="7.4" cy="18" r="1.4"/><circle cx="16.6" cy="18" r="1.4"/></svg>Ritgegevens</div>
           <label>Datum *</label>
           <input id="ekm-date" type="date" value="${escapeHTML(k.date || ymd())}" required />
           <label>Van *</label>
@@ -3079,9 +3081,9 @@ function openSendModal(inv, bedrijf, container) {
       ${!configured ? `<p style="font-size:.78rem;color:var(--text-dim);text-align:center;margin:8px 0 0">Gmail instellen via ⚙️ → Data voor volledig versturen</p>` : ''}
 
       <div class="bk-sf-sec">
-        <button id="snd-pdf" class="bk-sf-sec-btn">📄 PDF opslaan</button>
-        <button id="snd-wa"  class="bk-sf-sec-btn">💬 WhatsApp</button>
-        <button id="snd-view" class="bk-sf-sec-btn">🖨️ Bekijken</button>
+        <button id="snd-pdf" class="bk-sf-sec-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7L18 8v12.5H6V4.5"/><path d="M13 3.5V8h4.5"/><path d="M12 11.5v6"/><path d="M9.4 15l2.6 2.6 2.6-2.6"/></svg>PDF opslaan</button>
+        <button id="snd-wa"  class="bk-sf-sec-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.4-4A7.5 7.5 0 1 1 8 18.6z"/></svg>WhatsApp</button>
+        <button id="snd-view" class="bk-sf-sec-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.7"/></svg>Bekijken</button>
       </div>
     </div>
   `;
