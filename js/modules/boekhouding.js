@@ -354,9 +354,15 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
     ` : ''}
 
     <div class="bk-quick-actions">
-      <button class="bk-qa" id="qa-factuur">🧾<span>Nieuwe factuur</span></button>
-      <button class="bk-qa" id="qa-kosten">🛒<span>Kosten boeken</span></button>
-      <button class="bk-qa" id="qa-km">🚗<span>Km registreren</span></button>
+      <button class="bk-qa" id="qa-factuur">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h7L18 8.5V20a.5.5 0 0 1-.5.5H6a.5.5 0 0 1-.5-.5V4a.5.5 0 0 1 .5-.5z"/><path d="M12.8 3.5V8.5H18"/><path d="M11.6 12v5"/><path d="M9.1 14.5h5"/></svg>
+        <span>Nieuwe factuur</span></button>
+      <button class="bk-qa" id="qa-kosten">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.7h12v16.8l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3z"/><path d="M8.6 8.2h6.8"/><path d="M8.6 11.6h6.8"/><path d="M8.6 15h4.2"/></svg>
+        <span>Kosten boeken</span></button>
+      <button class="bk-qa" id="qa-km">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l1.5-4.2A2 2 0 0 1 8.4 7.4h7.2a2 2 0 0 1 1.9 1.4L19 13"/><rect x="3.6" y="12.8" width="16.8" height="4" rx="1.2"/><circle cx="7.4" cy="18" r="1.4"/><circle cx="16.6" cy="18" r="1.4"/></svg>
+        <span>Km registreren</span></button>
     </div>
 
     <div class="bk-section-head">
@@ -1682,7 +1688,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
 
       <form id="bk-form" autocomplete="off">
         <div class="bk-form-section">
-          <div class="bk-section-title">Klantgegevens</div>
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"/></svg>Klant</div>
           <label>Bedrijfsnaam / naam *</label>
           <input id="bk-client-name" type="text" placeholder="Bedrijfsnaam" value="${escapeHTML(inv0.client?.name || '')}" required />
           <label>Straat + huisnummer</label>
@@ -1699,7 +1705,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
 
         ${!isMultiLine ? `
         <div class="bk-form-section">
-          <div class="bk-section-title">Factuurgegevens</div>
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 7.5H10a2.5 2.5 0 0 0 0 5h2.5a2.5 2.5 0 0 1 0 5H8"/><path d="M12 5.5v13"/></svg>Bedrag &amp; BTW</div>
           <label>Omschrijving *</label>
           <input id="bk-desc" type="text" placeholder="${escapeHTML(bedrijf.defaultDesc)}" value="${escapeHTML(invDesc)}" ${isMultiLine ? '' : 'required'} />
           <label>Bedrag *</label>
@@ -1719,7 +1725,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         ` : ''}
 
         <div class="bk-form-section">
-          <div class="bk-section-title">Nummering &amp; datum</div>
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.2" width="16" height="14.6" rx="2"/><path d="M4 9.4h16"/><path d="M8 3.4v3.2"/><path d="M16 3.4v3.2"/></svg>Nummer &amp; datum</div>
           <label>Factuurnummer</label>
           <input id="bk-number" type="text" value="${escapeHTML(number)}" ${isEdit ? 'readonly style="opacity:.6;cursor:default"' : ''} required />
           <label>Factuurdatum</label>

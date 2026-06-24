@@ -4414,17 +4414,27 @@ label.subtask {
 /* Form sections */
 .bk-form-section {
   background: var(--bg-elev-2);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px 14px;
-  margin-bottom: 10px;
+  padding: 13px 15px 15px;
+  margin-bottom: 12px;
 }
 .bk-section-title {
-  font-size: .68rem;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--text-dim);
-  margin-bottom: 8px;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .9rem;
+  letter-spacing: -.01em;
+  color: var(--text);
+  margin-bottom: 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--border-soft);
+  font-weight: 650;
+}
+.bk-section-title svg {
+  width: 18px; height: 18px;
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 /* Amount row */
@@ -4724,7 +4734,7 @@ label.subtask {
   font-size: .65rem; text-transform: uppercase;
   letter-spacing: .07em; color: var(--text-dim); margin-bottom: 4px;
 }
-.bk-kpi-val { font-size: 1.1rem; font-family: Georgia, serif; font-weight: 700; }
+.bk-kpi-val { font-size: 1.25rem; font-family: Georgia, serif; font-weight: 700; letter-spacing: -.02em; }
 .bk-kpi-sub { font-size: .65rem; color: var(--text-faint); margin-top: 2px; }
 
 /* Alert */
@@ -4741,13 +4751,17 @@ label.subtask {
 }
 .bk-qa {
   background: var(--bg-elev-2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 14px 8px;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border-radius: var(--radius); padding: 15px 8px 13px;
+  display: flex; flex-direction: column; align-items: center; gap: 9px;
   font-size: .78rem; color: var(--text-dim); cursor: pointer;
-  transition: background var(--transition), transform var(--transition);
+  transition: background var(--transition), transform var(--transition), border-color var(--transition);
 }
-.bk-qa:active { transform: scale(.96); background: var(--bg-elev-3); }
-.bk-qa span { font-size: .75rem; text-align: center; }
+.bk-qa svg {
+  width: 26px; height: 26px;
+  color: var(--accent);
+}
+.bk-qa:active { transform: scale(.96); background: var(--bg-elev-3); border-color: var(--border-hi); }
+.bk-qa span { font-size: .74rem; text-align: center; line-height: 1.25; color: var(--text); }
 
 /* Section head */
 .bk-section-head {
