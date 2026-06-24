@@ -4,7 +4,7 @@ import { ymd } from './utils.js';
 export const BADGES = [
   { id: 'first-ride',  emoji: '🚖', name: 'Eerste rit', desc: 'Je eerste rit gelogd' },
   { id: 'rides-10',    emoji: '🔟', name: '10 ritten',  desc: '10 ritten gelogd' },
-  { id: 'rides-50',    emoji: '5️⃣0️⃣', name: '50 ritten', desc: '50 ritten gelogd' },
+  { id: 'rides-50',    emoji: '🏅', name: '50 ritten', desc: '50 ritten gelogd' },
   { id: 'rides-100',   emoji: '💯', name: '100 ritten', desc: '100 ritten gelogd' },
   { id: 'rides-500',   emoji: '🏎️', name: '500 ritten', desc: '500 ritten gelogd' },
   { id: 'streak-7',    emoji: '🔥', name: 'Week-streak', desc: '7 dagen hizb op rij' },
