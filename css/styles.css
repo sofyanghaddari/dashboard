@@ -1309,6 +1309,7 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: var(--accent);
   box-shadow: var(--shadow-inner);
 }
 .quick-action-label {
@@ -2864,7 +2865,11 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 }
 .module-preview-card:hover { border-color: var(--border-hi); box-shadow: var(--shadow-md), var(--shadow-inner); }
 .mpc-left { flex: 1; min-width: 0; }
-.mpc-icon { font-size: 1.6rem; flex-shrink: 0; }
+.mpc-icon { font-size: 1.6rem; flex-shrink: 0; color: var(--accent); }
+.mpc-icon .ic { width: 24px; height: 24px; }
+.quick-action-icon .ic { width: 22px; height: 22px; }
+.daycard-btn .ic { width: 17px; height: 17px; }
+.income-zero-hint .ic { width: 1em; height: 1em; vertical-align: -0.14em; }
 .mpc-title { font-size: var(--font-sm); font-weight: 600; color: var(--text); margin-bottom: 3px; }
 .mpc-sub { font-size: var(--font-xs); color: var(--text-dim); line-height: 1.4; }
 .mpc-action {
@@ -5776,6 +5781,7 @@ h3 {
   font-size: 1rem;
   flex-shrink: 0;
   margin-top: 1px;
+  color: var(--accent);
   opacity: .8;
 }
 .ar-voice-tip-content { flex: 1; min-width: 0; }

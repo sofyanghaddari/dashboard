@@ -215,27 +215,27 @@ export async function render(container) {
     <!-- QUICK ACTIONS -->
     <div class="quick-actions">
       <button class="quick-action-btn" data-tab="taxi">
-        <div class="quick-action-icon">💰</div>
+        <div class="quick-action-icon">${icon('money')}</div>
         <div class="quick-action-label">Inkomen<span class="quick-action-sub">Vandaag noteren</span></div>
       </button>
       <button class="quick-action-btn" data-tab="todo">
-        <div class="quick-action-icon">✅</div>
+        <div class="quick-action-icon">${icon('check')}</div>
         <div class="quick-action-label">Taken<span class="quick-action-sub">${openTodos.length} open${todayTodos.length ? `, ${todayTodos.length} vandaag` : ''}</span></div>
       </button>
       <button class="quick-action-btn" data-tab="geloof">
-        <div class="quick-action-icon">📖</div>
+        <div class="quick-action-icon">${icon('book')}</div>
         <div class="quick-action-label">Koran<span class="quick-action-sub">${todayHizb ? 'Vandaag ✓' : 'Nog open'}</span></div>
       </button>
       <button class="quick-action-btn" data-tab="arabic">
-        <div class="quick-action-icon">📚</div>
+        <div class="quick-action-icon">${icon('books')}</div>
         <div class="quick-action-label">Arabisch<span class="quick-action-sub">${dueCards > 0 ? `${dueCards} te herhalen` : 'Alles bij'}</span></div>
       </button>
     </div>
 
     <!-- KALENDER KNOPPEN -->
     <div class="db-cal-btns">
-      <button class="btn secondary" id="open-calendar">📅 Kalender</button>
-      <button class="btn secondary" id="open-yr">📊 Jaar</button>
+      <button class="btn secondary" id="open-calendar">${icon('calendar')} Kalender</button>
+      <button class="btn secondary" id="open-yr">${icon('stats')} Jaar</button>
     </div>
 
     <!-- WEGWERKZAAMHEDEN -->
@@ -263,7 +263,7 @@ export async function render(container) {
         <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
       </div>
       <div class="income-hero-amount big-money blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
-      ${todayIncome === 0 ? `<div class="income-zero-hint">🚖 Nog geen rit genoteerd — zet hem op nul!</div>` : ''}
+      ${todayIncome === 0 ? `<div class="income-zero-hint">${icon('taxi')} Nog geen rit genoteerd — zet hem op nul!</div>` : ''}
       ${dailyGoal > 0 ? `
         <div class="income-hero-progress">
           <div class="progress-bar"><div class="progress-fill" style="width:${goalPct}%"></div></div>
@@ -332,17 +332,17 @@ export async function render(container) {
 
     <!-- KORAN PREVIEW -->
     <div class="module-preview-card">
-      <div class="mpc-icon">📖</div>
+      <div class="mpc-icon">${icon('book')}</div>
       <div class="mpc-left">
         <div class="mpc-title">Koran hizb${todayHizb ? ' <span style="color:var(--ok)">✓</span>' : ''}</div>
-        <div class="mpc-sub">Streak: <b>${streak} dag${streak===1?'':'en'}</b>${streak>0?' 🔥':''}</div>
+        <div class="mpc-sub">Streak: <b>${streak} dag${streak===1?'':'en'}</b>${streak>0?' '+icon('flame'):''}</div>
       </div>
       <button class="mpc-action${todayHizb?' primary':''}" data-tab="geloof">${todayHizb?'Open':'Afvinken'}</button>
     </div>
 
     <!-- ARABISCH PREVIEW -->
     <div class="module-preview-card">
-      <div class="mpc-icon">📚</div>
+      <div class="mpc-icon">${icon('books')}</div>
       <div class="mpc-left">
         <div class="mpc-title">Arabisch</div>
         <div class="mpc-sub">${dueCards>0?`<b>${dueCards}</b> kaart${dueCards>1?'en':''} klaar voor herhaling`:'Geen kaarten vandaag — je bent bij'}</div>
@@ -402,7 +402,7 @@ export async function render(container) {
 
     ${isEmpty ? `
     <div class="card empty-cta">
-      <h3>Welkom bij je dashboard 👋</h3>
+      <h3>Welkom bij je dashboard</h3>
       <p class="muted">Begin met het bijhouden van je eerste inkomen, hizb of taak via de tabs onderaan.</p>
     </div>` : ''}
   `;
@@ -716,7 +716,7 @@ function dayCard(kind, offset) {
         <h2 class="card-title">${title}</h2>
         <div class="daycard-controls">
           <button class="daycard-btn" data-day-prev="${kind}" title="Vorige dag" aria-label="Vorige dag">‹</button>
-          <button class="daycard-btn" data-day-speak="${kind}" title="${speakTitle}" aria-label="${speakTitle}">🔊</button>
+          <button class="daycard-btn" data-day-speak="${kind}" title="${speakTitle}" aria-label="${speakTitle}">${icon('volume')}</button>
           <button class="daycard-btn" data-day-next="${kind}" title="Volgende dag" aria-label="Volgende dag" ${offset >= 0 ? 'disabled' : ''}>›</button>
         </div>
       </div>
@@ -843,7 +843,7 @@ function _injectArabicVoiceTip(container) {
     tip.className = 'ar-voice-tip';
     tip.innerHTML = `
       <div class="ar-voice-tip-inner">
-        <span class="ar-voice-tip-icon">🎙️</span>
+        <span class="ar-voice-tip-icon">${icon('mic')}</span>
         <div class="ar-voice-tip-content">
           <div class="ar-voice-tip-title">Verbeter de Arabische uitspraak</div>
           <div class="ar-voice-tip-steps">
