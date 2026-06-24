@@ -988,12 +988,14 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
 }
 .heat-cell {
   aspect-ratio: 1;
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--bg-elev-2);
   border: 1px solid var(--border-soft);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  transition: background .3s ease, transform .15s ease;
 }
+.heat-cell:active { transform: scale(.88); }
 .heat-legend { display: flex; align-items: center; gap: 8px; font-size: .68rem; }
 .heat-spec {
   flex: 1; height: 6px; border-radius: 3px;
@@ -3698,6 +3700,7 @@ label[for="import-csv"]:hover, label[for="import-pdf"]:hover, #add-card:hover {
 .sring-track  { fill: none; stroke: rgba(255,255,255,.07); stroke-width: 11; }
 .sring-circle {
   fill: none; stroke: var(--gold); stroke-width: 11; stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(201,167,90,.45));
   transition: stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1) .35s;
 }
 .koran-ring-inner {
@@ -3787,6 +3790,7 @@ label[for="import-csv"]:hover, label[for="import-pdf"]:hover, #add-card:hover {
 .donut-track { fill: none; stroke: rgba(255,255,255,.07); stroke-width: 13; }
 .donut-seg   {
   fill: none; stroke: var(--accent); stroke-width: 13; stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(201,167,90,.4));
   transition: stroke-dasharray .95s cubic-bezier(.4,0,.2,1) .35s;
 }
 .donut-center {
