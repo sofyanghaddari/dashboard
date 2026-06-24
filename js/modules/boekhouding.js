@@ -1,4 +1,5 @@
 import { all, put, del, add } from '../db.js';
+import { icon } from '../icons.js';
 import { uid, fmtMoney, parseAmount, escapeHTML, ymd } from '../utils.js';
 import { ok, err } from '../components/toast.js';
 import { parseInvoiceText } from '../invoice-nlp.js';
@@ -23,7 +24,7 @@ if (!window._bkEscapeRegistered) {
 const ADMINS = {
   taxi: {
     id:          'taxi',
-    emoji:       '🚖',
+    icon:        'taxi',
     label:       'Taxi',
     naam:        'Woosh-Amsterdam',
     adres:       'Jephtastraat 28',
@@ -39,7 +40,7 @@ const ADMINS = {
   },
   olijfolie: {
     id:          'olijfolie',
-    emoji:       '🫒',
+    icon:        'leaf',
     label:       'Olijfolie',
     naam:        'Sofyan Ghaddari',
     adres:       'Jephtastraat 28',
@@ -71,15 +72,15 @@ const BOX1_HOOG     = 0.495;  // 49,50% box 1 schijf 2
 
 // ─── KOSTENCATEGORIEËN ───────────────────────────────────────────────────────
 const CATS = [
-  { id: 'brandstof',   label: 'Brandstof',            emoji: '⛽' },
-  { id: 'onderhoud',   label: 'Onderhoud & reparatie', emoji: '🔧' },
-  { id: 'verzekering', label: 'Verzekering',           emoji: '🛡️' },
-  { id: 'lease',       label: 'Lease / financiering',  emoji: '🚗' },
-  { id: 'licentie',    label: 'Vergunning & licentie', emoji: '📜' },
-  { id: 'telefoon',    label: 'Telefoon & data',       emoji: '📱' },
-  { id: 'software',    label: 'Software & apps',       emoji: '💻' },
-  { id: 'accountant',  label: 'Accountant & advies',   emoji: '📊' },
-  { id: 'overig',      label: 'Overige kosten',        emoji: '📦' },
+  { id: 'brandstof',   label: 'Brandstof',            icon: 'fuel' },
+  { id: 'onderhoud',   label: 'Onderhoud & reparatie', icon: 'wrench' },
+  { id: 'verzekering', label: 'Verzekering',           icon: 'shield' },
+  { id: 'lease',       label: 'Lease / financiering',  icon: 'car' },
+  { id: 'licentie',    label: 'Vergunning & licentie', icon: 'doc' },
+  { id: 'telefoon',    label: 'Telefoon & data',       icon: 'phone' },
+  { id: 'software',    label: 'Software & apps',       icon: 'laptop' },
+  { id: 'accountant',  label: 'Accountant & advies',   icon: 'stats' },
+  { id: 'overig',      label: 'Overige kosten',        icon: 'box' },
 ];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -214,13 +215,13 @@ function exportCSV(rows, filename) {
 // ─── SUB-NAV ─────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: 'overzicht', label: '📊 Overzicht' },
-  { id: 'facturen',  label: '🧾 Facturen' },
-  { id: 'klanten',   label: '👥 Klanten' },
-  { id: 'kosten',    label: '🛒 Kosten' },
-  { id: 'km',        label: '🚗 Kilometers' },
-  { id: 'btw',       label: '📋 BTW' },
-  { id: 'wv',        label: '📈 W&V' },
+  { id: 'overzicht', icon: 'grid',     label: 'Overzicht' },
+  { id: 'facturen',  icon: 'receipt',  label: 'Facturen' },
+  { id: 'klanten',   icon: 'users',    label: 'Klanten' },
+  { id: 'kosten',    icon: 'tag',      label: 'Kosten' },
+  { id: 'km',        icon: 'car',      label: 'Kilometers' },
+  { id: 'btw',       icon: 'clipboard',label: 'BTW' },
+  { id: 'wv',        icon: 'trend',    label: 'W&V' },
 ];
 
 function buildSubNav(active, adminId) {
@@ -228,12 +229,12 @@ function buildSubNav(active, adminId) {
     <div class="bk-admin-switcher">
       ${Object.values(ADMINS).map(a => `
         <button class="bk-admin-btn${a.id === adminId ? ' active' : ''}" data-admin="${a.id}">
-          ${a.emoji} ${a.label}
+          ${icon(a.icon)} ${a.label}
         </button>
       `).join('')}
     </div>
     <div class="bk-subnav">
-      ${TABS.map(t => `<button class="bk-subnav-btn${t.id === active ? ' active' : ''}" data-tab="${t.id}">${t.label}</button>`).join('')}
+      ${TABS.map(t => `<button class="bk-subnav-btn${t.id === active ? ' active' : ''}" data-tab="${t.id}">${icon(t.icon)} ${t.label}</button>`).join('')}
     </div>
     <div id="bk-view"></div>
   `;
@@ -442,14 +443,14 @@ function renderFacturen(view, invoices, container) {
         ${totalLate > 0 ? `<span style="color:var(--danger);margin-left:8px;font-size:.82rem">⚠️ ${totalLate} vervallen</span>` : ''}
       </div>
       <div style="display:flex;gap:8px">
-        <button class="btn" id="inv-csv-btn" style="background:var(--bg-elev-2);color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;font-size:.8rem">📊 CSV</button>
-        <button class="btn" id="rit-import-btn" style="background:var(--bg-elev-2);color:var(--accent);border:1.5px solid var(--accent);padding:8px 12px;font-size:.8rem">🚖 Ritten</button>
+        <button class="btn" id="inv-csv-btn" style="background:var(--bg-elev-2);color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;font-size:.8rem">${icon('stats')} CSV</button>
+        <button class="btn" id="rit-import-btn" style="background:var(--bg-elev-2);color:var(--accent);border:1.5px solid var(--accent);padding:8px 12px;font-size:.8rem">${icon('taxi')} Ritten</button>
         <button class="btn bk-new-btn" id="new-inv-btn">+ Factuur</button>
       </div>
     </div>
 
     <div class="bk-client-search-wrap" style="margin-bottom:10px">
-      <span style="opacity:.5">🔍</span>
+      <span style="opacity:.5">${icon('search')}</span>
       <input id="inv-search" class="bk-client-search" placeholder="Zoek klant, nummer…" value="${escapeHTML(container.dataset.invSearch || '')}" />
     </div>
 
@@ -464,7 +465,7 @@ function renderFacturen(view, invoices, container) {
 
     ${sorted.length === 0 ? `
       <div class="section-empty" style="margin-top:30px">
-        <div style="font-size:2rem;margin-bottom:10px">🧾</div>
+        <div style="font-size:2rem;margin-bottom:10px">${icon('receipt')}</div>
         <p style="font-weight:600;margin:0 0 4px">Geen facturen</p>
         <p class="muted" style="font-size:.85rem;margin:0">Tik op "+ Factuur" om te beginnen</p>
       </div>
@@ -480,7 +481,7 @@ function renderFacturen(view, invoices, container) {
               <span class="bk-card-num">${escapeHTML(inv.number || '')}</span>
               <span>·</span>
               <span class="bk-card-date">${fmtDateLong(inv.date)}</span>
-              ${inv.sentAt ? `<span class="bk-sent-badge">✉ verstuurd</span>` : ''}
+              ${inv.sentAt ? `<span class="bk-sent-badge">${icon('mail')} verstuurd</span>` : ''}
             </div>
             <div class="bk-card-bot">
               <div>
@@ -489,7 +490,7 @@ function renderFacturen(view, invoices, container) {
               </div>
               <div class="bk-card-actions">
                 ${inv._status !== 'betaald' ? `<button class="bk-btn-paid" data-id="${escapeHTML(inv.id)}">✓</button>` : ''}
-                <button class="bk-btn-print" data-id="${escapeHTML(inv.id)}">🖨️</button>
+                <button class="bk-btn-print" data-id="${escapeHTML(inv.id)}">${icon('print')}</button>
               </div>
             </div>
             ${inv._status === 'te-laat' ? `<div class="bk-overdue-bar">⚠️ Vervallen op ${fmtDateLong(inv.dueDate)}</div>` : ''}
@@ -590,7 +591,7 @@ function renderKosten(view, purchases, container) {
         ${years.map(y => `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`).join('')}
       </select>
       <div style="display:flex;gap:8px">
-        <button class="btn" id="kosten-csv-btn" style="background:var(--bg-elev-2);color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;font-size:.8rem">📊 CSV</button>
+        <button class="btn" id="kosten-csv-btn" style="background:var(--bg-elev-2);color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;font-size:.8rem">${icon('stats')} CSV</button>
         <button class="btn bk-new-btn" id="new-kosten-btn">+ Kosten</button>
       </div>
     </div>
@@ -617,7 +618,7 @@ function renderKosten(view, purchases, container) {
           const pct = totalExcl > 0 ? Math.round(amt / totalExcl * 100) : 0;
           return `
             <div class="bk-cat-row">
-              <span class="bk-cat-label">${cat.emoji} ${cat.label}</span>
+              <span class="bk-cat-label">${icon(cat.icon)} ${cat.label}</span>
               <div class="bk-cat-bar-wrap">
                 <div class="bk-cat-bar" style="--bk-bar-w:${pct}%;width:var(--bk-bar-w,0)"></div>
               </div>
@@ -630,7 +631,7 @@ function renderKosten(view, purchases, container) {
 
     ${sorted.length === 0 ? `
       <div class="section-empty" style="margin-top:20px">
-        <div style="font-size:2rem;margin-bottom:10px">🛒</div>
+        <div style="font-size:2rem;margin-bottom:10px">${icon('tag')}</div>
         <p style="font-weight:600;margin:0 0 4px">Geen kosten in ${year}</p>
         <p class="muted" style="font-size:.85rem;margin:0">Boek zakelijke kosten om BTW terug te vragen</p>
       </div>
@@ -643,7 +644,7 @@ function renderKosten(view, purchases, container) {
             <div class="bk-cost-card card" style="--i:${idx}" data-id="${escapeHTML(p.id)}">
               <div style="display:flex;justify-content:space-between;align-items:flex-start">
                 <div>
-                  <div style="font-weight:600">${cat.emoji} ${escapeHTML(p.vendor || '—')}</div>
+                  <div style="font-weight:600">${icon(cat.icon)} ${escapeHTML(p.vendor || '—')}</div>
                   <div style="font-size:.78rem;color:var(--text-dim);margin-top:2px">${cat.label} · ${fmtDateShort(p.date)}</div>
                   ${p.description ? `<div style="font-size:.8rem;color:var(--text-dim)">${escapeHTML(p.description)}</div>` : ''}
                 </div>
@@ -752,7 +753,7 @@ function renderKm(view, kmLogs, container) {
 
     ${sorted.length === 0 ? `
       <div class="section-empty" style="margin-top:20px">
-        <div style="font-size:2rem;margin-bottom:10px">🚗</div>
+        <div style="font-size:2rem;margin-bottom:10px">${icon('car')}</div>
         <p style="font-weight:600;margin:0 0 4px">Geen ritten in ${year}</p>
         <p class="muted" style="font-size:.85rem;margin:0">Registreer zakelijke kilometers voor aftrek</p>
       </div>
@@ -763,7 +764,7 @@ function renderKm(view, kmLogs, container) {
           <div class="bk-km-card card" style="--i:${idx}" data-id="${escapeHTML(k.id)}">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div>
-                <div style="font-weight:600">${k.isPrivate ? '🏠' : '💼'} ${escapeHTML(k.from || '—')} → ${escapeHTML(k.to || '—')}</div>
+                <div style="font-weight:600">${k.isPrivate ? icon('home') : icon('briefcase')} ${escapeHTML(k.from || '—')} → ${escapeHTML(k.to || '—')}</div>
                 <div style="font-size:.78rem;color:var(--text-dim);margin-top:2px">${fmtDateShort(k.date)} · ${escapeHTML(k.purpose || '')}</div>
               </div>
               <div style="text-align:right">
@@ -848,7 +849,7 @@ function renderBTW(view, invoices, purchases, container) {
 
     ${isPast ? `
       <div class="bk-btw-deadline ${isLate ? 'bk-deadline-late' : ''}">
-        ${isLate ? '⚠️ Aangifte deadline verstreken' : `📅 Aangifte deadline: ${fmtDateLong(deadline)}`}
+        ${isLate ? icon('warning') + ' Aangifte deadline verstreken' : `${icon('calendar')} Aangifte deadline: ${fmtDateLong(deadline)}`}
       </div>
     ` : ''}
 
@@ -892,7 +893,7 @@ function renderBTW(view, invoices, purchases, container) {
       </div>
 
       <div class="bk-btw-saldo ${saldo > 0 ? 'bk-saldo-betalen' : 'bk-saldo-terug'}">
-        <span>${saldo > 0 ? '🔴 Te betalen aan Belastingdienst' : '🟢 Terug te ontvangen'}</span>
+        <span>${saldo > 0 ? 'Te betalen aan Belastingdienst' : 'Terug te ontvangen'}</span>
         <span class="money">${fmtMoney(Math.abs(saldo))}</span>
       </div>
     </div>
@@ -1007,7 +1008,7 @@ function renderWV(view, invoices, purchases, kmLogs, container) {
       </div>
 
       <div class="bk-wv-row bk-wv-netto ${nettoNaBelasting >= 0 ? 'bk-wv-positive' : 'bk-wv-negative'}">
-        <span>💰 Netto over (na belasting)</span>
+        <span>${icon('money')} Netto over (na belasting)</span>
         <span class="money" style="font-size:1.1rem">${fmtMoney(nettoNaBelasting)}</span>
       </div>
     </div>
@@ -1047,13 +1048,13 @@ function renderKlanten(view, clients, invoices, container) {
     </div>
 
     <div class="bk-client-search-wrap">
-      <span style="opacity:.5">🔍</span>
+      <span style="opacity:.5">${icon('search')}</span>
       <input id="client-search" class="bk-client-search" placeholder="Zoek klant…" value="${escapeHTML(container.dataset.clientSearch || '')}" />
     </div>
 
     ${sorted.length === 0 ? `
       <div class="section-empty" style="margin-top:30px">
-        <div style="font-size:2rem;margin-bottom:10px">👥</div>
+        <div style="font-size:2rem;margin-bottom:10px">${icon('users')}</div>
         <p style="font-weight:600;margin:0 0 4px">${search ? 'Geen klanten gevonden' : 'Nog geen klanten'}</p>
         <p class="muted" style="font-size:.85rem;margin:0">${search ? 'Probeer een andere zoekopdracht' : 'Klanten worden automatisch opgeslagen bij het aanmaken van een factuur'}</p>
       </div>
@@ -1064,10 +1065,10 @@ function renderKlanten(view, clients, invoices, container) {
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <div style="flex:1;min-width:0">
                 <div class="bk-client-name">${escapeHTML(c.name || '—')}</div>
-                ${c.city    ? `<div class="bk-client-detail">📍 ${escapeHTML(c.city)}</div>` : ''}
-                ${c.email   ? `<div class="bk-client-detail">✉️ ${escapeHTML(c.email)}</div>` : ''}
-                ${c.phone   ? `<div class="bk-client-detail">📞 ${escapeHTML(c.phone)}</div>` : ''}
-                ${c.kvk     ? `<div class="bk-client-detail">🏢 KvK: ${escapeHTML(c.kvk)}</div>` : ''}
+                ${c.city    ? `<div class="bk-client-detail">${icon('pin')} ${escapeHTML(c.city)}</div>` : ''}
+                ${c.email   ? `<div class="bk-client-detail">${icon('mail')} ${escapeHTML(c.email)}</div>` : ''}
+                ${c.phone   ? `<div class="bk-client-detail">${icon('phone')} ${escapeHTML(c.phone)}</div>` : ''}
+                ${c.kvk     ? `<div class="bk-client-detail">${icon('building')} KvK: ${escapeHTML(c.kvk)}</div>` : ''}
               </div>
               <div style="text-align:right;flex-shrink:0;margin-left:10px">
                 <div class="bk-client-count">${c.invoiceCount} factuur${c.invoiceCount !== 1 ? 'en' : ''}</div>
@@ -1075,7 +1076,7 @@ function renderKlanten(view, clients, invoices, container) {
               </div>
             </div>
             <button class="btn bk-client-inv-btn" data-id="${escapeHTML(c.id)}" style="width:100%;margin-top:10px;font-size:.85rem;padding:8px">
-              🧾 Nieuwe factuur voor ${escapeHTML(c.name || '')}
+              ${icon('receipt')} Nieuwe factuur voor ${escapeHTML(c.name || '')}
             </button>
           </div>
         `).join('')}
@@ -1130,10 +1131,10 @@ function openClientDetailModal(client, invoices, container) {
       ${client.address ? `<div style="font-size:.85rem;color:var(--text-dim)">${escapeHTML(client.address)}</div>` : ''}
       ${client.city    ? `<div style="font-size:.85rem;color:var(--text-dim)">${escapeHTML(client.city)}</div>` : ''}
       ${client.kvk     ? `<div style="font-size:.85rem;color:var(--text-dim)">KvK: ${escapeHTML(client.kvk)}</div>` : ''}
-      ${client.email   ? `<div style="font-size:.85rem;color:var(--text-dim)">✉️ ${escapeHTML(client.email)}</div>` : ''}
-      ${client.phone   ? `<div style="font-size:.85rem;color:var(--text-dim)">📞 ${escapeHTML(client.phone)}</div>` : ''}
+      ${client.email   ? `<div style="font-size:.85rem;color:var(--text-dim)">${icon('mail')} ${escapeHTML(client.email)}</div>` : ''}
+      ${client.phone   ? `<div style="font-size:.85rem;color:var(--text-dim)">${icon('phone')} ${escapeHTML(client.phone)}</div>` : ''}
 
-      <button class="btn block" id="cd-new-inv" style="margin:16px 0 4px;padding:12px">🧾 Nieuwe factuur voor deze klant</button>
+      <button class="btn block" id="cd-new-inv" style="margin:16px 0 4px;padding:12px">${icon('receipt')} Nieuwe factuur voor deze klant</button>
 
       ${cInv.length > 0 ? `
         <div class="card-title" style="margin:16px 0 8px">Factuurhistorie (${cInv.length})</div>
@@ -1205,7 +1206,7 @@ function openEditClientModal(client, container) {
           <label>Telefoon / WhatsApp</label>
           <input id="ec-phone" type="tel"   inputmode="tel" value="${escapeHTML(client.phone || '')}" placeholder="+31 6 12345678" />
         </div>
-        <button type="submit" class="btn block" style="margin-top:14px;padding:13px">💾 Klant opslaan</button>
+        <button type="submit" class="btn block" style="margin-top:14px;padding:13px">Klant opslaan</button>
       </form>
     </div>
   `;
@@ -1256,7 +1257,7 @@ function openNewClientModal(container) {
           <label>Telefoon / WhatsApp</label>
           <input id="nc-phone" type="tel" inputmode="tel" placeholder="+31 6 12345678" />
         </div>
-        <button type="submit" class="btn block" style="margin-top:14px;padding:13px">👥 Klant opslaan</button>
+        <button type="submit" class="btn block" style="margin-top:14px;padding:13px">Klant opslaan</button>
       </form>
     </div>
   `;
@@ -1511,13 +1512,13 @@ async function openRitImportModal(container) {
   backdrop.innerHTML = `
     <div class="modal bk-modal" style="max-width:540px">
       <button type="button" class="modal-close" id="ri-x">×</button>
-      <h2 style="margin:0 0 4px">🚖 Ritten importeren</h2>
+      <h2 style="margin:0 0 4px;display:flex;align-items:center;gap:8px">${icon('taxi')} Ritten importeren</h2>
       <p style="font-size:.83rem;color:var(--text-dim);margin:0 0 14px">Plak je notities (app of WhatsApp-formaat) — datum, naam en bedrag worden automatisch herkend.</p>
 
       <div id="ri-step1">
         <textarea id="ri-text" rows="7" style="width:100%;resize:vertical;background:var(--bg-elev-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:.88rem;color:var(--text);font-family:monospace;box-sizing:border-box"
           placeholder="Ride: 337-175-6607&#10;Pickup date and time: Sat, 16 May 2026 at 14:10 PM&#10;Passengers: Graham Milton&#10;35 SGH WOOSH&#10;&#10;16/05 22:00&#10;Rein Strikwerda&#10;+31619015505&#10;Kinkerstraat&#10;50 SGH WOOSH"></textarea>
-        <button type="button" id="ri-parse-btn" class="btn block" style="margin-top:10px;padding:13px;font-size:.95rem">🔍 Analyseer ritten</button>
+        <button type="button" id="ri-parse-btn" class="btn block" style="margin-top:10px;padding:13px;font-size:.95rem">${icon('search')} Analyseer ritten</button>
       </div>
 
       <div id="ri-step2" style="display:none">
@@ -1526,7 +1527,7 @@ async function openRitImportModal(container) {
         <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
           <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:6px">Klant op factuur</div>
           <button type="button" id="ri-pick-client" class="btn" style="width:100%;margin-bottom:8px;background:var(--bg-elev-2);border:1.5px solid var(--accent);color:var(--accent);padding:10px">
-            👥 Kies opgeslagen klant
+            ${icon('users')} Kies opgeslagen klant
           </button>
           <input id="ri-client-name" type="text" placeholder="Klantnaam *" style="width:100%;margin-bottom:6px;box-sizing:border-box" />
           <input id="ri-client-email" type="email" placeholder="E-mailadres (optioneel)" style="width:100%;box-sizing:border-box" />
@@ -1534,7 +1535,7 @@ async function openRitImportModal(container) {
 
         <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:12px">
           <div id="ri-totaal"></div>
-          <button type="button" id="ri-create-btn" class="btn bk-new-btn" style="white-space:nowrap;padding:11px 18px">🧾 Maak factuur</button>
+          <button type="button" id="ri-create-btn" class="btn bk-new-btn" style="white-space:nowrap;padding:11px 18px">${icon('receipt')} Maak factuur</button>
         </div>
 
         <button type="button" id="ri-back" class="btn" style="margin-top:10px;width:100%;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-size:.82rem;padding:8px">
@@ -1667,17 +1668,17 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
 
       ${isMultiLine ? `
       <div class="bk-multiline-notice">
-        📋 Ritten-factuur · ${existingInv.lines.length} regels · ${fmtMoney(existingInv.totalIncl || 0)} — bedragen en regels blijven ongewijzigd
+        ${icon('clipboard')} Ritten-factuur · ${existingInv.lines.length} regels · ${fmtMoney(existingInv.totalIncl || 0)} — bedragen en regels blijven ongewijzigd
       </div>
       ` : ''}
 
       ${!isEdit ? `
       <button type="button" id="bk-pick-client" class="btn secondary bk-pick-client-btn">
-        👥 Kies opgeslagen klant
+        ${icon('users')} Kies opgeslagen klant
       </button>
 
       <div class="bk-paste-section">
-        <label class="bk-paste-label">📋 Of plak WhatsApp- / e-mailtekst — velden worden automatisch ingevuld</label>
+        <label class="bk-paste-label">${icon('clipboard')} Of plak WhatsApp- / e-mailtekst — velden worden automatisch ingevuld</label>
         <textarea id="bk-paste" class="bk-paste-area" rows="3"
           placeholder="Supreme Transit Solutions&#10;Baden Powellweg, Amsterdam 1069 LK&#10;KvK: 85234362&#10;€320 incl 9% btw"></textarea>
         <div id="bk-parsed-preview" class="bk-parsed-preview" style="display:none"></div>
@@ -1738,7 +1739,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         <textarea id="bk-note" rows="2" style="resize:vertical" placeholder="Optioneel…">${escapeHTML(inv0.note || '')}</textarea>
 
         <button type="submit" class="btn block bk-form-submit">
-          ${isEdit ? '💾 Factuur opslaan' : '🧾 Factuur aanmaken'}
+          ${isEdit ? 'Factuur opslaan' : 'Factuur aanmaken'}
         </button>
       </form>
     </div>
@@ -1901,7 +1902,7 @@ function applyParsed(parsed, backdrop) {
   const preview = backdrop.querySelector('#bk-parsed-preview');
   if (found.length) {
     preview.style.display = 'block';
-    preview.innerHTML = `✅ Gevonden: ${found.join(' · ')}`;
+    preview.innerHTML = `${icon('check')} Gevonden: ${found.join(' · ')}`;
   }
 }
 
@@ -1936,7 +1937,7 @@ function openNewPurchaseModal(container) {
       <div class="rcpt-scan-wrap">
         <input type="file" id="rcpt-file" accept="image/*" capture="environment" style="display:none" />
         <button type="button" id="rcpt-btn" class="btn rcpt-scan-btn">
-          📷 Bonnetje scannen
+          ${icon('camera')} Bonnetje scannen
         </button>
         <div id="rcpt-area" style="display:none">
           <div id="rcpt-prog-wrap" class="rcpt-prog-wrap">
@@ -1955,7 +1956,7 @@ function openNewPurchaseModal(container) {
           <input id="pk-desc" type="text" placeholder="bijv. Brandstof 13 juni" />
           <label>Categorie</label>
           <select id="pk-cat">
-            ${CATS.map(c => `<option value="${c.id}">${c.emoji} ${c.label}</option>`).join('')}
+            ${CATS.map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
           </select>
           <label>Bedrag *</label>
           <div class="bk-amount-row">
@@ -1978,7 +1979,7 @@ function openNewPurchaseModal(container) {
           <label>Factuurnummer leverancier (optioneel)</label>
           <input id="pk-invnr" type="text" placeholder="bijv. INV-2026-001" />
         </div>
-        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">🛒 Kosten opslaan</button>
+        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">Kosten opslaan</button>
       </form>
     </div>
   `;
@@ -2033,10 +2034,10 @@ function openNewPurchaseModal(container) {
 
       // Show found tags
       const tags = [
-        parsed.vendor      && `🏪 ${parsed.vendor}`,
-        parsed.totalAmount && `💶 ${parsed.totalAmount.toFixed(2).replace('.',',')}`,
-        parsed.vatRate     && `📋 BTW ${parsed.vatRate}%`,
-        parsed.date        && `📅 ${parsed.date}`,
+        parsed.vendor      && `${icon('building')} ${parsed.vendor}`,
+        parsed.totalAmount && `${icon('euro')} ${parsed.totalAmount.toFixed(2).replace('.',',')}`,
+        parsed.vatRate     && `${icon('clipboard')} BTW ${parsed.vatRate}%`,
+        parsed.date        && `${icon('calendar')} ${parsed.date}`,
       ].filter(Boolean);
 
       rcptProg.style.width   = '100%';
@@ -2047,7 +2048,7 @@ function openNewPurchaseModal(container) {
         : `<span class="rcpt-tag" style="color:var(--text-dim)">Niets gevonden — vul zelf in</span>`;
 
     } catch (ex) {
-      rcptStat.textContent   = '❌ ' + (ex.message || 'Scan mislukt');
+      rcptStat.textContent   = (ex.message || 'Scan mislukt');
       rcptTags.style.display = 'flex';
       rcptTags.innerHTML     = `<span class="rcpt-tag" style="color:var(--danger)">Vul het bonnetje handmatig in</span>`;
     } finally {
@@ -2129,7 +2130,7 @@ function openNewKmModal(container) {
           </label>
           <div id="km-preview" class="bk-calc-preview" style="display:none;margin-top:10px"></div>
         </div>
-        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">🚗 Rit opslaan</button>
+        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">Rit opslaan</button>
       </form>
     </div>
   `;
@@ -2291,7 +2292,7 @@ function openPurchaseDetailModal(purchase, container) {
   backdrop.innerHTML = `
     <div class="modal bk-modal">
       <button type="button" class="modal-close" id="pd-x">×</button>
-      <h2 style="margin:0 0 16px">${cat.emoji} ${escapeHTML(purchase.vendor || '—')}</h2>
+      <h2 style="margin:0 0 16px;display:flex;align-items:center;gap:8px">${icon(cat.icon)} ${escapeHTML(purchase.vendor || '—')}</h2>
 
       <div class="bk-detail-block">
         <div class="bk-detail-label">Kosten</div>
@@ -2348,7 +2349,7 @@ function openEditPurchaseModal(purchase, container) {
           <input id="epk-desc" type="text" placeholder="bijv. Brandstof 13 juni" value="${escapeHTML(purchase.description || '')}" />
           <label>Categorie</label>
           <select id="epk-cat">
-            ${CATS.map(c => `<option value="${c.id}" ${purchase.category === c.id ? 'selected' : ''}>${c.emoji} ${c.label}</option>`).join('')}
+            ${CATS.map(c => `<option value="${c.id}" ${purchase.category === c.id ? 'selected' : ''}>${c.label}</option>`).join('')}
           </select>
           <label>Bedrag *</label>
           <div class="bk-amount-row">
@@ -2371,7 +2372,7 @@ function openEditPurchaseModal(purchase, container) {
           <label>Factuurnummer leverancier (optioneel)</label>
           <input id="epk-invnr" type="text" placeholder="bijv. INV-2026-001" value="${escapeHTML(purchase.invoiceNumber || '')}" />
         </div>
-        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">💾 Kosten opslaan</button>
+        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">Kosten opslaan</button>
       </form>
     </div>
   `;
@@ -2433,7 +2434,7 @@ function openKmDetailModal(k, container) {
   backdrop.innerHTML = `
     <div class="modal bk-modal">
       <button type="button" class="modal-close" id="kd-x">×</button>
-      <h2 style="margin:0 0 16px">${k.isPrivate ? '🏠 Privérit' : '💼 Zakelijke rit'}</h2>
+      <h2 style="margin:0 0 16px">${k.isPrivate ? icon('home') + ' Privérit' : icon('briefcase') + ' Zakelijke rit'}</h2>
       <div class="bk-detail-block">
         <div class="bk-detail-row"><span>Datum</span><span>${fmtDateLong(k.date)}</span></div>
         <div class="bk-detail-row"><span>Van</span><span>${escapeHTML(k.from || '—')}</span></div>
@@ -2492,7 +2493,7 @@ function openEditKmModal(k, container) {
           </label>
           <div id="ekm-preview" class="bk-calc-preview" style="display:none;margin-top:10px"></div>
         </div>
-        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">💾 Rit opslaan</button>
+        <button type="submit" class="btn block" style="margin-top:16px;padding:14px">Rit opslaan</button>
       </form>
     </div>
   `;
@@ -2909,7 +2910,7 @@ async function sendViaGmail(inv, bedrijf, opts = {}) {
         const url = URL.createObjectURL(blob);
         Object.assign(document.createElement('a'), { href: url, download: filename }).click();
         setTimeout(() => URL.revokeObjectURL(url), 5000);
-        ok('PDF opgeslagen — stel Gmail in via ⚙️ → Data voor volledig versturen');
+        ok('PDF opgeslagen — stel Gmail in via Instellingen → Data voor volledig versturen');
       }
     } catch (e) {
       if (e.name !== 'AbortError') err('PDF: ' + (e.message || 'Onbekende fout'));
@@ -3054,8 +3055,8 @@ function openSendModal(inv, bedrijf, container) {
       <div class="bk-sf-row">
         <label class="bk-sf-label">Verstuur als</label>
         <select id="snd-type" class="bk-sf-input">
-          <option value="normaal">📄 Normaal</option>
-          <option value="herinnering">🔔 Herinnering</option>
+          <option value="normaal">Normaal</option>
+          <option value="herinnering">Herinnering</option>
           <option value="aanmaning">⚠️ Aanmaning</option>
         </select>
       </div>
@@ -3071,14 +3072,14 @@ function openSendModal(inv, bedrijf, container) {
       </div>
 
       <div class="bk-sf-attach">
-        <span>📎</span>
+        <span>${icon('paperclip')}</span>
         <span>${escapeHTML(inv.number || 'factuur')}.pdf</span>
       </div>
 
       <button id="snd-send" class="btn block bk-send-btn-primary">
         Versturen
       </button>
-      ${!configured ? `<p style="font-size:.78rem;color:var(--text-dim);text-align:center;margin:8px 0 0">Gmail instellen via ⚙️ → Data voor volledig versturen</p>` : ''}
+      ${!configured ? `<p style="font-size:.78rem;color:var(--text-dim);text-align:center;margin:8px 0 0">Gmail instellen via Instellingen → Data voor volledig versturen</p>` : ''}
 
       <div class="bk-sf-sec">
         <button id="snd-pdf" class="bk-sf-sec-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7L18 8v12.5H6V4.5"/><path d="M13 3.5V8h4.5"/><path d="M12 11.5v6"/><path d="M9.4 15l2.6 2.6 2.6-2.6"/></svg>PDF opslaan</button>
