@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v120';
+const CACHE = 'dashboard-v121';
 
 
 
@@ -145,6 +145,105 @@ function scheduleHizbAlarm(time) {
   }, ms);
 }
 
+// #2: Ochtend-kickstart — dagelijkse doelherinnering
+let _morningTimer = null;
+function scheduleMorningNotification(dailyGoal, hour, minute) {
+  if (_morningTimer) clearTimeout(_morningTimer);
+  const now = new Date();
+  const target = new Date(now); target.setHours(hour, minute, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 1);
+  const ms = target - now;
+  _morningTimer = setTimeout(async () => {
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (!clients.some(c => c.focused)) {
+      self.registration.showNotification('🌅 Goedemorgen — vandaag doel: € ' + (dailyGoal || 200), {
+        body: 'Zet hem op! Open de app om je dag bij te houden.',
+        icon: './icons/icon-192.png', tag: 'morning-kickstart', renotify: true,
+      });
+    }
+    scheduleMorningNotification(dailyGoal, hour, minute);
+  }, ms);
+}
+
+// #3: Inkomen-herinnering — nog geen rit ingevoerd?
+let _incomeReminderTimer = null;
+function scheduleIncomeReminder(hour, minute) {
+  if (_incomeReminderTimer) clearTimeout(_incomeReminderTimer);
+  const now = new Date();
+  const target = new Date(now); target.setHours(hour, minute, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 1);
+  const ms = target - now;
+  _incomeReminderTimer = setTimeout(async () => {
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (!clients.some(c => c.focused)) {
+      self.registration.showNotification('💰 Vergeet je inkomen niet te noteren', {
+        body: 'Tik hier om snel je daginkomen in te vullen.',
+        icon: './icons/icon-192.png', tag: 'income-reminder', renotify: true,
+      });
+    }
+    scheduleIncomeReminder(hour, minute);
+  }, ms);
+}
+
+// #6: Streak-waarschuwing — hizb nog niet gedaan
+let _streakWarningTimer = null;
+function scheduleStreakWarning(hour, minute) {
+  if (_streakWarningTimer) clearTimeout(_streakWarningTimer);
+  const now = new Date();
+  const target = new Date(now); target.setHours(hour, minute, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 1);
+  const ms = target - now;
+  _streakWarningTimer = setTimeout(async () => {
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (!clients.some(c => c.focused)) {
+      self.registration.showNotification('📖 Hizb nog niet gedaan vandaag!', {
+        body: 'Je streak staat op het spel — open de app en vink hem af.',
+        icon: './icons/icon-192.png', tag: 'streak-warning', renotify: true,
+      });
+    }
+    scheduleStreakWarning(hour, minute);
+  }, ms);
+}
+
+// #25: Gewoonte-herinnering
+let _habitReminderTimer = null;
+function scheduleHabitReminder(time) {
+  if (_habitReminderTimer) clearTimeout(_habitReminderTimer);
+  if (!time) return;
+  const [h, m] = time.split(':').map(Number);
+  const now = new Date();
+  const target = new Date(now); target.setHours(h, m, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 1);
+  const ms = target - now;
+  _habitReminderTimer = setTimeout(async () => {
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (!clients.some(c => c.focused)) {
+      self.registration.showNotification('🔁 Gewoontes voor vandaag', {
+        body: 'Heb je je dagelijkse gewoontes al afgevinkt?',
+        icon: './icons/icon-192.png', tag: 'habit-reminder', renotify: true,
+      });
+    }
+    scheduleHabitReminder(time);
+  }, ms);
+}
+
+// #29: Inactiviteitsalarm — app lang niet geopend
+let _inactivityTimer = null;
+function scheduleInactivityAlarm(delayMs) {
+  if (_inactivityTimer) clearTimeout(_inactivityTimer);
+  if (!delayMs || delayMs <= 0) return;
+  _inactivityTimer = setTimeout(async () => {
+    _inactivityTimer = null;
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (!clients.some(c => c.focused)) {
+      self.registration.showNotification('👋 Lang niet gezien!', {
+        body: 'Open de app om je voortgang bij te houden.',
+        icon: './icons/icon-192.png', tag: 'inactivity', renotify: true,
+      });
+    }
+  }, delayMs);
+}
+
 self.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
@@ -154,6 +253,27 @@ self.addEventListener('message', (e) => {
   }
   if (e.data && e.data.type === 'SCHEDULE_WEEKLY_SUMMARY') {
     scheduleWeeklySummary(e.data.income || 0);
+  }
+  if (e.data && e.data.type === 'SCHEDULE_MORNING') {
+    scheduleMorningNotification(e.data.dailyGoal, e.data.hour, e.data.minute);
+  }
+  if (e.data && e.data.type === 'SCHEDULE_INCOME_REMINDER') {
+    scheduleIncomeReminder(e.data.hour, e.data.minute);
+  }
+  if (e.data && e.data.type === 'SCHEDULE_STREAK_WARNING') {
+    scheduleStreakWarning(e.data.hour, e.data.minute);
+  }
+  if (e.data && e.data.type === 'SCHEDULE_HABIT_REMINDER') {
+    scheduleHabitReminder(e.data.time);
+  }
+  if (e.data && e.data.type === 'SCHEDULE_INACTIVITY') {
+    scheduleInactivityAlarm(e.data.delayMs);
+  }
+  if (e.data && e.data.type === 'CANCEL_INCOME_REMINDER') {
+    if (_incomeReminderTimer) { clearTimeout(_incomeReminderTimer); _incomeReminderTimer = null; }
+  }
+  if (e.data && e.data.type === 'CANCEL_STREAK_WARNING') {
+    if (_streakWarningTimer) { clearTimeout(_streakWarningTimer); _streakWarningTimer = null; }
   }
 });
 

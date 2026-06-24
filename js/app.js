@@ -20,7 +20,7 @@ import { migrateSessionKeys } from './settings.js';
 import { initSyncPill, refresh as refreshSyncPill } from './components/sync-pill.js';
 import { maybeAutoExport } from './auto-export.js';
 import { maybeShowWeeklyReview } from './components/weekly-review.js';
-import { checkPendingNotifications } from './notifications.js';
+import { checkAllNotifications, scheduleSwNotifications } from './notifications.js';
 import { render as renderDashboard } from './modules/dashboard.js';
 import { render as renderTaxi } from './modules/taxi.js';
 import { render as renderKoran } from './modules/koran.js';
@@ -100,7 +100,8 @@ async function bootApp() {
   setInterval(maybeAutoSync, 60 * 60 * 1000);
   maybeAutoExport();
   maybeShowWeeklyReview();
-  checkPendingNotifications();
+  checkAllNotifications();
+  scheduleSwNotifications();
   updateBadge();
   setInterval(updateBadge, 5 * 60 * 1000);
   // Auto-PDF op de 1e van de maand

@@ -8,6 +8,10 @@ const DEFAULTS = {
   taxReservePercent: '25',
   lockGraceMin: '5',
   autoPullOnOpen: '1',
+  habitReminderTime: '21:00',
+  morningNotifTime: '08:00',
+  incomeReminderTime: '20:00',
+  streakWarningTime: '22:00',
 };
 
 // Niets staat nog sessie-only: zowel de PAT (ghToken) als het encryptie-wachtwoord
