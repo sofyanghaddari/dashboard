@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v85** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v122** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v85)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v122)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -189,7 +189,7 @@ js/
     suras.js                     — ⚠️ DEAD: 114 suras, niet meer geïmporteerd (oude soera-grid)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v85'
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v122'
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -296,6 +296,14 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++7. **Design-polish + emoji → line-iconen v122 (24 juni 2026):**
+   - **Kompas (`js/qibla.js`)** hertekend: elegante tapered gouden naald, verfijnd Kaäba-embleem, gelaagde hub, premium ring.
+   - **Tabbalk:** 9 emoji-iconen vervangen door consistente monochrome SVG line-iconen (currentColor); actieve tab in goud-accent. In `index.html`, CSS `.tab-ic`.
+   - **Badges → medaillons:** ronde disc met gouden gloed + ✓-corner (CSS `.badge*`). Dubbel-keycap `5️⃣0️⃣` emoji in `achievements.js` vervangen door schone medaille.
+   - **Knoppen:** primaire `.btn` subtiele sheen-gradient (color-mix met solid-fallback). **Grafieken:** gouden drop-shadow op voortgangsringen (`.sring-circle`/`.donut-seg`), zachtere heatmap.
+   - **Boekhouding netter:** factuurformulier als heldere stappen met accent-icoon-koppen (Klant / Bedrag & BTW / Nummer & datum); quick-actions + alle detail-modal knoppen van emoji naar consistente line-iconen/`.btn secondary` met semantische varianten (`.bk-act-pay`/`.bk-act-del`/`.bk-act-wide`). Verzend-modal secundaire knoppen met line-iconen.
+   - **Emoji-conventie (NIEUW):** géén kleurrijke pictogram-emoji meer in UI-chrome; gebruik inline SVG line-iconen (viewBox 0 0 24 24, `stroke="currentColor"`, stroke-width 1.7, round caps). Functionele monochrome glyphs (`→ ✓ ✕ ↑ ↩ ✎ ⚠`) mogen blijven — die zijn al strak. Bij nieuwe UI: line-icon, geen emoji.
 
 +5. **Bonnetje-scanner + Geloof-tab v85 (15 juni 2026):**
    - **🕌 Geloof-tab:** Koran en Arabisch samengevoegd onder één tab met twee sub-tabs. `js/modules/geloof.js` is de wrapper; delegeert naar `renderKoran`/`renderArabic`. Sub-tab staat in `container.dataset.geloofSub`. Oude routes `koran`/`arabic` blijven geregistreerd als redirects die `geloofSub` zetten vóór navigate. `manifest.json` shortcuts en `cmdk.js` bijgewerkt.
