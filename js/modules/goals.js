@@ -1,4 +1,5 @@
 import { all, put, del } from '../db.js';
+import { icon } from '../icons.js';
 import { openModal } from '../components/modal.js';
 import { uid, fmtMoney, parseAmount, escapeHTML, ymd, orderedHabits, effectiveNow } from '../utils.js';
 import { ok } from '../components/toast.js';
@@ -29,7 +30,7 @@ export async function render(container) {
     <div id="short-list"></div>
 
     <div class="section-header">
-      <h2>🔁 Dagelijkse gewoontes</h2>
+      <h2 style="display:flex;align-items:center;gap:8px">${icon('refresh')} Dagelijkse gewoontes</h2>
       <button class="section-add-btn" id="add-habit">+ Gewoonte</button>
     </div>
     <div id="habits-list"></div>
@@ -59,7 +60,7 @@ function renderGoals(container, sel, items, totalRides) {
   if (!items.length) {
     el.replaceChildren();
     el.insertAdjacentHTML('beforeend', `<div class="section-empty">
-      <div class="section-empty-icon">🎯</div>
+      <div class="section-empty-icon">${icon('target')}</div>
       <div class="section-empty-text">Nog geen doelen — tik <b>+ Doel</b> om er een te stellen.</div>
     </div>`);
     return;
@@ -75,9 +76,9 @@ function renderGoals(container, sel, items, totalRides) {
     const status      = progress >= 100 ? 'voltooid' : 'actief';
 
     const deadlineChip = g.deadline
-      ? `<span class="goal-meta-chip">📅 ${new Date(g.deadline + 'T12:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}</span>` : '';
+      ? `<span class="goal-meta-chip">${icon('calendar')} ${new Date(g.deadline + 'T12:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}</span>` : '';
     const taxiChip = isAutoTrack
-      ? `<span class="goal-meta-chip">🚖 ${taxiPct}% per rit · <b class="money blurred-amount">${fmtMoney(taxiSaved)}</b> / <span class="blurred-amount">${fmtMoney(target)}</span></span>` : '';
+      ? `<span class="goal-meta-chip">${icon('taxi')} ${taxiPct}% per rit · <b class="money blurred-amount">${fmtMoney(taxiSaved)}</b> / <span class="blurred-amount">${fmtMoney(target)}</span></span>` : '';
 
     const progressControl = isAutoTrack
       ? `<div class="goal-progress-row">
@@ -141,7 +142,7 @@ function renderGoals(container, sel, items, totalRides) {
             statusEl.textContent = '✓ Voltooid';
             statusEl.className = 'goal-status status-voltooid';
             celebrateTask();
-            ok('🎉 Doel behaald!');
+            ok('Doel behaald!');
           } else {
             statusEl.textContent = '● Actief';
             statusEl.className = 'goal-status status-actief';
@@ -159,7 +160,7 @@ function renderHabits(container, habits, log) {
   if (!habits.length) {
     el.replaceChildren();
     el.insertAdjacentHTML('beforeend', `<div class="section-empty">
-      <div class="section-empty-icon">🔁</div>
+      <div class="section-empty-icon">${icon('refresh')}</div>
       <div class="section-empty-text">Geen gewoontes — bouw een dagelijkse routine die blijft plakken.</div>
     </div>`);
     return;
@@ -233,7 +234,7 @@ function renderPots(container, pots) {
   if (!pots.length) {
     el.replaceChildren();
     el.insertAdjacentHTML('beforeend', `<div class="section-empty">
-      <div class="section-empty-icon">🏺</div>
+      <div class="section-empty-icon">${icon('money')}</div>
       <div class="section-empty-text">Geen spaarpotjes — verdeel je geld in virtuele potjes.</div>
     </div>`);
     return;

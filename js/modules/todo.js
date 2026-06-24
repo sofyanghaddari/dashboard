@@ -1,4 +1,5 @@
 import { all, put, del } from '../db.js';
+import { icon } from '../icons.js';
 import { openModal } from '../components/modal.js';
 import { uid, escapeHTML, ymd, startOfWeek, effectiveNow } from '../utils.js';
 import { celebrateTask, celebrateAllDone } from '../components/celebrate.js';
@@ -55,7 +56,7 @@ export async function render(container) {
         Actief <span style="opacity:.6">${active.length}</span>
       </button>
       <button class="todo-seg-btn ${view==='later'  ?'active':''}" id="tab-later">
-        🔖 Later <span style="opacity:.6">${later.length}</span>
+        ${icon('bookmark')} Later <span style="opacity:.6">${later.length}</span>
       </button>
       <button class="todo-seg-btn ${view==='archive'?'active':''}" id="tab-archive">
         Klaar <span style="opacity:.6">${archived.length}</span>
@@ -70,7 +71,7 @@ export async function render(container) {
         ${allTags.length ? `<span class="chip-sep" role="separator"></span>
           ${allTags.map(t => `<button class="filter-chip tag-chip ${tagFilter===t?'active':''}" data-tag="${tagFilter===t?'':escapeHTML(t)}" aria-pressed="${tagFilter===t}">#${escapeHTML(t)}</button>`).join('')}` : ''}
         <span class="chip-sep" role="separator"></span>
-        <button class="filter-chip ${container.dataset.todoBulk==='1'?'active':''}" id="bulk-toggle" aria-pressed="${container.dataset.todoBulk==='1'}">☑ Selecteren</button>
+        <button class="filter-chip ${container.dataset.todoBulk==='1'?'active':''}" id="bulk-toggle" aria-pressed="${container.dataset.todoBulk==='1'}">${icon('check')} Selecteren</button>
       </div>
     ` : ''}
 
@@ -95,7 +96,7 @@ export async function render(container) {
       const isFiltered = filter !== 'all' || tagFilter;
       body.innerHTML = `
         <div class="notes-empty">
-          <div class="notes-empty-icon">${isFiltered ? '🔍' : '✨'}</div>
+          <div class="notes-empty-icon">${isFiltered ? icon('search') : icon('check')}</div>
           <div class="notes-empty-title">${isFiltered ? 'Niets binnen dit filter' : 'Alles is gedaan'}</div>
           <div class="notes-empty-sub">${isFiltered ? 'Pas het filter aan of voeg een nieuwe taak toe.' : 'Geen open taken — voeg er snel één toe via de balk hierboven.'}</div>
         </div>`;
@@ -228,10 +229,10 @@ function dueDateBadge(dueDate, dueTime) {
   const today    = ymd(now_);
   const tomorrow = ymd(new Date(now_.getTime() + 86400000));
   const timeSuffix = dueTime ? ` ${dueTime}` : '';
-  if (dueDate < today)      return { label: `🔴 ⚠ ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}${timeSuffix}`, cls: 'task-badge-overdue' };
-  if (dueDate === today)    return { label: `🔔 Vandaag${timeSuffix}`,  cls: 'task-badge-today' };
-  if (dueDate === tomorrow) return { label: `🔔 Morgen${timeSuffix}`,   cls: 'task-badge-date' };
-  return { label: `🔔 ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}${timeSuffix}`, cls: 'task-badge-date' };
+  if (dueDate < today)      return { label: `${icon('warning')} ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}${timeSuffix}`, cls: 'task-badge-overdue' };
+  if (dueDate === today)    return { label: `${icon('clock')} Vandaag${timeSuffix}`,  cls: 'task-badge-today' };
+  if (dueDate === tomorrow) return { label: `${icon('clock')} Morgen${timeSuffix}`,   cls: 'task-badge-date' };
+  return { label: `${icon('clock')} ${new Date(dueDate + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}${timeSuffix}`, cls: 'task-badge-date' };
 }
 
 function taskCard(t, bulkMode, idx = 0) {
@@ -243,7 +244,7 @@ function taskCard(t, bulkMode, idx = 0) {
 
   const metaBadges = [
     badge ? `<span class="task-badge ${badge.cls}">${badge.label}</span>` : '',
-    t.recurring ? `<span class="task-badge">🔁 ${t.recurring}</span>` : '',
+    t.recurring ? `<span class="task-badge">${icon('refresh')} ${t.recurring}</span>` : '',
     tagsHTML,
   ].filter(Boolean).join('');
 
@@ -275,7 +276,7 @@ function taskCard(t, bulkMode, idx = 0) {
         ${subtaskExpanded}
       </div>
       <div class="task-actions">
-        <button class="task-btn" data-later="${t.id}" title="Bewaar voor later">🔖</button>
+        <button class="task-btn" data-later="${t.id}" title="Bewaar voor later">${icon('bookmark')}</button>
         <button class="task-btn" data-edit="${t.id}" title="Bewerken">✎</button>
         ${bulkMode ? '' : `<button class="task-btn del" data-del="${t.id}" title="Verwijderen">✕</button>`}
       </div>
@@ -331,7 +332,7 @@ function bindRowEvents(container, el, items) {
       const t = items.find(x => x.id === id);
       if (!t) return;
       await put('todos', { ...t, savedForLater: !t.savedForLater });
-      ok(t.savedForLater ? 'Terug naar actief' : '🔖 Bewaard voor later');
+      ok(t.savedForLater ? 'Terug naar actief' : 'Bewaard voor later');
       renderKeepScroll(container);
     };
   });
@@ -358,9 +359,9 @@ function renderLater(container, items) {
   const el = container.querySelector('[data-bucket="later"]');
   if (!items.length) {
     el.innerHTML = `<div class="todo-empty" style="padding:32px">
-      <div style="font-size:1.8rem;margin-bottom:8px">🔖</div>
+      <div style="color:var(--accent);margin-bottom:8px;display:flex;justify-content:center">${icon('bookmark', 'ic-xl')}</div>
       <div style="font-weight:600;margin-bottom:4px">Niets bewaard voor later</div>
-      <div style="font-size:.84rem;color:var(--text-dim)">Tap 🔖 op een taak om hem hier te parkeren</div>
+      <div style="font-size:.84rem;color:var(--text-dim);display:flex;align-items:center;justify-content:center;gap:5px">Tap ${icon('bookmark')} op een taak om hem hier te parkeren</div>
     </div>`;
     return;
   }
@@ -379,7 +380,7 @@ function renderArchive(container, items) {
   const el = container.querySelector('#archive-list');
   if (!items.length) {
     el.innerHTML = `<div class="todo-empty" style="padding:32px">
-      <div style="font-size:1.8rem;margin-bottom:8px">✅</div>
+      <div style="color:var(--accent);margin-bottom:8px;display:flex;justify-content:center">${icon('check', 'ic-xl')}</div>
       <div style="font-weight:600;margin-bottom:4px">Nog niets afgerond</div>
       <div style="font-size:.84rem;color:var(--text-dim)">Voltooide taken verschijnen hier</div>
     </div>`;

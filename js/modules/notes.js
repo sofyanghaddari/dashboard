@@ -1,4 +1,5 @@
 import { all, put, del } from '../db.js';
+import { icon } from '../icons.js';
 import { uid, escapeHTML } from '../utils.js';
 import { ok, err as toastErr } from '../components/toast.js';
 import { convertToMarkdown, SUPPORTED_EXTENSIONS } from '../markitdown.js';
@@ -32,16 +33,16 @@ export async function render(container) {
     <h1 class="page-title">Notities</h1>
 
     <div class="notes-search-wrap">
-      <span class="notes-search-icon">🔍</span>
+      <span class="notes-search-icon">${icon('search')}</span>
       <input id="notes-search" placeholder="Zoek in notities…" value="${escapeHTML(search)}" />
     </div>
 
     <div class="notes-seg">
       <button class="notes-seg-btn ${view==='notes'?'active':''}" id="tab-notes">
-        📝 Notities <span style="opacity:.6">${notesItems.length}</span>
+        ${icon('note')} Notities <span style="opacity:.6">${notesItems.length}</span>
       </button>
       <button class="notes-seg-btn ${view==='ideas'?'active':''}" id="tab-ideas">
-        💡 Ideeën <span style="opacity:.6">${ideasItems.length}</span>
+        ${icon('bulb')} Ideeën <span style="opacity:.6">${ideasItems.length}</span>
       </button>
     </div>
 
@@ -50,7 +51,7 @@ export async function render(container) {
         <span class="at-plus">+</span> ${view === 'ideas' ? 'Nieuw idee' : 'Nieuwe notitie'}
       </button>
       <button class="btn secondary notes-import-btn" id="import-doc" title="Document importeren als notitie">
-        📄 Importeren
+        ${icon('doc')} Importeren
       </button>
     </div>
     <input type="file" id="import-file" accept="${SUPPORTED_EXTENSIONS}" style="display:none" />
@@ -63,7 +64,7 @@ export async function render(container) {
   if (!sorted.length) {
     list.innerHTML = `
       <div class="notes-empty">
-        <div class="notes-empty-icon">${view === 'ideas' ? '💡' : '📝'}</div>
+        <div class="notes-empty-icon">${view === 'ideas' ? icon('bulb') : icon('note')}</div>
         <div class="notes-empty-title">
           ${search ? 'Geen resultaten' : `Nog geen ${view === 'ideas' ? 'ideeën' : 'notities'}`}
         </div>
@@ -80,9 +81,9 @@ export async function render(container) {
       return `
         <div class="note-card ${accentClass}${n.pinned ? ' note-pinned' : ''}" data-id="${n.id}">
           <div class="note-card-top">
-            <div class="note-card-title">${n.pinned ? '📌 ' : ''}${escapeHTML(n.title || '(geen titel)')}</div>
+            <div class="note-card-title">${n.pinned ? icon('pin') + ' ' : ''}${escapeHTML(n.title || '(geen titel)')}</div>
             <div class="note-actions">
-              <button class="note-btn" data-pin="${n.id}" title="${n.pinned ? 'Losmaken' : 'Vastpinnen'}">${n.pinned ? '📌' : '☆'}</button>
+              <button class="note-btn" data-pin="${n.id}" title="${n.pinned ? 'Losmaken' : 'Vastpinnen'}">${n.pinned ? icon('pin') : '☆'}</button>
               <button class="note-btn" data-edit="${n.id}" title="Bewerken">✎</button>
               <button class="note-btn del" data-del="${n.id}" title="Verwijderen">✕</button>
             </div>
@@ -185,7 +186,7 @@ function openImportProgress(container, file, isIdea) {
   overlay.className = 'modal-backdrop';
   overlay.innerHTML = `
     <div class="modal" style="text-align:center">
-      <h2>📄 Importeren</h2>
+      <h2 style="display:flex;align-items:center;gap:8px">${icon('doc')} Importeren</h2>
       <p style="opacity:.7;font-size:.9rem;margin:.5rem 0 1.2rem">${escapeHTML(file.name)}</p>
       <div class="rcpt-scan-bar" style="margin:0 auto 1rem">
         <div class="rcpt-scan-fill" id="imp-fill" style="width:0%"></div>
