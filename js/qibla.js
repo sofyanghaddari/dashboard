@@ -22,92 +22,117 @@ function calcDistance(lat, lon) {
 // ── SVG builders ─────────────────────────────────────────────────────────────
 
 function buildRingSVG() {
-  const C = 150, OR = 142;
+  const C = 150, OR = 143;
   let ticks = '';
   for (let i = 0; i < 360; i += 2) {
     const isCard = i % 90 === 0;
     const is30   = i % 30 === 0;
     const is10   = i % 10 === 0;
     const is5    = i % 5 === 0;
-    const len    = isCard ? 18 : is30 ? 13 : is10 ? 8 : is5 ? 5 : 3;
-    const sw     = isCard ? 2   : is30 ? 1.5 : is10 ? 1 : 0.6;
-    const col    = isCard ? '#c9a84c' : is30 ? '#555' : is10 ? '#3a3a3a' : '#252525';
+    const len    = isCard ? 16 : is30 ? 12 : is10 ? 8 : is5 ? 5 : 3;
+    const sw     = isCard ? 2   : is30 ? 1.4 : is10 ? 1 : 0.6;
+    const col    = isCard ? '#d8b86a' : is30 ? '#54504a' : is10 ? '#3a3833' : '#262420';
     const rad    = (i - 90) * D2R;
     const x1 = C + OR * Math.cos(rad),         y1 = C + OR * Math.sin(rad);
     const x2 = C + (OR - len) * Math.cos(rad), y2 = C + (OR - len) * Math.sin(rad);
-    ticks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="${sw}"/>`;
+    ticks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="${sw}" stroke-linecap="round"/>`;
   }
 
   const labels = [
-    { a:0,   t:'N',  r:OR-24, sz:19, fw:700, c:'#e8c97a' },
-    { a:45,  t:'NO', r:OR-22, sz:10, fw:400, c:'#666' },
-    { a:90,  t:'O',  r:OR-23, sz:13, fw:500, c:'#888' },
-    { a:135, t:'ZO', r:OR-22, sz:10, fw:400, c:'#555' },
-    { a:180, t:'Z',  r:OR-23, sz:13, fw:500, c:'#888' },
-    { a:225, t:'ZW', r:OR-22, sz:10, fw:400, c:'#555' },
-    { a:270, t:'W',  r:OR-23, sz:13, fw:500, c:'#888' },
-    { a:315, t:'NW', r:OR-22, sz:10, fw:400, c:'#555' },
+    { a:0,   t:'N',  r:OR-30, sz:20, fw:600, c:'#ecd49a' },
+    { a:45,  t:'NO', r:OR-25, sz:9.5, fw:500, c:'#615c54' },
+    { a:90,  t:'O',  r:OR-26, sz:13, fw:500, c:'#938d83' },
+    { a:135, t:'ZO', r:OR-25, sz:9.5, fw:500, c:'#54504a' },
+    { a:180, t:'Z',  r:OR-26, sz:13, fw:500, c:'#938d83' },
+    { a:225, t:'ZW', r:OR-25, sz:9.5, fw:500, c:'#54504a' },
+    { a:270, t:'W',  r:OR-26, sz:13, fw:500, c:'#938d83' },
+    { a:315, t:'NW', r:OR-25, sz:9.5, fw:500, c:'#54504a' },
   ];
   const lblSVG = labels.map(({ a, t, r, sz, fw, c }) => {
     const rad = (a - 90) * D2R;
-    const x = C + r * Math.cos(rad), y = C + r * Math.sin(rad) + sz * 0.37;
-    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" fill="${c}" font-size="${sz}" font-weight="${fw}" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${t}</text>`;
+    const x = C + r * Math.cos(rad), y = C + r * Math.sin(rad) + sz * 0.36;
+    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" fill="${c}" font-size="${sz}" font-weight="${fw}" font-family="-apple-system,BlinkMacSystemFont,sans-serif" letter-spacing=".5">${t}</text>`;
   }).join('');
 
   const degNums = [30,60,120,150,210,240,300,330].map(deg => {
     const rad = (deg - 90) * D2R;
-    const x = C + (OR - 28) * Math.cos(rad), y = C + (OR - 28) * Math.sin(rad) + 3.5;
-    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" fill="#353535" font-size="7.5" font-family="-apple-system,sans-serif">${deg}</text>`;
+    const x = C + (OR - 30) * Math.cos(rad), y = C + (OR - 30) * Math.sin(rad) + 3.4;
+    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" fill="#3b3933" font-size="7.5" font-weight="500" font-family="-apple-system,sans-serif">${deg}</text>`;
   }).join('');
+
+  // Noord-markering: subtiel gouden bolletje net binnen de ring
+  const nRad = (0 - 90) * D2R;
+  const nx = C + (OR - 9) * Math.cos(nRad), ny = C + (OR - 9) * Math.sin(nRad);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
     <defs>
-      <radialGradient id="ql-rg" cx="50%" cy="50%">
-        <stop offset="0%"   stop-color="#1a1a1a"/>
-        <stop offset="88%"  stop-color="#0e0e0e"/>
-        <stop offset="100%" stop-color="#080808"/>
+      <radialGradient id="ql-rg" cx="42%" cy="36%" r="78%">
+        <stop offset="0%"   stop-color="#24221e"/>
+        <stop offset="55%"  stop-color="#161513"/>
+        <stop offset="88%"  stop-color="#0d0c0b"/>
+        <stop offset="100%" stop-color="#070706"/>
+      </radialGradient>
+      <radialGradient id="ql-sheen" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"  stop-color="rgba(0,0,0,0)"/>
+        <stop offset="78%" stop-color="rgba(0,0,0,0)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,.55)"/>
       </radialGradient>
     </defs>
-    <circle cx="${C}" cy="${C}" r="${OR+2}" fill="url(#ql-rg)"/>
-    <circle cx="${C}" cy="${C}" r="${OR+1.5}" fill="none" stroke="#1c1c1c" stroke-width="2.5"/>
-    <circle cx="${C}" cy="${C}" r="${OR+0.5}" fill="none" stroke="#232323" stroke-width=".5"/>
+    <circle cx="${C}" cy="${C}" r="${OR+3}" fill="url(#ql-rg)"/>
+    <circle cx="${C}" cy="${C}" r="${OR+2.5}" fill="none" stroke="#3a352b" stroke-width="1" opacity=".6"/>
+    <circle cx="${C}" cy="${C}" r="${OR-23}" fill="none" stroke="#1d1b17" stroke-width="1"/>
     ${ticks}${degNums}${lblSVG}
-    <circle cx="${C}" cy="${C}" r="6" fill="#111" stroke="#2a2a2a" stroke-width="1.5"/>
+    <circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="2.4" fill="#d8b86a"/>
+    <circle cx="${C}" cy="${C}" r="${OR+3}" fill="url(#ql-sheen)"/>
   </svg>`;
 }
 
 function buildNeedleSVG() {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
     <defs>
-      <linearGradient id="ql-ng" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%"   stop-color="#7a5c10"/>
-        <stop offset="35%"  stop-color="#e8c97a"/>
-        <stop offset="65%"  stop-color="#d4a84c"/>
-        <stop offset="100%" stop-color="#7a5c10"/>
+      <linearGradient id="ql-blade" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#8a6a18"/>
+        <stop offset="46%"  stop-color="#f2dca0"/>
+        <stop offset="54%"  stop-color="#e6c878"/>
+        <stop offset="100%" stop-color="#9a7820"/>
       </linearGradient>
-      <linearGradient id="ql-pt" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"   stop-color="#f0d898"/>
-        <stop offset="100%" stop-color="#c9a84c"/>
+      <linearGradient id="ql-spine" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#fff4d6"/>
+        <stop offset="100%" stop-color="#e6c878" stop-opacity="0"/>
       </linearGradient>
+      <linearGradient id="ql-tail" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#2c2a26"/>
+        <stop offset="50%"  stop-color="#46423a"/>
+        <stop offset="100%" stop-color="#2c2a26"/>
+      </linearGradient>
+      <radialGradient id="ql-hub" cx="40%" cy="35%" r="70%">
+        <stop offset="0%"   stop-color="#fff2cf"/>
+        <stop offset="55%"  stop-color="#dcb464"/>
+        <stop offset="100%" stop-color="#9a7820"/>
+      </radialGradient>
     </defs>
-    <!-- Pijlpunt (boven = Mekka richting) -->
-    <polygon points="150,22 141,57 159,57" fill="url(#ql-pt)"/>
-    <polygon points="150,22 141,57 150,44" fill="#c9a84c" opacity=".45"/>
-    <!-- Naaldstaf boven -->
-    <rect x="148" y="56" width="4" height="92" fill="url(#ql-ng)" rx="1.5"/>
-    <!-- Kaäba icoon -->
-    <rect x="141" y="13.5" width="18" height="14" rx="3" fill="#0c0c0c" stroke="#c9a84c" stroke-width="1.8"/>
-    <!-- Deur -->
-    <rect x="147" y="19" width="6" height="9" rx="1.5" fill="#1a0f00" stroke="#a07828" stroke-width=".9"/>
-    <!-- Kiswa-gordel -->
-    <rect x="141" y="21" width="18" height="1.5" fill="#c9a84c" opacity=".55" rx=".5"/>
-    <!-- Draaipunt -->
-    <circle cx="150" cy="150" r="10" fill="#0e0e0e" stroke="#252525" stroke-width="2"/>
-    <circle cx="150" cy="150" r="5"  fill="#c9a84c"/>
-    <circle cx="150" cy="150" r="2.5" fill="#f0d898"/>
-    <!-- Contragewicht -->
-    <rect x="148" y="153" width="4" height="60" fill="#232323" rx="1.5"/>
-    <polygon points="150,223 141,198 159,198" fill="#1c1c1c"/>
+
+    <!-- Zuid-staart (gedempt, voor balans) -->
+    <polygon points="150,150 142,150 150,214 158,150" fill="url(#ql-tail)"/>
+
+    <!-- Noord-blad (gouden naald naar Mekka) -->
+    <polygon points="150,40 141,150 159,150" fill="url(#ql-blade)"/>
+    <polygon points="150,46 150,150 154.5,150" fill="#7a5c12" opacity=".35"/>
+    <polygon points="150,40 147,150 150,150" fill="url(#ql-spine)" opacity=".9"/>
+
+    <!-- Kaäba-embleem boven de punt -->
+    <g>
+      <rect x="139" y="16" width="22" height="19" rx="2.4" fill="#0b0a09" stroke="#d8b86a" stroke-width="1.6"/>
+      <rect x="139" y="20.5" width="22" height="2.4" fill="#d8b86a" opacity=".85"/>
+      <rect x="146.5" y="26" width="7" height="9" rx="1" fill="#1c1306" stroke="#b89248" stroke-width=".8"/>
+      <circle cx="150" cy="13" r="1.6" fill="#f2dca0"/>
+    </g>
+
+    <!-- Draaipunt (gelaagde hub) -->
+    <circle cx="150" cy="150" r="13" fill="#0d0c0b" stroke="#2a2722" stroke-width="1.5"/>
+    <circle cx="150" cy="150" r="8.5" fill="url(#ql-hub)"/>
+    <circle cx="150" cy="150" r="8.5" fill="none" stroke="#fff2cf" stroke-width=".6" opacity=".5"/>
+    <circle cx="147.5" cy="147.5" r="2.4" fill="#fff7e4" opacity=".75"/>
   </svg>`;
 }
 
