@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v124';
+const CACHE = 'dashboard-v125';
 
 
 
@@ -109,7 +109,7 @@ function scheduleWeeklySummary(income) {
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const anyFocused = clients.some(c => c.focused);
     if (!anyFocused) {
-      self.registration.showNotification('Week overzicht 📊', {
+      self.registration.showNotification('Week overzicht', {
         body: `Je verdiende deze week € ${(income || 0).toFixed(2).replace('.', ',')}. Goed gedaan!`,
         icon: './icons/icon-192.png',
         tag: 'weekly-summary',
@@ -136,7 +136,7 @@ function scheduleHizbAlarm(time) {
     const anyFocused = clients.some(c => c.focused);
     if (!anyFocused) {
       self.registration.showNotification('Koran herinnering', {
-        body: 'Tijd voor je dagelijkse hizb. 📖',
+        body: 'Tijd voor je dagelijkse hizb.',
         icon: './icons/icon-192.png',
         tag: 'hizb-reminder',
         renotify: true,
@@ -157,7 +157,7 @@ function scheduleMorningNotification(dailyGoal, hour, minute) {
   _morningTimer = setTimeout(async () => {
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (!clients.some(c => c.focused)) {
-      self.registration.showNotification('🌅 Goedemorgen — vandaag doel: € ' + (dailyGoal || 200), {
+      self.registration.showNotification('Goedemorgen — vandaag doel: € ' + (dailyGoal || 200), {
         body: 'Zet hem op! Open de app om je dag bij te houden.',
         icon: './icons/icon-192.png', tag: 'morning-kickstart', renotify: true,
       });
@@ -177,7 +177,7 @@ function scheduleIncomeReminder(hour, minute) {
   _incomeReminderTimer = setTimeout(async () => {
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (!clients.some(c => c.focused)) {
-      self.registration.showNotification('💰 Vergeet je inkomen niet te noteren', {
+      self.registration.showNotification('Vergeet je inkomen niet te noteren', {
         body: 'Tik hier om snel je daginkomen in te vullen.',
         icon: './icons/icon-192.png', tag: 'income-reminder', renotify: true,
       });
@@ -197,7 +197,7 @@ function scheduleStreakWarning(hour, minute) {
   _streakWarningTimer = setTimeout(async () => {
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (!clients.some(c => c.focused)) {
-      self.registration.showNotification('📖 Hizb nog niet gedaan vandaag!', {
+      self.registration.showNotification('Hizb nog niet gedaan vandaag!', {
         body: 'Je streak staat op het spel — open de app en vink hem af.',
         icon: './icons/icon-192.png', tag: 'streak-warning', renotify: true,
       });
@@ -219,7 +219,7 @@ function scheduleHabitReminder(time) {
   _habitReminderTimer = setTimeout(async () => {
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (!clients.some(c => c.focused)) {
-      self.registration.showNotification('🔁 Gewoontes voor vandaag', {
+      self.registration.showNotification('Gewoontes voor vandaag', {
         body: 'Heb je je dagelijkse gewoontes al afgevinkt?',
         icon: './icons/icon-192.png', tag: 'habit-reminder', renotify: true,
       });
@@ -237,7 +237,7 @@ function scheduleInactivityAlarm(delayMs) {
     _inactivityTimer = null;
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (!clients.some(c => c.focused)) {
-      self.registration.showNotification('👋 Lang niet gezien!', {
+      self.registration.showNotification('Lang niet gezien!', {
         body: 'Open de app om je voortgang bij te houden.',
         icon: './icons/icon-192.png', tag: 'inactivity', renotify: true,
       });
@@ -289,7 +289,7 @@ self.addEventListener('sync', (e) => {
 
 self.addEventListener('push', (e) => {
   let title = 'Dashboard';
-  let body = 'Vergeet je hizb niet! 📖';
+  let body = 'Vergeet je hizb niet!';
   if (e.data) {
     try {
       const d = e.data.json();

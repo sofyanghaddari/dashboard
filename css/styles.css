@@ -561,7 +561,7 @@ label {
   transition: transform var(--transition);
 }
 .tab.active .tab-ic { transform: translateY(-1px); }
-.tab.active { color: var(--accent); }
+.tab.active { color: var(--text); }
 .tab.active::before {
   content: '';
   position: absolute; top: 0; left: 50%;
@@ -6006,3 +6006,27 @@ input, select, textarea {
 .confirm-modal > div:last-child {
   margin-top: 4px;
 }
+
+/* ── NEUTRALERE ICONEN ───────────────────────────────────────────────────── */
+/* De emoji→line-icon sweep maakte bijna elk icoon goud. Goud blijft alleen
+   waar het echt een highlight is (actieve tab, behaalde badges, voortgangs-
+   ringen, geld). Functionele/structurele iconen worden rustig neutraal.      */
+.cmdk-ic,
+.quick-action-icon,
+.settings-section-icon,
+.srs-completion-icon,
+.notes-empty-icon .ic,
+.note-card-title .ic,
+.section-empty-icon .ic,
+.bk-cat-label .ic,
+.bk-client-detail .ic,
+.bk-sf-attach .ic,
+.section-empty[style] .ic,
+.lock-icon .ic,
+.insight-icon .ic,
+.cp-emoji,
+.streak-sub .ic,
+.mpc-icon,
+.ar-voice-tip-icon,
+.bk-qa svg,
+.bk-section-title svg { color: var(--text-dim); }
