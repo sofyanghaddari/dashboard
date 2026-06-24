@@ -2,18 +2,18 @@ import { all } from './db.js';
 import { ymd } from './utils.js';
 
 export const BADGES = [
-  { id: 'first-ride',  emoji: '🚖', name: 'Eerste rit', desc: 'Je eerste rit gelogd' },
-  { id: 'rides-10',    emoji: '🔟', name: '10 ritten',  desc: '10 ritten gelogd' },
-  { id: 'rides-50',    emoji: '🏅', name: '50 ritten', desc: '50 ritten gelogd' },
-  { id: 'rides-100',   emoji: '💯', name: '100 ritten', desc: '100 ritten gelogd' },
-  { id: 'rides-500',   emoji: '🏎️', name: '500 ritten', desc: '500 ritten gelogd' },
-  { id: 'streak-7',    emoji: '🔥', name: 'Week-streak', desc: '7 dagen hizb op rij' },
-  { id: 'streak-30',   emoji: '🏔️', name: 'Maand-streak', desc: '30 dagen hizb op rij' },
-  { id: 'streak-100',  emoji: '🌋', name: 'Vulkaan', desc: '100 dagen hizb op rij' },
-  { id: 'cards-50',    emoji: '📚', name: '50 woorden', desc: '50 Arabische kaarten' },
-  { id: 'cards-200',   emoji: '🧠', name: '200 woorden', desc: '200 Arabische kaarten' },
-  { id: 'goal-done',   emoji: '🎯', name: 'Doel behaald', desc: 'Eerste doel op 100%' },
-  { id: 'daily-100',   emoji: '💪', name: 'Honderd euro dag', desc: 'Eerste dag met €100+ inkomen' },
+  { id: 'first-ride',  icon: 'taxi',   name: 'Eerste rit', desc: 'Je eerste rit gelogd' },
+  { id: 'rides-10',    icon: 'car',    name: '10 ritten',  desc: '10 ritten gelogd' },
+  { id: 'rides-50',    icon: 'route',  name: '50 ritten', desc: '50 ritten gelogd' },
+  { id: 'rides-100',   icon: 'trophy', name: '100 ritten', desc: '100 ritten gelogd' },
+  { id: 'rides-500',   icon: 'star',   name: '500 ritten', desc: '500 ritten gelogd' },
+  { id: 'streak-7',    icon: 'flame',  name: 'Week-streak', desc: '7 dagen hizb op rij' },
+  { id: 'streak-30',   icon: 'flame',  name: 'Maand-streak', desc: '30 dagen hizb op rij' },
+  { id: 'streak-100',  icon: 'flame',  name: 'Vulkaan', desc: '100 dagen hizb op rij' },
+  { id: 'cards-50',    icon: 'book',   name: '50 woorden', desc: '50 Arabische kaarten' },
+  { id: 'cards-200',   icon: 'books',  name: '200 woorden', desc: '200 Arabische kaarten' },
+  { id: 'goal-done',   icon: 'target', name: 'Doel behaald', desc: 'Eerste doel op 100%' },
+  { id: 'daily-100',   icon: 'euro',   name: 'Honderd euro dag', desc: 'Eerste dag met €100+ inkomen' },
 ];
 
 export async function computeEarnedBadges() {

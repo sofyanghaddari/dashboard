@@ -4,6 +4,7 @@ import { getSetting, setSetting } from '../settings.js';
 import { openModal, confirmModal } from './modal.js';
 import { setPreset, THEME_PRESETS, setDensity, PRESET_DOT_COLORS } from '../theme.js';
 import { BADGES, computeEarnedBadges } from '../achievements.js';
+import { icon } from '../icons.js';
 import { ok, err } from './toast.js';
 import { exportICal } from '../export-ical.js';
 import { setupGithub, syncUp, syncDown, syncMerge, getSyncStatus, listVersions, createSecondaryGist, removeGist, emailGistLink, findMyGists, useExistingGist } from '../github-sync.js';
@@ -112,7 +113,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v122';
+const APP_VERSION = 'v123';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
@@ -709,7 +710,7 @@ export async function openSettings(onClose) {
         <div class="badge-grid">
           ${BADGES.map(b => `
             <div class="badge ${earned.has(b.id) ? 'earned' : 'locked'}" title="${b.desc}">
-              <div class="badge-emoji">${earned.has(b.id) ? b.emoji : '🔒'}</div>
+              <div class="badge-emoji">${earned.has(b.id) ? icon(b.icon, 'ic-lg') : icon('lock', 'ic-lg')}</div>
               <div class="badge-name">${b.name}</div>
             </div>
           `).join('')}

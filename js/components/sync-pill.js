@@ -2,6 +2,7 @@
 import { getSyncStatus, syncUp, syncMerge } from '../github-sync.js';
 import { island } from './island.js';
 import { navigate, currentRoute } from '../router.js';
+import { icon } from '../icons.js';
 
 let _el = null;
 let _refreshTimer = null;
@@ -34,15 +35,15 @@ export function refresh() {
   _el.style.display = '';
   if (!navigator.onLine) {
     _el.dataset.state = 'offline';
-    _el.innerHTML = '<span>📡</span><span>Offline</span>';
+    _el.innerHTML = `${icon('cloudoff', 'sync-ic')}<span>Offline</span>`;
     return;
   }
   _el.dataset.state = 'idle';
-  _el.innerHTML = `<span>☁️</span><span>${ago(status.last)}</span>`;
+  _el.innerHTML = `${icon('cloud', 'sync-ic')}<span>${ago(status.last)}</span>`;
 }
 
 async function manualSync() {
-  if (!navigator.onLine) { island('Geen verbinding', { icon: '📡', duration: 1500 }); return; }
+  if (!navigator.onLine) { island('Geen verbinding', { icon: icon('cloudoff'), duration: 1500 }); return; }
   _el.dataset.state = 'busy';
   _el.innerHTML = '<span class="sync-spin">↻</span><span>Sync…</span>';
   try {
@@ -54,8 +55,8 @@ async function manualSync() {
     navigate(currentRoute() || 'dashboard');
   } catch (e) {
     _el.dataset.state = 'err';
-    _el.innerHTML = '<span>⚠️</span><span>Mislukt</span>';
-    island('Sync mislukt: ' + e.message, { icon: '⚠️', duration: 2500 });
+    _el.innerHTML = `${icon('warning', 'sync-ic')}<span>Mislukt</span>`;
+    island('Sync mislukt: ' + e.message, { icon: icon('warning'), duration: 2500 });
     setTimeout(refresh, 3000);
   }
 }

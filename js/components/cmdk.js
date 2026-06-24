@@ -2,6 +2,7 @@
 import { all } from '../db.js';
 import { navigate } from '../router.js';
 import { fmtMoney } from '../utils.js';
+import { icon } from '../icons.js';
 
 let _open = false;
 
@@ -45,43 +46,43 @@ export async function openSearch() {
     items = [];
     if (!f) {
       items = [
-        { label: '🏠 Dashboard', action: () => navigate('dashboard') },
-        { label: '🚖 Taxi', action: () => navigate('taxi') },
-        { label: '📖 Koran', action: () => { document.getElementById('view').dataset.geloofSub = 'koran'; navigate('geloof'); } },
-        { label: '📚 Arabisch', action: () => { document.getElementById('view').dataset.geloofSub = 'arabic'; navigate('geloof'); } },
-        { label: '🎯 Doelen', action: () => navigate('goals') },
-        { label: '✅ To-do', action: () => navigate('todo') },
-        { label: '📝 Notities', action: () => navigate('notes') },
-        { label: '🗓 Week', action: () => navigate('agenda') },
-        { label: '📊 Stats', action: () => navigate('stats') },
-        { label: '🧾 Boekhouding', action: () => navigate('boekhouding') },
+        { icon: 'home', label: 'Dashboard', action: () => navigate('dashboard') },
+        { icon: 'taxi', label: 'Taxi', action: () => navigate('taxi') },
+        { icon: 'book', label: 'Koran', action: () => { document.getElementById('view').dataset.geloofSub = 'koran'; navigate('geloof'); } },
+        { icon: 'books', label: 'Arabisch', action: () => { document.getElementById('view').dataset.geloofSub = 'arabic'; navigate('geloof'); } },
+        { icon: 'target', label: 'Doelen', action: () => navigate('goals') },
+        { icon: 'check', label: 'To-do', action: () => navigate('todo') },
+        { icon: 'note', label: 'Notities', action: () => navigate('notes') },
+        { icon: 'calendar', label: 'Week', action: () => navigate('agenda') },
+        { icon: 'stats', label: 'Stats', action: () => navigate('stats') },
+        { icon: 'receipt', label: 'Boekhouding', action: () => navigate('boekhouding') },
       ];
     } else {
       todos.filter(t => (t.title || '').toLowerCase().includes(f)).forEach(t => {
-        items.push({ label: `✅ ${t.title || '—'} ${t.done ? '(afgerond)' : ''}`, action: () => navigate('todo') });
+        items.push({ icon: 'check', label: `${t.title || '—'} ${t.done ? '(afgerond)' : ''}`, action: () => navigate('todo') });
       });
       goals.filter(g => (g.title || '').toLowerCase().includes(f)).forEach(g => {
-        items.push({ label: `🎯 ${g.title || '—'}`, action: () => navigate('goals') });
+        items.push({ icon: 'target', label: `${g.title || '—'}`, action: () => navigate('goals') });
       });
       cards.filter(c => c.front.toLowerCase().includes(f) || c.back.toLowerCase().includes(f)).slice(0, 8).forEach(c => {
-        items.push({ label: `📚 ${c.front} → ${c.back}`, action: () => { document.getElementById('view').dataset.geloofSub = 'arabic'; navigate('geloof'); } });
+        items.push({ icon: 'books', label: `${c.front} → ${c.back}`, action: () => { document.getElementById('view').dataset.geloofSub = 'arabic'; navigate('geloof'); } });
       });
       rides.filter(r => (r.note || '').toLowerCase().includes(f) || String(r.amount).includes(f)).slice(0, 5).forEach(r => {
-        items.push({ label: `🚖 ${fmtMoney(r.amount)} · ${new Date(r.date).toLocaleDateString('nl-NL')}${r.note ? ' · ' + r.note : ''}`, action: () => navigate('taxi') });
+        items.push({ icon: 'taxi', label: `${fmtMoney(r.amount)} · ${new Date(r.date).toLocaleDateString('nl-NL')}${r.note ? ' · ' + r.note : ''}`, action: () => navigate('taxi') });
       });
       invoices.filter(i => (i.client?.name || '').toLowerCase().includes(f) || (i.number || '').toLowerCase().includes(f) || (i.lines?.[0]?.description || '').toLowerCase().includes(f)).slice(0, 5).forEach(i => {
-        items.push({ label: `🧾 ${i.number} — ${i.client?.name || '—'} · ${fmtMoney(i.totalIncl || 0)}`, action: () => navigate('boekhouding') });
+        items.push({ icon: 'receipt', label: `${i.number} — ${i.client?.name || '—'} · ${fmtMoney(i.totalIncl || 0)}`, action: () => navigate('boekhouding') });
       });
       clients.filter(c => (c.name || '').toLowerCase().includes(f) || (c.email || '').toLowerCase().includes(f) || (c.city || '').toLowerCase().includes(f)).slice(0, 5).forEach(c => {
-        items.push({ label: `👥 ${c.name}${c.city ? ' · ' + c.city : ''}${c.email ? ' · ' + c.email : ''}`, action: () => navigate('boekhouding') });
+        items.push({ icon: 'users', label: `${c.name}${c.city ? ' · ' + c.city : ''}${c.email ? ' · ' + c.email : ''}`, action: () => navigate('boekhouding') });
       });
       notes.filter(n => (n.title || '').toLowerCase().includes(f) || (n.body || '').toLowerCase().includes(f)).slice(0, 5).forEach(n => {
-        items.push({ label: `📝 ${n.title || '(geen titel)'} — ${(n.body || '').slice(0, 40)}`, action: () => navigate('notes') });
+        items.push({ icon: 'note', label: `${n.title || '(geen titel)'} — ${(n.body || '').slice(0, 40)}`, action: () => navigate('notes') });
       });
     }
     selected = 0;
     resultsEl.innerHTML = items.length
-      ? items.map((it, i) => `<div class="cmdk-item ${i===0?'active':''}" data-i="${i}">${escapeHTML(it.label)}</div>`).join('')
+      ? items.map((it, i) => `<div class="cmdk-item ${i===0?'active':''}" data-i="${i}">${icon(it.icon, 'cmdk-ic')}<span>${escapeHTML(it.label)}</span></div>`).join('')
       : '<div class="cmdk-empty">Geen resultaten</div>';
     resultsEl.querySelectorAll('.cmdk-item').forEach(el => {
       el.onclick = () => { items[+el.dataset.i].action(); closeSearch(); };

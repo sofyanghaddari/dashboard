@@ -1,4 +1,5 @@
 // Open-Meteo (geen API key nodig)
+import { icon, weatherIconName } from './icons.js';
 const CACHE_KEY = 'weatherCache';
 const TTL = 30 * 60 * 1000;
 
@@ -59,12 +60,12 @@ export function rideOpportunities(weather) {
     if (rain >= 60 && peak) {
       out.push({
         time: t,
-        msg: `${codeInfo(code).e} ${dayLabel(t)} ${String(h).padStart(2,'0')}:00 — ${rain}% regen + ${peak[2]} → goede rit-tijd in Amsterdam`,
+        msg: `${icon(weatherIconName(code))} ${dayLabel(t)} ${String(h).padStart(2,'0')}:00 — ${rain}% regen + ${peak[2]} → goede rit-tijd in Amsterdam`,
       });
     } else if (rain >= 80) {
-      out.push({ time: t, msg: `${codeInfo(code).e} ${dayLabel(t)} ${String(h).padStart(2,'0')}:00 — ${rain}% regen, kans op meer ritten` });
+      out.push({ time: t, msg: `${icon(weatherIconName(code))} ${dayLabel(t)} ${String(h).padStart(2,'0')}:00 — ${rain}% regen, kans op meer ritten` });
     } else if (peak && [22,23,0,1].includes(h)) {
-      out.push({ time: t, msg: `${codeInfo(code).e} ${dayLabel(t)} ${String(h).padStart(2,'0')}:00 — ${peak[2]} in Amsterdam` });
+      out.push({ time: t, msg: `${icon(weatherIconName(code))} ${dayLabel(t)} ${String(h).padStart(2,'0')}:00 — ${peak[2]} in Amsterdam` });
     }
     if (out.length >= 3) break;
   }

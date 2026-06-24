@@ -545,6 +545,16 @@ label {
   overflow: hidden;
 }
 .tab span { display: none; }
+/* Inline line-iconen (helper js/icons.js) — schalen mee met tekst */
+.ic {
+  width: 1.05em; height: 1.05em;
+  display: inline-block;
+  vertical-align: -0.16em;
+  flex-shrink: 0;
+}
+.ic-lg { width: 1.5em; height: 1.5em; }
+.ic-xl { width: 2.1em; height: 2.1em; }
+
 .tab-ic {
   width: 25px; height: 25px;
   display: block;
@@ -930,7 +940,10 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
   border-bottom: 1px solid var(--border-soft);
   transition: background var(--transition);
   font-size: .95rem;
+  display: flex; align-items: center; gap: 11px;
 }
+.cmdk-ic { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
+.cmdk-item span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cmdk-item.active { background: var(--bg-elev-2); border-left: 3px solid var(--gold); padding-left: 17px; }
 .cmdk-empty { padding: 24px; text-align: center; color: var(--text-dim); }
 .cmdk-hint { padding: 10px 20px; font-size: .75rem; color: var(--text-faint); border-top: 1px solid var(--border-soft); }
@@ -1153,6 +1166,8 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
 .sync-pill[data-state="offline"] { color: var(--danger); }
 .sync-pill[data-state="err"] { color: var(--danger); border-color: var(--danger); }
 .sync-spin { display: inline-block; animation: spin 1s linear infinite; }
+.sync-ic { width: 14px; height: 14px; vertical-align: -0.12em; }
+.island-icon .ic { width: 1em; height: 1em; vertical-align: -0.14em; }
 @keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
 
 /* Zorg dat sync-pill niet botst met search/settings */

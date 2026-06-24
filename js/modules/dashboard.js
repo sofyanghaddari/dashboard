@@ -1,6 +1,7 @@
 import { all, put } from '../db.js';
 import { fmtMoney, startOfWeek, startOfMonth, ymd, sameDay, escapeHTML, orderedHabits, effectiveNow, effectiveDate } from '../utils.js';
 import { getNumber, getSetting } from '../settings.js';
+import { icon } from '../icons.js';
 import { celebrateGoalHit, celebrateStreak, celebrateTask } from '../components/celebrate.js';
 import { checkNewBadges } from '../achievements.js';
 import { toast } from '../components/toast.js';
@@ -500,7 +501,7 @@ export async function render(container) {
   }
   checkNewBadges().then(newOnes => {
     newOnes.forEach((b, i) => {
-      setTimeout(() => toast(`${b.emoji} <b>Badge:</b> ${b.name}`, { type: 'ok', duration: 5000 }), 800 + i * 1200);
+      setTimeout(() => toast(`${icon(b.icon)} <b>Badge:</b> ${b.name}`, { type: 'ok', duration: 5000 }), 800 + i * 1200);
     });
   });
   initPrivacyToggle(container);

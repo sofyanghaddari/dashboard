@@ -1,4 +1,5 @@
 // Dynamic Island-stijl pill bovenin voor status (saving, synced, etc)
+import { icon as svgIcon } from '../icons.js';
 let _el = null;
 let _hideTimer = null;
 
@@ -16,12 +17,14 @@ export function island(message, opts = {}) {
   const el = ensure();
   if (_hideTimer) clearTimeout(_hideTimer);
   el.dataset.kind = kind;
-  el.querySelector('.island-icon').textContent = icon;
+  const iconEl = el.querySelector('.island-icon');
+  if (typeof icon === 'string' && icon.includes('<svg')) iconEl.innerHTML = icon;
+  else iconEl.textContent = icon;
   el.querySelector('.island-msg').textContent = message;
   el.classList.add('show');
   _hideTimer = setTimeout(() => el.classList.remove('show'), duration);
 }
 
-export const islandSaving = () => island('Opslaan…', { icon: '⏳', duration: 2000 });
+export const islandSaving = () => island('Opslaan…', { icon: '↻', duration: 2000 });
 export const islandSaved  = () => island('Opgeslagen', { icon: '✓', kind: 'ok', duration: 1400 });
-export const islandSynced = () => island('Gesynchroniseerd', { icon: '☁️', kind: 'ok', duration: 1600 });
+export const islandSynced = () => island('Gesynchroniseerd', { icon: svgIcon('cloud'), kind: 'ok', duration: 1600 });
