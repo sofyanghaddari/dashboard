@@ -1,4 +1,5 @@
 import { all, put, get } from '../db.js';
+import { icon } from '../icons.js';
 import { openModal } from '../components/modal.js';
 import { ymd, escapeHTML, effectiveNow } from '../utils.js';
 import { celebrateTask } from '../components/celebrate.js';
@@ -27,7 +28,7 @@ export async function render(container) {
   container.innerHTML = `
     <h1 class="page-title">Koran</h1>
     <button id="koran-qibla-btn" style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 16px;margin-bottom:16px;cursor:pointer;color:#f5f0e8;text-align:left">
-      <span style="font-size:1.4rem">🧭</span>
+      <span style="display:inline-flex;color:var(--accent)">${icon('compass', 'ic-lg')}</span>
       <div style="flex:1">
         <div style="font-size:.88rem;font-weight:600;letter-spacing:-.01em">Qibla kompas</div>
         <div style="font-size:.74rem;color:#686868;margin-top:2px">Richting naar Mekka</div>
@@ -35,8 +36,8 @@ export async function render(container) {
       <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M1 1l5 5-5 5" stroke="#555" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="todo-seg" style="margin-bottom:16px">
-      <button class="todo-seg-btn ${tab==='hizb'?'active':''}" id="ktab-hizb">📖 Hizb</button>
-      <button class="todo-seg-btn ${tab==='soeras'?'active':''}" id="ktab-soeras">📋 Soera's</button>
+      <button class="todo-seg-btn ${tab==='hizb'?'active':''}" id="ktab-hizb">${icon('book')} Hizb</button>
+      <button class="todo-seg-btn ${tab==='soeras'?'active':''}" id="ktab-soeras">${icon('list')} Soera's</button>
     </div>
     <div id="koran-content"></div>
   `;
@@ -126,23 +127,23 @@ async function renderHizb(container) {
           <div class="cp-inner">
             ${todayRec
               ? `<div class="cp-done-check" style="color:var(--ok)">✓</div>`
-              : `<div class="cp-emoji">${streak > 0 ? '🔥' : '📖'}</div>`}
+              : `<div class="cp-emoji">${streak > 0 ? icon('flame') : icon('book')}</div>`}
             <div class="cp-label">${todayRec ? (todayCount >= 2 ? '2× gedaan' : 'Voltooid') : (doneThisMonth + '/' + daysIntoMonth)}</div>
           </div>
         </div>
         <div>
           <div class="streak-num" data-countup="${streak}" data-decimals="0" data-prefix="">${streak}</div>
           <div class="streak-unit">dag${streak === 1 ? '' : 'en'}</div>
-          <div class="streak-sub">op rij${streak > 0 ? ' 🔥' : ''}</div>
+          <div class="streak-sub">op rij${streak > 0 ? ' ' + icon('flame') : ''}</div>
           ${monthPct >= 80 ? `<div style="font-size:.72rem;color:var(--ok);margin-top:6px;font-weight:600">${monthPct}% deze maand ✓</div>` : ''}
         </div>
       </div>
 
       ${todayRec
         ? `<button class="hizb-check-btn done" ${todayCount >= 2 ? 'disabled' : ''} id="double-hizb" type="button">
-            ${todayCount >= 2 ? '✓ Dubbel hizb gedaan' : '📖 Nog een hizb doen (inhaal)'}
+            ${todayCount >= 2 ? '✓ Dubbel hizb gedaan' : icon('book') + ' Nog een hizb doen (inhaal)'}
            </button>`
-        : `<button class="hizb-check-btn" id="check" type="button">📖 Afvinken voor vandaag</button>`}
+        : `<button class="hizb-check-btn" id="check" type="button">${icon('check')} Afvinken voor vandaag</button>`}
 
       <p class="muted" style="font-size:.8rem;text-align:center;margin:12px 0 0">${escapeHTML(startPoint)}</p>
     </div>
@@ -190,7 +191,7 @@ async function renderHizb(container) {
         const used = localStorage.getItem('lastStreakRepair') === mk;
         return used
           ? `<div class="repair-used-badge">✓ Goedmaken al gebruikt deze maand</div>`
-          : `<button class="btn secondary block" id="repair-day" style="margin-bottom:14px">🛠️ Gemiste dag goedmaken <span class="muted" style="font-size:.8em">(1× per maand)</span></button>`;
+          : `<button class="btn secondary block" id="repair-day" style="margin-bottom:14px">${icon('refresh')} Gemiste dag goedmaken <span class="muted" style="font-size:.8em">(1× per maand)</span></button>`;
       })()}
       <label>Herinneringstijd</label>
       <input type="time" id="reminder" value="${reminderTime}" />
@@ -212,12 +213,12 @@ async function renderHizb(container) {
         // Today already done — mark today count:2 and yesterday as catchup
         await put('hizb_log', { date: today, completed: true, count: 2 });
         await put('hizb_log', { date: yesterday, completed: true, catchup: true });
-        ok('↩ Ingehaald! Streak blijft intact. 🔥');
+        ok('↩ Ingehaald! Streak blijft intact.');
       } else {
         // Today not done yet — mark today done and yesterday as catchup
         await put('hizb_log', { date: today, completed: true, count: 1 });
         await put('hizb_log', { date: yesterday, completed: true, catchup: true });
-        ok('↩ Gisteren ingehaald én vandaag afgevinkt! 🔥');
+        ok('↩ Gisteren ingehaald én vandaag afgevinkt!');
       }
       render(container);
     };
@@ -231,10 +232,10 @@ async function renderHizb(container) {
         // yesterday not done — this is the catchup action
         await put('hizb_log', { date: today, completed: true, count: 2 });
         await put('hizb_log', { date: yesterday, completed: true, catchup: true });
-        ok('↩ Dubbel gedaan — gisteren ingehaald! 🔥');
+        ok('↩ Dubbel gedaan — gisteren ingehaald!');
       } else {
         await put('hizb_log', { date: today, completed: true, count: 2 });
-        ok('📖 Dubbel hizb gedaan vandaag! 🌟');
+        ok('Dubbel hizb gedaan vandaag!');
       }
       render(container);
     };

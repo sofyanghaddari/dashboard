@@ -2512,7 +2512,12 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   align-items: center; justify-content: center;
   gap: 0;
 }
-.cp-emoji { font-size: 2rem; line-height: 1; }
+.cp-emoji { font-size: 2rem; line-height: 1; color: var(--accent); }
+.cp-emoji .ic { width: 30px; height: 30px; }
+.streak-sub .ic { width: 13px; height: 13px; vertical-align: -0.1em; color: var(--accent); }
+.todo-seg-btn .ic { width: 16px; height: 16px; vertical-align: -0.16em; }
+.geloof-sub-btn .ic { width: 17px; height: 17px; vertical-align: -0.18em; }
+.hizb-check-btn .ic { width: 18px; height: 18px; vertical-align: -0.18em; }
 .cp-done-check { font-size: 2.5rem; line-height: 1; }
 .cp-label {
   font-size: var(--font-xs);
