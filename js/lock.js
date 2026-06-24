@@ -1,6 +1,7 @@
 // Lock-screen: Face ID (WebAuthn) of PIN als fallback.
 import { isBiometricEnabled, verifyBiometric } from './biometric.js';
 import { getSetting } from './settings.js';
+import { icon } from './icons.js';
 
 const GRACE_KEY    = 'lastUnlock';
 const FAIL_KEY     = 'pinFailCount';
@@ -90,7 +91,7 @@ function renderLock(overlay, onUnlock) {
 
   overlay.innerHTML = `
     <div class="lock-box">
-      <div class="lock-icon">${hasBio ? '👤' : '🔒'}</div>
+      <div class="lock-icon">${hasBio ? icon('user', 'ic-xl') : icon('lock', 'ic-xl')}</div>
       <h2 style="margin:8px 0">${hasBio ? 'Ontgrendelen' : 'Voer pincode in'}</h2>
       ${hasBio ? `
         <button class="btn block" id="bio-try" style="margin-top:14px">Gebruik Face ID</button>
@@ -126,7 +127,7 @@ function renderLock(overlay, onUnlock) {
 function showPinForm(overlay, onUnlock) {
   overlay.innerHTML = `
     <div class="lock-box">
-      <div class="lock-icon">🔒</div>
+      <div class="lock-icon">${icon('lock', 'ic-xl')}</div>
       <h2 style="margin:8px 0">Voer pincode in</h2>
       <input id="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••" />
       <div id="pin-error" style="color:var(--danger);min-height:1em;margin-top:6px;font-size:.85rem"></div>

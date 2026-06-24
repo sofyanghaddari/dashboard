@@ -4,17 +4,17 @@ const CACHE_KEY = 'weatherCache';
 const TTL = 30 * 60 * 1000;
 
 const CODES = {
-  0: { e: '☀️', d: 'Helder' },
-  1: { e: '🌤️', d: 'Zonnig' }, 2: { e: '⛅', d: 'Wisselend' }, 3: { e: '☁️', d: 'Bewolkt' },
-  45: { e: '🌫️', d: 'Mist' }, 48: { e: '🌫️', d: 'Mist' },
-  51: { e: '🌦️', d: 'Motregen' }, 53: { e: '🌦️', d: 'Motregen' }, 55: { e: '🌦️', d: 'Motregen' },
-  61: { e: '🌧️', d: 'Regen' }, 63: { e: '🌧️', d: 'Regen' }, 65: { e: '🌧️', d: 'Hevige regen' },
-  71: { e: '🌨️', d: 'Sneeuw' }, 73: { e: '🌨️', d: 'Sneeuw' }, 75: { e: '❄️', d: 'Veel sneeuw' },
-  80: { e: '🌦️', d: 'Buien' }, 81: { e: '🌧️', d: 'Buien' }, 82: { e: '⛈️', d: 'Zware buien' },
-  95: { e: '⛈️', d: 'Onweer' }, 96: { e: '⛈️', d: 'Onweer + hagel' }, 99: { e: '⛈️', d: 'Onweer + hagel' },
+  0: { d: 'Helder' },
+  1: { d: 'Zonnig' }, 2: { d: 'Wisselend' }, 3: { d: 'Bewolkt' },
+  45: { d: 'Mist' }, 48: { d: 'Mist' },
+  51: { d: 'Motregen' }, 53: { d: 'Motregen' }, 55: { d: 'Motregen' },
+  61: { d: 'Regen' }, 63: { d: 'Regen' }, 65: { d: 'Hevige regen' },
+  71: { d: 'Sneeuw' }, 73: { d: 'Sneeuw' }, 75: { d: 'Veel sneeuw' },
+  80: { d: 'Buien' }, 81: { d: 'Buien' }, 82: { d: 'Zware buien' },
+  95: { d: 'Onweer' }, 96: { d: 'Onweer + hagel' }, 99: { d: 'Onweer + hagel' },
 };
 
-export function codeInfo(c) { return CODES[c] || { e: '🌡️', d: '' }; }
+export function codeInfo(c) { return CODES[c] || { d: '' }; }
 
 export async function getLocation() {
   const stored = localStorage.getItem('userLocation');

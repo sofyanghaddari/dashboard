@@ -24,10 +24,10 @@ export function detectInsights(rides, hizb) {
     const best = [...dayAvg].sort((a,b) => b.avg - a.avg)[0];
     const worst = [...dayAvg].sort((a,b) => a.avg - b.avg)[0];
     if (best.avg > overall * 1.3) {
-      out.push({ icon: '💰', text: `Op ${best.name} verdien je gem ${fmtMoney(best.avg)} — <b>+${Math.round((best.avg/overall - 1) * 100)}%</b> boven gemiddeld` });
+      out.push({ icon: 'money', text: `Op ${best.name} verdien je gem ${fmtMoney(best.avg)} — <b>+${Math.round((best.avg/overall - 1) * 100)}%</b> boven gemiddeld` });
     }
     if (worst.avg > 0 && worst.avg < overall * 0.7) {
-      out.push({ icon: '📉', text: `${capitalize(worst.name)} blijft achter — gem ${fmtMoney(worst.avg)} (${Math.round((worst.avg/overall - 1) * 100)}%)` });
+      out.push({ icon: 'trend', text: `${capitalize(worst.name)} blijft achter — gem ${fmtMoney(worst.avg)} (${Math.round((worst.avg/overall - 1) * 100)}%)` });
     }
   }
 
@@ -47,7 +47,7 @@ export function detectInsights(rides, hizb) {
     const overallHizbRate = rates.reduce((s, d) => s + d.rate, 0) / rates.length;
     const worst = [...rates].sort((a,b) => a.rate - b.rate)[0];
     if (worst.rate < overallHizbRate - 0.2 && worst.rate < 0.6) {
-      out.push({ icon: '📖', text: `Je vergeet hizb meestal op <b>${DAY_NAMES_NL[worst.i]}</b> — slechts ${Math.round(worst.rate * 100)}% gedaan` });
+      out.push({ icon: 'book', text: `Je vergeet hizb meestal op <b>${DAY_NAMES_NL[worst.i]}</b> — slechts ${Math.round(worst.rate * 100)}% gedaan` });
     }
   }
 
@@ -66,7 +66,7 @@ export function detectInsights(rides, hizb) {
     const delta = (thisMonth - lastMonthSoFar) / lastMonthSoFar * 100;
     if (Math.abs(delta) > 15) {
       out.push({
-        icon: delta > 0 ? '📈' : '📊',
+        icon: delta > 0 ? 'trend' : 'stats',
         text: `Deze maand <b>${delta > 0 ? '+' : ''}${Math.round(delta)}%</b> vs vorige maand op dag ${daysIn}`,
       });
     }
@@ -82,7 +82,7 @@ export function detectInsights(rides, hizb) {
     if (currentStreak > longestStreak) longestStreak = currentStreak;
   }
   if (longestStreak >= 14) {
-    out.push({ icon: '🏆', text: `Langste hizb-streak ooit: <b>${longestStreak} dagen</b>` });
+    out.push({ icon: 'trophy', text: `Langste hizb-streak ooit: <b>${longestStreak} dagen</b>` });
   }
 
   return out.slice(0, 4);

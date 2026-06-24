@@ -397,7 +397,7 @@ export async function render(container) {
     ${insights.length ? `
     <div class="card">
       <h2 class="card-title">Patroonanalyse</h2>
-      ${insights.map(i => `<div class="insight-row"><span class="insight-icon">${i.icon}</span><span>${i.text}</span></div>`).join('')}
+      ${insights.map(i => `<div class="insight-row"><span class="insight-icon">${icon(i.icon) || i.icon}</span><span>${i.text}</span></div>`).join('')}
     </div>` : ''}
 
     ${isEmpty ? `

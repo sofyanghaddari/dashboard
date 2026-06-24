@@ -33,7 +33,7 @@ export function preloadGSI() {
 
 export async function getGmailToken() {
   const clientId = localStorage.getItem('gmailClientId');
-  if (!clientId) throw new Error('Gmail niet ingesteld — voeg Client ID toe in ⚙️ Instellingen → Data');
+  if (!clientId) throw new Error('Gmail niet ingesteld — voeg Client ID toe in Instellingen Instellingen → Data');
   if (_accessToken && Date.now() < _tokenExpiry) return _accessToken;
   await loadGSI();
   return new Promise((resolve, reject) => {
@@ -56,7 +56,7 @@ export async function getGmailToken() {
       },
     });
     if (!tokenClient) {
-      reject(new Error('Ongeldig Client ID — controleer ⚙️ Instellingen → Data (moet eindigen op .apps.googleusercontent.com)'));
+      reject(new Error('Ongeldig Client ID — controleer Instellingen → Data (moet eindigen op .apps.googleusercontent.com)'));
       return;
     }
     // Gebruik lege prompt zodat Google stille herauth gebruikt als sessie actief is

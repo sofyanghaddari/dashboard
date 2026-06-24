@@ -213,7 +213,7 @@ export async function openQibla() {
       <!-- Header -->
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-shrink:0">
         <div>
-          <div style="font-size:1.05rem;font-weight:700;color:#f5f0e8;letter-spacing:-.01em">🧭 Qibla kompas</div>
+          <div style="font-size:1.05rem;font-weight:700;color:#f5f0e8;letter-spacing:-.01em;display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="8.4"/><path d="M15.2 8.8l-1.7 4.7-4.7 1.7 1.7-4.7z"/></svg>Qibla kompas</div>
           <div id="ql-loc" style="font-size:.71rem;color:#404040;margin-top:3px">Locatie bepalen…</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
@@ -359,7 +359,7 @@ export async function openQibla() {
           wrapEl.classList.add('ql-aligned');
           wrapEl.classList.remove('ql-approach');
           glowEl.style.opacity = '1';
-          setStatus('🕋 Je wijst naar Mekka', '#7ecf7e');
+          setStatus('Je wijst naar Mekka', '#7ecf7e');
           if (navigator.vibrate) navigator.vibrate([35, 55, 110]);
         } else {
           wrapEl.classList.remove('ql-aligned');

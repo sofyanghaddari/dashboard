@@ -1,4 +1,5 @@
 import { all } from '../db.js';
+import { icon } from '../icons.js';
 import { fmtMoney, ymd, escapeHTML } from '../utils.js';
 
 function calcYearlyTaxiCosts(year) {
@@ -53,28 +54,28 @@ export async function openYearReview() {
   backdrop.innerHTML = `
     <div class="modal">
       <button type="button" class="modal-close" id="yr-x" aria-label="Sluiten">×</button>
-      <h2>📊 Jaaroverzicht ${year}</h2>
+      <h2 style="display:flex;align-items:center;gap:8px">${icon('stats')} Jaaroverzicht ${year}</h2>
       <div class="card accent-card">
         <p class="muted" style="font-size:.85rem">Bruto inkomen</p>
         <p class="big-money">${fmtMoney(bruto)}</p>
         <p>Kosten: <b>${fmtMoney(uitgaven)}</b> · Netto: <b class="money">${fmtMoney(netto)}</b></p>
       </div>
       <div class="card">
-        <h3>🚖 Taxi</h3>
+        <h3 style="display:flex;align-items:center;gap:7px">${icon('taxi')} Taxi</h3>
         <p>Inkomen-dagen: <b>${yRides.length}</b></p>
-        ${bestMonth ? `<p>🏆 Beste maand: <b>${escapeHTML(months[+bestMonth[0]])}</b> (<b class="money">${fmtMoney(bestMonth[1])}</b>)</p>` : ''}
-        ${yRides.length > 0 ? `<p>📅 Beste weekdag: <b>${wdNames[bestWd]}</b></p>` : ''}
+        ${bestMonth ? `<p>${icon('trophy')} Beste maand: <b>${escapeHTML(months[+bestMonth[0]])}</b> (<b class="money">${fmtMoney(bestMonth[1])}</b>)</p>` : ''}
+        ${yRides.length > 0 ? `<p>${icon('calendar')} Beste weekdag: <b>${wdNames[bestWd]}</b></p>` : ''}
       </div>
       <div class="card">
-        <h3>📖 Koran</h3>
+        <h3 style="display:flex;align-items:center;gap:7px">${icon('book')} Koran</h3>
         <p>Hizb afgevinkt: <b>${yHizb.length}</b> dag${yHizb.length===1?'':'en'}</p>
       </div>
       <div class="card">
-        <h3>📚 Arabisch</h3>
+        <h3 style="display:flex;align-items:center;gap:7px">${icon('books')} Arabisch</h3>
         <p>Nieuwe kaarten toegevoegd: <b>${yCards.length}</b></p>
       </div>
       <div class="card">
-        <h3>✅ Productiviteit</h3>
+        <h3 style="display:flex;align-items:center;gap:7px">${icon('check')} Productiviteit</h3>
         <p>Taken afgerond: <b>${yTodos.length}</b></p>
       </div>
       <button class="btn block" id="yr-close" style="margin-top:12px">Sluiten</button>

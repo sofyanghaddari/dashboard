@@ -2337,6 +2337,9 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .bk-sf-attach .ic { width: 16px; height: 16px; color: var(--accent); }
 .bk-parsed-preview .ic, .rcpt-parsed .ic { width: 13px; height: 13px; vertical-align: -0.12em; }
 .section-empty[style] .ic { color: var(--accent); }
+.lock-icon .ic { width: 46px; height: 46px; color: var(--accent); }
+.insight-icon .ic { width: 16px; height: 16px; vertical-align: -0.16em; color: var(--accent); }
+.bk-card-sm .bk-btn-paid .ic, .bk-btn-paid .ic { width: 13px; height: 13px; }
 
 /* Centered hint (Week, empty day) */
 .day-empty-hint {

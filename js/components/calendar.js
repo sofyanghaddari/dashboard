@@ -38,8 +38,8 @@ export async function openCalendar() {
       const today = date === ymd();
       cells.push(`
         <div class="cal-cell ${today ? 'today' : ''}" title="${escapeHTML([
-          ...gls.map(g => '🎯 ' + g.title),
-          ...tds.map(t => '✅ ' + t.title),
+          ...gls.map(g => '• ' + g.title),
+          ...tds.map(t => '• ' + t.title),
         ].join(' · '))}">
           <div class="cal-day">${d}</div>
           <div class="cal-dots">

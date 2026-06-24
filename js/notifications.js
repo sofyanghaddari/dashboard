@@ -92,7 +92,7 @@ async function checkTaskDeadlinesNow() {
   const parts = [];
   if (todayN) parts.push(`${todayN} vandaag`);
   if (tomN) parts.push(`${tomN} morgen`);
-  _notify('task_upcoming', '✅ Taken met deadline', parts.join(', ') + ' — open de app om te checken.');
+  _notify('task_upcoming', 'Taken met deadline', parts.join(', ') + ' — open de app om te checken.');
 }
 
 // #10: Halverwege de maand (15e)
