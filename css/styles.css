@@ -237,54 +237,27 @@ body {
 
 /* HERO — static ambient glow (was an 8s rotating loop; calmed for focus) */
 
-/* LIST ITEM HOVER LIFT */
-.list-item {
-  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
-}
-.list-item:active { opacity: .82; }
-
 /* ─────────────────────────────────────────────────────────────
-   SITE-BREDE MICRO-INTERACTIES — consistent over álle tabs.
-   Eén set tokens (timing/easing), 60fps (transform/opacity).
+   MICRO-INTERACTIES — alleen opacity (geen transform op
+   scrollbare elementen: transform promotet compositor-layers
+   op iOS en blokkeert scroll-momentum).
    ───────────────────────────────────────────────────────────── */
 
-/* Gedeelde, soepele transitie op elk interactief blok/rij/kaart */
 .card,
 .note-card, .goal-card, .pot-item, .habit-item,
 .stat, .stat-row .stat, .kpi-card,
 .expense-item, .bucket-section, .task-card,
 .list-item, .agenda-day-tab, .srs-stat, .pot-bar-row,
 .section-add-btn, .filter-chip, .notes-seg-btn, .taxi-tab, .seg {
-  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition), background var(--transition);
+  transition: opacity var(--transition), border-color var(--transition), background var(--transition);
 }
 
-/* Tik-feedback (ook op touch): subtiele indruk.
-   Gebruik opacity i.p.v. transform:scale() — scale() promotet een compositor-layer
-   op het moment dat de browser nog besluit of de touch een scroll of tap is,
-   wat iOS scroll-momentum kan cancelen. Opacity runt op de compositor zonder
-   nieuwe layer aan te maken. */
 .card:active { opacity: .88; }
 .note-card:active, .goal-card:active, .pot-item:active, .habit-item:active,
 .kpi-card:active, .expense-item:active, .task-card:active,
 .agenda-day-tab:active { opacity: .85; }
 .list-item:active { opacity: .82; }
 
-/* Hover-lift (alleen pointer-apparaten — telefoons houden de :active-indruk) */
-@media (hover: hover) {
-  .card:hover,
-  .note-card:hover, .goal-card:hover, .pot-item:hover, .habit-item:hover,
-  .kpi-card:hover, .stat:hover, .stat-row .stat:hover,
-  .expense-item:hover, .bucket-section:hover, .task-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-  }
-  .btn:hover { transform: translateY(-1px); }
-  .btn:active { transform: translateY(0); }
-  .section-add-btn:hover, .filter-chip:hover, .notes-seg-btn:hover, .taxi-tab:hover,
-  .daycard-btn:hover, .pot-btn:hover, .goal-btn:hover, .note-btn:hover, .task-btn:hover {
-    transform: translateY(-1px);
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   .card, .note-card, .goal-card, .pot-item, .habit-item, .stat, .kpi-card,
   .expense-item, .bucket-section, .task-card, .list-item, .agenda-day-tab,
@@ -294,7 +267,7 @@ body {
 }
 
 /* HIZB DAY CELL ANIMATION */
-.hab-day { transition: background .3s ease, transform .3s ease; }
+.hab-day { transition: background .3s ease; }
 .hab-day.done { animation: dayPop .4s ease; }
 @keyframes dayPop {
   0% { transform: scale(1); }
@@ -5831,11 +5804,11 @@ input, select, textarea {
 
 /* ── LIST-ITEM ENTREE ANIMATIE ──────────────────────────────────────────── */
 @keyframes itemFadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 .item-enter {
-  animation: itemFadeIn .22s var(--ease-out) both;
+  animation: itemFadeIn .18s ease both;
 }
 
 /* ── SCORE/STREAK FLIP ANIMATIE ─────────────────────────────────────────── */
@@ -5870,27 +5843,21 @@ input, select, textarea {
 }
 @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
 
-/* ── INTERACTIEVE LIJST-ITEMS: opacity feedback (geen transform:scale —
-   dat cancelt iOS scroll-momentum) ──────────────────────────────────────── */
-.list-item { transition: background var(--transition), opacity var(--transition); }
+/* ── CARD ACTIVE PRESS: snellere opacity-feedback ────────────────────────── */
+.card:active, .task-card:active, .note-card:active { transition-duration: 60ms; }
 
-/* ── CARD ACTIVE PRESS: snellere feedback dan transition ─────────────────── */
-.card:active   { transition-duration: 60ms; }
-.task-card:active { transition-duration: 60ms; }
-.note-card:active { transition-duration: 60ms; }
-
-/* ── HIZB CHECK KNOP: puls bij aanraken ──────────────────────────────────── */
+/* ── HIZB CHECK KNOP ─────────────────────────────────────────────────────── */
 .hizb-check-btn {
-  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  transition: background var(--transition), box-shadow var(--transition), opacity var(--transition);
 }
-.hizb-check-btn:active { transform: scale(.96); }
+.hizb-check-btn:active { opacity: .75; }
 
-/* ── FILTER-CHIP: vloeiendere overgang ──────────────────────────────────── */
+/* ── FILTER-CHIP ─────────────────────────────────────────────────────────── */
 .filter-chip {
   transition: background var(--transition), color var(--transition),
-              border-color var(--transition), transform var(--transition);
+              border-color var(--transition), opacity var(--transition);
 }
-.filter-chip:active { transform: scale(.94); }
+.filter-chip:active { opacity: .7; }
 
 /* ── GOAL PROGRESS BAR ANIMATIE ─────────────────────────────────────────── */
 .goal-progress-fill {
@@ -5899,10 +5866,10 @@ input, select, textarea {
 
 /* ── ARABISCHE KAART FLIP ────────────────────────────────────────────────── */
 @keyframes cardReveal {
-  from { opacity: 0; transform: scale(.97) translateY(4px); }
-  to   { opacity: 1; transform: scale(1)   translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
-.arabic-card-reveal { animation: cardReveal .25s var(--ease-out) both; }
+.arabic-card-reveal { animation: cardReveal .2s ease both; }
 
 /* ── INCOME HERO NETTO HIGHLIGHT BIJ WISSEL ─────────────────────────────── */
 @keyframes nettoUpdate {
