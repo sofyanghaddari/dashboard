@@ -544,7 +544,13 @@ label {
   overflow: hidden;
 }
 .tab span { display: none; }
-.tab.active { color: var(--text); }
+.tab-ic {
+  width: 25px; height: 25px;
+  display: block;
+  transition: transform var(--transition);
+}
+.tab.active .tab-ic { transform: translateY(-1px); }
+.tab.active { color: var(--accent); }
 .tab.active::before {
   content: '';
   position: absolute; top: 0; left: 50%;
