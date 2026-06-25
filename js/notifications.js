@@ -12,11 +12,36 @@ function notificationsEnabled() {
     && Notification.permission === 'granted';
 }
 
-function _notify(tag, title, body) {
+async function _notify(tag, title, body) {
   if (!notificationsEnabled()) return;
+  const opts = { body, tag, icon: './icons/icon-192.png', badge: './icons/icon-96.png', renotify: true };
   try {
-    new Notification(title, { body, tag, icon: './icons/icon-192.png', renotify: true });
+    // iOS PWA ondersteunt GEEN `new Notification()` — alleen via de service worker.
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.ready;
+      if (reg && reg.showNotification) { await reg.showNotification(title, opts); return; }
+    }
+    if (typeof Notification === 'function') new Notification(title, opts); // fallback oudere browsers
   } catch (_) {}
+}
+
+// Directe test-melding — om te verifiëren dat meldingen écht aankomen (iOS-proof).
+export async function sendTestNotification() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return false;
+  try {
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.ready;
+      if (reg && reg.showNotification) {
+        await reg.showNotification('Meldingen staan aan', {
+          body: 'Top! Je ontvangt vanaf nu meldingen van je dashboard.',
+          icon: './icons/icon-192.png', badge: './icons/icon-96.png', tag: 'notif-test', renotify: true,
+        });
+        return true;
+      }
+    }
+    if (typeof Notification === 'function') { new Notification('Meldingen staan aan', { body: 'Top!' }); return true; }
+  } catch (_) {}
+  return false;
 }
 
 function _today() { return new Date().toISOString().slice(0, 10); }

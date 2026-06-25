@@ -462,7 +462,14 @@ function scheduleReminder() {
   target.setHours(h, m, 0, 0);
   if (target <= now) target.setDate(target.getDate() + 1);
   _reminderTimer = setTimeout(() => {
-    new Notification('Koran herinnering', { body: 'Tijd voor je dagelijkse hizb.' });
+    // iOS PWA: alleen via de service worker, niet via `new Notification()`.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready
+        .then(reg => reg.showNotification('Koran herinnering', { body: 'Tijd voor je dagelijkse hizb.', icon: './icons/icon-192.png', tag: 'hizb-reminder', renotify: true }))
+        .catch(() => {});
+    } else if (typeof Notification === 'function') {
+      try { new Notification('Koran herinnering', { body: 'Tijd voor je dagelijkse hizb.' }); } catch (_) {}
+    }
     scheduleReminder();
   }, target - now);
   if ('serviceWorker' in navigator) {

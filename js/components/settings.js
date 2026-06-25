@@ -14,7 +14,7 @@ import { exportMonthPDF } from '../pdf-export.js';
 import { openWeeklyReview } from './weekly-review.js';
 import { getCustomShame, setCustomShame, customMascot, setCustomMascot } from '../mascot.js';
 import { getArabicSettings, saveArabicSettings, resetAllProgress as resetArabicProgress, DEFAULT_ARABIC_SETTINGS } from '../modules/arabic-srs.js';
-import { requestNotificationPermission, checkPendingNotifications } from '../notifications.js';
+import { requestNotificationPermission, checkPendingNotifications, sendTestNotification } from '../notifications.js';
 
 const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots', 'invoices', 'purchase_invoices', 'km_log', 'clients', 'taxi_expenses', 'agenda_events'];
 
@@ -113,7 +113,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v125';
+const APP_VERSION = 'v126';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
@@ -296,7 +296,7 @@ export async function openSettings(onClose) {
             ${'Notification' in window && Notification.permission !== 'denied' && Notification.permission !== 'granted'
               ? `<button type="button" class="btn" id="notif-enable-btn" style="flex-shrink:0;white-space:nowrap">Inschakelen</button>`
               : Notification.permission === 'granted'
-                ? `<span style="color:var(--ok);display:inline-flex">${icon('bell', 'ic-lg')}</span>`
+                ? `<button type="button" class="btn secondary" id="notif-test-btn" style="flex-shrink:0;font-size:.8rem;white-space:nowrap">Test melding</button>`
                 : `<button type="button" class="btn secondary" id="notif-settings-btn" style="flex-shrink:0;font-size:.8rem">Instellingen</button>`
             }
           </div>
@@ -814,6 +814,7 @@ export async function openSettings(onClose) {
       const label = backdrop.querySelector('#notif-status-label');
       if (result === 'granted') {
         checkPendingNotifications();
+        sendTestNotification(); // directe testmelding zodat je ziet dat het werkt
         ok('Meldingen ingeschakeld');
         if (label) label.textContent = 'Ingeschakeld — je ontvangt meldingen';
         notifEnableBtn.replaceWith(Object.assign(document.createElement('span'), { innerHTML: icon('bell', 'ic-lg'), style: 'color:var(--ok);display:inline-flex' }));
@@ -830,6 +831,15 @@ export async function openSettings(onClose) {
   if (notifSettingsBtn) {
     notifSettingsBtn.onclick = () => {
       ok('Ga naar iPhone-instellingen → Sofyan → Meldingen om ze weer in te schakelen');
+    };
+  }
+  const notifTestBtn = backdrop.querySelector('#notif-test-btn');
+  if (notifTestBtn) {
+    notifTestBtn.onclick = async () => {
+      notifTestBtn.disabled = true;
+      const sent = await sendTestNotification();
+      notifTestBtn.disabled = false;
+      ok(sent ? 'Testmelding verstuurd — check je meldingen' : 'Kon geen melding sturen');
     };
   }
 
