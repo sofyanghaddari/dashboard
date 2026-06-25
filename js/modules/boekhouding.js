@@ -3057,7 +3057,7 @@ function openSendModal(inv, bedrijf, container) {
         <select id="snd-type" class="bk-sf-input">
           <option value="normaal">Normaal</option>
           <option value="herinnering">Herinnering</option>
-          <option value="aanmaning">⚠️ Aanmaning</option>
+          <option value="aanmaning">Aanmaning</option>
         </select>
       </div>
 

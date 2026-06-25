@@ -112,7 +112,7 @@ export function setEnabledTypes(arr) {
 export async function enablePush() {
   if (!pushSupported()) throw new Error('Dit apparaat ondersteunt geen push-meldingen');
   const token = getSetting('ghToken');
-  if (!token) throw new Error('Stel eerst GitHub-sync in (⚙️ → Data) — push gebruikt diezelfde gist');
+  if (!token) throw new Error('Stel eerst GitHub-sync in (Instellingen → Data) — push gebruikt diezelfde gist');
   const sub = await subscribe();
   const config = buildConfig(sub);
   const files = { [PUSH_GIST_FILE]: { content: JSON.stringify(config, null, 2) } };

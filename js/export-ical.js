@@ -25,7 +25,7 @@ export async function exportICal() {
       `UID:goal-${g.id}@dashboard`,
       `DTSTAMP:${fmt(now)}`,
       `DTSTART;VALUE=DATE:${fmtDate(g.deadline)}`,
-      `SUMMARY:🎯 ${g.title}`,
+      `SUMMARY:Doel: ${g.title}`,
       g.description ? `DESCRIPTION:${g.description.replace(/\n/g, '\\n')}` : '',
       'END:VEVENT',
     );
@@ -39,7 +39,7 @@ export async function exportICal() {
       `UID:todo-${t.id}@dashboard`,
       `DTSTAMP:${fmt(now)}`,
       `DTSTART;VALUE=DATE:${fmtDate(t.dueDate)}`,
-      `SUMMARY:✅ ${t.title}`,
+      `SUMMARY:Taak: ${t.title}`,
       t.note ? `DESCRIPTION:${t.note.replace(/\n/g, '\\n')}` : '',
       rrule,
       'END:VEVENT',
