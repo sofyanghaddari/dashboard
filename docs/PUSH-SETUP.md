@@ -36,5 +36,12 @@ Repo → tab **Actions**. Staat 'm op "I understand my workflows, go ahead and e
 - **Privacy.** De config-gist bevat alleen je push-endpoint + herinnerings-tijden, geen persoonlijke data. De privésleutel staat alleen als secret, nooit in de code.
 - **Uitschakelen.** ⚙️ → Meldingen uit (of in iPhone-instellingen). De app markeert de gist als uitgeschakeld zodat de Action stopt.
 
-## Welke meldingen
-`morning` (ochtend-doel), `income` (inkomen noteren), `streak` (hizb-streak), `hizb` (Koran), `habit` (gewoontes) — elk op de tijd die je in ⚙️ instelt. Slimme meldingen die je data nodig hebben (deadlines, facturen, weer) blijven verschijnen wanneer je de app opent (die data is versleuteld, dus de server kan 'm niet lezen).
+## Welke meldingen (achtergrond, via de server)
+**Tijd-gebaseerd** — elk op de tijd die je in ⚙️ instelt:
+- `morning` (ochtend-doel), `income` (inkomen noteren), `streak` (hizb-streak), `hizb` (Koran), `habit` (gewoontes)
+
+**Data-gedreven** — de app schrijft een compacte snapshot (alleen titels + datums) naar de config-gist; de server stuurt op tijd:
+- `deadlines` — taken met deadline vandaag (op je ochtend-tijd)
+- `invoices` — openstaande facturen die vervallen zijn (op je inkomen-tijd, 's avonds)
+
+> De snapshot wordt ververst telkens als je de app opent. Meldingen die echt "live" data nodig hebben (zoals het taxiweer) blijven verschijnen wanneer je de app opent.

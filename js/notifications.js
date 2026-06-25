@@ -145,7 +145,7 @@ async function checkInvoices() {
   if (_notifiedToday('invoice_check')) return;
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
   const invoices = await all('invoices').catch(() => []);
-  const overdue = invoices.filter(inv => inv.status !== 'paid' && inv.dueDate && inv.dueDate < _today());
+  const overdue = invoices.filter(inv => inv.status !== 'betaald' && inv.dueDate && inv.dueDate < _today());
   if (!overdue.length) return;
   _markNotifiedToday('invoice_check');
   const followup = overdue.filter(inv => inv.dueDate < weekAgo);
@@ -164,14 +164,16 @@ async function checkGoalsBehind() {
   const now = new Date();
   const goals = await all('goals').catch(() => []);
   const behind = goals.filter(g => {
-    if (!g.deadline || !g.target || g.progress == null) return false;
+    if (!g.deadline || g.progress == null) return false;
+    if (Number(g.progress) >= 100) return false;
     const deadline = new Date(g.deadline);
     if (deadline <= now) return false;
     const start = new Date(g.createdAt || (Date.now() - 30 * 86400000));
     const totalMs = deadline - start;
     if (totalMs <= 0) return false;
-    const expected = ((now - start) / totalMs) * Number(g.target);
-    return Number(g.progress) < expected * 0.8;
+    // Voortgang is een percentage (0-100); vergelijk met het verwachte percentage.
+    const expectedPct = ((now - start) / totalMs) * 100;
+    return Number(g.progress) < expectedPct * 0.8;
   });
   if (!behind.length) return;
   _markNotifiedToday('goal_behind');

@@ -99,27 +99,60 @@ async function main() {
 
   const { date, minutes } = nowInTz(cfg.tz);
   const sent = (cfg.sent && typeof cfg.sent === 'object') ? cfg.sent : {};
+  const data = cfg.data || {};
 
-  // 3) Bepaal welke herinneringen due zijn
-  const due = [];
-  for (const type of enabled) {
-    if (!MESSAGES[type]) continue;
-    const t = toMinutes(cfg.times?.[type]);
-    if (t == null) continue;
-    if (sent[type] === date) continue;              // vandaag al gestuurd
+  // Helper: is een herinnering "due" op een bepaalde tijd, en nog niet gestuurd vandaag?
+  const isDue = (type, hhmm) => {
+    if (!enabled.includes(type) || sent[type] === date) return false;
+    const t = toMinutes(hhmm);
+    if (t == null) return false;
     const diff = minutes - t;
-    if (diff < 0 || diff > CATCHUP_MIN) continue;   // nog niet, of te laat
-    due.push(type);
+    return diff >= 0 && diff <= CATCHUP_MIN;
+  };
+
+  // 3) Bepaal welke herinneringen due zijn → { type, payload }
+  const due = [];
+
+  // Tijd-gebaseerde herinneringen
+  for (const type of Object.keys(MESSAGES)) {
+    if (isDue(type, cfg.times?.[type])) {
+      due.push({ type, payload: { ...MESSAGES[type](cfg), url: './' } });
+    }
+  }
+
+  // Data-gedreven: taak-deadlines vandaag (op de ochtend-tijd)
+  if (isDue('deadlines', cfg.times?.morning) && Array.isArray(data.tasks)) {
+    const today = data.tasks.filter(x => x.d === date);
+    if (today.length) {
+      const n = today.length;
+      due.push({ type: 'deadlines', payload: {
+        title: `${n} ${n === 1 ? 'taak' : 'taken'} met deadline vandaag`,
+        body: n === 1 ? `"${today[0].t}" — open de app.` : `Open de app om je taken te checken.`,
+        tag: 'task-deadline', url: './',
+      }});
+    }
+  }
+
+  // Data-gedreven: vervallen facturen (op de inkomen-tijd, 's avonds)
+  if (isDue('invoices', cfg.times?.income) && Array.isArray(data.invoices)) {
+    const overdue = data.invoices.filter(x => x.d < date);
+    if (overdue.length) {
+      const n = overdue.length;
+      due.push({ type: 'invoices', payload: {
+        title: `${n} ${n === 1 ? 'factuur' : 'facturen'} vervallen`,
+        body: 'Herinner de klant aan de openstaande betaling.',
+        tag: 'invoice-overdue', url: './',
+      }});
+    }
   }
 
   if (due.length === 0) { console.log(`[${date} ${minutes}m tz=${cfg.tz}] niets due.`); return; }
 
   // 4) Verstuur
   let anySent = false;
-  for (const type of due) {
-    const payload = JSON.stringify({ ...MESSAGES[type](cfg), url: './' });
+  for (const { type, payload } of due) {
     try {
-      await webpush.sendNotification(sub, payload);
+      await webpush.sendNotification(sub, JSON.stringify(payload));
       sent[type] = date;
       anySent = true;
       console.log(`Gestuurd: ${type}`);

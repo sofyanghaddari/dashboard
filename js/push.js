@@ -13,12 +13,14 @@
 // secret bij de Action. Zie docs/PUSH-SETUP.md.
 
 import { getSetting } from './settings.js';
+import { all } from './db.js';
 
 export const VAPID_PUBLIC_KEY = 'BIJ7ZhuzZAXmhzuq8z5uck90V1W1UIltLgiz6HaWts1HICNaGHDdEyg89oBr9Wl0hgmmClKFZxWdDT_bDlDpluc';
 
 const PUSH_GIST_DESC = 'dashboard-push-config';
 const PUSH_GIST_FILE = 'push-config.json';
-const REMINDER_TYPES = ['morning', 'income', 'streak', 'hizb', 'habit'];
+// morning/income/streak/hizb/habit = tijd-gebaseerd; deadlines/invoices = data-gedreven
+const REMINDER_TYPES = ['morning', 'income', 'streak', 'hizb', 'habit', 'deadlines', 'invoices'];
 
 function urlBase64ToUint8Array(b64) {
   const padding = '='.repeat((4 - (b64.length % 4)) % 4);
@@ -78,7 +80,25 @@ async function findPushGistId(token) {
   return null;
 }
 
-function buildConfig(subscription) {
+// Compacte, niet-gevoelige snapshot zodat de server data-gedreven herinneringen
+// kan sturen (taak-deadlines, vervallen facturen) — alleen titels + datums.
+async function buildDataSnapshot() {
+  const [todos, invoices, cards] = await Promise.all([
+    all('todos').catch(() => []),
+    all('invoices').catch(() => []),
+    all('cards').catch(() => []),
+  ]);
+  const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD lokale tijd
+  return {
+    tasks: todos.filter(t => !t.done && t.dueDate)
+      .map(t => ({ t: String(t.title || '').slice(0, 80), d: t.dueDate })),
+    invoices: invoices.filter(i => i.status !== 'betaald' && i.dueDate)
+      .map(i => ({ n: String(i.number || '').slice(0, 40), d: i.dueDate })),
+    cardsDue: cards.filter(c => !c.dueDate || c.dueDate <= today).length,
+  };
+}
+
+async function buildConfig(subscription) {
   return {
     subscription: subscription.toJSON ? subscription.toJSON() : subscription,
     tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Amsterdam',
@@ -91,6 +111,7 @@ function buildConfig(subscription) {
       habit:   getSetting('habitReminderTime')   || '21:00',
     },
     enabledTypes: getEnabledTypes(),
+    data: await buildDataSnapshot(),
     updatedAt: Date.now(),
   };
 }
@@ -114,7 +135,7 @@ export async function enablePush() {
   const token = getSetting('ghToken');
   if (!token) throw new Error('Stel eerst GitHub-sync in (Instellingen → Data) — push gebruikt diezelfde gist');
   const sub = await subscribe();
-  const config = buildConfig(sub);
+  const config = await buildConfig(sub);
   const files = { [PUSH_GIST_FILE]: { content: JSON.stringify(config, null, 2) } };
 
   let id = await findPushGistId(token);
@@ -139,10 +160,18 @@ export async function refreshPushConfig() {
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.getSubscription();
     if (!sub) return; // niet meer geabonneerd — laat gebruiker opnieuw inschakelen
-    const config = buildConfig(sub);
-    const files = { [PUSH_GIST_FILE]: { content: JSON.stringify(config, null, 2) } };
+    const config = await buildConfig(sub);
+    // Behoud de bestaande "sent"-dedupstatus zodat we niet dubbel sturen na een refresh.
     const id = await findPushGistId(token);
-    if (id) await ghApi(`/gists/${id}`, token, { method: 'PATCH', body: JSON.stringify({ files }) });
+    if (id) {
+      try {
+        const existing = await ghApi(`/gists/${id}`, token);
+        const prev = JSON.parse(existing.files?.[PUSH_GIST_FILE]?.content || '{}');
+        if (prev.sent) config.sent = prev.sent;
+      } catch (_) {}
+      const files = { [PUSH_GIST_FILE]: { content: JSON.stringify(config, null, 2) } };
+      await ghApi(`/gists/${id}`, token, { method: 'PATCH', body: JSON.stringify({ files }) });
+    }
   } catch (_) {}
 }
 
