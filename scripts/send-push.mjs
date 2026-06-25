@@ -79,8 +79,23 @@ async function main() {
   const cfg = JSON.parse(file.content);
 
   const sub = cfg.subscription;
+  if (!sub || !sub.endpoint) die('Geen subscription in config — schakel push eerst in de app in.');
+
+  // Geforceerde testmelding via "Run workflow" (input force=true) — negeert het schema.
+  if (process.env.FORCE_TEST === 'true') {
+    const payload = JSON.stringify({ title: 'Testmelding — werkt!', body: 'Je achtergrond-meldingen komen binnen via de server.', tag: 'force-test', url: './' });
+    try {
+      await webpush.sendNotification(sub, payload);
+      console.log('Force-test verstuurd.');
+    } catch (err) {
+      console.error(`Force-test fout: ${err?.statusCode || ''} ${err?.body || err?.message || err}`);
+      process.exit(1);
+    }
+    return;
+  }
+
   const enabled = Array.isArray(cfg.enabledTypes) ? cfg.enabledTypes : [];
-  if (!sub || !sub.endpoint || enabled.length === 0) die('Push uitgeschakeld of geen subscription — niets te sturen.');
+  if (enabled.length === 0) die('Push uitgeschakeld of geen herinneringen aan — niets te sturen.');
 
   const { date, minutes } = nowInTz(cfg.tz);
   const sent = (cfg.sent && typeof cfg.sent === 'object') ? cfg.sent : {};

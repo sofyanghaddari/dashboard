@@ -12,7 +12,12 @@ name: Push notifications
 on:
   schedule:
     - cron: '*/30 * * * *'   # elk half uur (UTC; GitHub-cron kan iets vertragen)
-  workflow_dispatch: {}        # handmatig kunnen draaien om te testen
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Stuur direct een testmelding (negeer het schema)'
+        type: boolean
+        default: false
 
 # Eén run tegelijk — voorkomt dat twee runs dezelfde "sent"-status overschrijven.
 concurrency:
@@ -39,4 +44,5 @@ jobs:
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY || secrets.VAPID_PRIVATE || secrets.VAPID_KEY }}
           VAPID_PUBLIC_KEY: 'BIJ7ZhuzZAXmhzuq8z5uck90V1W1UIltLgiz6HaWts1HICNaGHDdEyg89oBr9Wl0hgmmClKFZxWdDT_bDlDpluc'
           VAPID_SUBJECT: 'mailto:sofyanghaddari@gmail.com'
+          FORCE_TEST: ${{ inputs.force }}
         run: node send-push.mjs
