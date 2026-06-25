@@ -26,15 +26,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
       - name: Install deps
         working-directory: scripts
         run: npm install --no-audit --no-fund
       - name: Send due push notifications
         working-directory: scripts
         env:
-          GH_PAT: ${{ secrets.PUSH_GH_PAT }}
-          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          # Accepteert meerdere veelgebruikte secret-namen, zodat een kleine
+          # naamafwijking de boel niet stilletjes breekt.
+          GH_PAT: ${{ secrets.PUSH_GH_PAT || secrets.GH_PAT || secrets.GIST_PAT || secrets.GH_TOKEN }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY || secrets.VAPID_PRIVATE || secrets.VAPID_KEY }}
           VAPID_PUBLIC_KEY: 'BIJ7ZhuzZAXmhzuq8z5uck90V1W1UIltLgiz6HaWts1HICNaGHDdEyg89oBr9Wl0hgmmClKFZxWdDT_bDlDpluc'
           VAPID_SUBJECT: 'mailto:sofyanghaddari@gmail.com'
         run: node send-push.mjs

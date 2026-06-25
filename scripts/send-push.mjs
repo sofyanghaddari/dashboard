@@ -61,7 +61,10 @@ function toMinutes(hhmm) {
 }
 
 async function main() {
-  if (!GH_PAT || !VAPID_PRIVATE_KEY || !VAPID_PUBLIC_KEY) die('Ontbrekende env (GH_PAT / VAPID_*) — niets te doen.');
+  if (!GH_PAT || !VAPID_PRIVATE_KEY || !VAPID_PUBLIC_KEY) {
+    die(`Ontbrekende env — niets te doen. Aanwezig? GH_PAT=${!!GH_PAT} VAPID_PRIVATE_KEY=${!!VAPID_PRIVATE_KEY} VAPID_PUBLIC_KEY=${!!VAPID_PUBLIC_KEY}. ` +
+        `Controleer dat de secrets onder Settings → Secrets and variables → Actions → "Secrets" (niet "Variables") staan, met exact deze namen.`);
+  }
   webpush.setVapidDetails(VAPID_SUBJECT || 'mailto:sofyanghaddari@gmail.com', VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
   // 1) Vind de config-gist
