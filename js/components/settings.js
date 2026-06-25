@@ -114,7 +114,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v127';
+const APP_VERSION = 'v128';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
@@ -847,6 +847,8 @@ export async function openSettings(onClose) {
   if (notifTestBtn) {
     notifTestBtn.onclick = async () => {
       notifTestBtn.disabled = true;
+      // Zorg meteen dat het push-abonnement (achtergrond-meldingen) actief/vers is.
+      if (pushSupported()) { try { await enablePush(); } catch (_) {} }
       const sent = await sendTestNotification();
       notifTestBtn.disabled = false;
       ok(sent ? 'Testmelding verstuurd — check je meldingen' : 'Kon geen melding sturen');
