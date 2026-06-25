@@ -15,6 +15,7 @@ import { openWeeklyReview } from './weekly-review.js';
 import { getCustomShame, setCustomShame, customMascot, setCustomMascot } from '../mascot.js';
 import { getArabicSettings, saveArabicSettings, resetAllProgress as resetArabicProgress, DEFAULT_ARABIC_SETTINGS } from '../modules/arabic-srs.js';
 import { requestNotificationPermission, checkPendingNotifications, sendTestNotification } from '../notifications.js';
+import { enablePush, pushSupported } from '../push.js';
 
 const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots', 'invoices', 'purchase_invoices', 'km_log', 'clients', 'taxi_expenses', 'agenda_events'];
 
@@ -113,7 +114,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v126';
+const APP_VERSION = 'v127';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
@@ -815,6 +816,15 @@ export async function openSettings(onClose) {
       if (result === 'granted') {
         checkPendingNotifications();
         sendTestNotification(); // directe testmelding zodat je ziet dat het werkt
+        // Abonneer op echte achtergrond-push (vereist GitHub-sync + de Action).
+        if (pushSupported()) {
+          enablePush()
+            .then(() => { if (label) label.textContent = 'Ingeschakeld — ook achtergrond-meldingen actief'; })
+            .catch(err => {
+              console.warn('Push niet ingeschakeld:', err);
+              ok('Meldingen aan (alleen bij open app — voor achtergrond: stel GitHub-sync in)');
+            });
+        }
         ok('Meldingen ingeschakeld');
         if (label) label.textContent = 'Ingeschakeld — je ontvangt meldingen';
         notifEnableBtn.replaceWith(Object.assign(document.createElement('span'), { innerHTML: icon('bell', 'ic-lg'), style: 'color:var(--ok);display:inline-flex' }));

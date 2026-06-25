@@ -1,0 +1,9 @@
+{
+  "name": "dashboard-push-sender",
+  "private": true,
+  "type": "module",
+  "description": "Verstuurt Web Push-meldingen voor het dashboard via GitHub Actions cron.",
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}

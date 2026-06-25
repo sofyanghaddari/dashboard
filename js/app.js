@@ -103,6 +103,7 @@ async function bootApp() {
   maybeShowWeeklyReview();
   checkAllNotifications();
   scheduleSwNotifications();
+  import('./push.js').then(m => m.refreshPushConfig()).catch(() => {});
   updateBadge();
   setInterval(updateBadge, 5 * 60 * 1000);
   // Auto-PDF op de 1e van de maand

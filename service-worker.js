@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v126';
+const CACHE = 'dashboard-v127';
 
 
 
@@ -14,6 +14,7 @@ const ASSETS = [
   './js/router.js',
   './js/utils.js',
   './js/icons.js',
+  './js/push.js',
   './js/srs.js',
   './js/settings.js',
   './js/theme.js',
@@ -288,36 +289,36 @@ self.addEventListener('sync', (e) => {
 });
 
 self.addEventListener('push', (e) => {
-  let title = 'Dashboard';
-  let body = 'Vergeet je hizb niet!';
+  let data = { title: 'Dashboard', body: 'Vergeet je hizb niet!', tag: 'dashboard-push', url: './' };
   if (e.data) {
     try {
       const d = e.data.json();
-      title = d.title || title;
-      body = d.body || body;
+      data = { ...data, ...d };
     } catch (_) {
-      body = e.data.text() || body;
+      data.body = e.data.text() || data.body;
     }
   }
   e.waitUntil(
-    self.registration.showNotification(title, {
-      body,
+    self.registration.showNotification(data.title, {
+      body: data.body,
       icon: './icons/icon-192.png',
       badge: './icons/icon-96.png',
-      tag: 'dashboard-push',
+      tag: data.tag,
       renotify: true,
+      data: { url: data.url },
     })
   );
 });
 
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || './';
   e.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
       for (const c of clients) {
         if (c.url && 'focus' in c) return c.focus();
       }
-      if (self.clients.openWindow) return self.clients.openWindow('./');
+      if (self.clients.openWindow) return self.clients.openWindow(url);
     })
   );
 });

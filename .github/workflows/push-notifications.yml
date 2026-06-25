@@ -1,0 +1,40 @@
+name: Push notifications
+
+# Verstuurt herinnerings-meldingen (Web Push) op de geplande tijden, ook als de
+# app dicht is. Draait elk half uur; het script bepaalt zelf wat "due" is.
+#
+# Benodigde repo-secrets (Settings → Secrets and variables → Actions):
+#   VAPID_PRIVATE_KEY   de VAPID-privésleutel
+#   PUSH_GH_PAT         een GitHub-token met `gist` scope (om de config-gist te lezen)
+#
+# De VAPID-publieke sleutel is publiek en staat gewoon hieronder.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # elk half uur (UTC; GitHub-cron kan iets vertragen)
+  workflow_dispatch: {}        # handmatig kunnen draaien om te testen
+
+# Eén run tegelijk — voorkomt dat twee runs dezelfde "sent"-status overschrijven.
+concurrency:
+  group: push-notifications
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install deps
+        working-directory: scripts
+        run: npm install --no-audit --no-fund
+      - name: Send due push notifications
+        working-directory: scripts
+        env:
+          GH_PAT: ${{ secrets.PUSH_GH_PAT }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_PUBLIC_KEY: 'BIJ7ZhuzZAXmhzuq8z5uck90V1W1UIltLgiz6HaWts1HICNaGHDdEyg89oBr9Wl0hgmmClKFZxWdDT_bDlDpluc'
+          VAPID_SUBJECT: 'mailto:sofyanghaddari@gmail.com'
+        run: node send-push.mjs
