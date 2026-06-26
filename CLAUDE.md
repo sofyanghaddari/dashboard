@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v130** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v131** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v130)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v131)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -189,7 +189,7 @@ js/
     suras.js                     — ⚠️ DEAD: 114 suras, niet meer geïmporteerd (oude soera-grid)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v130'
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v131'
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items

@@ -130,18 +130,30 @@ export function setEnabledTypes(arr) {
 
 // Abonneer + schrijf config naar de gist. Geeft true bij succes.
 // Roep aan vanuit een user-gesture (bv. de "Inschakelen"-knop).
+// Schrijf de config naar een bestaande gist, maar behoud de "sent"-dedupstatus
+// zodat we niet een al-verstuurde herinnering opnieuw sturen na een (her)schrijf.
+async function patchConfigPreservingSent(token, id, config) {
+  try {
+    const existing = await ghApi(`/gists/${id}`, token);
+    const prev = JSON.parse(existing.files?.[PUSH_GIST_FILE]?.content || '{}');
+    if (prev.sent) config.sent = prev.sent;
+  } catch (_) {}
+  const files = { [PUSH_GIST_FILE]: { content: JSON.stringify(config, null, 2) } };
+  await ghApi(`/gists/${id}`, token, { method: 'PATCH', body: JSON.stringify({ description: PUSH_GIST_DESC, files }) });
+}
+
 export async function enablePush() {
   if (!pushSupported()) throw new Error('Dit apparaat ondersteunt geen push-meldingen');
   const token = getSetting('ghToken');
   if (!token) throw new Error('Stel eerst GitHub-sync in (Instellingen → Data) — push gebruikt diezelfde gist');
   const sub = await subscribe();
   const config = await buildConfig(sub);
-  const files = { [PUSH_GIST_FILE]: { content: JSON.stringify(config, null, 2) } };
 
   let id = await findPushGistId(token);
   if (id) {
-    await ghApi(`/gists/${id}`, token, { method: 'PATCH', body: JSON.stringify({ description: PUSH_GIST_DESC, files }) });
+    await patchConfigPreservingSent(token, id, config);
   } else {
+    const files = { [PUSH_GIST_FILE]: { content: JSON.stringify(config, null, 2) } };
     const g = await ghApi('/gists', token, { method: 'POST', body: JSON.stringify({ description: PUSH_GIST_DESC, public: false, files }) });
     id = g.id;
     localStorage.setItem('pushConfigGistId', id);
@@ -161,17 +173,8 @@ export async function refreshPushConfig() {
     const sub = await reg.pushManager.getSubscription();
     if (!sub) return; // niet meer geabonneerd — laat gebruiker opnieuw inschakelen
     const config = await buildConfig(sub);
-    // Behoud de bestaande "sent"-dedupstatus zodat we niet dubbel sturen na een refresh.
     const id = await findPushGistId(token);
-    if (id) {
-      try {
-        const existing = await ghApi(`/gists/${id}`, token);
-        const prev = JSON.parse(existing.files?.[PUSH_GIST_FILE]?.content || '{}');
-        if (prev.sent) config.sent = prev.sent;
-      } catch (_) {}
-      const files = { [PUSH_GIST_FILE]: { content: JSON.stringify(config, null, 2) } };
-      await ghApi(`/gists/${id}`, token, { method: 'PATCH', body: JSON.stringify({ files }) });
-    }
+    if (id) await patchConfigPreservingSent(token, id, config);
   } catch (_) {}
 }
 

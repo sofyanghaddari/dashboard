@@ -114,7 +114,7 @@ export async function openVersionPicker() {
   }
 }
 
-const APP_VERSION = 'v130';
+const APP_VERSION = 'v131';
 
 // Onthoud binnen de sessie welke settings-tab open stond
 let _lastSettingsTab = 'profiel';
@@ -280,7 +280,7 @@ export async function openSettings(onClose) {
           <span class="settings-section-icon">${icon('bell')}</span>
           <div>
             <div class="settings-section-title">Herinneringen</div>
-            <div class="settings-section-desc">Pushmeldingen voor taken en Koran-herinnering</div>
+            <div class="settings-section-desc">Herinneringen voor inkomen, taken, facturen en Koran — ook als de app dicht is</div>
           </div>
         </div>
         <div class="settings-group">
@@ -289,17 +289,23 @@ export async function openSettings(onClose) {
               <div class="settings-row-title">Meldingen</div>
               <div class="settings-row-sub muted" id="notif-status-label">${
                 !('Notification' in window) ? 'Niet ondersteund op dit apparaat' :
-                Notification.permission === 'granted' ? 'Ingeschakeld — je ontvangt meldingen' :
-                Notification.permission === 'denied'  ? 'Geblokkeerd — zet aan via iPhone-instellingen → Safari' :
-                'Uit — tik om meldingen in te schakelen'
+                Notification.permission === 'denied'  ? 'Geblokkeerd — zet aan via iPhone-instellingen → (de app) → Meldingen' :
+                (Notification.permission === 'granted' && localStorage.getItem('taskNotifications') !== '0')
+                  ? 'Aan — je krijgt herinneringen, ook als de app dicht is'
+                  : 'Uit — zet aan voor herinneringen, ook als de app dicht is'
               }</div>
             </div>
-            ${'Notification' in window && Notification.permission !== 'denied' && Notification.permission !== 'granted'
-              ? `<button type="button" class="btn" id="notif-enable-btn" style="flex-shrink:0;white-space:nowrap">Inschakelen</button>`
-              : Notification.permission === 'granted'
-                ? `<button type="button" class="btn secondary" id="notif-test-btn" style="flex-shrink:0;font-size:.8rem;white-space:nowrap">Test melding</button>`
-                : `<button type="button" class="btn secondary" id="notif-settings-btn" style="flex-shrink:0;font-size:.8rem">Instellingen</button>`
+            ${!('Notification' in window) ? ''
+              : Notification.permission === 'denied'
+                ? `<button type="button" class="btn secondary" id="notif-settings-btn" style="flex-shrink:0;font-size:.8rem">Uitleg</button>`
+                : `<span class="ios-switch"><input type="checkbox" id="notif-toggle" ${(Notification.permission === 'granted' && localStorage.getItem('taskNotifications') !== '0') ? 'checked' : ''} /><span></span></span>`
             }
+          </div>
+          <div class="settings-row" id="notif-test-row" style="${(('Notification' in window) && Notification.permission === 'granted' && localStorage.getItem('taskNotifications') !== '0') ? '' : 'display:none'}">
+            <div class="settings-row-main">
+              <div class="settings-row-sub muted">Even checken of een melding aankomt</div>
+            </div>
+            <button type="button" class="btn secondary" id="notif-test-btn" style="flex-shrink:0;font-size:.8rem;white-space:nowrap">Test melding</button>
           </div>
           <div class="settings-row">
             <div class="settings-row-main">
@@ -805,42 +811,49 @@ export async function openSettings(onClose) {
     ok('Doelen opgeslagen');
   };
 
-  // Herinneringen — notificatie-permissie
-  const notifEnableBtn = backdrop.querySelector('#notif-enable-btn');
-  if (notifEnableBtn) {
-    notifEnableBtn.onclick = async () => {
-      notifEnableBtn.disabled = true;
-      notifEnableBtn.textContent = '…';
-      const result = await requestNotificationPermission();
+  // Herinneringen — één aan/uit-schakelaar die alles regelt
+  const notifToggle = backdrop.querySelector('#notif-toggle');
+  if (notifToggle) {
+    notifToggle.onchange = async () => {
       const label = backdrop.querySelector('#notif-status-label');
-      if (result === 'granted') {
-        checkPendingNotifications();
-        sendTestNotification(); // directe testmelding zodat je ziet dat het werkt
-        // Abonneer op echte achtergrond-push (vereist GitHub-sync + de Action).
-        if (pushSupported()) {
-          enablePush()
-            .then(() => { if (label) label.textContent = 'Ingeschakeld — ook achtergrond-meldingen actief'; })
-            .catch(err => {
-              console.warn('Push niet ingeschakeld:', err);
-              ok('Meldingen aan (alleen bij open app — voor achtergrond: stel GitHub-sync in)');
-            });
+      const testRow = backdrop.querySelector('#notif-test-row');
+      if (notifToggle.checked) {
+        // AANZETTEN
+        notifToggle.disabled = true;
+        const result = await requestNotificationPermission();
+        notifToggle.disabled = false;
+        if (result === 'granted') {
+          localStorage.setItem('taskNotifications', '1');
+          checkPendingNotifications();
+          sendTestNotification(); // meteen een melding zodat je ziet dat het werkt
+          if (pushSupported()) {
+            enablePush().catch(e => { console.warn('Push niet ingeschakeld:', e); });
+          }
+          if (label) label.textContent = 'Aan — je krijgt herinneringen, ook als de app dicht is';
+          if (testRow) testRow.style.display = '';
+          ok('Meldingen aan');
+        } else {
+          // geweigerd of weggeklikt → terug naar uit
+          notifToggle.checked = false;
+          if (result === 'denied') {
+            if (label) label.textContent = 'Geblokkeerd — zet aan via iPhone-instellingen → (de app) → Meldingen';
+            err('Geblokkeerd — zet meldingen aan in je iPhone-instellingen');
+          }
         }
-        ok('Meldingen ingeschakeld');
-        if (label) label.textContent = 'Ingeschakeld — je ontvangt meldingen';
-        notifEnableBtn.replaceWith(Object.assign(document.createElement('span'), { innerHTML: icon('bell', 'ic-lg'), style: 'color:var(--ok);display:inline-flex' }));
-      } else if (result === 'denied') {
-        if (label) label.textContent = 'Geblokkeerd — zet aan via iPhone-instellingen → Safari';
-        notifEnableBtn.remove();
       } else {
-        notifEnableBtn.disabled = false;
-        notifEnableBtn.textContent = 'Inschakelen';
+        // UITZETTEN
+        localStorage.setItem('taskNotifications', '0');
+        try { const m = await import('../push.js'); await m.disablePush(); } catch (_) {}
+        if (label) label.textContent = 'Uit — zet aan voor herinneringen, ook als de app dicht is';
+        if (testRow) testRow.style.display = 'none';
+        ok('Meldingen uit');
       }
     };
   }
   const notifSettingsBtn = backdrop.querySelector('#notif-settings-btn');
   if (notifSettingsBtn) {
     notifSettingsBtn.onclick = () => {
-      ok('Ga naar iPhone-instellingen → Sofyan → Meldingen om ze weer in te schakelen');
+      ok('Meldingen staan geblokkeerd. Zet ze aan via iPhone-instellingen → (de app) → Meldingen.');
     };
   }
   const notifTestBtn = backdrop.querySelector('#notif-test-btn');
