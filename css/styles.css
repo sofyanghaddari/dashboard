@@ -120,6 +120,12 @@ body[data-preset="daylight"] .btn.secondary {
 body[data-preset="daylight"] .card {
   box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 1px var(--border);
 }
+body[data-preset="daylight"] .settings-btn {
+  background: rgba(255,255,255,.82);
+  border-color: rgba(0,0,0,.08);
+  color: var(--text-dim);
+}
+body[data-preset="daylight"] .settings-btn:hover { color: var(--text); border-color: rgba(0,0,0,.16); }
 body[data-preset="daylight"]::before { opacity: .045; }
 
 
@@ -2063,6 +2069,9 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 .srs-filter-bar {
   display: flex; gap: 8px; margin-bottom: 12px; align-items: stretch;
 }
+.srs-filter-bar > .notes-search-wrap { flex: 1 1 auto; min-width: 0; }
+.srs-filter-bar > .notes-search-wrap input { width: 100%; }
+.srs-filter-bar > select { flex: 0 0 auto; width: auto; max-width: 46%; }
 
 .srs-word-row {
   display: flex; align-items: center; gap: 10px;
@@ -6297,6 +6306,27 @@ input, select, textarea {
 @keyframes buSpin { from { transform: rotateY(180deg) scale(.7); } to { transform: rotateY(0) scale(1); } }
 @keyframes buShine { 0% { left: -60%; } 55%, 100% { left: 125%; } }
 
+/* ── 🏅 Verdiende badge: trage shine-sweep over het medaillon ── */
+.badge.earned .badge-emoji { position: relative; overflow: hidden; }
+.badge.earned .badge-emoji::after {
+  content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+  transform: skewX(-18deg); animation: badgeShine 4.5s ease-in-out infinite;
+}
+@keyframes badgeShine { 0%, 70% { left: -120%; } 100% { left: 160%; } }
+
+/* ── 🔆 Vandaag-cel in de gewoonte-strip ademt tot je 'm afvinkt ── */
+.hab-day.today:not(.done) {
+  box-shadow: 0 0 0 1.5px var(--accent);
+  animation: habTodayPulse 2.2s ease-in-out infinite;
+}
+@keyframes habTodayPulse {
+  0%, 100% { box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); }
+  50%      { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); }
+}
+.hab-day.today.done { box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 60%, transparent); }
+
 @media (prefers-reduced-motion: reduce) {
-  .income-road *, .streak-flame i, .pl-wave, .pl-wave2, .bu-medallion, .bu-shine { animation: none !important; }
+  .income-road *, .streak-flame i, .pl-wave, .pl-wave2, .bu-medallion, .bu-shine,
+  .badge.earned .badge-emoji::after, .hab-day.today { animation: none !important; }
 }

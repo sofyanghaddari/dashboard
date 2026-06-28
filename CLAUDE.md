@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v134** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v135** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v134)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v135)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -189,7 +189,7 @@ js/
     suras.js                     — ⚠️ DEAD: 114 suras, niet meer geïmporteerd (oude soera-grid)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v134'
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v135'
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -296,6 +296,12 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++9. **UI-fixes + extra animaties v135 (28 juni 2026):**
+   - **⚙️ Settings-knop op licht thema:** was een donkere blob met onzichtbaar icoon (hardcoded `rgba(22,27,34,.9)` bg). `body[data-preset="daylight"] .settings-btn` override toegevoegd (lichte bg, zichtbaar icoon).
+   - **Arabisch zoekbalk overlap:** `.srs-filter-bar` flex — de globale `select { width:100% }` slokte de hele flex-basis op waardoor de `.notes-search-wrap` naar 0 kromp en de zoek-input over de "Alle typen"-select heen viel. Fix: `.notes-search-wrap { flex:1 1 auto; min-width:0 }` + `select { flex:0 0 auto; width:auto; max-width:46% }`.
+   - **🏅 Verdiende badge shine-sweep** (`.badge.earned .badge-emoji::after`): trage glans-veeg over verdiende medaillons.
+   - **🔆 Gewoonte-strip vandaag-cel** (`.hab-day.today`): de cel van vandaag ademt met een accent-ring tot je 'm afvinkt.
 
 +8. **Vier levende animaties v134 (28 juni 2026):**
    - **🚕 Weg naar dagdoel** (`incomeRoad()` in `dashboard.js`): de inkomen-hero progress-bar vervangen door een geanimeerd taxi-weg-tafereel. De taxi staat op `goalPct` (inkomen van vandaag ÷ dagdoel) — user vult inkomen pas later op de dag in, dus de auto schuift mee naar de finishvlag naarmate de dag vordert. Zon/maan volgt het tijdstip (dag/nacht), draaiende wielen, wapperende vlag bij 100% (`.ir-win`).

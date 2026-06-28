@@ -178,7 +178,7 @@ function renderHabits(container, habits, log) {
     for (let d = 13; d >= 0; d--) {
       const date  = ymd(new Date(now.getTime() - d * 86400000));
       const dDone = log.some(l => l.habitId === h.id && l.date === date && l.done);
-      strip.push(`<span class="hab-day ${dDone ? 'done' : ''}" title="${date}"></span>`);
+      strip.push(`<span class="hab-day ${dDone ? 'done' : ''} ${d === 0 ? 'today' : ''}" title="${date}"></span>`);
     }
     return `
       <div class="habit-item ${chained ? 'chained' : ''}">
