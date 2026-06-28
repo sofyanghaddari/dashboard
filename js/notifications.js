@@ -214,6 +214,51 @@ async function checkWeatherAlert() {
   } catch (_) {}
 }
 
+// NS trein-storingen — melding bij een NIEUWE storing rond Amsterdam.
+// Storing op een station = gestrande reizigers = kans op ritten. We halen de
+// storingen op via de door de gebruiker ingestelde proxy (zie dashboard NS-kaart),
+// onthouden welke we al gezien hebben, en melden alleen nieuwe Amsterdamse storingen.
+async function checkNsDisruptions() {
+  const proxy = (localStorage.getItem('nsProxyUrl') || '').trim();
+  if (!proxy) return;
+  let data;
+  try {
+    const res = await fetch(proxy, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return;
+    data = await res.json();
+  } catch (_) { return; }
+
+  const list = Array.isArray(data) ? data : (data.disruptions || data.payload || []);
+  if (!Array.isArray(list)) return;
+
+  const withId = list.filter(d => d && d.id != null);
+  const allIds = withId.map(d => String(d.id));
+  const isRelevant = (d) => {
+    const t = String(d.type || '').toLowerCase();
+    const isDisruption = /storing|disruption|calamit/.test(t);
+    const title = String(d.title || d.titel || '');
+    return isDisruption && /amsterdam/i.test(title);
+  };
+
+  // Eerste keer (nog nooit gecheckt): alleen onthouden, niet melden voor reeds
+  // bestaande storingen — anders krijg je een melding-explosie bij setup.
+  const firstRun = localStorage.getItem('ns_seen_ids') === null;
+  const seen = new Set(JSON.parse(localStorage.getItem('ns_seen_ids') || '[]'));
+  localStorage.setItem('ns_seen_ids', JSON.stringify(allIds.slice(0, 200)));
+  if (firstRun) return;
+
+  const fresh = withId.filter(d => isRelevant(d) && !seen.has(String(d.id)));
+  if (!fresh.length) return;
+
+  const first = String(fresh[0].title || fresh[0].titel || 'Trein-storing');
+  if (fresh.length === 1) {
+    _notify('ns_disruption_' + fresh[0].id, 'Trein-storing Amsterdam', first + ' — kans op ritten!');
+  } else {
+    _notify('ns_disruption_multi', `${fresh.length} trein-storingen Amsterdam`,
+      first + ' e.a. — kans op ritten!');
+  }
+}
+
 // ─── SERVICE WORKER SCHEDULING ────────────────────────────────────────────────
 
 async function _sendToSw(msg) {
@@ -280,6 +325,7 @@ export async function checkAllNotifications() {
     await checkGoalsBehind();
     checkBackupAge();
     await checkWeatherAlert();
+    await checkNsDisruptions();
   }, 5000);
 }
 

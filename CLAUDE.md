@@ -297,6 +297,11 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 ## Recente beslissingen (chronologisch, meest recent boven)
 
++11. **NS trein-storingen + meldingen v137 (28 juni 2026):**
+   - **Dashboard NS-kaart** ("NS · trein-storingen", `loadNs()`/`renderNs()` in `dashboard.js`) haalt live storingen op via een door de gebruiker ingestelde **proxy-URL** (`localStorage.nsProxyUrl`). Statische PWA → directe NS-calls kunnen niet (CORS + sleutel mag niet in client). Zonder proxy: nette uitleg + "Proxy-URL instellen"-knop, géén nepdata.
+   - **Proxy** = gratis **Cloudflare Worker** (`proxy/ns-worker.js`): bewaart `NS_API_KEY` als secret, roept NS Reisinformatie `/disruptions/v3?isActive=true` aan, voegt CORS toe. Setup-gids: `proxy/README-NS-proxy.md` (NS-sleutel via apiportal.ns.nl → Worker deployen → secret → URL in app plakken).
+   - **Meldingen** (`checkNsDisruptions()` in `notifications.js`, gewired in `checkAllNotifications`): meldt een **nieuwe** storing met "Amsterdam" in de titel = kans op ritten. Dedup via `localStorage.ns_seen_ids`; eerste run seedt alleen (geen melding-explosie). App-open/foreground check (zelfde patroon als `checkWeatherAlert`), nog géén true-background push.
+
 +10. **Vijf extra levende animaties v136 (28 juni 2026):**
    - **🌅 Dag/nacht-lucht** (`skyScene()` in `dashboard.js`): achter de begroetingskaart een subtiele hemel die het tijdstip volgt — zon + drijvende wolkjes overdag, maan + twinkelende sterren 's nachts, dauw/schemering-gradiënt. Onder een fade-mask zodat tekst leesbaar blijft.
    - **💸 Munt-meter** (`coinMeter()` in `dashboard.js`): de platte maand-progressbalk vervangen door een groeiende gouden muntenbalk met ribbel-textuur, glans-veeg en een €-muntschijf die meeschuift op `monthGoalPct`.
