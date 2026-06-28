@@ -5,6 +5,7 @@ import { uid, fmtMoney, parseAmount, escapeHTML, ymd, startOfWeek, startOfMonth,
 import { getNumber } from '../settings.js';
 import { ok, err } from '../components/toast.js';
 import { initCountUps } from '../animate.js';
+import { incomeRoad } from '../income-road.js';
 
 const BREAKEVEN_KEY = 'breakEvenToastDate';
 
@@ -168,9 +169,7 @@ function renderOverview(content, container, d) {
       </div>
       <div class="income-hero-amount blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
       ${dailyGoal > 0 ? `
-        <div class="income-hero-progress">
-          <div class="progress-bar"><div class="progress-fill" style="width:${goalPct}%"></div></div>
-        </div>
+        ${incomeRoad(goalPct, now)}
         <div class="income-hero-meta">
           <span>${goalPct}% van dagdoel</span>
           <span>Doel: <span class="blurred-amount">${fmtMoney(dailyGoal)}</span></span>
