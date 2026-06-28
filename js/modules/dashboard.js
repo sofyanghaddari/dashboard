@@ -81,36 +81,6 @@ function weatherScene(code, info, cur, day) {
     </div>`;
 }
 
-// 🚕 "Weg naar je dagdoel": autootje schuift naar inkomen-tot-nu-toe / dagdoel,
-// met de zonnestand van het moment. Schuift mee zodra je inkomen bijvult.
-function incomeRoad(pct, now) {
-  const hr = now.getHours() + now.getMinutes() / 60;
-  const isNight = hr < 6 || hr >= 21;
-  const dayPos = Math.min(1, Math.max(0, (hr - 6) / 15));
-  const sunLeft = (8 + dayPos * 82).toFixed(1);
-  const sunTop  = Math.max(5, 50 - Math.sin(dayPos * Math.PI) * 42).toFixed(0);
-  const carLeft = Math.min(95, Math.max(3, pct));
-  const reached = pct >= 100;
-  const taxi = `<svg viewBox="0 0 60 34" class="ir-car-svg" aria-hidden="true">
-    <path d="M9 21 L15 11 H37 L47 21 Z" fill="#f7c948"/>
-    <rect x="3" y="19" width="54" height="10" rx="3" fill="#f7c948"/>
-    <rect x="24" y="6" width="12" height="5" rx="1.5" fill="#1f2937"/>
-    <rect x="16" y="12.5" width="9" height="6.5" rx="1" fill="#cfe8ff"/>
-    <rect x="27" y="12.5" width="9" height="6.5" rx="1" fill="#cfe8ff"/>
-    <rect x="2.5" y="22" width="6" height="3" rx="1" fill="#e9b104"/>
-    <g class="ir-wheel"><circle cx="17" cy="29" r="5" fill="#1f2937"/><circle cx="17" cy="29" r="2" fill="#9aa3ad"/><line x1="17" y1="25" x2="17" y2="33" stroke="#9aa3ad" stroke-width="1"/><line x1="13" y1="29" x2="21" y2="29" stroke="#9aa3ad" stroke-width="1"/></g>
-    <g class="ir-wheel"><circle cx="43" cy="29" r="5" fill="#1f2937"/><circle cx="43" cy="29" r="2" fill="#9aa3ad"/><line x1="43" y1="25" x2="43" y2="33" stroke="#9aa3ad" stroke-width="1"/><line x1="39" y1="29" x2="47" y2="29" stroke="#9aa3ad" stroke-width="1"/></g>
-  </svg>`;
-  return `
-    <div class="income-road ${isNight ? 'ir-night' : ''} ${reached ? 'ir-win' : ''}">
-      <div class="${isNight ? 'ir-moon' : 'ir-sun'}" style="left:${sunLeft}%;top:${sunTop}px"></div>
-      <div class="ir-hills"></div>
-      <div class="ir-road"><div class="ir-dashes"></div></div>
-      <div class="ir-flag"></div>
-      <div class="ir-car" style="left:${carLeft}%">${taxi}</div>
-    </div>`;
-}
-
 // 🌅 Dag/nacht-lucht achter de begroeting: zon overdag, maan + twinkelende sterren 's nachts.
 function skyScene(now) {
   const hr = now.getHours() + now.getMinutes() / 60;
@@ -129,15 +99,6 @@ function skyScene(now) {
   let cloud = '';
   if (phase === 'day' || phase === 'dawn') cloud = '<div class="sky-cloud sky-cloud-1"></div><div class="sky-cloud sky-cloud-2"></div>';
   return `<div class="sky-scene sky-${phase}" aria-hidden="true">${orb}${stars}${cloud}</div>`;
-}
-
-// 💸 Munt-meter: groeiende gouden muntenstapel-balk i.p.v. een platte progressbalk.
-function coinMeter(pct) {
-  const p = Math.max(0, Math.min(100, pct));
-  return `<div class="coin-meter" role="img" aria-label="${p}% van maanddoel">
-    <div class="coin-fill" style="width:${p}%"><span class="coin-shimmer"></span></div>
-    <div class="coin-disc" style="left:${p}%">€</div>
-  </div>`;
 }
 
 export async function render(container) {
@@ -260,20 +221,20 @@ export async function render(container) {
           <div class="dagstart-greeting">${begroeting}, ${escapeHTML(userName)}</div>
           <div class="dagstart-date">${datumStr}</div>
         </div>
+        <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
       </div>
       <div class="dagstart-stats">
         <div class="dagstart-stat">
-          <div class="dagstart-stat-val blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
-          <div class="dagstart-stat-lbl">Vandaag</div>
-          ${dailyCost > 0 ? `<div class="dagstart-stat-netto blurred-amount" style="color:${nettoToday>=0?'var(--ok)':'var(--danger)'}" data-countup="${nettoToday}" data-prefix="netto € ">netto ${fmtMoney(nettoToday)}</div>` : ''}
+          <div class="dagstart-stat-val money blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
+          <div class="dagstart-stat-lbl">Vandaag${dailyGoal > 0 ? ` · ${goalPct}%` : ''}</div>
+        </div>
+        <div class="dagstart-stat">
+          <div class="dagstart-stat-val money blurred-amount" data-countup="${monthIncome}">${fmtMoney(monthIncome)}</div>
+          <div class="dagstart-stat-lbl">Maand${monthlyGoal > 0 ? ` · ${monthGoalPct}%` : ''}</div>
         </div>
         <div class="dagstart-stat">
           <div class="dagstart-stat-val" style="color:${todayHizb ? 'var(--ok)' : 'var(--text-faint)'}">${todayHizb ? '✓' : '–'}</div>
           <div class="dagstart-stat-lbl">Hizb</div>
-        </div>
-        <div class="dagstart-stat">
-          <div class="dagstart-stat-val" data-countup="${openTodos.length}" data-decimals="0" data-prefix="">${openTodos.length}</div>
-          <div class="dagstart-stat-lbl">Taken</div>
         </div>
       </div>
     </div>
@@ -305,7 +266,7 @@ export async function render(container) {
       </button>
       <button class="quick-action-btn" data-tab="geloof">
         <div class="quick-action-icon">${icon('book')}</div>
-        <div class="quick-action-label">Koran<span class="quick-action-sub">${todayHizb ? 'Vandaag ✓' : 'Nog open'}</span></div>
+        <div class="quick-action-label">Koran<span class="quick-action-sub">${todayHizb ? 'Vandaag ✓' : 'Nog open'}${streak > 0 ? ` · ${streak}d streak` : ''}</span></div>
       </button>
       <button class="quick-action-btn" data-tab="arabic">
         <div class="quick-action-icon">${icon('books')}</div>
@@ -337,61 +298,6 @@ export async function render(container) {
       <div id="ns-body"><p class="muted" style="font-size:.875rem">Laden…</p></div>
     </div>
 
-    <!-- INKOMEN VANDAAG -->
-    <div class="income-hero">
-      <div class="income-hero-label" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Inkomen vandaag</span>
-        <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
-      </div>
-      <div class="income-hero-amount big-money blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
-      ${todayIncome === 0 ? `<div class="income-zero-hint">${icon('taxi')} Nog geen rit genoteerd — zet hem op nul!</div>` : ''}
-      ${dailyGoal > 0 ? `
-        ${incomeRoad(goalPct, now)}
-        <div class="income-hero-meta">
-          <span>${goalPct}% van dagdoel</span>
-          <span>Doel: <span class="money blurred-amount">${fmtMoney(dailyGoal)}</span></span>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- MAANDOVERZICHT -->
-    <div class="card">
-      <h2 class="card-title">Maand — ${maandNamen[now.getMonth()]} ${now.getFullYear()}</h2>
-      <div class="big-money blurred-amount" data-countup="${monthIncome}">${fmtMoney(monthIncome)}</div>
-      ${monthlyGoal > 0 ? `
-        ${coinMeter(monthGoalPct)}
-      ` : ''}
-      <div class="kpi-grid" style="margin-bottom:${traj?'12px':'0'}">
-        <div class="kpi-card">
-          <div class="kpi-label">Week</div>
-          <div class="kpi-value blurred-amount" data-countup="${weekIncome}">${fmtMoney(weekIncome)}</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Verwacht</div>
-          <div class="kpi-value blurred-amount" data-countup="${projectedMonth}">${fmtMoney(projectedMonth)}</div>
-        </div>
-        ${monthDelta !== null ? `<div class="kpi-card">
-          <div class="kpi-label">Vs vorige</div>
-          <div class="kpi-value ${monthDelta>=0?'ok':'danger'}">${monthDelta>=0?'↑':'↓'}${Math.abs(monthDelta)}%</div>
-        </div>` : ''}
-      </div>
-      ${traj ? `
-        <svg viewBox="0 0 ${traj.width} ${traj.height}" style="width:100%;height:${traj.height}px;margin-top:4px;opacity:.9" preserveAspectRatio="none">
-          <path d="${traj.idealPath}" stroke="var(--text-faint)" stroke-width="1" stroke-dasharray="4,4" fill="none" opacity=".7"/>
-          <path class="traj-line" pathLength="1" d="${traj.actualPath}" stroke="var(--gold)" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
-        </svg>
-        <div class="muted" style="font-size:.7rem;display:flex;justify-content:space-between;margin-top:2px;opacity:.7"><span>dag 1</span><span>— doel · ━ werkelijk</span><span>dag ${daysInMonth}</span></div>
-      ` : ''}
-      ${feas && !feas.reached ? `
-        <div class="card feasibility ${feas.onTrack ? 'on-track' : 'off-track'}" style="margin-top:12px;padding:12px 14px">
-          ${feas.onTrack
-            ? `<div style="font-weight:600;font-size:.9rem">Op koers — verwacht: <span class="blurred-amount">${fmtMoney(feas.projectedFinal)}</span></div>
-               ${feas.daysNeeded && feas.daysNeeded < feas.daysLeft ? `<div class="muted" style="font-size:.8rem;margin-top:3px">Doel bereikt over ~${feas.daysNeeded} dagen in dit tempo</div>` : ''}`
-            : `<div style="font-weight:600;font-size:.9rem">Achter — verwacht: <span class="blurred-amount">${fmtMoney(feas.projectedFinal)}</span> <span class="muted">(<span class="blurred-amount">€${Math.round(feas.shortage)}</span> tekort)</span></div>
-               <div class="muted" style="font-size:.8rem;margin-top:3px">Benodigd per dag: <b class="blurred-amount">${fmtMoney(feas.dailyNeeded)}</b> · huidig: <span class="blurred-amount">${fmtMoney(feas.currentDaily)}</span>/dag</div>`}
-        </div>` : ''}
-    </div>
-
     <!-- TAKEN PREVIEW -->
     ${highTodos.length || todayTodos.length ? `
     <div class="card">
@@ -408,26 +314,6 @@ export async function render(container) {
       ${todayTodos.length ? `<div class="muted" style="font-size:.82rem;padding-top:4px"><b>${todayTodos.length}</b> taak${todayTodos.length>1?'en':''} gepland voor vandaag</div>` : ''}
       <button class="btn secondary block" style="margin-top:12px;font-size:.85rem" data-tab="todo">Alle taken →</button>
     </div>` : ''}
-
-    <!-- KORAN PREVIEW -->
-    <div class="module-preview-card">
-      <div class="mpc-icon">${icon('book')}</div>
-      <div class="mpc-left">
-        <div class="mpc-title">Koran hizb${todayHizb ? ' <span style="color:var(--ok)">✓</span>' : ''}</div>
-        <div class="mpc-sub">Streak: <b>${streak} dag${streak===1?'':'en'}</b>${streak>0?' '+icon('flame'):''}</div>
-      </div>
-      <button class="mpc-action${todayHizb?' primary':''}" data-tab="geloof">${todayHizb?'Open':'Afvinken'}</button>
-    </div>
-
-    <!-- ARABISCH PREVIEW -->
-    <div class="module-preview-card">
-      <div class="mpc-icon">${icon('books')}</div>
-      <div class="mpc-left">
-        <div class="mpc-title">Arabisch</div>
-        <div class="mpc-sub">${dueCards>0?`<b>${dueCards}</b> kaart${dueCards>1?'en':''} klaar voor herhaling`:'Geen kaarten vandaag — je bent bij'}</div>
-      </div>
-      <button class="mpc-action${dueCards>0?' primary':''}" data-tab="arabic">${dueCards>0?'Starten':'Open'}</button>
-    </div>
 
     ${taxiGoals.length ? `
     <div class="card">
