@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v138** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v141** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -298,11 +298,23 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 ## Recente beslissingen (chronologisch, meest recent boven)
 
-+15. **Qibla op dashboard + kompas herontworpen v139 (28 juni 2026):**
++16. **Qibla op dashboard + kompas herontworpen v141 (28 juni 2026):**
    - **Qibla-kaart op het dashboard** (`qiblaCard()` + `initQiblaCard()` in `js/qibla.js`, geplaatst ná de quick-actions in `dashboard.js`): premium kaart met mini-kompas-schijf, richting (bv. "126° ZO"), afstand hemelsbreed naar Mekka en "Tik om je te richten". De naald op de schijf draait naar de qibla-peiling t.o.v. noord. Locatie via `localStorage.userLocation` (fallback Amsterdam), probeert stil een verse `getCurrentPosition`. Tik → opent het volledige kompas. De Koran-subtab-knop blijft als extra ingang.
    - **Volledig kompas (`openQibla`) opgewaardeerd v3:** warmere radiale achtergrond, en een realistische "richting Mekka"-animatie bij uitlijning — lichtstraal omhoog naar de Kaäba (`#ql-beam`), uitdijende lock-ringen (`spawnLockRings`), opstijgende gouden stofdeeltjes (`spawnSparkles` → `ql-dust`), gloeiende doeldriehoek (`.ql-aligned-tri`). Alles met `prefers-reduced-motion`-guard.
    - **CSS:** sectie "🕋 QIBLA — dashboard-kaart" onderaan `styles.css` (`.qibla-card`, `.ql-card-*`). Kompas-modal-stijlen blijven in `qibla.js` (`injectStyles`).
    - **Bulk-notities-import (v138):** "Plakken"-knop in Notities (`openBulkImport`/`parseBulk`) splitst geplakte tekst op `---`/lege regel/per regel; herkent ook door iOS auto-gecorrigeerde lange streepjes (— –). Bedoeld voor iPhone-notities-migratie via een Shortcut die alle notities met `---` samenvoegt.
+
++15. **NS trein-storingen — meldingen + GitHub-databron v138-v140 (28 juni 2026):**
+   - **Dashboard NS-kaart** ("NS · trein-storingen", `loadNs()`/`renderNs()` in `dashboard.js`) toont live storingen. Statische PWA → directe NS-calls kunnen niet (CORS + sleutel mag niet in client).
+   - **v140 — GitHub als databron (vervangt Cloudflare als standaard):** user vond een eigen Cloudflare Worker te ingewikkeld. Nieuwe workflow `.github/workflows/ns-disruptions.yml` (cron `*/10`) haalt `/disruptions/v3?isActive=true` op met repo-secret **`NS_API_KEY`** en force-pusht de JSON naar de aparte **`ns-data`**-branch (altijd 1 commit, geen history-spam). App leest `https://raw.githubusercontent.com/sofyanghaddari/dashboard/ns-data/ns-disruptions.json` (raw stuurt CORS `*`) met cache-buster, in zowel `loadNs()` als `checkNsDisruptions()`. **De user hoeft enkel het secret `NS_API_KEY` toe te voegen** — geen Cloudflare, geen URL plakken. `localStorage.nsProxyUrl` blijft als optionele override (eigen proxy/Worker).
+   - **Cloudflare Worker blijft beschikbaar als alternatief:** `proxy/ns-worker.js` + `proxy/README-NS-proxy.md` (NS-sleutel via apiportal.ns.nl → Worker → secret → URL in app via `nsProxyUrl`).
+   - **v138 — Meldingen** (`checkNsDisruptions()` in `notifications.js`, gewired in `checkAllNotifications`): meldt een **nieuwe** storing met "Amsterdam" in de titel = kans op ritten. Dedup via `localStorage.ns_seen_ids`; eerste run seedt alleen (geen melding-explosie). App-open/foreground check (zelfde patroon als `checkWeatherAlert`), nog géén true-background push.
+
++14. **Amsterdam-rit banner v139 (28 juni 2026):**
+   - **Taxi-weg-banner nu voor het MAANDDOEL** (Taxi-overzicht, nieuwe "Maanddoel"-kaart met `incomeRoad(monthGoalPct, now)`). De **dagelijkse** voortgang is teruggezet naar de platte balk (`.income-hero-progress`) zoals voorheen.
+   - **Zwarte Mercedes C-klasse taxi** (nieuw `MERC` SVG in `income-road.js`): sedan-silhouet met metallic body-gradient, alloy-velgen (spinnen), Mercedes-ster op de grille, verlicht **daklicht** (`.ir-taxisign`) en koplamp die 's nachts gloeien.
+   - **Amsterdam-vibe:** rij **grachtenpanden** met afwisselende gevels (trap/klok/punt/hals) + ramen die 's nachts twinkelen (`canalHouses()` → `.ir-canal`/`.ir-house`/`.ir-win`), een klassieke **lantaarnpaal** (`.ir-lamp`, gloeit 's nachts) en een geparkeerde **omafiets** (`.ir-bike`). Banner hoger (96px), lucht/quay-gradient dag+nacht.
+   - Alles in gedeeld `js/income-road.js`; CSS in de income-road-sectie; `prefers-reduced-motion` gedekt via `.income-road *`.
 
 +13. **Dashboard ontdubbeld v138 (28 juni 2026):**
    - **Inkomen-hero + Maandoverzicht-kaart van het dashboard verwijderd** — die stonden dubbel met het Taxi-overzicht (dat al een inkomen-hero met dagdoel + Week/Maand/Verwacht-KPI's heeft). Vandaag + Maand zijn nu samengevoegd in de kleine begroetingskaart-stats (`dagstart-stats`: Vandaag · X% / Maand · Y% / Hizb), met de privacy-toggle verplaatst naar de begroeting-top.
@@ -310,10 +322,6 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
    - **Koran- en Arabisch-previewkaarten verwijderd** — die dupliceerden de quick-action-knoppen. De hizb-streak is nu opgenomen in de Koran quick-action-subtekst ("Vandaag ✓ · 12d streak").
    - Netto resultaat: hoofdpagina korter en minder dubbel; alle inkomensdetails leven in Taxi/Stats.
 
-+12. **NS trein-storingen — meldingen v138 (28 juni 2026):**
-   - **Dashboard NS-kaart** ("NS · trein-storingen", `loadNs()`/`renderNs()` in `dashboard.js`) haalt live storingen op via een door de gebruiker ingestelde **proxy-URL** (`localStorage.nsProxyUrl`). Statische PWA → directe NS-calls kunnen niet (CORS + sleutel mag niet in client). Zonder proxy: nette uitleg + "Proxy-URL instellen"-knop, géén nepdata. (Kaart + proxy-scaffolding zaten al op main in v137.)
-   - **Proxy** = gratis **Cloudflare Worker** (`proxy/ns-worker.js`): bewaart `NS_API_KEY` als secret, roept NS Reisinformatie `/disruptions/v3?isActive=true` aan, voegt CORS toe. Setup-gids: `proxy/README-NS-proxy.md` (NS-sleutel via apiportal.ns.nl → Worker deployen → secret → URL in app plakken).
-   - **NIEUW v138 — Meldingen** (`checkNsDisruptions()` in `notifications.js`, gewired in `checkAllNotifications`): meldt een **nieuwe** storing met "Amsterdam" in de titel = kans op ritten. Dedup via `localStorage.ns_seen_ids`; eerste run seedt alleen (geen melding-explosie). App-open/foreground check (zelfde patroon als `checkWeatherAlert`), nog géén true-background push.
 
 +11. **Realistische animaties v136 (28 juni 2026):** de "levende animaties" uit v134 opgewaardeerd naar het realisme-niveau van de weer-scène (`weatherScene`), op verzoek van user (referentie = iPhone Weer-app).
    - **🔥 Streak-vlam herontworpen** (`koran.js` markup + CSS): van 2 geroteerde blokjes naar een **meerlagige vlam** — gloed-halo (`sf-glow`), oranje buitentong (`sf-outer`), gele middentong (`sf-mid`), witgloeiende kern (`sf-core`) en blauwe vlambasis (`sf-base`). Elke laag flikkert organisch en asynchroon (`sfFlick1/2/3` met skew+scaleY+drift). lvl-4 = fellere kleuren + sterkere gloed.

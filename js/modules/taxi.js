@@ -157,6 +157,7 @@ function renderOverview(content, container, d) {
     return dt >= lastMonthStart && dt <= lastMonthEnd && dt.getDate() <= daysIntoMonth;
   });
   const trendPct = lastMonthAtPos > 0 ? Math.round((monthIncome - lastMonthAtPos) / lastMonthAtPos * 100) : null;
+  const monthGoalPct = monthlyGoal > 0 ? Math.min(100, Math.round(monthIncome / monthlyGoal * 100)) : 0;
 
   const breakEvenHit = dailyBreakEven > 0 && todayIncome >= dailyBreakEven;
 
@@ -169,7 +170,9 @@ function renderOverview(content, container, d) {
       </div>
       <div class="income-hero-amount blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
       ${dailyGoal > 0 ? `
-        ${incomeRoad(goalPct, now)}
+        <div class="income-hero-progress">
+          <div class="progress-bar"><div class="progress-fill" style="width:${goalPct}%"></div></div>
+        </div>
         <div class="income-hero-meta">
           <span>${goalPct}% van dagdoel</span>
           <span>Doel: <span class="blurred-amount">${fmtMoney(dailyGoal)}</span></span>
@@ -177,6 +180,16 @@ function renderOverview(content, container, d) {
       ` : ''}
       ${breakEvenHit ? `<div class="breakeven-badge">✓ Break-even bereikt</div>` : (dailyBreakEven > 0 ? `<div style="font-size:.78rem;color:var(--text-faint);margin-top:6px">Break-even vandaag: <span class="blurred-amount">${fmtMoney(dailyBreakEven)}</span></div>` : '')}
     </div>
+
+    <!-- MAANDDOEL — taxi-rit door Amsterdam -->
+    ${monthlyGoal > 0 ? `
+    <div class="card month-road-card">
+      <div class="income-hero-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+        <span>Maanddoel</span>
+        <span style="font-size:.78rem;color:var(--text-faint)">${monthGoalPct}% · doel <span class="blurred-amount">${fmtMoney(monthlyGoal)}</span></span>
+      </div>
+      ${incomeRoad(monthGoalPct, now)}
+    </div>` : ''}
 
     <!-- KPI GRID -->
     <div class="kpi-grid">

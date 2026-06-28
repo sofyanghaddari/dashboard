@@ -1,0 +1,59 @@
+name: NS storingen ophalen
+
+# Haalt elke paar minuten de actuele NS trein-storingen op en publiceert ze als
+# JSON op de aparte `ns-data`-branch. De app leest dat bestand via
+# raw.githubusercontent.com (CORS '*'). Zo blijft je NS-sleutel veilig server-side
+# en hoef je geen Cloudflare/proxy zelf te beheren.
+#
+# Eenmalig instellen (Settings → Secrets and variables → Actions → New repository secret):
+#   NS_API_KEY   je gratis NS Primary key (apiportal.ns.nl → NS App → Subscribe → Profile)
+#
+# Je kunt 'm ook handmatig draaien via tab "Actions" → deze workflow → "Run workflow".
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # elke 10 min (UTC; GitHub-cron kan iets vertragen)
+  workflow_dispatch:
+
+# Eén run tegelijk; nieuwere mag de oudere afbreken (alleen de laatste data telt).
+concurrency:
+  group: ns-disruptions
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Haal NS-storingen op
+        env:
+          NS_API_KEY: ${{ secrets.NS_API_KEY }}
+        run: |
+          if [ -z "$NS_API_KEY" ]; then
+            echo "::error::Secret NS_API_KEY ontbreekt. Voeg 'm toe via Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          curl -sS -f \
+            -H "Ocp-Apim-Subscription-Key: $NS_API_KEY" \
+            -H "Accept: application/json" \
+            "https://gateway.apiportal.ns.nl/disruptions/v3?isActive=true" \
+            -o ns-disruptions.json
+          # Validatie: het antwoord moet geldige JSON zijn (anders niet publiceren).
+          python3 -c "import json; json.load(open('ns-disruptions.json'))"
+          echo "Aantal storingen: $(python3 -c 'import json;print(len(json.load(open("ns-disruptions.json"))))')"
+
+      - name: Publiceer naar ns-data branch
+        run: |
+          mkdir -p /tmp/ns-out
+          cp ns-disruptions.json /tmp/ns-out/
+          cd /tmp/ns-out
+          git init -q
+          git config user.name "ns-bot"
+          git config user.email "ns-bot@users.noreply.github.com"
+          git checkout -q -b ns-data
+          git add ns-disruptions.json
+          git commit -q -m "NS-storingen bijgewerkt ($(date -u +%FT%TZ))"
+          # Force-push: de branch blijft altijd één commit groot (geen history-spam).
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ns-data

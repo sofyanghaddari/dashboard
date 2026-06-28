@@ -6188,11 +6188,15 @@ input, select, textarea {
 
 /* ── 🚕 Weg naar dagdoel (inkomen-hero) ── */
 .income-road {
-  position: relative; height: 78px; border-radius: 12px; overflow: hidden;
+  position: relative; height: 96px; border-radius: 12px; overflow: hidden;
   margin: 12px 0 10px;
-  background: linear-gradient(180deg, #bfe3ff 0%, #e8f4ff 58%, #cdeec7 58%, #bbe4b4 100%);
+  --house: #7c6450; --win: #41342a;
+  background: linear-gradient(180deg, #bfe3ff 0%, #dcecf8 52%, #cdd3da 52%, #b7bdc5 100%);
 }
-.income-road.ir-night { background: linear-gradient(180deg, #10204a 0%, #1c356b 58%, #233a5e 58%, #1b3050 100%); }
+.income-road.ir-night {
+  --house: #221d2e; --win: #ffce7d;
+  background: linear-gradient(180deg, #0d1b40 0%, #1c356b 52%, #20304e 52%, #1a2740 100%);
+}
 .ir-sun, .ir-moon { position: absolute; width: 26px; height: 26px; border-radius: 50%; z-index: 1; }
 .ir-sun  { background: radial-gradient(circle at 38% 34%, #fff7d6, #ffd23f 60%, #ffb300); box-shadow: 0 0 18px 5px rgba(255,210,70,.6); animation: irSunPulse 4s ease-in-out infinite; }
 /* Draaiende zonnestralen */
@@ -6218,17 +6222,26 @@ input, select, textarea {
 .ir-cloud::after  { width: 11px; height: 11px; top: -4px; left: 16px; }
 .income-road.ir-night .ir-cloud { background: rgba(180,195,225,.45); }
 @keyframes irCloudDrift { from { transform: translateX(0) scale(var(--cs)); } to { transform: translateX(-360px) scale(var(--cs)); } }
-.ir-hills {
-  position: absolute; left: 0; right: 0; bottom: 28px; height: 26px; z-index: 1; opacity: .55;
-  background:
-    radial-gradient(70px 26px at 18% 100%, #9ed293 60%, transparent 61%),
-    radial-gradient(90px 30px at 62% 100%, #8ec983 60%, transparent 61%),
-    radial-gradient(60px 22px at 92% 100%, #a6d89b 60%, transparent 61%);
-}
-.income-road.ir-night .ir-hills { background:
-    radial-gradient(70px 26px at 18% 100%, #1e3556 60%, transparent 61%),
-    radial-gradient(90px 30px at 62% 100%, #1a2e4c 60%, transparent 61%); opacity: .8; }
-.ir-road { position: absolute; left: 0; right: 0; bottom: 0; height: 28px; z-index: 2; background: linear-gradient(180deg, #4c515a, #383c43); }
+/* Amsterdamse grachtenpanden (silhouet achter de weg) */
+.ir-canal { position: absolute; left: 0; right: 0; bottom: 24px; width: 100%; height: 62px; z-index: 1; opacity: .96; }
+.ir-canal .ir-house { fill: var(--house); }
+.ir-canal .ir-house-hook { fill: var(--house); filter: brightness(.7); }
+.ir-canal .ir-win { fill: var(--win); }
+.income-road.ir-night .ir-canal .ir-win { animation: irWinTwinkle 5s ease-in-out infinite; }
+.income-road.ir-night .ir-canal .ir-win:nth-of-type(3n)   { opacity: .35; animation: none; }
+.income-road.ir-night .ir-canal .ir-win:nth-of-type(4n+1) { animation-delay: 1.6s; }
+.income-road.ir-night .ir-canal .ir-win:nth-of-type(5n)   { animation-delay: 2.7s; opacity: .7; }
+@keyframes irWinTwinkle { 0%,100% { opacity: .92; } 50% { opacity: .55; } }
+/* Lantaarnpaal */
+.ir-lamp { position: absolute; right: 22%; bottom: 24px; width: 9px; height: 44px; z-index: 3; }
+.ir-lantern { fill: #c7ccd1; }
+.income-road.ir-night .ir-lantern { fill: #ffe49a; filter: drop-shadow(0 0 4px rgba(255,216,130,.9)); animation: irLampFlicker 4s ease-in-out infinite; }
+@keyframes irLampFlicker { 0%,100% { opacity: 1; } 48% { opacity: .82; } }
+/* Geparkeerde fiets */
+.ir-bike { position: absolute; left: 7%; bottom: 25px; width: 26px; height: 15px; z-index: 3; }
+.income-road.ir-night .ir-bike { opacity: .85; }
+.ir-road { position: absolute; left: 0; right: 0; bottom: 0; height: 28px; z-index: 2; background: linear-gradient(180deg, #545962 0%, #41454d 55%, #34373d 100%); }
+.ir-road::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(180deg, rgba(255,255,255,.14), transparent); }
 .ir-dashes {
   position: absolute; left: 0; right: -40px; top: 50%; height: 3px;
   background: repeating-linear-gradient(90deg, #f4d35e 0 18px, transparent 18px 40px);
@@ -6242,8 +6255,12 @@ input, select, textarea {
 }
 .income-road.ir-win .ir-flag::before { animation: irFlagWave .45s ease-in-out infinite; transform-origin: left center; }
 @keyframes irFlagWave { 0%,100% { transform: skewY(0); } 50% { transform: skewY(-7deg); } }
-.ir-car { position: absolute; bottom: 13px; z-index: 4; transform: translateX(-50%); transition: left 1.1s var(--ease-out); animation: irBob 1.5s ease-in-out infinite; }
-.ir-car-svg { width: 48px; height: auto; display: block; filter: drop-shadow(0 3px 3px rgba(0,0,0,.28)); }
+.ir-car { position: absolute; bottom: 9px; z-index: 4; transform: translateX(-50%); transition: left 1.1s var(--ease-out); animation: irBob 1.5s ease-in-out infinite; }
+.ir-car-svg { width: 58px; height: auto; display: block; filter: drop-shadow(0 3px 3px rgba(0,0,0,.32)); }
+/* Daklicht + koplamp van de Mercedes-taxi */
+.ir-merc .ir-taxisign { fill: #f6e7b0; stroke: #b89b52; stroke-width: .4; }
+.income-road.ir-night .ir-merc .ir-taxisign { fill: #fff0bd; filter: drop-shadow(0 0 3px rgba(255,224,140,.95)); }
+.income-road.ir-night .ir-merc .ir-head { filter: drop-shadow(0 0 3px rgba(255,240,180,.9)); }
 /* Uitlaatpluimpjes achter de auto */
 .ir-exhaust {
   position: absolute; left: -8px; bottom: 5px; width: 7px; height: 7px; border-radius: 50%;

@@ -893,10 +893,14 @@ function wegWidget() {
 
 // ── NS trein-storingen ────────────────────────────────────────
 // Statische PWA → directe NS-API calls kunnen niet (CORS + de sleutel mag niet
-// in client-code). Daarom haalt dit een door de gebruiker ingestelde proxy-URL op
-// (een kleine serverless functie die de NS-sleutel bewaart en CORS toevoegt).
-// Zonder proxy: nette uitleg, geen nepdata. Alle externe tekst wordt ge-escaped.
+// in client-code). Oplossing zonder Cloudflare: een GitHub Action haalt elke paar
+// minuten de storingen op (met de NS-sleutel als repo-secret, server-side) en
+// publiceert ze als JSON op de `ns-data`-branch. De app leest dat statische
+// bestand via raw.githubusercontent.com (stuurt CORS `*`). Geavanceerd: wie een
+// eigen proxy heeft kan die instellen via localStorage `nsProxyUrl` (override).
+// Alle externe tekst wordt ge-escaped in renderNs().
 const NS_CACHE_KEY = 'nsDisruptionsCache';
+const NS_DATA_URL = 'https://raw.githubusercontent.com/sofyanghaddari/dashboard/ns-data/ns-disruptions.json';
 const _setHTML = (el, html) => { el.replaceChildren(); el.insertAdjacentHTML('beforeend', html); };
 
 async function loadNs(container) {
@@ -905,18 +909,8 @@ async function loadNs(container) {
   const refreshBtn = container.querySelector('#ns-refresh');
   if (refreshBtn) refreshBtn.onclick = () => { localStorage.removeItem(NS_CACHE_KEY); loadNs(container); };
 
-  const proxy = (localStorage.getItem('nsProxyUrl') || '').trim();
-  if (!proxy) {
-    _setHTML(body, `
-      <p class="muted" style="font-size:.85rem;line-height:1.5">Live NS-storingen vereisen een kleine proxy: de NS-API blokkeert directe aanvragen uit de browser en je API-sleutel mag niet in de app staan.</p>
-      <button class="btn secondary sm" id="ns-setup" style="margin-top:8px">Proxy-URL instellen</button>`);
-    const b = body.querySelector('#ns-setup');
-    if (b) b.onclick = () => {
-      const url = prompt('Plak de URL van je NS-proxy (moet JSON met storingen teruggeven):', '');
-      if (url && url.trim()) { localStorage.setItem('nsProxyUrl', url.trim()); loadNs(container); }
-    };
-    return;
-  }
+  // Eigen proxy als override, anders de standaard GitHub-databron.
+  const src = (localStorage.getItem('nsProxyUrl') || '').trim() || NS_DATA_URL;
 
   try {
     const cached = JSON.parse(localStorage.getItem(NS_CACHE_KEY) || 'null');
@@ -925,16 +919,18 @@ async function loadNs(container) {
 
   _setHTML(body, `<p class="muted" style="font-size:.875rem">Laden…</p>`);
   try {
-    const res = await fetch(proxy, { headers: { 'Accept': 'application/json' } });
+    // cache-buster zodat we niet op een verouderde CDN-kopie blijven hangen
+    const url = src + (src.includes('?') ? '&' : '?') + '_=' + Math.floor(Date.now() / 60000);
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     localStorage.setItem(NS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
     renderNs(body, data);
   } catch (e) {
-    _setHTML(body, `<p class="muted" style="font-size:.85rem">NS-storingen niet beschikbaar. Controleer je proxy-URL.</p>
-      <button class="btn secondary sm" id="ns-reset" style="margin-top:8px">Proxy wijzigen</button>`);
-    const r = body.querySelector('#ns-reset');
-    if (r) r.onclick = () => { const u = prompt('NS-proxy URL:', localStorage.getItem('nsProxyUrl') || ''); if (u !== null) { localStorage.setItem('nsProxyUrl', u.trim()); loadNs(container); } };
+    _setHTML(body, `<p class="muted" style="font-size:.85rem;line-height:1.5">NS-storingen zijn nog niet beschikbaar. Voeg eenmalig je gratis NS-sleutel als <b>secret</b> (<code>NS_API_KEY</code>) toe in je GitHub-repo → dan worden ze automatisch opgehaald. Even later opnieuw kijken.</p>
+      <button class="btn secondary sm" id="ns-retry" style="margin-top:8px">Opnieuw proberen</button>`);
+    const r = body.querySelector('#ns-retry');
+    if (r) r.onclick = () => { localStorage.removeItem(NS_CACHE_KEY); loadNs(container); };
   }
 }
 

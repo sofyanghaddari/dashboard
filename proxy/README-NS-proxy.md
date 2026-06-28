@@ -1,4 +1,20 @@
-# 🚆 NS trein-storingen — proxy instellen (≈10 min, gratis)
+# 🚆 NS trein-storingen — proxy instellen
+
+> **Makkelijkste manier (aanbevolen): via GitHub, géén Cloudflare.**
+> De app leest de storingen standaard van een GitHub Action die elke ~10 min de
+> NS-API aanroept (workflow `.github/workflows/ns-disruptions.yml`, publiceert naar
+> de `ns-data`-branch). Je hoeft dan maar **één ding** te doen: je gratis NS-sleutel
+> als repo-secret **`NS_API_KEY`** toevoegen (GitHub → repo → **Settings** →
+> **Secrets and variables** → **Actions** → **New repository secret**). Geen
+> Cloudflare-account, geen Worker, geen URL plakken. Daarna draait de workflow
+> vanzelf (of start 'm handmatig via tab **Actions** → "Run workflow").
+>
+> De Cloudflare-route hieronder is een **alternatief** voor wie liever een eigen
+> proxy beheert (stel die in via de NS-kaart → eigen proxy-URL → `nsProxyUrl`).
+
+---
+
+## Alternatief: eigen Cloudflare Worker (≈10 min, gratis)
 
 De app kan de NS-storingen niet rechtstreeks ophalen (de NS-API blokkeert dat in de
 browser, en je sleutel mag niet in de app staan). Daarom zet je één keer een gratis

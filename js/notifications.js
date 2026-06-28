@@ -218,12 +218,14 @@ async function checkWeatherAlert() {
 // Storing op een station = gestrande reizigers = kans op ritten. We halen de
 // storingen op via de door de gebruiker ingestelde proxy (zie dashboard NS-kaart),
 // onthouden welke we al gezien hebben, en melden alleen nieuwe Amsterdamse storingen.
+const NS_DATA_URL = 'https://raw.githubusercontent.com/sofyanghaddari/dashboard/ns-data/ns-disruptions.json';
+
 async function checkNsDisruptions() {
-  const proxy = (localStorage.getItem('nsProxyUrl') || '').trim();
-  if (!proxy) return;
+  const src = (localStorage.getItem('nsProxyUrl') || '').trim() || NS_DATA_URL;
   let data;
   try {
-    const res = await fetch(proxy, { headers: { Accept: 'application/json' } });
+    const url = src + (src.includes('?') ? '&' : '?') + '_=' + Math.floor(Date.now() / 60000);
+    const res = await fetch(url, { headers: { Accept: 'application/json' }, cache: 'no-store' });
     if (!res.ok) return;
     data = await res.json();
   } catch (_) { return; }
