@@ -3029,6 +3029,150 @@ body[data-density="compact"] .circular-progress { width: 120px; height: 120px; }
   50% { opacity: 1; filter: drop-shadow(0 0 4px rgba(157,217,255,.4)); }
 }
 
+/* ══ REALISTISCHE WEER-SCÈNE (banner) ════════════════════════════════════ */
+.wx-stage {
+  position: relative;
+  height: 132px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 4px 0 12px;
+  isolation: isolate;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 6px 18px rgba(0,0,0,.22);
+  /* standaard lucht = helder daglicht */
+  background: linear-gradient(180deg, #3a8fd6 0%, #6fb4e8 55%, #a9d4f2 100%);
+}
+
+/* Lucht-varianten per type */
+.wx-clear        { background: linear-gradient(180deg, #2f7ec9 0%, #5aa6e3 50%, #9fcef0 100%); }
+.wx-partly       { background: linear-gradient(180deg, #3a8fd6 0%, #79bce9 55%, #b3daf4 100%); }
+.wx-cloudy       { background: linear-gradient(180deg, #6b7d92 0%, #8a9bb0 55%, #aab8c8 100%); }
+.wx-fog          { background: linear-gradient(180deg, #8893a0 0%, #a3adb8 55%, #c0c8d0 100%); }
+.wx-drizzle      { background: linear-gradient(180deg, #5a6b7d 0%, #74859a 55%, #93a2b3 100%); }
+.wx-rain         { background: linear-gradient(180deg, #46566a 0%, #5d6f84 55%, #7a8b9e 100%); }
+.wx-snow         { background: linear-gradient(180deg, #8090a4 0%, #a4b2c4 55%, #ccd6e2 100%); }
+.wx-storm        { background: linear-gradient(180deg, #2b3340 0%, #3d4757 55%, #525e70 100%); }
+.wx-clear-night  { background: linear-gradient(180deg, #0b1733 0%, #14254a 55%, #25406e 100%); }
+.wx-partly-night { background: linear-gradient(180deg, #0e1b38 0%, #1b2e54 55%, #2e4877 100%); }
+
+/* Info-overlay */
+.wx-stage-info {
+  position: absolute; left: 16px; bottom: 12px; z-index: 5;
+  display: flex; align-items: flex-end; gap: 12px;
+  text-shadow: 0 1px 6px rgba(0,0,0,.45);
+}
+.wx-stage-temp { font-size: 2.6rem; font-weight: 300; color: #fff; line-height: .9; letter-spacing: -.02em; }
+.wx-stage-sub { padding-bottom: 4px; }
+.wx-stage-desc { font-size: .92rem; font-weight: 600; color: #fff; }
+.wx-stage-range { font-size: .74rem; color: rgba(255,255,255,.82); margin-top: 1px; }
+
+/* ── Zon ── */
+.wx-sun { position: absolute; top: 16px; right: 22px; width: 64px; height: 64px; z-index: 2; }
+.wx-sun-core {
+  position: absolute; inset: 14px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #fffbe8, #ffd23f 60%, #ffb300 100%);
+  box-shadow: 0 0 24px 6px rgba(255,210,70,.65);
+  animation: wxSunBob 6s ease-in-out infinite;
+}
+.wx-sun-glow {
+  position: absolute; inset: -18px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,225,120,.55), rgba(255,210,70,0) 65%);
+  animation: wxSunPulse2 4s ease-in-out infinite;
+}
+.wx-sun::before {
+  content: ''; position: absolute; inset: -6px; border-radius: 50%;
+  background:
+    conic-gradient(from 0deg,
+      rgba(255,225,140,.0) 0deg, rgba(255,225,140,.5) 6deg, rgba(255,225,140,0) 12deg) ;
+  -webkit-mask: radial-gradient(circle, transparent 26px, #000 27px);
+          mask: radial-gradient(circle, transparent 26px, #000 27px);
+  animation: wxRaysSpin 26s linear infinite;
+  opacity: .8;
+}
+
+/* ── Maan + sterren ── */
+.wx-moon2 {
+  position: absolute; top: 18px; right: 26px; width: 48px; height: 48px; border-radius: 50%; z-index: 2;
+  background: radial-gradient(circle at 36% 32%, #fdfdf6, #dfe6f0 70%, #c2ccdd 100%);
+  box-shadow: 0 0 22px 4px rgba(200,220,255,.4);
+  animation: wxMoonGlow 5s ease-in-out infinite;
+}
+.wx-moon-crater { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: rgba(150,165,190,.45); }
+.wx-star2 {
+  position: absolute; left: var(--x); top: var(--y);
+  width: var(--s); height: var(--s); border-radius: 50%; background: #fff;
+  box-shadow: 0 0 4px rgba(255,255,255,.8);
+  animation: wxStarTwinkle 3.2s ease-in-out var(--d) infinite;
+}
+
+/* ── Wolken ── */
+.wx-cloud2 {
+  position: absolute; left: var(--x); top: var(--y); z-index: 3;
+  width: 78px; height: 26px; border-radius: 26px;
+  transform: scale(var(--s));
+  background: #fff;
+  filter: blur(.3px) drop-shadow(0 6px 8px rgba(0,0,0,.12));
+  animation: wxCloudFloat var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+.wx-cloud2::before, .wx-cloud2::after {
+  content: ''; position: absolute; background: inherit; border-radius: 50%;
+}
+.wx-cloud2::before { width: 34px; height: 34px; top: -16px; left: 12px; }
+.wx-cloud2::after  { width: 26px; height: 26px; top: -11px; left: 40px; }
+.wx-cloud2.grey { background: #cdd6e0; }
+.wx-cloud2.dark { background: #8c97a6; }
+.wx-cloud2.soft { background: #fff; }
+.wx-cloud2.dim  { opacity: .85; }
+
+/* ── Regen ── */
+.wx-rain {
+  position: absolute; top: 52%; left: var(--x); z-index: 4;
+  width: 2px; height: 13px; border-radius: 2px;
+  background: linear-gradient(180deg, rgba(200,225,255,0), rgba(200,225,255,.9));
+  animation: wxRainDrop var(--dur) linear var(--d) infinite;
+}
+.wx-rain.light { height: 9px; opacity: .7; }
+.wx-rain.heavy { height: 16px; width: 2.4px; }
+
+/* ── Sneeuw ── */
+.wx-snow {
+  position: absolute; top: 46%; left: var(--x); z-index: 4;
+  width: 6px; height: 6px; border-radius: 50%; background: #fff;
+  box-shadow: 0 0 3px rgba(255,255,255,.7);
+  animation: wxSnowDrift var(--dur) linear var(--d) infinite;
+}
+
+/* ── Mist ── */
+.wx-fogband {
+  position: absolute; left: -10%; width: 120%; height: 12px; z-index: 4;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.5) 40%, rgba(255,255,255,.5) 60%, transparent);
+  filter: blur(3px);
+  animation: wxFogDrift 7s ease-in-out var(--d) infinite alternate;
+}
+
+/* ── Bliksem ── */
+.wx-flash {
+  position: absolute; inset: 0; z-index: 4; background: #fff; opacity: 0;
+  animation: wxFlash 5s ease-out 1.2s infinite;
+}
+.wx-bolt {
+  position: absolute; top: 40%; left: 46%; width: 22px; height: 44px; z-index: 5;
+  filter: drop-shadow(0 0 6px rgba(255,240,150,.9)); opacity: 0;
+  animation: wxBolt 5s ease-out 1.2s infinite;
+}
+
+@keyframes wxSunBob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes wxSunPulse2{ 0%,100% { transform: scale(1); opacity: .8; } 50% { transform: scale(1.12); opacity: 1; } }
+@keyframes wxCloudFloat { from { transform: translateX(-8px) scale(var(--s)); } to { transform: translateX(8px) scale(var(--s)); } }
+@keyframes wxRainDrop { 0% { transform: translateY(-6px); opacity: 0; } 12% { opacity: 1; } 100% { transform: translateY(64px); opacity: .15; } }
+@keyframes wxSnowDrift { 0% { transform: translate(0,-6px); opacity: 0; } 12% { opacity: 1; } 100% { transform: translate(var(--sway), 78px); opacity: .2; } }
+@keyframes wxFogDrift { from { transform: translateX(-6%); } to { transform: translateX(6%); } }
+@keyframes wxFlash { 0%, 8%, 12%, 100% { opacity: 0; } 9% { opacity: .55; } 10.5% { opacity: .15; } 11% { opacity: .7; } }
+@keyframes wxBolt  { 0%, 8%, 13%, 100% { opacity: 0; } 9% { opacity: 1; } 10.5% { opacity: .2; } 11% { opacity: 1; } 12% { opacity: .3; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .wx-stage * { animation: none !important; }
+}
+
 /* ── 3D CARD HOVER EFFECT ────────────────────────────────────── */
 @media (hover: hover) {
   .card {

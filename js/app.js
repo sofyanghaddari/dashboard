@@ -93,32 +93,38 @@ async function bootApp() {
   initSyncPill();
   initRealtimeSync();
   onWrite(scheduleAutoPush);
-  // Probeer eerst remote te mergen, dan auto-up
-  maybeAutoPullOnOpen().then(merged => {
-    if (merged) { refreshSyncPill(); navigate(currentRoute() || 'dashboard'); }
-    maybeAutoSync();
-  });
-  setInterval(maybeAutoSync, 60 * 60 * 1000);
-  maybeAutoExport();
-  maybeShowWeeklyReview();
-  checkAllNotifications();
-  scheduleSwNotifications();
-  import('./push.js').then(m => m.refreshPushConfig()).catch(() => {});
-  updateBadge();
-  setInterval(updateBadge, 5 * 60 * 1000);
-  // Auto-PDF op de 1e van de maand
-  const todayStr = new Date().toISOString().slice(0,10);
-  if (localStorage.getItem('autoPdf') === '1' && new Date().getDate() === 1) {
-    const last = localStorage.getItem('lastAutoPdf');
-    if (last !== todayStr.slice(0,7)) {
-      localStorage.setItem('lastAutoPdf', todayStr.slice(0,7));
-      const prev = new Date(); prev.setMonth(prev.getMonth() - 1);
-      setTimeout(() => exportMonthPDF(prev), 2000);
+  // ── Niet-kritische achtergrondtaken: uitstellen tot ná de eerste render +
+  // splash-fade, zodat het opstarten vloeiend blijft (geen jank/stotter). ──
+  const runWhenIdle = (fn) =>
+    (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 2500 }) : setTimeout(fn, 400));
+  runWhenIdle(() => {
+    // Eerst remote mergen, dan auto-up (her-render pas ná de splash → geen flits)
+    maybeAutoPullOnOpen().then(merged => {
+      if (merged) { refreshSyncPill(); navigate(currentRoute() || 'dashboard'); }
+      maybeAutoSync();
+    });
+    setInterval(maybeAutoSync, 60 * 60 * 1000);
+    maybeAutoExport();
+    maybeShowWeeklyReview();
+    checkAllNotifications();
+    scheduleSwNotifications();
+    import('./push.js').then(m => m.refreshPushConfig()).catch(() => {});
+    updateBadge();
+    setInterval(updateBadge, 5 * 60 * 1000);
+    // Auto-PDF op de 1e van de maand
+    const todayStr = new Date().toISOString().slice(0,10);
+    if (localStorage.getItem('autoPdf') === '1' && new Date().getDate() === 1) {
+      const last = localStorage.getItem('lastAutoPdf');
+      if (last !== todayStr.slice(0,7)) {
+        localStorage.setItem('lastAutoPdf', todayStr.slice(0,7));
+        const prev = new Date(); prev.setMonth(prev.getMonth() - 1);
+        setTimeout(() => exportMonthPDF(prev), 2000);
+      }
     }
-  }
-  if (navigator.storage && navigator.storage.persist) {
-    navigator.storage.persisted().then(p => { if (!p) navigator.storage.persist(); });
-  }
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persisted().then(p => { if (!p) navigator.storage.persist(); });
+    }
+  });
 
   const _appStartTime = Date.now();
   let _deferredInstall = null;

@@ -60,6 +60,67 @@ function weatherIcon(code) {
   return icons[type] || icons.cloudy;
 }
 
+// Grote, realistische geanimeerde weer-scène (banner). Past zich aan op de
+// actuele weercode + dag/nacht. Alleen transform/opacity-animaties (vloeiend).
+function weatherScene(code, info, cur, day) {
+  const h = new Date().getHours();
+  const isNight = h < 6 || h >= 21;
+
+  let type;
+  if      (code === 0)              type = isNight ? 'clear-night' : 'clear';
+  else if (code <= 2)               type = isNight ? 'partly-night' : 'partly';
+  else if (code === 3)              type = 'cloudy';
+  else if (code <= 48)              type = 'fog';
+  else if (code <= 57)              type = 'drizzle';
+  else if (code <= 67)              type = 'rain';
+  else if (code <= 77)              type = 'snow';
+  else if (code <= 82)              type = 'rain';
+  else                              type = 'storm';
+
+  const sun   = `<div class="wx-sun"><div class="wx-sun-glow"></div><div class="wx-sun-core"></div></div>`;
+  const moon  = `<div class="wx-moon2"><div class="wx-moon-crater" style="top:30%;left:55%"></div><div class="wx-moon-crater" style="top:55%;left:35%;width:5px;height:5px"></div></div>`;
+  const stars = Array.from({ length: 14 }, (_, i) =>
+    `<span class="wx-star2" style="--x:${(i * 37 + 7) % 96}%;--y:${(i * 53 + 5) % 60}%;--d:${(i % 5) * 0.6}s;--s:${i % 3 === 0 ? 2.2 : 1.5}px"></span>`).join('');
+  const cloud = (cls, x, y, scale, dur, delay) =>
+    `<div class="wx-cloud2 ${cls}" style="--x:${x}%;--y:${y}%;--s:${scale};--dur:${dur}s;--delay:${delay}s"></div>`;
+  const rain = (n, cls) => Array.from({ length: n }, (_, i) =>
+    `<span class="wx-rain ${cls}" style="--x:${(i * 100 / n + (i % 3) * 4)}%;--d:${((i * 0.13) % 1).toFixed(2)}s;--dur:${cls === 'heavy' ? 0.55 : 0.85}s"></span>`).join('');
+  const snow = (n) => Array.from({ length: n }, (_, i) =>
+    `<span class="wx-snow" style="--x:${(i * 100 / n)}%;--d:${((i * 0.31) % 2).toFixed(2)}s;--dur:${(3 + (i % 3))}s;--sway:${(i % 2 ? 8 : -8)}px"></span>`).join('');
+  const bolt  = `<div class="wx-flash"></div><svg class="wx-bolt" viewBox="0 0 24 48" fill="none"><path d="M14 2 L5 26 H12 L9 46 L20 20 H13 Z" fill="#fde68a" stroke="#fff" stroke-width="0.5"/></svg>`;
+  const fog   = `<span class="wx-fogband" style="top:38%;--d:0s"></span><span class="wx-fogband" style="top:54%;--d:1.3s"></span><span class="wx-fogband" style="top:70%;--d:2.6s"></span>`;
+
+  let layers = '';
+  switch (type) {
+    case 'clear':        layers = sun; break;
+    case 'clear-night':  layers = stars + moon; break;
+    case 'partly':       layers = sun + cloud('soft', 52, 52, 1, 26, 0); break;
+    case 'partly-night': layers = stars + moon + cloud('soft dim', 52, 55, 1, 28, 0); break;
+    case 'cloudy':       layers = cloud('soft', 22, 40, 1.15, 30, 0) + cloud('soft', 60, 58, 1, 34, 2); break;
+    case 'fog':          layers = cloud('soft dim', 40, 36, 1.2, 32, 0) + fog; break;
+    case 'drizzle':      layers = cloud('grey', 38, 34, 1.15, 30, 0) + rain(8, 'light'); break;
+    case 'rain':         layers = cloud('grey', 28, 32, 1.2, 30, 0) + cloud('grey', 62, 44, 1, 34, 2) + rain(14, ''); break;
+    case 'snow':         layers = cloud('grey', 38, 34, 1.15, 32, 0) + snow(12); break;
+    case 'storm':        layers = cloud('dark', 28, 30, 1.25, 28, 0) + cloud('dark', 62, 42, 1.05, 32, 2) + rain(16, 'heavy') + bolt; break;
+  }
+
+  const min = Math.round(day.temperature_2m_min[0]);
+  const max = Math.round(day.temperature_2m_max[0]);
+  const rainPct = day.precipitation_probability_max[0];
+
+  return `
+    <div class="wx-stage wx-${type}">
+      ${layers}
+      <div class="wx-stage-info">
+        <div class="wx-stage-temp">${Math.round(cur.temperature_2m)}°</div>
+        <div class="wx-stage-sub">
+          <div class="wx-stage-desc">${info.d}</div>
+          <div class="wx-stage-range">${min}° / ${max}°${rainPct != null ? ` · Regen ${rainPct}%` : ''}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
 export async function render(container) {
   const [rides, hizb, todos, cards, goals, habits, habitLog, taxiExpenses] = await Promise.all([
     all('rides'), all('hizb_log'), all('todos'), all('cards'), all('goals'),
@@ -1004,17 +1065,7 @@ async function loadWeather(container) {
     const info = codeInfo(cur.weather_code);
     const opps = rideOpportunities(w);
     body.innerHTML = `
-      <div class="weather-compact">
-        <div class="weather-icon-wrap" style="width:48px;height:48px;flex-shrink:0">${weatherIcon(cur.weather_code)}</div>
-        <div>
-          <div class="weather-temp">${Math.round(cur.temperature_2m)}°</div>
-          <div class="weather-desc">${info.d}</div>
-        </div>
-        <div class="weather-meta">
-          <div class="weather-range">${Math.round(day.temperature_2m_min[0])}° / ${Math.round(day.temperature_2m_max[0])}°</div>
-          <div class="weather-range">Regen: ${day.precipitation_probability_max[0]}%</div>
-        </div>
-      </div>
+      ${weatherScene(cur.weather_code, info, cur, day)}
       ${opps.length ? `
         <div class="weather-opps">
           <div class="weather-opp-label">Rittenradar</div>
