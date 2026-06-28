@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v138** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v139** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -297,6 +297,12 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++14. **Amsterdam-rit banner v139 (28 juni 2026):**
+   - **Taxi-weg-banner nu voor het MAANDDOEL** (Taxi-overzicht, nieuwe "Maanddoel"-kaart met `incomeRoad(monthGoalPct, now)`). De **dagelijkse** voortgang is teruggezet naar de platte balk (`.income-hero-progress`) zoals voorheen.
+   - **Zwarte Mercedes C-klasse taxi** (nieuw `MERC` SVG in `income-road.js`): sedan-silhouet met metallic body-gradient, alloy-velgen (spinnen), Mercedes-ster op de grille, verlicht **daklicht** (`.ir-taxisign`) en koplamp die 's nachts gloeien.
+   - **Amsterdam-vibe:** rij **grachtenpanden** met afwisselende gevels (trap/klok/punt/hals) + ramen die 's nachts twinkelen (`canalHouses()` → `.ir-canal`/`.ir-house`/`.ir-win`), een klassieke **lantaarnpaal** (`.ir-lamp`, gloeit 's nachts) en een geparkeerde **omafiets** (`.ir-bike`). Banner hoger (96px), lucht/quay-gradient dag+nacht.
+   - Alles in gedeeld `js/income-road.js`; CSS in de income-road-sectie; `prefers-reduced-motion` gedekt via `.income-road *`.
 
 +13. **Dashboard ontdubbeld v138 (28 juni 2026):**
    - **Inkomen-hero + Maandoverzicht-kaart van het dashboard verwijderd** — die stonden dubbel met het Taxi-overzicht (dat al een inkomen-hero met dagdoel + Week/Maand/Verwacht-KPI's heeft). Vandaag + Maand zijn nu samengevoegd in de kleine begroetingskaart-stats (`dagstart-stats`: Vandaag · X% / Maand · Y% / Hizb), met de privacy-toggle verplaatst naar de begroeting-top.
