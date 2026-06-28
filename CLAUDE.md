@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v137** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v138** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v137)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v138)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -189,7 +189,7 @@ js/
     suras.js                     — ⚠️ DEAD: 114 suras, niet meer geïmporteerd (oude soera-grid)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v137'
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v138'
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -296,6 +296,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++12. **🏙️ Amsterdam grachten-skyline v138 (28 juni 2026):** unieke sfeer-animatie boven in de maandkaart, op verzoek van user ("iets unieks en gaaf"). `canalSkyline(monthGoalPct, now)` in `dashboard.js` genereert een rij van 8 grachtenpanden met variërende gevels (trap-/punt-/klok-/halsgevel via clip-path/border-radius). De panden **lichten op** naarmate je je maanddoel nadert: behaald = vol in kleur met brandende ramen, nog te verdienen = donker silhouet (`litCount = round(pct/100*8)`). Dag/nacht-lucht volgt de klok (zon/maan/sterren), een bootje vaart over de gracht (`csBoat`) met een lichtje, en de panden weerspiegelen in het water (`.cs-reflection` scaleY(-1) + masker + shimmer). Alles puur CSS transform/opacity; reduced-motion-guard uitgebreid. Staat náást de munt-meter (die blijft het exacte cijfer-percentage tonen).
 
 +11. **Realistische animaties v136 (28 juni 2026):** de "levende animaties" uit v134 opgewaardeerd naar het realisme-niveau van de weer-scène (`weatherScene`), op verzoek van user (referentie = iPhone Weer-app).
    - **🔥 Streak-vlam herontworpen** (`koran.js` markup + CSS): van 2 geroteerde blokjes naar een **meerlagige vlam** — gloed-halo (`sf-glow`), oranje buitentong (`sf-outer`), gele middentong (`sf-mid`), witgloeiende kern (`sf-core`) en blauwe vlambasis (`sf-base`). Elke laag flikkert organisch en asynchroon (`sfFlick1/2/3` met skew+scaleY+drift). lvl-4 = fellere kleuren + sterkere gloed.
