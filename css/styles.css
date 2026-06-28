@@ -6174,3 +6174,129 @@ input, select, textarea {
 .ar-voice-tip-icon,
 .bk-qa svg,
 .bk-section-title svg { color: var(--text-dim); }
+
+/* ══ EXTRA LEVENDE ANIMATIES ═════════════════════════════════════════════ */
+
+/* ── 🚕 Weg naar dagdoel (inkomen-hero) ── */
+.income-road {
+  position: relative; height: 78px; border-radius: 12px; overflow: hidden;
+  margin: 12px 0 10px;
+  background: linear-gradient(180deg, #bfe3ff 0%, #e8f4ff 58%, #cdeec7 58%, #bbe4b4 100%);
+}
+.income-road.ir-night { background: linear-gradient(180deg, #10204a 0%, #1c356b 58%, #233a5e 58%, #1b3050 100%); }
+.ir-sun, .ir-moon { position: absolute; width: 26px; height: 26px; border-radius: 50%; z-index: 1; }
+.ir-sun  { background: radial-gradient(circle at 38% 34%, #fff7d6, #ffd23f 60%, #ffb300); box-shadow: 0 0 18px 5px rgba(255,210,70,.6); animation: irSunPulse 4s ease-in-out infinite; }
+.ir-moon { background: radial-gradient(circle at 36% 32%, #fdfdf6, #dfe6f0 70%, #c2ccdd); box-shadow: 0 0 14px 3px rgba(200,220,255,.45); }
+@keyframes irSunPulse { 0%,100% { box-shadow: 0 0 16px 4px rgba(255,210,70,.5); } 50% { box-shadow: 0 0 22px 7px rgba(255,210,70,.75); } }
+.ir-hills {
+  position: absolute; left: 0; right: 0; bottom: 28px; height: 26px; z-index: 1; opacity: .55;
+  background:
+    radial-gradient(70px 26px at 18% 100%, #9ed293 60%, transparent 61%),
+    radial-gradient(90px 30px at 62% 100%, #8ec983 60%, transparent 61%),
+    radial-gradient(60px 22px at 92% 100%, #a6d89b 60%, transparent 61%);
+}
+.income-road.ir-night .ir-hills { background:
+    radial-gradient(70px 26px at 18% 100%, #1e3556 60%, transparent 61%),
+    radial-gradient(90px 30px at 62% 100%, #1a2e4c 60%, transparent 61%); opacity: .8; }
+.ir-road { position: absolute; left: 0; right: 0; bottom: 0; height: 28px; z-index: 2; background: linear-gradient(180deg, #4c515a, #383c43); }
+.ir-dashes {
+  position: absolute; left: 0; right: -40px; top: 50%; height: 3px;
+  background: repeating-linear-gradient(90deg, #f4d35e 0 18px, transparent 18px 40px);
+  animation: irDash .55s linear infinite;
+}
+@keyframes irDash { to { transform: translateX(-40px); } }
+.ir-flag { position: absolute; right: 10px; bottom: 28px; width: 2.5px; height: 28px; background: #e8e8e8; z-index: 3; }
+.ir-flag::before {
+  content: ''; position: absolute; left: 2.5px; top: 1px; width: 15px; height: 11px;
+  background: conic-gradient(#222 90deg, #fff 0 180deg, #222 0 270deg, #fff 0) 0 0 / 7.5px 5.5px;
+}
+.income-road.ir-win .ir-flag::before { animation: irFlagWave .45s ease-in-out infinite; transform-origin: left center; }
+@keyframes irFlagWave { 0%,100% { transform: skewY(0); } 50% { transform: skewY(-7deg); } }
+.ir-car { position: absolute; bottom: 13px; z-index: 4; transform: translateX(-50%); transition: left 1.1s var(--ease-out); animation: irBob 1.5s ease-in-out infinite; }
+.ir-car-svg { width: 48px; height: auto; display: block; filter: drop-shadow(0 3px 3px rgba(0,0,0,.28)); }
+@keyframes irBob { 0%,100% { transform: translateX(-50%) translateY(0) rotate(0); } 50% { transform: translateX(-50%) translateY(-1.5px) rotate(-.4deg); } }
+.ir-wheel { transform-box: fill-box; transform-origin: center; animation: irSpin .42s linear infinite; }
+@keyframes irSpin { to { transform: rotate(360deg); } }
+
+/* ── 🔥 Streak-vlam (Koran) ── */
+.streak-flame { position: relative; width: 24px; height: 30px; display: inline-block; vertical-align: middle; }
+.streak-flame i { position: absolute; bottom: 0; left: 50%; border-radius: 0 50% 50% 50%; }
+.streak-flame .sf-1 {
+  width: 18px; height: 18px; transform: translateX(-50%) rotate(-45deg);
+  background: linear-gradient(to top right, #ff5722, #ff9800 55%, #ffd54f);
+  box-shadow: 0 0 14px rgba(255,120,40,.55);
+  animation: sfFlick 1.05s ease-in-out infinite alternate;
+}
+.streak-flame .sf-2 {
+  width: 10px; height: 10px; transform: translateX(-50%) rotate(-45deg);
+  background: linear-gradient(to top right, #ffb300, #fff59d);
+  animation: sfFlick .85s ease-in-out infinite alternate-reverse;
+}
+@keyframes sfFlick {
+  0%   { transform: translateX(-50%) rotate(-45deg) scale(1); }
+  100% { transform: translateX(-52%) rotate(-45deg) scale(1.08, 1.14); }
+}
+.streak-flame.lvl-1 { transform: scale(.62); opacity: .92; }
+.streak-flame.lvl-2 { transform: scale(.85); }
+.streak-flame.lvl-3 { transform: scale(1.08); }
+.streak-flame.lvl-4 { transform: scale(1.3); filter: drop-shadow(0 0 7px rgba(255,140,40,.8)); }
+.streak-flame.lvl-4 .sf-1 { background: linear-gradient(to top right, #ff3d00, #ff9100 50%, #ffe57f); }
+
+/* ── 💧 Spaarpot-vloeistof ── */
+.pot-glass {
+  position: relative; width: 46px; height: 46px; flex-shrink: 0;
+  border-radius: 50%; overflow: hidden;
+  background: rgba(255,255,255,.05);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.14), inset 0 -3px 8px rgba(0,0,0,.18);
+}
+.pl-fill {
+  position: absolute; left: 0; right: 0; bottom: 0; height: var(--pct, 0%);
+  background: linear-gradient(180deg, #5fd3c0, #2bb8a3 80%);
+  transition: height 1.1s var(--ease-out);
+}
+.pl-wave, .pl-wave2 {
+  position: absolute; left: -50%; width: 200%; height: 16px; border-radius: 43%;
+}
+.pl-wave  { top: -7px; background: #74dccb; opacity: .85; animation: plWave 3.4s linear infinite; }
+.pl-wave2 { top: -5px; background: #2bb8a3; opacity: .9; animation: plWave 5s linear infinite reverse; }
+@keyframes plWave { from { transform: translateX(0) rotate(0); } to { transform: translateX(40%) rotate(360deg); } }
+.pl-emoji { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 3; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
+
+/* ── 🏆 Badge-unlock cinematisch ── */
+.badge-unlock-backdrop {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.6);
+  -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
+  animation: fadeIn .25s ease;
+}
+.badge-unlock-backdrop.closing { animation: buFade .3s ease forwards; }
+@keyframes buFade { to { opacity: 0; } }
+.badge-unlock { text-align: center; animation: buPop .55s var(--spring) both; padding: 24px; }
+.bu-medallion {
+  position: relative; width: 124px; height: 124px; margin: 0 auto 18px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #f6e0a0, #cba75c 62%, #a07d2c);
+  box-shadow: 0 0 0 7px rgba(201,167,90,.22), 0 14px 36px rgba(0,0,0,.45), inset 0 3px 7px rgba(255,255,255,.55);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  animation: buSpin 1s var(--spring) both;
+}
+.bu-ic { width: 56px; height: 56px; color: #3a2c08; }
+.bu-shine {
+  position: absolute; top: 0; left: -60%; width: 55%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.9), transparent);
+  transform: skewX(-20deg); animation: buShine 1.6s ease-in-out .6s infinite;
+}
+.bu-check {
+  position: absolute; bottom: 8px; right: 16px; width: 28px; height: 28px; border-radius: 50%;
+  background: #5dd49a; color: #08361f; font-weight: 800; font-size: .9rem;
+  display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 7px rgba(0,0,0,.35);
+}
+.bu-title { color: var(--gold-bright); font-size: .72rem; text-transform: uppercase; letter-spacing: .14em; font-weight: 700; }
+.bu-name { color: #fff; font-size: 1.45rem; font-weight: 700; margin-top: 5px; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
+@keyframes buPop  { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes buSpin { from { transform: rotateY(180deg) scale(.7); } to { transform: rotateY(0) scale(1); } }
+@keyframes buShine { 0% { left: -60%; } 55%, 100% { left: 125%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .income-road *, .streak-flame i, .pl-wave, .pl-wave2, .bu-medallion, .bu-shine { animation: none !important; }
+}

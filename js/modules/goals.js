@@ -244,7 +244,12 @@ function renderPots(container, pots) {
     return `
       <div class="pot-item">
         <div class="pot-item-top">
-          <div class="pot-icon">${p.emoji || '🏺'}</div>
+          <div class="pot-glass" aria-hidden="true">
+            <div class="pl-fill" style="--pct:${pct}%">
+              <div class="pl-wave"></div><div class="pl-wave2"></div>
+            </div>
+            <div class="pl-emoji">${p.emoji || '🏺'}</div>
+          </div>
           <div class="pot-info">
             <div class="pot-name">${escapeHTML(p.name)}</div>
             <div class="pot-amount">

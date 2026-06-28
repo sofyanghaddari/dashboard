@@ -1,4 +1,29 @@
 // Lichte canvas-confetti + Nederlandse motivatie-popups met humor
+import { icon } from '../icons.js';
+
+// 🏆 Cinematische badge-onthulling: medaillon draait in met shine-sweep + confetti.
+export function celebrateBadge(badge) {
+  if (!badge) return;
+  confettiBig();
+  const el = document.createElement('div');
+  el.className = 'badge-unlock-backdrop';
+  const name = String(badge.name || '').replace(/[<>&]/g, '');
+  el.innerHTML = `
+    <div class="badge-unlock">
+      <div class="bu-medallion">
+        <div class="bu-shine"></div>
+        ${icon(badge.icon, 'bu-ic')}
+        <div class="bu-check">✓</div>
+      </div>
+      <div class="bu-title">Badge ontgrendeld</div>
+      <div class="bu-name">${name}</div>
+    </div>`;
+  document.body.appendChild(el);
+  let closed = false;
+  const close = () => { if (closed) return; closed = true; el.classList.add('closing'); setTimeout(() => el.remove(), 320); };
+  el.addEventListener('click', close);
+  setTimeout(close, 3200);
+}
 
 const TASK_MOTIVATION = [
   '🪖 Strijder, op naar de volgende!',

@@ -11,6 +11,9 @@ import { openQibla } from '../qibla.js';
 let _reminderTimer = null;
 const CIRCUMFERENCE = 2 * Math.PI * 50;
 
+// 🔥 Streak-vlam intensiteit: hoe langer de reeks, hoe groter/feller de vlam.
+function flameLevel(s) { return s >= 100 ? 4 : s >= 30 ? 3 : s >= 7 ? 2 : s >= 1 ? 1 : 0; }
+
 // ── Hizb voortgang helpers ──────────────────────────────────────────────────
 function getHizbVoortgang() {
   try { return JSON.parse(localStorage.getItem('hizb_voortgang') || '{}'); }
@@ -127,7 +130,7 @@ async function renderHizb(container) {
           <div class="cp-inner">
             ${todayRec
               ? `<div class="cp-done-check" style="color:var(--ok)">✓</div>`
-              : `<div class="cp-emoji">${streak > 0 ? icon('flame') : icon('book')}</div>`}
+              : `<div class="cp-emoji">${streak > 0 ? `<span class="streak-flame lvl-${flameLevel(streak)}" aria-hidden="true"><i class="sf-1"></i><i class="sf-2"></i></span>` : icon('book')}</div>`}
             <div class="cp-label">${todayRec ? (todayCount >= 2 ? '2× gedaan' : 'Voltooid') : (doneThisMonth + '/' + daysIntoMonth)}</div>
           </div>
         </div>
