@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v136** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v138** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v136)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v137)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -189,7 +189,7 @@ js/
     suras.js                     — ⚠️ DEAD: 114 suras, niet meer geïmporteerd (oude soera-grid)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v136'
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v137'
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -297,10 +297,16 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 ## Recente beslissingen (chronologisch, meest recent boven)
 
-+11. **NS trein-storingen + meldingen v137 (28 juni 2026):**
-   - **Dashboard NS-kaart** ("NS · trein-storingen", `loadNs()`/`renderNs()` in `dashboard.js`) haalt live storingen op via een door de gebruiker ingestelde **proxy-URL** (`localStorage.nsProxyUrl`). Statische PWA → directe NS-calls kunnen niet (CORS + sleutel mag niet in client). Zonder proxy: nette uitleg + "Proxy-URL instellen"-knop, géén nepdata.
++12. **NS trein-storingen — meldingen v138 (28 juni 2026):**
+   - **Dashboard NS-kaart** ("NS · trein-storingen", `loadNs()`/`renderNs()` in `dashboard.js`) haalt live storingen op via een door de gebruiker ingestelde **proxy-URL** (`localStorage.nsProxyUrl`). Statische PWA → directe NS-calls kunnen niet (CORS + sleutel mag niet in client). Zonder proxy: nette uitleg + "Proxy-URL instellen"-knop, géén nepdata. (Kaart + proxy-scaffolding zaten al op main in v137.)
    - **Proxy** = gratis **Cloudflare Worker** (`proxy/ns-worker.js`): bewaart `NS_API_KEY` als secret, roept NS Reisinformatie `/disruptions/v3?isActive=true` aan, voegt CORS toe. Setup-gids: `proxy/README-NS-proxy.md` (NS-sleutel via apiportal.ns.nl → Worker deployen → secret → URL in app plakken).
-   - **Meldingen** (`checkNsDisruptions()` in `notifications.js`, gewired in `checkAllNotifications`): meldt een **nieuwe** storing met "Amsterdam" in de titel = kans op ritten. Dedup via `localStorage.ns_seen_ids`; eerste run seedt alleen (geen melding-explosie). App-open/foreground check (zelfde patroon als `checkWeatherAlert`), nog géén true-background push.
+   - **NIEUW v138 — Meldingen** (`checkNsDisruptions()` in `notifications.js`, gewired in `checkAllNotifications`): meldt een **nieuwe** storing met "Amsterdam" in de titel = kans op ritten. Dedup via `localStorage.ns_seen_ids`; eerste run seedt alleen (geen melding-explosie). App-open/foreground check (zelfde patroon als `checkWeatherAlert`), nog géén true-background push.
+
++11. **Realistische animaties v136 (28 juni 2026):** de "levende animaties" uit v134 opgewaardeerd naar het realisme-niveau van de weer-scène (`weatherScene`), op verzoek van user (referentie = iPhone Weer-app).
+   - **🔥 Streak-vlam herontworpen** (`koran.js` markup + CSS): van 2 geroteerde blokjes naar een **meerlagige vlam** — gloed-halo (`sf-glow`), oranje buitentong (`sf-outer`), gele middentong (`sf-mid`), witgloeiende kern (`sf-core`) en blauwe vlambasis (`sf-base`). Elke laag flikkert organisch en asynchroon (`sfFlick1/2/3` met skew+scaleY+drift). lvl-4 = fellere kleuren + sterkere gloed.
+   - **💧 Spaarpot realistischer** (CSS): glasreflectie-overlay (`.pot-glass::after`, sheen-boog + lichtvlek), opstijgende belletjes (`.pl-fill::before/::after` → `plBubble`), iets diepere vloeistof-gradient.
+   - **🚕 Taxi-weg uitgebreid** (`dashboard.js` markup + CSS): draaiende zonnestralen (`.ir-sun::before`, conic-mask), drijvende parallax-wolkjes (`.ir-cloud`), uitlaatpluimpjes achter de auto (`.ir-exhaust`) en een koplampbundel 's nachts (`.ir-beam`).
+   - Alles puur transform/opacity; `prefers-reduced-motion`-guard uitgebreid met de nieuwe pseudo-elementen.
 
 +10. **Vijf extra levende animaties v136 (28 juni 2026):**
    - **🌅 Dag/nacht-lucht** (`skyScene()` in `dashboard.js`): achter de begroetingskaart een subtiele hemel die het tijdstip volgt — zon + drijvende wolkjes overdag, maan + twinkelende sterren 's nachts, dauw/schemering-gradiënt. Onder een fade-mask zodat tekst leesbaar blijft.

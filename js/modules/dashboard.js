@@ -101,13 +101,18 @@ function incomeRoad(pct, now) {
     <g class="ir-wheel"><circle cx="17" cy="29" r="5" fill="#1f2937"/><circle cx="17" cy="29" r="2" fill="#9aa3ad"/><line x1="17" y1="25" x2="17" y2="33" stroke="#9aa3ad" stroke-width="1"/><line x1="13" y1="29" x2="21" y2="29" stroke="#9aa3ad" stroke-width="1"/></g>
     <g class="ir-wheel"><circle cx="43" cy="29" r="5" fill="#1f2937"/><circle cx="43" cy="29" r="2" fill="#9aa3ad"/><line x1="43" y1="25" x2="43" y2="33" stroke="#9aa3ad" stroke-width="1"/><line x1="39" y1="29" x2="47" y2="29" stroke="#9aa3ad" stroke-width="1"/></g>
   </svg>`;
+  const clouds = isNight
+    ? `<span class="ir-cloud" style="--y:14px;--cs:.8;--cd:48s;--cdl:0s"></span>`
+    : `<span class="ir-cloud" style="--y:12px;--cs:.9;--cd:42s;--cdl:0s"></span>
+       <span class="ir-cloud" style="--y:26px;--cs:.65;--cd:60s;--cdl:-14s"></span>`;
   return `
     <div class="income-road ${isNight ? 'ir-night' : ''} ${reached ? 'ir-win' : ''}">
       <div class="${isNight ? 'ir-moon' : 'ir-sun'}" style="left:${sunLeft}%;top:${sunTop}px"></div>
+      ${clouds}
       <div class="ir-hills"></div>
       <div class="ir-road"><div class="ir-dashes"></div></div>
       <div class="ir-flag"></div>
-      <div class="ir-car" style="left:${carLeft}%">${taxi}</div>
+      <div class="ir-car" style="left:${carLeft}%"><span class="ir-exhaust"></span>${isNight ? '<span class="ir-beam"></span>' : ''}${taxi}</div>
     </div>`;
 }
 
