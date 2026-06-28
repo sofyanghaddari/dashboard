@@ -10,6 +10,7 @@ import { getMascotState, shouldShame, pickShame } from '../mascot.js';
 import { detectInsights, goalFeasibility, goalTrajectoryPath } from '../insights.js';
 import { initPrivacyToggle } from '../privacy.js';
 import { initCountUps } from '../animate.js';
+import { qiblaCard, initQiblaCard } from '../qibla.js';
 
 let weatherAbortCtrl = null;
 
@@ -274,6 +275,9 @@ export async function render(container) {
       </button>
     </div>
 
+    <!-- QIBLA -->
+    ${qiblaCard()}
+
     <!-- KALENDER KNOPPEN -->
     <div class="db-cal-btns">
       <button class="btn secondary" id="open-calendar">${icon('calendar')} Kalender</button>
@@ -410,6 +414,7 @@ export async function render(container) {
   loadWeather(container);
   loadNs(container);
   initCountUps(container);
+  initQiblaCard(container);
   bindDayWidgets(container);
   _injectArabicVoiceTip(container);
   container.querySelector('#open-calendar').onclick = () => window.openCalendar && window.openCalendar();

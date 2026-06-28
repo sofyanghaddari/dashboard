@@ -298,6 +298,12 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 ## Recente beslissingen (chronologisch, meest recent boven)
 
++15. **Qibla op dashboard + kompas herontworpen v139 (28 juni 2026):**
+   - **Qibla-kaart op het dashboard** (`qiblaCard()` + `initQiblaCard()` in `js/qibla.js`, geplaatst ná de quick-actions in `dashboard.js`): premium kaart met mini-kompas-schijf, richting (bv. "126° ZO"), afstand hemelsbreed naar Mekka en "Tik om je te richten". De naald op de schijf draait naar de qibla-peiling t.o.v. noord. Locatie via `localStorage.userLocation` (fallback Amsterdam), probeert stil een verse `getCurrentPosition`. Tik → opent het volledige kompas. De Koran-subtab-knop blijft als extra ingang.
+   - **Volledig kompas (`openQibla`) opgewaardeerd v3:** warmere radiale achtergrond, en een realistische "richting Mekka"-animatie bij uitlijning — lichtstraal omhoog naar de Kaäba (`#ql-beam`), uitdijende lock-ringen (`spawnLockRings`), opstijgende gouden stofdeeltjes (`spawnSparkles` → `ql-dust`), gloeiende doeldriehoek (`.ql-aligned-tri`). Alles met `prefers-reduced-motion`-guard.
+   - **CSS:** sectie "🕋 QIBLA — dashboard-kaart" onderaan `styles.css` (`.qibla-card`, `.ql-card-*`). Kompas-modal-stijlen blijven in `qibla.js` (`injectStyles`).
+   - **Bulk-notities-import (v138):** "Plakken"-knop in Notities (`openBulkImport`/`parseBulk`) splitst geplakte tekst op `---`/lege regel/per regel; herkent ook door iOS auto-gecorrigeerde lange streepjes (— –). Bedoeld voor iPhone-notities-migratie via een Shortcut die alle notities met `---` samenvoegt.
+
 +13. **Dashboard ontdubbeld v138 (28 juni 2026):**
    - **Inkomen-hero + Maandoverzicht-kaart van het dashboard verwijderd** — die stonden dubbel met het Taxi-overzicht (dat al een inkomen-hero met dagdoel + Week/Maand/Verwacht-KPI's heeft). Vandaag + Maand zijn nu samengevoegd in de kleine begroetingskaart-stats (`dagstart-stats`: Vandaag · X% / Maand · Y% / Hizb), met de privacy-toggle verplaatst naar de begroeting-top.
    - **Taxi-weg-animatie verhuisd** van dashboard naar het Taxi-overzicht (vervangt daar de platte progressbalk in de inkomen-hero). `incomeRoad()` staat nu in een gedeeld bestand `js/income-road.js` (inclusief de v136-realisme-upgrade: wolken/uitlaat/koplampbundel). `coinMeter()` (munt-meter) is verwijderd met de maand-kaart.
