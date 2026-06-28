@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v137** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v138** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -298,11 +298,16 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 ## Recente beslissingen (chronologisch, meest recent boven)
 
-+12. **Dashboard ontdubbeld v137 (28 juni 2026):**
++13. **Dashboard ontdubbeld v138 (28 juni 2026):**
    - **Inkomen-hero + Maandoverzicht-kaart van het dashboard verwijderd** — die stonden dubbel met het Taxi-overzicht (dat al een inkomen-hero met dagdoel + Week/Maand/Verwacht-KPI's heeft). Vandaag + Maand zijn nu samengevoegd in de kleine begroetingskaart-stats (`dagstart-stats`: Vandaag · X% / Maand · Y% / Hizb), met de privacy-toggle verplaatst naar de begroeting-top.
    - **Taxi-weg-animatie verhuisd** van dashboard naar het Taxi-overzicht (vervangt daar de platte progressbalk in de inkomen-hero). `incomeRoad()` staat nu in een gedeeld bestand `js/income-road.js` (inclusief de v136-realisme-upgrade: wolken/uitlaat/koplampbundel). `coinMeter()` (munt-meter) is verwijderd met de maand-kaart.
    - **Koran- en Arabisch-previewkaarten verwijderd** — die dupliceerden de quick-action-knoppen. De hizb-streak is nu opgenomen in de Koran quick-action-subtekst ("Vandaag ✓ · 12d streak").
    - Netto resultaat: hoofdpagina korter en minder dubbel; alle inkomensdetails leven in Taxi/Stats.
+
++12. **NS trein-storingen — meldingen v138 (28 juni 2026):**
+   - **Dashboard NS-kaart** ("NS · trein-storingen", `loadNs()`/`renderNs()` in `dashboard.js`) haalt live storingen op via een door de gebruiker ingestelde **proxy-URL** (`localStorage.nsProxyUrl`). Statische PWA → directe NS-calls kunnen niet (CORS + sleutel mag niet in client). Zonder proxy: nette uitleg + "Proxy-URL instellen"-knop, géén nepdata. (Kaart + proxy-scaffolding zaten al op main in v137.)
+   - **Proxy** = gratis **Cloudflare Worker** (`proxy/ns-worker.js`): bewaart `NS_API_KEY` als secret, roept NS Reisinformatie `/disruptions/v3?isActive=true` aan, voegt CORS toe. Setup-gids: `proxy/README-NS-proxy.md` (NS-sleutel via apiportal.ns.nl → Worker deployen → secret → URL in app plakken).
+   - **NIEUW v138 — Meldingen** (`checkNsDisruptions()` in `notifications.js`, gewired in `checkAllNotifications`): meldt een **nieuwe** storing met "Amsterdam" in de titel = kans op ritten. Dedup via `localStorage.ns_seen_ids`; eerste run seedt alleen (geen melding-explosie). App-open/foreground check (zelfde patroon als `checkWeatherAlert`), nog géén true-background push.
 
 +11. **Realistische animaties v136 (28 juni 2026):** de "levende animaties" uit v134 opgewaardeerd naar het realisme-niveau van de weer-scène (`weatherScene`), op verzoek van user (referentie = iPhone Weer-app).
    - **🔥 Streak-vlam herontworpen** (`koran.js` markup + CSS): van 2 geroteerde blokjes naar een **meerlagige vlam** — gloed-halo (`sf-glow`), oranje buitentong (`sf-outer`), gele middentong (`sf-mid`), witgloeiende kern (`sf-core`) en blauwe vlambasis (`sf-base`). Elke laag flikkert organisch en asynchroon (`sfFlick1/2/3` met skew+scaleY+drift). lvl-4 = fellere kleuren + sterkere gloed.
