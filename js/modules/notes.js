@@ -227,8 +227,10 @@ function parseBulk(text, mode) {
   if (!text || !text.trim()) return [];
   let chunks;
   if (mode === 'hr') {
-    // splitsen op een regel met enkel --- of === (markdown-scheiding / iPhone-shortcut)
-    chunks = text.split(/^[ \t]*(?:-{3,}|={3,})[ \t]*$/m);
+    // splitsen op een regel die enkel uit streepjes/isgelijktekens bestaat.
+    // iPhone verandert "---" automatisch in een lang streepje (— of –),
+    // dus we accepteren -, –, — (1 of meer) én === als scheiding.
+    chunks = text.split(/^[ \t]*(?:[-–—]+|={2,})[ \t]*$/m);
   } else if (mode === 'blank') {
     // splitsen op één of meer lege regels
     chunks = text.split(/\n[ \t]*\n+/);
