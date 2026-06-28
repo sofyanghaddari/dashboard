@@ -50,8 +50,11 @@ export async function render(container) {
       <button class="add-tile" id="add" style="flex:1">
         <span class="at-plus">+</span> ${view === 'ideas' ? 'Nieuw idee' : 'Nieuwe notitie'}
       </button>
+      <button class="btn secondary notes-import-btn" id="bulk-paste" title="Meerdere notities in één keer plakken">
+        ${icon('note')} Plakken
+      </button>
       <button class="btn secondary notes-import-btn" id="import-doc" title="Document importeren als notitie">
-        ${icon('doc')} Importeren
+        ${icon('doc')} Bestand
       </button>
     </div>
     <input type="file" id="import-file" accept="${SUPPORTED_EXTENSIONS}" style="display:none" />
@@ -132,6 +135,7 @@ export async function render(container) {
     container.dataset.notesView = 'ideas'; render(container);
   };
   container.querySelector('#add').onclick = () => openEditor(container, null, view === 'ideas');
+  container.querySelector('#bulk-paste').onclick = () => openBulkImport(container, view === 'ideas');
 
   const searchInput = container.querySelector('#notes-search');
   let _searchTimer = null;
@@ -216,6 +220,103 @@ function openImportProgress(container, file, isIdea) {
     overlay.remove();
     toastErr(e.message || 'Importeren mislukt');
   });
+}
+
+// Splitst geplakte tekst in losse notities. eerste niet-lege regel = titel, rest = body.
+function parseBulk(text, mode) {
+  if (!text || !text.trim()) return [];
+  let chunks;
+  if (mode === 'hr') {
+    // splitsen op een regel die enkel uit streepjes/isgelijktekens bestaat.
+    // iPhone verandert "---" automatisch in een lang streepje (— of –),
+    // dus we accepteren -, –, — (1 of meer) én === als scheiding.
+    chunks = text.split(/^[ \t]*(?:[-–—]+|={2,})[ \t]*$/m);
+  } else if (mode === 'blank') {
+    // splitsen op één of meer lege regels
+    chunks = text.split(/\n[ \t]*\n+/);
+  } else { // 'line' — elke regel een aparte notitie
+    chunks = text.split(/\n+/);
+  }
+  return chunks
+    .map(c => c.replace(/\r/g, '').trim())
+    .filter(Boolean)
+    .map(chunk => {
+      const lines = chunk.split('\n');
+      let title = (lines.shift() || '').replace(/^#+\s*/, '').trim();
+      const body = lines.join('\n').trim();
+      if (title.length > 80) {           // hele lange eerste regel: niet als titel forceren
+        return { title: title.slice(0, 60).trim() + '…', body: chunk };
+      }
+      return { title: title || '(geen titel)', body };
+    });
+}
+
+function openBulkImport(container, isIdea) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-backdrop';
+  overlay.innerHTML = `
+    <div class="modal">
+      <button type="button" class="modal-close" id="bi-x" aria-label="Sluiten">×</button>
+      <h2>${isIdea ? 'Ideeën' : 'Notities'} plakken</h2>
+      <p style="opacity:.7;font-size:.85rem;margin:.2rem 0 .9rem">
+        Plak hieronder je iPhone-notities. Elke notitie wordt los opgeslagen — de eerste regel wordt de titel.
+      </p>
+      <label>Scheiding tussen notities</label>
+      <select id="bi-mode">
+        <option value="hr">Een regel met --- (aanbevolen)</option>
+        <option value="blank">Een lege regel ertussen</option>
+        <option value="line">Elke regel = aparte notitie</option>
+      </select>
+      <label style="margin-top:.7rem">Tekst</label>
+      <textarea id="bi-text" rows="11" placeholder="Plak hier je notities…" style="font-family:'SF Mono',Consolas,monospace;font-size:.9rem"></textarea>
+      <div id="bi-count" style="font-size:.85rem;opacity:.7;margin-top:.5rem">Nog niets geplakt</div>
+      <div class="modal-footer row">
+        <button type="button" class="btn secondary" id="bi-cancel">Annuleren</button>
+        <button type="button" class="btn" id="bi-save" disabled>Importeren</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const textEl  = overlay.querySelector('#bi-text');
+  const modeEl  = overlay.querySelector('#bi-mode');
+  const countEl = overlay.querySelector('#bi-count');
+  const saveBtn = overlay.querySelector('#bi-save');
+
+  const refresh = () => {
+    const parsed = parseBulk(textEl.value, modeEl.value);
+    const n = parsed.length;
+    countEl.textContent = n
+      ? `${n} ${n === 1 ? 'notitie' : 'notities'} herkend`
+      : 'Nog niets herkend';
+    saveBtn.disabled = n === 0;
+    return parsed;
+  };
+  textEl.oninput = refresh;
+  modeEl.onchange = refresh;
+
+  const close = () => overlay.remove();
+  overlay.querySelector('#bi-cancel').onclick = close;
+  overlay.querySelector('#bi-x').onclick      = close;
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+  saveBtn.onclick = async () => {
+    const parsed = parseBulk(textEl.value, modeEl.value);
+    if (!parsed.length) return;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Bezig…';
+    const now = Date.now();
+    let i = 0;
+    for (const { title, body } of parsed) {
+      // iets oplopende timestamps zodat de volgorde van plakken bewaard blijft
+      const ts = new Date(now + i++).toISOString();
+      await put('notes', { id: uid(), title, body, isIdea, createdAt: ts, updatedAt: ts });
+    }
+    ok(`${parsed.length} ${parsed.length === 1 ? 'notitie' : 'notities'} geïmporteerd`);
+    close();
+    render(container);
+  };
+
+  setTimeout(() => textEl.focus(), 100);
 }
 
 function openEditor(container, existing, isIdea = false, prefill = {}) {
