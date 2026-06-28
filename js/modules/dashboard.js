@@ -10,6 +10,7 @@ import { getMascotState, shouldShame, pickShame } from '../mascot.js';
 import { detectInsights, goalFeasibility, goalTrajectoryPath } from '../insights.js';
 import { initPrivacyToggle } from '../privacy.js';
 import { initCountUps } from '../animate.js';
+import { qiblaCard, initQiblaCard } from '../qibla.js';
 
 let weatherAbortCtrl = null;
 
@@ -81,41 +82,6 @@ function weatherScene(code, info, cur, day) {
     </div>`;
 }
 
-// 🚕 "Weg naar je dagdoel": autootje schuift naar inkomen-tot-nu-toe / dagdoel,
-// met de zonnestand van het moment. Schuift mee zodra je inkomen bijvult.
-function incomeRoad(pct, now) {
-  const hr = now.getHours() + now.getMinutes() / 60;
-  const isNight = hr < 6 || hr >= 21;
-  const dayPos = Math.min(1, Math.max(0, (hr - 6) / 15));
-  const sunLeft = (8 + dayPos * 82).toFixed(1);
-  const sunTop  = Math.max(5, 50 - Math.sin(dayPos * Math.PI) * 42).toFixed(0);
-  const carLeft = Math.min(95, Math.max(3, pct));
-  const reached = pct >= 100;
-  const taxi = `<svg viewBox="0 0 60 34" class="ir-car-svg" aria-hidden="true">
-    <path d="M9 21 L15 11 H37 L47 21 Z" fill="#f7c948"/>
-    <rect x="3" y="19" width="54" height="10" rx="3" fill="#f7c948"/>
-    <rect x="24" y="6" width="12" height="5" rx="1.5" fill="#1f2937"/>
-    <rect x="16" y="12.5" width="9" height="6.5" rx="1" fill="#cfe8ff"/>
-    <rect x="27" y="12.5" width="9" height="6.5" rx="1" fill="#cfe8ff"/>
-    <rect x="2.5" y="22" width="6" height="3" rx="1" fill="#e9b104"/>
-    <g class="ir-wheel"><circle cx="17" cy="29" r="5" fill="#1f2937"/><circle cx="17" cy="29" r="2" fill="#9aa3ad"/><line x1="17" y1="25" x2="17" y2="33" stroke="#9aa3ad" stroke-width="1"/><line x1="13" y1="29" x2="21" y2="29" stroke="#9aa3ad" stroke-width="1"/></g>
-    <g class="ir-wheel"><circle cx="43" cy="29" r="5" fill="#1f2937"/><circle cx="43" cy="29" r="2" fill="#9aa3ad"/><line x1="43" y1="25" x2="43" y2="33" stroke="#9aa3ad" stroke-width="1"/><line x1="39" y1="29" x2="47" y2="29" stroke="#9aa3ad" stroke-width="1"/></g>
-  </svg>`;
-  const clouds = isNight
-    ? `<span class="ir-cloud" style="--y:14px;--cs:.8;--cd:48s;--cdl:0s"></span>`
-    : `<span class="ir-cloud" style="--y:12px;--cs:.9;--cd:42s;--cdl:0s"></span>
-       <span class="ir-cloud" style="--y:26px;--cs:.65;--cd:60s;--cdl:-14s"></span>`;
-  return `
-    <div class="income-road ${isNight ? 'ir-night' : ''} ${reached ? 'ir-win' : ''}">
-      <div class="${isNight ? 'ir-moon' : 'ir-sun'}" style="left:${sunLeft}%;top:${sunTop}px"></div>
-      ${clouds}
-      <div class="ir-hills"></div>
-      <div class="ir-road"><div class="ir-dashes"></div></div>
-      <div class="ir-flag"></div>
-      <div class="ir-car" style="left:${carLeft}%"><span class="ir-exhaust"></span>${isNight ? '<span class="ir-beam"></span>' : ''}${taxi}</div>
-    </div>`;
-}
-
 // 🌅 Dag/nacht-lucht achter de begroeting: zon overdag, maan + twinkelende sterren 's nachts.
 function skyScene(now) {
   const hr = now.getHours() + now.getMinutes() / 60;
@@ -134,69 +100,6 @@ function skyScene(now) {
   let cloud = '';
   if (phase === 'day' || phase === 'dawn') cloud = '<div class="sky-cloud sky-cloud-1"></div><div class="sky-cloud sky-cloud-2"></div>';
   return `<div class="sky-scene sky-${phase}" aria-hidden="true">${orb}${stars}${cloud}</div>`;
-}
-
-// 🏙️ Amsterdam grachten-skyline: jouw stukje stad licht op / wordt volgebouwd
-// naarmate je je maanddoel nadert. Donkere panden = nog te verdienen, verlichte
-// grachtenpanden met brandende ramen = behaald. Dag/nacht-lucht volgt de klok,
-// een bootje vaart over de gracht met weerspiegeling in het water.
-function canalSkyline(pct, now) {
-  const hr = now.getHours() + now.getMinutes() / 60;
-  let phase;
-  if      (hr < 5.5 || hr >= 21) phase = 'night';
-  else if (hr < 8)               phase = 'dawn';
-  else if (hr < 18.5)            phase = 'day';
-  else if (hr < 20)              phase = 'dusk';
-  else                           phase = 'night';
-
-  const palette = ['#7d3b2e', '#8a4636', '#6b4a2f', '#3f5a3a', '#5a4334', '#774033', '#46506a', '#86553a'];
-  const gables  = ['trap', 'punt', 'klok', 'hals'];
-  const N = 8;
-  const p = Math.max(0, Math.min(100, pct));
-  const litCount = Math.round(p / 100 * N);
-
-  let row = '';
-  for (let i = 0; i < N; i++) {
-    const h = 44 + ((i * 37) % 5) * 6;        // 44..68px
-    const w = 26 + ((i * 53) % 4) * 4;        // 26..38px
-    const color = palette[i % palette.length];
-    const gable = gables[(i * 7) % gables.length];
-    const lit = i < litCount;
-    const rows = Math.max(2, Math.min(4, Math.round(h / 18)));
-    let wins = '';
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < 2; c++) {
-        const on = lit && (((i + r * 2 + c) * 13) % 5 !== 0);
-        wins += `<i class="cw${on ? ' on' : ''}"></i>`;
-      }
-    }
-    row += `<div class="ch ch-${gable}${lit ? ' lit' : ''}" style="--w:${w}px;--h:${h}px;--c:${color}"><div class="ch-windows">${wins}</div></div>`;
-  }
-
-  const orb = phase === 'night' ? '<div class="cs-moon"></div>' : '<div class="cs-sun"></div>';
-  const stars = (phase === 'night' || phase === 'dusk')
-    ? Array.from({ length: 7 }, (_, i) => `<i class="cs-star" style="left:${(i * 14 + 6) % 92}%;top:${(i * 23 + 5) % 34}px;animation-delay:${(i % 4) * 0.6}s"></i>`).join('')
-    : '';
-
-  return `<div class="canal-scene cs-${phase}" role="img" aria-label="${p}% van je maanddoel — ${litCount} van ${N} grachtenpanden verlicht">
-    ${orb}${stars}
-    <div class="cs-houses">${row}</div>
-    <div class="cs-quay"></div>
-    <div class="cs-water">
-      <div class="cs-reflection"><div class="cs-houses">${row}</div></div>
-      <div class="cs-shimmer"></div>
-      <div class="cs-boat"><span class="cs-boat-light"></span></div>
-    </div>
-  </div>`;
-}
-
-// 💸 Munt-meter: groeiende gouden muntenstapel-balk i.p.v. een platte progressbalk.
-function coinMeter(pct) {
-  const p = Math.max(0, Math.min(100, pct));
-  return `<div class="coin-meter" role="img" aria-label="${p}% van maanddoel">
-    <div class="coin-fill" style="width:${p}%"><span class="coin-shimmer"></span></div>
-    <div class="coin-disc" style="left:${p}%">€</div>
-  </div>`;
 }
 
 export async function render(container) {
@@ -319,20 +222,20 @@ export async function render(container) {
           <div class="dagstart-greeting">${begroeting}, ${escapeHTML(userName)}</div>
           <div class="dagstart-date">${datumStr}</div>
         </div>
+        <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
       </div>
       <div class="dagstart-stats">
         <div class="dagstart-stat">
-          <div class="dagstart-stat-val blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
-          <div class="dagstart-stat-lbl">Vandaag</div>
-          ${dailyCost > 0 ? `<div class="dagstart-stat-netto blurred-amount" style="color:${nettoToday>=0?'var(--ok)':'var(--danger)'}" data-countup="${nettoToday}" data-prefix="netto € ">netto ${fmtMoney(nettoToday)}</div>` : ''}
+          <div class="dagstart-stat-val money blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
+          <div class="dagstart-stat-lbl">Vandaag${dailyGoal > 0 ? ` · ${goalPct}%` : ''}</div>
+        </div>
+        <div class="dagstart-stat">
+          <div class="dagstart-stat-val money blurred-amount" data-countup="${monthIncome}">${fmtMoney(monthIncome)}</div>
+          <div class="dagstart-stat-lbl">Maand${monthlyGoal > 0 ? ` · ${monthGoalPct}%` : ''}</div>
         </div>
         <div class="dagstart-stat">
           <div class="dagstart-stat-val" style="color:${todayHizb ? 'var(--ok)' : 'var(--text-faint)'}">${todayHizb ? '✓' : '–'}</div>
           <div class="dagstart-stat-lbl">Hizb</div>
-        </div>
-        <div class="dagstart-stat">
-          <div class="dagstart-stat-val" data-countup="${openTodos.length}" data-decimals="0" data-prefix="">${openTodos.length}</div>
-          <div class="dagstart-stat-lbl">Taken</div>
         </div>
       </div>
     </div>
@@ -364,13 +267,16 @@ export async function render(container) {
       </button>
       <button class="quick-action-btn" data-tab="geloof">
         <div class="quick-action-icon">${icon('book')}</div>
-        <div class="quick-action-label">Koran<span class="quick-action-sub">${todayHizb ? 'Vandaag ✓' : 'Nog open'}</span></div>
+        <div class="quick-action-label">Koran<span class="quick-action-sub">${todayHizb ? 'Vandaag ✓' : 'Nog open'}${streak > 0 ? ` · ${streak}d streak` : ''}</span></div>
       </button>
       <button class="quick-action-btn" data-tab="arabic">
         <div class="quick-action-icon">${icon('books')}</div>
         <div class="quick-action-label">Arabisch<span class="quick-action-sub">${dueCards > 0 ? `${dueCards} te herhalen` : 'Alles bij'}</span></div>
       </button>
     </div>
+
+    <!-- QIBLA -->
+    ${qiblaCard()}
 
     <!-- KALENDER KNOPPEN -->
     <div class="db-cal-btns">
@@ -396,62 +302,6 @@ export async function render(container) {
       <div id="ns-body"><p class="muted" style="font-size:.875rem">Laden…</p></div>
     </div>
 
-    <!-- INKOMEN VANDAAG -->
-    <div class="income-hero">
-      <div class="income-hero-label" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Inkomen vandaag</span>
-        <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
-      </div>
-      <div class="income-hero-amount big-money blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
-      ${todayIncome === 0 ? `<div class="income-zero-hint">${icon('taxi')} Nog geen rit genoteerd — zet hem op nul!</div>` : ''}
-      ${dailyGoal > 0 ? `
-        ${incomeRoad(goalPct, now)}
-        <div class="income-hero-meta">
-          <span>${goalPct}% van dagdoel</span>
-          <span>Doel: <span class="money blurred-amount">${fmtMoney(dailyGoal)}</span></span>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- MAANDOVERZICHT -->
-    <div class="card">
-      <h2 class="card-title">Maand — ${maandNamen[now.getMonth()]} ${now.getFullYear()}</h2>
-      ${canalSkyline(monthGoalPct, now)}
-      <div class="big-money blurred-amount" data-countup="${monthIncome}">${fmtMoney(monthIncome)}</div>
-      ${monthlyGoal > 0 ? `
-        ${coinMeter(monthGoalPct)}
-      ` : ''}
-      <div class="kpi-grid" style="margin-bottom:${traj?'12px':'0'}">
-        <div class="kpi-card">
-          <div class="kpi-label">Week</div>
-          <div class="kpi-value blurred-amount" data-countup="${weekIncome}">${fmtMoney(weekIncome)}</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Verwacht</div>
-          <div class="kpi-value blurred-amount" data-countup="${projectedMonth}">${fmtMoney(projectedMonth)}</div>
-        </div>
-        ${monthDelta !== null ? `<div class="kpi-card">
-          <div class="kpi-label">Vs vorige</div>
-          <div class="kpi-value ${monthDelta>=0?'ok':'danger'}">${monthDelta>=0?'↑':'↓'}${Math.abs(monthDelta)}%</div>
-        </div>` : ''}
-      </div>
-      ${traj ? `
-        <svg viewBox="0 0 ${traj.width} ${traj.height}" style="width:100%;height:${traj.height}px;margin-top:4px;opacity:.9" preserveAspectRatio="none">
-          <path d="${traj.idealPath}" stroke="var(--text-faint)" stroke-width="1" stroke-dasharray="4,4" fill="none" opacity=".7"/>
-          <path class="traj-line" pathLength="1" d="${traj.actualPath}" stroke="var(--gold)" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
-        </svg>
-        <div class="muted" style="font-size:.7rem;display:flex;justify-content:space-between;margin-top:2px;opacity:.7"><span>dag 1</span><span>— doel · ━ werkelijk</span><span>dag ${daysInMonth}</span></div>
-      ` : ''}
-      ${feas && !feas.reached ? `
-        <div class="card feasibility ${feas.onTrack ? 'on-track' : 'off-track'}" style="margin-top:12px;padding:12px 14px">
-          ${feas.onTrack
-            ? `<div style="font-weight:600;font-size:.9rem">Op koers — verwacht: <span class="blurred-amount">${fmtMoney(feas.projectedFinal)}</span></div>
-               ${feas.daysNeeded && feas.daysNeeded < feas.daysLeft ? `<div class="muted" style="font-size:.8rem;margin-top:3px">Doel bereikt over ~${feas.daysNeeded} dagen in dit tempo</div>` : ''}`
-            : `<div style="font-weight:600;font-size:.9rem">Achter — verwacht: <span class="blurred-amount">${fmtMoney(feas.projectedFinal)}</span> <span class="muted">(<span class="blurred-amount">€${Math.round(feas.shortage)}</span> tekort)</span></div>
-               <div class="muted" style="font-size:.8rem;margin-top:3px">Benodigd per dag: <b class="blurred-amount">${fmtMoney(feas.dailyNeeded)}</b> · huidig: <span class="blurred-amount">${fmtMoney(feas.currentDaily)}</span>/dag</div>`}
-        </div>` : ''}
-    </div>
-
     <!-- TAKEN PREVIEW -->
     ${highTodos.length || todayTodos.length ? `
     <div class="card">
@@ -468,26 +318,6 @@ export async function render(container) {
       ${todayTodos.length ? `<div class="muted" style="font-size:.82rem;padding-top:4px"><b>${todayTodos.length}</b> taak${todayTodos.length>1?'en':''} gepland voor vandaag</div>` : ''}
       <button class="btn secondary block" style="margin-top:12px;font-size:.85rem" data-tab="todo">Alle taken →</button>
     </div>` : ''}
-
-    <!-- KORAN PREVIEW -->
-    <div class="module-preview-card">
-      <div class="mpc-icon">${icon('book')}</div>
-      <div class="mpc-left">
-        <div class="mpc-title">Koran hizb${todayHizb ? ' <span style="color:var(--ok)">✓</span>' : ''}</div>
-        <div class="mpc-sub">Streak: <b>${streak} dag${streak===1?'':'en'}</b>${streak>0?' '+icon('flame'):''}</div>
-      </div>
-      <button class="mpc-action${todayHizb?' primary':''}" data-tab="geloof">${todayHizb?'Open':'Afvinken'}</button>
-    </div>
-
-    <!-- ARABISCH PREVIEW -->
-    <div class="module-preview-card">
-      <div class="mpc-icon">${icon('books')}</div>
-      <div class="mpc-left">
-        <div class="mpc-title">Arabisch</div>
-        <div class="mpc-sub">${dueCards>0?`<b>${dueCards}</b> kaart${dueCards>1?'en':''} klaar voor herhaling`:'Geen kaarten vandaag — je bent bij'}</div>
-      </div>
-      <button class="mpc-action${dueCards>0?' primary':''}" data-tab="arabic">${dueCards>0?'Starten':'Open'}</button>
-    </div>
 
     ${taxiGoals.length ? `
     <div class="card">
@@ -584,6 +414,7 @@ export async function render(container) {
   loadWeather(container);
   loadNs(container);
   initCountUps(container);
+  initQiblaCard(container);
   bindDayWidgets(container);
   _injectArabicVoiceTip(container);
   container.querySelector('#open-calendar').onclick = () => window.openCalendar && window.openCalendar();
@@ -1062,10 +893,14 @@ function wegWidget() {
 
 // ── NS trein-storingen ────────────────────────────────────────
 // Statische PWA → directe NS-API calls kunnen niet (CORS + de sleutel mag niet
-// in client-code). Daarom haalt dit een door de gebruiker ingestelde proxy-URL op
-// (een kleine serverless functie die de NS-sleutel bewaart en CORS toevoegt).
-// Zonder proxy: nette uitleg, geen nepdata. Alle externe tekst wordt ge-escaped.
+// in client-code). Oplossing zonder Cloudflare: een GitHub Action haalt elke paar
+// minuten de storingen op (met de NS-sleutel als repo-secret, server-side) en
+// publiceert ze als JSON op de `ns-data`-branch. De app leest dat statische
+// bestand via raw.githubusercontent.com (stuurt CORS `*`). Geavanceerd: wie een
+// eigen proxy heeft kan die instellen via localStorage `nsProxyUrl` (override).
+// Alle externe tekst wordt ge-escaped in renderNs().
 const NS_CACHE_KEY = 'nsDisruptionsCache';
+const NS_DATA_URL = 'https://raw.githubusercontent.com/sofyanghaddari/dashboard/ns-data/ns-disruptions.json';
 const _setHTML = (el, html) => { el.replaceChildren(); el.insertAdjacentHTML('beforeend', html); };
 
 async function loadNs(container) {
@@ -1074,18 +909,8 @@ async function loadNs(container) {
   const refreshBtn = container.querySelector('#ns-refresh');
   if (refreshBtn) refreshBtn.onclick = () => { localStorage.removeItem(NS_CACHE_KEY); loadNs(container); };
 
-  const proxy = (localStorage.getItem('nsProxyUrl') || '').trim();
-  if (!proxy) {
-    _setHTML(body, `
-      <p class="muted" style="font-size:.85rem;line-height:1.5">Live NS-storingen vereisen een kleine proxy: de NS-API blokkeert directe aanvragen uit de browser en je API-sleutel mag niet in de app staan.</p>
-      <button class="btn secondary sm" id="ns-setup" style="margin-top:8px">Proxy-URL instellen</button>`);
-    const b = body.querySelector('#ns-setup');
-    if (b) b.onclick = () => {
-      const url = prompt('Plak de URL van je NS-proxy (moet JSON met storingen teruggeven):', '');
-      if (url && url.trim()) { localStorage.setItem('nsProxyUrl', url.trim()); loadNs(container); }
-    };
-    return;
-  }
+  // Eigen proxy als override, anders de standaard GitHub-databron.
+  const src = (localStorage.getItem('nsProxyUrl') || '').trim() || NS_DATA_URL;
 
   try {
     const cached = JSON.parse(localStorage.getItem(NS_CACHE_KEY) || 'null');
@@ -1094,16 +919,18 @@ async function loadNs(container) {
 
   _setHTML(body, `<p class="muted" style="font-size:.875rem">Laden…</p>`);
   try {
-    const res = await fetch(proxy, { headers: { 'Accept': 'application/json' } });
+    // cache-buster zodat we niet op een verouderde CDN-kopie blijven hangen
+    const url = src + (src.includes('?') ? '&' : '?') + '_=' + Math.floor(Date.now() / 60000);
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     localStorage.setItem(NS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
     renderNs(body, data);
   } catch (e) {
-    _setHTML(body, `<p class="muted" style="font-size:.85rem">NS-storingen niet beschikbaar. Controleer je proxy-URL.</p>
-      <button class="btn secondary sm" id="ns-reset" style="margin-top:8px">Proxy wijzigen</button>`);
-    const r = body.querySelector('#ns-reset');
-    if (r) r.onclick = () => { const u = prompt('NS-proxy URL:', localStorage.getItem('nsProxyUrl') || ''); if (u !== null) { localStorage.setItem('nsProxyUrl', u.trim()); loadNs(container); } };
+    _setHTML(body, `<p class="muted" style="font-size:.85rem;line-height:1.5">NS-storingen zijn nog niet beschikbaar. Voeg eenmalig je gratis NS-sleutel als <b>secret</b> (<code>NS_API_KEY</code>) toe in je GitHub-repo → dan worden ze automatisch opgehaald. Even later opnieuw kijken.</p>
+      <button class="btn secondary sm" id="ns-retry" style="margin-top:8px">Opnieuw proberen</button>`);
+    const r = body.querySelector('#ns-retry');
+    if (r) r.onclick = () => { localStorage.removeItem(NS_CACHE_KEY); loadNs(container); };
   }
 }
 

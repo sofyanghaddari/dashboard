@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v138** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v142** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -40,7 +40,7 @@ Lokaal: `/Users/soef/claude code`
 
 ## Modules (10 tabs)
 
-1. **🏠 Dashboard** — hero, weer-radar Amsterdam, kalender+jaaroverzicht, vandaag/maand-stats (tel-animaties), goal-trajectory SVG, doel-haalbaarheid, patroon-insights, 30-dagen heatmap, **Hadith- en Woord-van-de-dag met ‹ › dag-navigatie (vorige dagen herhalen) + 🔊 voorlees-knop** (hadith in Arabisch via `speechSynthesis` ar-SA, woord in NL nl-NL), koran/arabic/spaardoelen kaarten, top-prioriteit-taken, empty CTA
+1. **🏠 Dashboard** — begroetingskaart met dag/nacht-lucht + kleine vandaag/maand/hizb-stats (tel-animaties, % van doel), quick-actions (Inkomen/Taken/Koran/Arabisch met statussubtekst incl. streak), weer-radar Amsterdam, kalender+jaaroverzicht, patroon-insights, **Hadith- en Woord-van-de-dag met ‹ › dag-navigatie (vorige dagen herhalen) + 🔊 voorlees-knop** (hadith in Arabisch via `speechSynthesis` ar-SA, woord in NL nl-NL), spaardoelen-kaart, gewoontes-vandaag, top-prioriteit-taken, empty CTA. **Géén** inkomen-hero of maandoverzicht-kaart meer (staan in Taxi-overzicht) — v137 ontdubbeld
 2. **🚖 Taxi** — vereenvoudigd: alleen "+ Inkomen vandaag noteren" + maandkalender-grid waarop je per dag retroactief inkomen invult (klik dag → modal met items + add), CSV-export, jaarverloop bar-chart. **Geen** shift-tracker, source-breakdown, uitgaven of belasting-reserve meer
 3. **🕌 Geloof** (`geloof.js`) — wrapper met twee sub-tabs:
    - **📖 Koran** sub-tab: dagelijkse hizb afvinken + streak + 30-dagen grid + streak-repair (1× per maand gemiste dag goedmaken) + reminder-instellingen
@@ -170,6 +170,7 @@ js/
   gmail.js                       — Gmail OAuth2 via GSI + sendInvoiceEmail() + buildHtmlEmail() + preloadGSI()
   receipt-ocr.js                 — Tesseract.js OCR wrapper: ocrReceipt() + parseReceiptText()
   invoice-nlp.js                 — NLP parser voor factuur-extractie
+  income-road.js                 — gedeelde incomeRoad() taxi-weg-animatie (Taxi-overzicht)
   modules/
     dashboard.js                 — home view, hero, weer, alles aggregatie
     taxi.js                      — alleen inkomen-kalender, geen shift
@@ -297,12 +298,37 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 ## Recente beslissingen (chronologisch, meest recent boven)
 
-+12. **🏙️ Amsterdam grachten-skyline v138 (28 juni 2026):** unieke sfeer-animatie boven in de maandkaart, op verzoek van user ("iets unieks en gaaf"). `canalSkyline(monthGoalPct, now)` in `dashboard.js` genereert een rij van 8 grachtenpanden met variërende gevels (trap-/punt-/klok-/halsgevel via clip-path/border-radius). De panden **lichten op** naarmate je je maanddoel nadert: behaald = vol in kleur met brandende ramen, nog te verdienen = donker silhouet (`litCount = round(pct/100*8)`). Dag/nacht-lucht volgt de klok (zon/maan/sterren), een bootje vaart over de gracht (`csBoat`) met een lichtje, en de panden weerspiegelen in het water (`.cs-reflection` scaleY(-1) + masker + shimmer). Alles puur CSS transform/opacity; reduced-motion-guard uitgebreid. Staat náást de munt-meter (die blijft het exacte cijfer-percentage tonen).
++17. **🏙️ Amsterdam grachten-skyline v142 (28 juni 2026):** unieke sfeer-animatie voor het **maanddoel** in het Taxi-overzicht, op verzoek van user ("iets unieks en gaaf"). Nieuw bestand `js/canal-skyline.js` (`canalSkyline(pct, now)`) genereert een rij van 8 grachtenpanden met variërende gevels (trap-/punt-/klok-/halsgevel via clip-path/border-radius). De panden **lichten op** naarmate je je maanddoel nadert: behaald = vol in kleur met brandende ramen, nog te verdienen = donker silhouet (`litCount = round(pct/100*8)`). Dag/nacht-lucht volgt de klok (zon/maan/sterren), een bootje vaart over de gracht (`csBoat`) met een lichtje, en de panden weerspiegelen in het water (`.cs-reflection` scaleY(-1) + masker + shimmer). CSS-sectie "🏙️ Amsterdam grachten-skyline" onderaan `styles.css`; reduced-motion-guard uitgebreid.
+   - **Herschikking t.o.v. v139:** elke scène nu op zijn eigen tijdschaal — **dagdoel** = de taxi-rit door Amsterdam (`incomeRoad(goalPct)`, weer terug op de inkomen-hero i.p.v. de platte balk), **maanddoel** = de oplichtende grachten-skyline. Beide scènes benut, geen dubbeling.
+
++16. **Qibla op dashboard + kompas herontworpen v141 (28 juni 2026):**
+   - **Qibla-kaart op het dashboard** (`qiblaCard()` + `initQiblaCard()` in `js/qibla.js`, geplaatst ná de quick-actions in `dashboard.js`): premium kaart met mini-kompas-schijf, richting (bv. "126° ZO"), afstand hemelsbreed naar Mekka en "Tik om je te richten". De naald op de schijf draait naar de qibla-peiling t.o.v. noord. Locatie via `localStorage.userLocation` (fallback Amsterdam), probeert stil een verse `getCurrentPosition`. Tik → opent het volledige kompas. De Koran-subtab-knop blijft als extra ingang.
+   - **Volledig kompas (`openQibla`) opgewaardeerd v3:** warmere radiale achtergrond, en een realistische "richting Mekka"-animatie bij uitlijning — lichtstraal omhoog naar de Kaäba (`#ql-beam`), uitdijende lock-ringen (`spawnLockRings`), opstijgende gouden stofdeeltjes (`spawnSparkles` → `ql-dust`), gloeiende doeldriehoek (`.ql-aligned-tri`). Alles met `prefers-reduced-motion`-guard.
+   - **CSS:** sectie "🕋 QIBLA — dashboard-kaart" onderaan `styles.css` (`.qibla-card`, `.ql-card-*`). Kompas-modal-stijlen blijven in `qibla.js` (`injectStyles`).
+   - **Bulk-notities-import (v138):** "Plakken"-knop in Notities (`openBulkImport`/`parseBulk`) splitst geplakte tekst op `---`/lege regel/per regel; herkent ook door iOS auto-gecorrigeerde lange streepjes (— –). Bedoeld voor iPhone-notities-migratie via een Shortcut die alle notities met `---` samenvoegt.
+
++15. **NS trein-storingen — meldingen + GitHub-databron v138-v140 (28 juni 2026):**
+   - **Dashboard NS-kaart** ("NS · trein-storingen", `loadNs()`/`renderNs()` in `dashboard.js`) toont live storingen. Statische PWA → directe NS-calls kunnen niet (CORS + sleutel mag niet in client).
+   - **v140 — GitHub als databron (vervangt Cloudflare als standaard):** user vond een eigen Cloudflare Worker te ingewikkeld. Nieuwe workflow `.github/workflows/ns-disruptions.yml` (cron `*/10`) haalt `/disruptions/v3?isActive=true` op met repo-secret **`NS_API_KEY`** en force-pusht de JSON naar de aparte **`ns-data`**-branch (altijd 1 commit, geen history-spam). App leest `https://raw.githubusercontent.com/sofyanghaddari/dashboard/ns-data/ns-disruptions.json` (raw stuurt CORS `*`) met cache-buster, in zowel `loadNs()` als `checkNsDisruptions()`. **De user hoeft enkel het secret `NS_API_KEY` toe te voegen** — geen Cloudflare, geen URL plakken. `localStorage.nsProxyUrl` blijft als optionele override (eigen proxy/Worker).
+   - **Cloudflare Worker blijft beschikbaar als alternatief:** `proxy/ns-worker.js` + `proxy/README-NS-proxy.md` (NS-sleutel via apiportal.ns.nl → Worker → secret → URL in app via `nsProxyUrl`).
+   - **v138 — Meldingen** (`checkNsDisruptions()` in `notifications.js`, gewired in `checkAllNotifications`): meldt een **nieuwe** storing met "Amsterdam" in de titel = kans op ritten. Dedup via `localStorage.ns_seen_ids`; eerste run seedt alleen (geen melding-explosie). App-open/foreground check (zelfde patroon als `checkWeatherAlert`), nog géén true-background push.
+
++14. **Amsterdam-rit banner v139 (28 juni 2026):**
+   - **Taxi-weg-banner nu voor het MAANDDOEL** (Taxi-overzicht, nieuwe "Maanddoel"-kaart met `incomeRoad(monthGoalPct, now)`). De **dagelijkse** voortgang is teruggezet naar de platte balk (`.income-hero-progress`) zoals voorheen.
+   - **Zwarte Mercedes C-klasse taxi** (nieuw `MERC` SVG in `income-road.js`): sedan-silhouet met metallic body-gradient, alloy-velgen (spinnen), Mercedes-ster op de grille, verlicht **daklicht** (`.ir-taxisign`) en koplamp die 's nachts gloeien.
+   - **Amsterdam-vibe:** rij **grachtenpanden** met afwisselende gevels (trap/klok/punt/hals) + ramen die 's nachts twinkelen (`canalHouses()` → `.ir-canal`/`.ir-house`/`.ir-win`), een klassieke **lantaarnpaal** (`.ir-lamp`, gloeit 's nachts) en een geparkeerde **omafiets** (`.ir-bike`). Banner hoger (96px), lucht/quay-gradient dag+nacht.
+   - Alles in gedeeld `js/income-road.js`; CSS in de income-road-sectie; `prefers-reduced-motion` gedekt via `.income-road *`.
+
++13. **Dashboard ontdubbeld v138 (28 juni 2026):**
+   - **Inkomen-hero + Maandoverzicht-kaart van het dashboard verwijderd** — die stonden dubbel met het Taxi-overzicht (dat al een inkomen-hero met dagdoel + Week/Maand/Verwacht-KPI's heeft). Vandaag + Maand zijn nu samengevoegd in de kleine begroetingskaart-stats (`dagstart-stats`: Vandaag · X% / Maand · Y% / Hizb), met de privacy-toggle verplaatst naar de begroeting-top.
+   - **Taxi-weg-animatie verhuisd** van dashboard naar het Taxi-overzicht (vervangt daar de platte progressbalk in de inkomen-hero). `incomeRoad()` staat nu in een gedeeld bestand `js/income-road.js` (inclusief de v136-realisme-upgrade: wolken/uitlaat/koplampbundel). `coinMeter()` (munt-meter) is verwijderd met de maand-kaart.
+   - **Koran- en Arabisch-previewkaarten verwijderd** — die dupliceerden de quick-action-knoppen. De hizb-streak is nu opgenomen in de Koran quick-action-subtekst ("Vandaag ✓ · 12d streak").
+   - Netto resultaat: hoofdpagina korter en minder dubbel; alle inkomensdetails leven in Taxi/Stats.
 
 +11. **Realistische animaties v136 (28 juni 2026):** de "levende animaties" uit v134 opgewaardeerd naar het realisme-niveau van de weer-scène (`weatherScene`), op verzoek van user (referentie = iPhone Weer-app).
    - **🔥 Streak-vlam herontworpen** (`koran.js` markup + CSS): van 2 geroteerde blokjes naar een **meerlagige vlam** — gloed-halo (`sf-glow`), oranje buitentong (`sf-outer`), gele middentong (`sf-mid`), witgloeiende kern (`sf-core`) en blauwe vlambasis (`sf-base`). Elke laag flikkert organisch en asynchroon (`sfFlick1/2/3` met skew+scaleY+drift). lvl-4 = fellere kleuren + sterkere gloed.
    - **💧 Spaarpot realistischer** (CSS): glasreflectie-overlay (`.pot-glass::after`, sheen-boog + lichtvlek), opstijgende belletjes (`.pl-fill::before/::after` → `plBubble`), iets diepere vloeistof-gradient.
-   - **🚕 Taxi-weg uitgebreid** (`dashboard.js` markup + CSS): draaiende zonnestralen (`.ir-sun::before`, conic-mask), drijvende parallax-wolkjes (`.ir-cloud`), uitlaatpluimpjes achter de auto (`.ir-exhaust`) en een koplampbundel 's nachts (`.ir-beam`).
+   - **🚕 Taxi-weg uitgebreid** (`income-road.js` markup + CSS): draaiende zonnestralen (`.ir-sun::before`, conic-mask), drijvende parallax-wolkjes (`.ir-cloud`), uitlaatpluimpjes achter de auto (`.ir-exhaust`) en een koplampbundel 's nachts (`.ir-beam`).
    - Alles puur transform/opacity; `prefers-reduced-motion`-guard uitgebreid met de nieuwe pseudo-elementen.
 
 +10. **Vijf extra levende animaties v136 (28 juni 2026):**

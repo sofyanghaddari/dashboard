@@ -1,7 +1,107 @@
-// Qibla kompas v2 — precise direction to the Kaaba with smooth rAF animation
+// Qibla kompas v3 — precise direction to the Kaaba with smooth rAF animation
 const KAABA = { lat: 21.4225, lon: 39.8262 };
 const R2D   = 180 / Math.PI;
 const D2R   = Math.PI / 180;
+
+function bearingLabel(deg) {
+  const dirs = ['N','NO','O','ZO','Z','ZW','W','NW'];
+  return dirs[Math.round(deg / 45) % 8];
+}
+
+function storedLocation() {
+  try {
+    const l = JSON.parse(localStorage.getItem('userLocation') || 'null');
+    if (l && typeof l.lat === 'number' && typeof l.lon === 'number') return l;
+  } catch {}
+  return { lat: 52.3676, lon: 4.9041 }; // Amsterdam centrum fallback
+}
+
+// ── Dashboard-kaart ────────────────────────────────────────────────────────
+// Compacte, statische voorvertoning die het volledige kompas opent bij tik.
+
+function buildCardDial() {
+  const C = 50, OR = 46;
+  let ticks = '';
+  for (let i = 0; i < 360; i += 15) {
+    const card = i % 90 === 0;
+    const len  = card ? 7 : 4;
+    const sw   = card ? 1.6 : 0.8;
+    const col  = card ? '#d8b86a' : '#46423a';
+    const rad  = (i - 90) * D2R;
+    const x1 = C + OR * Math.cos(rad),         y1 = C + OR * Math.sin(rad);
+    const x2 = C + (OR - len) * Math.cos(rad), y2 = C + (OR - len) * Math.sin(rad);
+    ticks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="${sw}" stroke-linecap="round"/>`;
+  }
+  return `<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="qlc-bg" cx="40%" cy="34%" r="80%">
+        <stop offset="0%" stop-color="#26241f"/><stop offset="60%" stop-color="#161513"/><stop offset="100%" stop-color="#0a0a09"/>
+      </radialGradient>
+      <linearGradient id="qlc-needle" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#9a7820"/><stop offset="48%" stop-color="#f2dca0"/><stop offset="100%" stop-color="#9a7820"/>
+      </linearGradient>
+    </defs>
+    <circle cx="50" cy="50" r="49" fill="url(#qlc-bg)" stroke="#3a352b" stroke-width="1"/>
+    ${ticks}
+    <text x="50" y="17" text-anchor="middle" fill="#ecd49a" font-size="9" font-weight="700" font-family="-apple-system,sans-serif">N</text>
+    <g id="qlc-needle-g" style="transform-box:view-box;transform-origin:50px 50px;transition:transform 1s cubic-bezier(.2,.7,.2,1)">
+      <polygon points="50,12 45,50 55,50" fill="url(#qlc-needle)"/>
+      <polygon points="50,88 46,50 54,50" fill="#3a362f"/>
+      <rect x="44.5" y="6" width="11" height="9.5" rx="1.4" fill="#0b0a09" stroke="#d8b86a" stroke-width="1"/>
+      <rect x="44.5" y="8.4" width="11" height="1.5" fill="#d8b86a" opacity=".8"/>
+    </g>
+    <circle cx="50" cy="50" r="5.5" fill="#0d0c0b" stroke="#2a2722" stroke-width="1"/>
+    <circle cx="50" cy="50" r="3.4" fill="#dcb464"/>
+  </svg>`;
+}
+
+export function qiblaCard() {
+  return `
+    <div class="card qibla-card" id="qibla-card" role="button" tabindex="0" aria-label="Open Qibla kompas">
+      <div class="ql-card-dial" id="ql-card-dial">${buildCardDial()}</div>
+      <div class="ql-card-info">
+        <h2 class="card-title">Qibla — richting Mekka</h2>
+        <div class="ql-card-dir"><span id="ql-card-deg">—</span><span id="ql-card-name" class="ql-card-name"></span></div>
+        <div class="ql-card-dist" id="ql-card-dist"></div>
+        <div class="ql-card-hint">Tik om je te richten met het kompas <span class="ql-card-arrow">→</span></div>
+      </div>
+    </div>`;
+}
+
+export function initQiblaCard(container) {
+  const card = container.querySelector('#qibla-card');
+  if (!card) return;
+
+  const apply = (lat, lon) => {
+    const q    = calcQibla(lat, lon);
+    const dist = calcDistance(lat, lon);
+    const degEl  = card.querySelector('#ql-card-deg');
+    const nameEl = card.querySelector('#ql-card-name');
+    const distEl = card.querySelector('#ql-card-dist');
+    const needle = card.querySelector('#qlc-needle-g');
+    if (degEl)  degEl.textContent  = Math.round(q) + '°';
+    if (nameEl) nameEl.textContent = bearingLabel(q);
+    if (distEl) distEl.textContent = dist.toLocaleString('nl-NL') + ' km hemelsbreed';
+    if (needle) requestAnimationFrame(() => { needle.style.transform = `rotate(${q}deg)`; });
+  };
+
+  const loc = storedLocation();
+  apply(loc.lat, loc.lon);
+  // Probeer een verse locatie (stil; bij weigering blijft de fallback staan)
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        localStorage.setItem('userLocation', JSON.stringify({ lat: coords.latitude, lon: coords.longitude }));
+        apply(coords.latitude, coords.longitude);
+      },
+      () => {}, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  }
+
+  const open = () => openQibla();
+  card.onclick = open;
+  card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+}
 
 function calcQibla(lat, lon) {
   const φ1 = lat * D2R, φ2 = KAABA.lat * D2R;
@@ -171,22 +271,70 @@ function injectStyles() {
       animation: ql-spark .95s ease-out forwards;
     }
     #ql-calib { animation: ql-open .6s ease 5s both; opacity:0; }
+
+    /* ── Lichtstraal naar Mekka (verschijnt bij uitlijning) ── */
+    #ql-beam {
+      position:absolute; left:50%; top:-26px; width:46px; height:188px;
+      transform:translateX(-50%) scaleY(0); transform-origin:bottom center;
+      background:linear-gradient(to top, rgba(232,201,122,.55), rgba(232,201,122,.14) 55%, transparent);
+      filter:blur(7px); opacity:0; pointer-events:none; border-radius:50% 50% 0 0;
+      transition:opacity .5s ease, transform .6s cubic-bezier(.2,.7,.2,1);
+    }
+    .ql-aligned #ql-beam { opacity:1; transform:translateX(-50%) scaleY(1); animation:ql-beam-flicker 2.2s ease-in-out infinite; }
+    @keyframes ql-beam-flicker { 0%,100%{opacity:.85} 50%{opacity:1} }
+
+    /* ── Lock-ringen die naar buiten uitdijen op het moment van uitlijning ── */
+    .ql-lock-ring {
+      position:absolute; inset:0; border-radius:50%; pointer-events:none;
+      border:1.5px solid rgba(232,201,122,.7);
+      animation:ql-lock-ring 1.1s cubic-bezier(.15,.6,.25,1) forwards;
+    }
+    @keyframes ql-lock-ring {
+      0%   { transform:scale(.82); opacity:.9 }
+      100% { transform:scale(1.42); opacity:0 }
+    }
+    /* gouden stofdeeltjes (drijven op i.p.v. weg-spinnen) */
+    @keyframes ql-dust {
+      0%   { opacity:0; transform:translateY(0) scale(.4) }
+      22%  { opacity:1 }
+      100% { opacity:0; transform:translateY(-46px) scale(1.05) }
+    }
+    .ql-dust-el { position:absolute; pointer-events:none; color:#f2dca0; animation:ql-dust 1.6s ease-out forwards; }
+    .ql-target-tri { transition:filter .5s ease, transform .4s ease; }
+    .ql-aligned-tri .ql-target-tri { filter:drop-shadow(0 0 16px rgba(126,207,126,.9)) !important; transform:translateY(2px) scale(1.12); }
+
+    @media (prefers-reduced-motion: reduce) {
+      #ql-needle, .ql-aligned #ql-needle, .ql-aligned #ql-glow, .ql-approach #ql-needle,
+      #ql-beam, .ql-lock-ring, .ql-dust-el { animation:none !important; }
+    }
   `;
   document.head.appendChild(s);
 }
 
 function spawnSparkles(container) {
+  // Gouden stofdeeltjes die zacht opstijgen rond het kompas.
   const C = 150;
-  const chars = ['✦','✧','✶','⟡'];
-  for (let i = 0; i < 8; i++) {
+  const chars = ['✦','✧','·','⟡','✶'];
+  for (let i = 0; i < 10; i++) {
     const sp = document.createElement('div');
-    sp.className = 'ql-spark-el';
-    const angle = (i / 8) * 360 + Math.random() * 22;
-    const r = 72 + Math.random() * 48;
-    sp.style.cssText = `left:${(C + r * Math.cos(angle * D2R) - 7).toFixed(1)}px;top:${(C + r * Math.sin(angle * D2R) - 7).toFixed(1)}px;animation-delay:${(i * 0.07).toFixed(2)}s;font-size:${(10+Math.random()*7).toFixed(0)}px`;
+    sp.className = 'ql-dust-el';
+    const angle = (i / 10) * 360 + Math.random() * 30;
+    const r = 60 + Math.random() * 60;
+    sp.style.cssText = `left:${(C + r * Math.cos(angle * D2R) - 6).toFixed(1)}px;top:${(C + r * Math.sin(angle * D2R) - 6).toFixed(1)}px;animation-delay:${(i * 0.06).toFixed(2)}s;font-size:${(8+Math.random()*8).toFixed(0)}px`;
     sp.textContent = chars[i % chars.length];
     container.appendChild(sp);
-    setTimeout(() => sp.remove(), 1100 + i * 70);
+    setTimeout(() => sp.remove(), 1800 + i * 70);
+  }
+}
+
+function spawnLockRings(wrap) {
+  // Twee concentrische ringen die naar buiten uitdijen op het moment van uitlijning.
+  for (let i = 0; i < 2; i++) {
+    const ring = document.createElement('div');
+    ring.className = 'ql-lock-ring';
+    ring.style.animationDelay = `${i * 0.16}s`;
+    wrap.appendChild(ring);
+    setTimeout(() => ring.remove(), 1400 + i * 160);
   }
 }
 
@@ -205,7 +353,7 @@ export async function openQibla() {
 
   const backdrop = document.createElement('div');
   backdrop.id = 'ql-modal';
-  backdrop.style.cssText = 'position:fixed;inset:0;z-index:9999;background:linear-gradient(150deg,#0f0f0f 0%,#070707 100%);display:flex;flex-direction:column;align-items:center;padding-top:env(safe-area-inset-top,0);overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,sans-serif';
+  backdrop.style.cssText = 'position:fixed;inset:0;z-index:9999;background:radial-gradient(120% 80% at 50% 8%,#1a1814 0%,#0e0d0b 46%,#060605 100%);display:flex;flex-direction:column;align-items:center;padding-top:env(safe-area-inset-top,0);overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,sans-serif';
 
   backdrop.innerHTML = `
     <div id="ql-inner" style="width:100%;max-width:420px;height:100%;display:flex;flex-direction:column;padding:14px 18px env(safe-area-inset-bottom,22px);box-sizing:border-box">
@@ -230,10 +378,12 @@ export async function openQibla() {
       <div style="display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;gap:5px">
 
         <!-- Doeldriehoek (vast boven) -->
-        <div style="width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:17px solid #c9a84c;filter:drop-shadow(0 0 10px rgba(201,168,76,.65));margin-bottom:-4px;flex-shrink:0"></div>
+        <div class="ql-target-tri" style="width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:17px solid #c9a84c;filter:drop-shadow(0 0 10px rgba(201,168,76,.65));margin-bottom:-4px;flex-shrink:0"></div>
 
         <!-- Kompas container -->
         <div id="ql-wrap" style="position:relative;width:300px;height:300px;flex-shrink:0">
+          <!-- Lichtstraal naar Mekka -->
+          <div id="ql-beam"></div>
           <!-- Glow ring -->
           <div id="ql-glow" style="position:absolute;inset:-24px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .7s ease;background:radial-gradient(circle,transparent 55%,rgba(201,168,76,.2) 100%);box-shadow:0 0 70px 12px rgba(201,168,76,.14)"></div>
 
@@ -358,11 +508,14 @@ export async function openQibla() {
         if (aligned) {
           wrapEl.classList.add('ql-aligned');
           wrapEl.classList.remove('ql-approach');
+          backdrop.classList.add('ql-aligned-tri');
           glowEl.style.opacity = '1';
+          spawnLockRings(wrapEl);
           setStatus('Je wijst naar Mekka', '#7ecf7e');
           if (navigator.vibrate) navigator.vibrate([35, 55, 110]);
         } else {
           wrapEl.classList.remove('ql-aligned');
+          backdrop.classList.remove('ql-aligned-tri');
           glowEl.style.opacity = '0';
           setStatus('Draai jezelf totdat de pijl omhoog wijst', '#555');
         }
