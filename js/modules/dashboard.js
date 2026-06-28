@@ -20,46 +20,6 @@ let _HADITHS = null, _WOORDEN = null;
 let _hadithOffset = 0, _woordOffset = 0;
 let _ttsActiveBtn = null;
 
-function weatherIcon(code) {
-  const h = new Date().getHours();
-  const isNight = h < 6 || h >= 21;
-
-  const cloud = `<path class="wx-cloud" d="M10 33 C6 33 3 29 5 24 C7 19 12 18 16 19 C17 15 21 12 26 12 C32 12 37 16 37 22 C41 22 45 25 45 30 C45 35 41 37 37 37 L10 37 Z" fill="currentColor"/>`;
-  const cloudSmall = `<path class="wx-cloud-back" d="M6 32 C3 32 1 29 3 25 C5 21 9 20 12 21 C13 18 16 16 20 16 C25 16 29 19 29 24 C32 24 35 27 35 30 C35 33 32 34 29 34 L6 34 Z" fill="currentColor" opacity=".55"/>`;
-
-  const sunCircle = `<circle class="wx-sun-disk" cx="24" cy="24" r="10" fill="#FFC107"/>`;
-  const sunRays = `<g class="wx-sun-rays"><line x1="24" y1="4" x2="24" y2="10" stroke="#FFC107" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="38" x2="24" y2="44" stroke="#FFC107" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="24" x2="10" y2="24" stroke="#FFC107" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="24" x2="44" y2="24" stroke="#FFC107" stroke-width="2.5" stroke-linecap="round"/><line x1="9.5" y1="9.5" x2="13.7" y2="13.7" stroke="#FFC107" stroke-width="2.5" stroke-linecap="round"/><line x1="34.3" y1="34.3" x2="38.5" y2="38.5" stroke="#FFC107" stroke-width="2.5" stroke-linecap="round"/><line x1="38.5" y1="9.5" x2="34.3" y2="13.7" stroke="#FFC107" stroke-width="2.5" stroke-linecap="round"/><line x1="9.5" y1="38.5" x2="13.7" y2="34.3" stroke="#FFC107" stroke-width="2.5" stroke-linecap="round"/></g>`;
-
-  const rainDrops = (cls='wx-raindrop', n=3, c='#6ec9ff') => Array.from({length:n},(_,i)=>`<line class="${cls}" x1="${18+i*7}" y1="40" x2="${16+i*7}" y2="47" stroke="${c}" stroke-width="2" stroke-linecap="round"/>`).join('');
-  const snowFlakes = (n=3) => Array.from({length:n},(_,i)=>{const x=16+i*7;return `<g class="wx-snowflake"><line x1="${x}" y1="40" x2="${x}" y2="47" stroke="#9dd9ff" stroke-width="1.5" stroke-linecap="round"/><line x1="${x-3}" y1="42" x2="${x+3}" y2="45" stroke="#9dd9ff" stroke-width="1.5" stroke-linecap="round"/><line x1="${x+3}" y1="42" x2="${x-3}" y2="45" stroke="#9dd9ff" stroke-width="1.5" stroke-linecap="round"/></g>`;}).join('');
-
-  const icons = {
-    sunny: `<svg class="wx-icon" viewBox="0 0 48 48" width="48" height="48" fill="none">${sunRays}${sunCircle}</svg>`,
-    night: `<svg class="wx-icon" viewBox="0 0 48 48" width="48" height="48" fill="none"><circle class="wx-star" cx="36" cy="10" r="1.8" fill="#e8eef4"/><circle class="wx-star" cx="40" cy="20" r="1.2" fill="#e8eef4"/><circle class="wx-star" cx="34" cy="26" r="1.5" fill="#e8eef4"/><path class="wx-moon" d="M28 8 C18 8 12 16 14 26 C16 36 25 41 35 38 C26 38 18 31 18 22 C18 13 22 8 28 8Z" fill="#9dd9ff"/></svg>`,
-    'partly-cloudy': `<svg class="wx-icon" viewBox="0 0 48 48" width="48" height="48" fill="none"><g transform="translate(-10,-8) scale(.65)">${sunRays}${sunCircle}</g><g color="#b0b8c4">${cloud}</g></svg>`,
-    'night-cloud': `<svg class="wx-icon" viewBox="0 0 48 48" width="48" height="48" fill="none"><path class="wx-moon" d="M38 6 C32 6 28 11 30 17 C32 23 38 26 44 24 C38 25 33 21 33 16 C33 11 35 6 38 6Z" fill="#9dd9ff" opacity=".7"/><g color="#8892a0">${cloud}</g></svg>`,
-    cloudy: `<svg class="wx-icon" viewBox="0 0 48 48" width="48" height="48" fill="none"><g color="#888e9e">${cloudSmall}</g><g color="#b0b8c4">${cloud}</g></svg>`,
-    fog: `<svg class="wx-icon" viewBox="0 0 48 48" width="48" height="48" fill="none"><line class="wx-fog-line" x1="6" y1="16" x2="42" y2="16" stroke="#9aa0ad" stroke-width="3" stroke-linecap="round"/><line class="wx-fog-line" x1="10" y1="24" x2="38" y2="24" stroke="#9aa0ad" stroke-width="3" stroke-linecap="round"/><line class="wx-fog-line" x1="14" y1="32" x2="34" y2="32" stroke="#9aa0ad" stroke-width="3" stroke-linecap="round"/></svg>`,
-    drizzle: `<svg class="wx-icon" viewBox="0 0 48 56" width="48" height="48" fill="none"><g color="#9aa0ad">${cloud}</g>${rainDrops('wx-drizzle',3,'#9dd9ff')}</svg>`,
-    rain: `<svg class="wx-icon" viewBox="0 0 48 56" width="48" height="48" fill="none"><g color="#6e7480">${cloud}</g>${rainDrops('wx-raindrop',3,'#6ec9ff')}</svg>`,
-    snow: `<svg class="wx-icon" viewBox="0 0 48 56" width="48" height="48" fill="none"><g color="#9aa0ad">${cloud}</g>${snowFlakes(3)}</svg>`,
-    storm: `<svg class="wx-icon" viewBox="0 0 48 56" width="48" height="48" fill="none"><g color="#555e6e">${cloud}</g><path class="wx-lightning" d="M24 36 L20 44 L25 44 L21 52 L30 40 L25 40 Z" fill="#FFC107"/>${rainDrops('wx-raindrop',2,'#6ec9ff')}</svg>`,
-  };
-
-  let type;
-  if      (code === 0)              type = isNight ? 'night' : 'sunny';
-  else if (code <= 2)               type = isNight ? 'night-cloud' : 'partly-cloudy';
-  else if (code === 3)              type = 'cloudy';
-  else if (code <= 48)              type = 'fog';
-  else if (code <= 57)              type = 'drizzle';
-  else if (code <= 67)              type = 'rain';
-  else if (code <= 77)              type = 'snow';
-  else if (code <= 82)              type = 'rain';
-  else                              type = 'storm';
-
-  return icons[type] || icons.cloudy;
-}
-
 // Grote, realistische geanimeerde weer-scène (banner). Past zich aan op de
 // actuele weercode + dag/nacht. Alleen transform/opacity-animaties (vloeiend).
 function weatherScene(code, info, cur, day) {
