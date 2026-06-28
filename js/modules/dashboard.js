@@ -111,6 +111,35 @@ function incomeRoad(pct, now) {
     </div>`;
 }
 
+// 🌅 Dag/nacht-lucht achter de begroeting: zon overdag, maan + twinkelende sterren 's nachts.
+function skyScene(now) {
+  const hr = now.getHours() + now.getMinutes() / 60;
+  let phase;
+  if (hr < 5.5 || hr >= 21) phase = 'night';
+  else if (hr < 8) phase = 'dawn';
+  else if (hr < 18) phase = 'day';
+  else if (hr < 19.5) phase = 'dusk';
+  else phase = 'night';
+  const orb = phase === 'night' ? '<div class="sky-moon"></div>' : '<div class="sky-sun"></div>';
+  let stars = '';
+  if (phase === 'night' || phase === 'dusk') {
+    const pts = [[12,22],[26,12],[38,30],[52,16],[64,26],[76,12],[88,28],[20,40],[70,42]];
+    stars = pts.map((p, i) => `<i class="sky-star" style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(i % 5) * 0.7}s"></i>`).join('');
+  }
+  let cloud = '';
+  if (phase === 'day' || phase === 'dawn') cloud = '<div class="sky-cloud sky-cloud-1"></div><div class="sky-cloud sky-cloud-2"></div>';
+  return `<div class="sky-scene sky-${phase}" aria-hidden="true">${orb}${stars}${cloud}</div>`;
+}
+
+// 💸 Munt-meter: groeiende gouden muntenstapel-balk i.p.v. een platte progressbalk.
+function coinMeter(pct) {
+  const p = Math.max(0, Math.min(100, pct));
+  return `<div class="coin-meter" role="img" aria-label="${p}% van maanddoel">
+    <div class="coin-fill" style="width:${p}%"><span class="coin-shimmer"></span></div>
+    <div class="coin-disc" style="left:${p}%">€</div>
+  </div>`;
+}
+
 export async function render(container) {
   const [rides, hizb, todos, cards, goals, habits, habitLog, taxiExpenses] = await Promise.all([
     all('rides'), all('hizb_log'), all('todos'), all('cards'), all('goals'),
@@ -225,6 +254,7 @@ export async function render(container) {
 
     <!-- HERO GREETING -->
     <div class="card dagstart-card">
+      ${skyScene(now)}
       <div class="dagstart-top">
         <div>
           <div class="dagstart-greeting">${begroeting}, ${escapeHTML(userName)}</div>
@@ -329,7 +359,7 @@ export async function render(container) {
       <h2 class="card-title">Maand — ${maandNamen[now.getMonth()]} ${now.getFullYear()}</h2>
       <div class="big-money blurred-amount" data-countup="${monthIncome}">${fmtMoney(monthIncome)}</div>
       ${monthlyGoal > 0 ? `
-        <div class="progress-bar" style="margin-bottom:8px"><div class="progress-fill" style="width:${monthGoalPct}%"></div></div>
+        ${coinMeter(monthGoalPct)}
       ` : ''}
       <div class="kpi-grid" style="margin-bottom:${traj?'12px':'0'}">
         <div class="kpi-card">

@@ -14,6 +14,25 @@ const CIRCUMFERENCE = 2 * Math.PI * 50;
 // 🔥 Streak-vlam intensiteit: hoe langer de reeks, hoe groter/feller de vlam.
 function flameLevel(s) { return s >= 100 ? 4 : s >= 30 ? 3 : s >= 7 ? 2 : s >= 1 ? 1 : 0; }
 
+// 🌙 Echte maanstand: tekent een exacte maanfase-schijf (terminator als ellips).
+function moonPhaseEl(date) {
+  const syn = 29.53058867;                       // synodische maand (dagen)
+  const ref = Date.UTC(2000, 0, 6, 18, 14) / 86400000; // bekende nieuwe maan
+  let age = (date.getTime() / 86400000 - ref) % syn;
+  if (age < 0) age += syn;
+  const p = age / syn;                           // 0=nieuw, .5=vol
+  const f = (1 - Math.cos(2 * Math.PI * p)) / 2; // verlichte fractie 0..1
+  const wax = p < 0.5;
+  const lit = '#ece4d1', dark = '#2a2c33';
+  const leftCol = wax ? dark : lit, rightCol = wax ? lit : dark;
+  const termCol = f < 0.5 ? dark : lit;          // crescent: dark; gibbous: lit
+  const termW = Math.abs(1 - 2 * f);             // breedte terminator-ellips 0..1
+  const mh = ((1 - termW) / 2 * 100).toFixed(1);
+  const label = f < 0.04 ? 'Nieuwe maan' : f > 0.96 ? 'Volle maan' : (wax ? 'Wassende maan' : 'Afnemende maan');
+  return `<span class="moonphase" title="${label} · ${Math.round(f * 100)}% verlicht" aria-hidden="true"
+    style="background:linear-gradient(90deg,${leftCol} 50%,${rightCol} 50%)"><i style="left:${mh}%;right:${mh}%;background:${termCol}"></i></span>`;
+}
+
 // ── Hizb voortgang helpers ──────────────────────────────────────────────────
 function getHizbVoortgang() {
   try { return JSON.parse(localStorage.getItem('hizb_voortgang') || '{}'); }
@@ -137,7 +156,7 @@ async function renderHizb(container) {
         <div>
           <div class="streak-num" data-countup="${streak}" data-decimals="0" data-prefix="">${streak}</div>
           <div class="streak-unit">dag${streak === 1 ? '' : 'en'}</div>
-          <div class="streak-sub">op rij${streak > 0 ? ' ' + icon('flame') : ''}</div>
+          <div class="streak-sub">op rij${streak > 0 ? ' ' + icon('flame') : ''} <span class="streak-moon">${moonPhaseEl(effectiveNow())}</span></div>
           ${monthPct >= 80 ? `<div style="font-size:.72rem;color:var(--ok);margin-top:6px;font-weight:600">${monthPct}% deze maand ✓</div>` : ''}
         </div>
       </div>
