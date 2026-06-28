@@ -130,7 +130,7 @@ async function renderHizb(container) {
           <div class="cp-inner">
             ${todayRec
               ? `<div class="cp-done-check" style="color:var(--ok)">✓</div>`
-              : `<div class="cp-emoji">${streak > 0 ? `<span class="streak-flame lvl-${flameLevel(streak)}" aria-hidden="true"><i class="sf-1"></i><i class="sf-2"></i></span>` : icon('book')}</div>`}
+              : `<div class="cp-emoji">${streak > 0 ? `<span class="streak-flame lvl-${flameLevel(streak)}" aria-hidden="true"><i class="sf-glow"></i><i class="sf-outer"></i><i class="sf-mid"></i><i class="sf-core"></i><i class="sf-base"></i></span>` : icon('book')}</div>`}
             <div class="cp-label">${todayRec ? (todayCount >= 2 ? '2× gedaan' : 'Voltooid') : (doneThisMonth + '/' + daysIntoMonth)}</div>
           </div>
         </div>
