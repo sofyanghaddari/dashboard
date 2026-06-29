@@ -168,9 +168,9 @@ function renderGrid(container, events, dates, focusDay, today) {
 function eventChip(ev) {
   const cat = CATS[ev.category] || CATS.persoonlijk;
   const durStr = ev.duration && ev.duration !== 60 ? ` · ${ev.duration >= 60 ? Math.round(ev.duration / 60 * 10) / 10 + 'u' : ev.duration + 'min'}` : '';
-  return `<div class="agenda-chip" data-id="${ev.id}" style="background:${cat.color}22;border-left:3px solid ${cat.color}">
+  return `<div class="agenda-chip${ev.done ? ' agenda-chip-done' : ''}" data-id="${ev.id}" style="background:${cat.color}22;border-left:3px solid ${cat.color}">
     <span class="agenda-chip-time">${String(ev.hour).padStart(2,'0')}:${ev.minute ? String(ev.minute).padStart(2,'0') : '00'}${durStr}</span>
-    <span class="agenda-chip-title">${escapeHTML(ev.title)}</span>
+    <span class="agenda-chip-title">${ev.done ? '✓ ' : ''}${escapeHTML(ev.title)}</span>
     <span class="agenda-chip-edit" aria-hidden="true">${icon('pencil')}</span>
     <button class="agenda-chip-del" data-del="${ev.id}" aria-label="Verwijder ${escapeHTML(ev.title)}">✕</button>
   </div>`;

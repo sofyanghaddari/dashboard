@@ -4172,6 +4172,8 @@ label[for="import-csv"]:hover, label[for="import-pdf"]:hover, #add-card:hover {
    so dark text was nearly invisible. */
 .agenda-chip-time { font-size: .62rem; color: var(--text-dim); flex-shrink: 0; }
 .agenda-chip-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 600; }
+.agenda-chip-done { opacity: .6; }
+.agenda-chip-done .agenda-chip-title { text-decoration: line-through; }
 .agenda-chip-del {
   background: none; border: none; cursor: pointer; font-size: .7rem;
   color: var(--text-faint); padding: 0 1px; line-height: 1; flex-shrink: 0;
@@ -6533,9 +6535,198 @@ input, select, textarea {
   50%      { box-shadow: 0 0 0 4px var(--gold-glow); }
 }
 
+/* ── 🏙️ Amsterdam grachten-skyline (maanddoel) ── */
+.canal-scene {
+  position: relative; height: 154px; border-radius: 14px; overflow: hidden;
+  margin: 4px 0 14px; isolation: isolate;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 6px 18px rgba(0,0,0,.22);
+}
+.cs-day   { background: linear-gradient(180deg, #8fc6ec 0%, #bfe0f4 48%); }
+.cs-dawn  { background: linear-gradient(180deg, #f5a86a 0%, #ffd6a3 38%, #cfe2ee 66%); }
+.cs-dusk  { background: linear-gradient(180deg, #2f3566 0%, #95506b 44%, #e08a5f 70%); }
+.cs-night { background: linear-gradient(180deg, #0a1430 0%, #16264a 52%); }
+
+/* Zon / maan / sterren */
+.cs-sun, .cs-moon { position: absolute; top: 14px; right: 24px; border-radius: 50%; z-index: 1; }
+.cs-sun  { width: 30px; height: 30px; background: radial-gradient(circle at 38% 34%, #fff7d6, #ffd23f 60%, #ffb300); box-shadow: 0 0 20px 6px rgba(255,210,70,.55); animation: csSun 5s ease-in-out infinite; }
+.cs-moon { width: 24px; height: 24px; background: radial-gradient(circle at 36% 32%, #fdfdf6, #dfe6f0 70%, #c2ccdd); box-shadow: 0 0 18px 4px rgba(200,220,255,.4); }
+.cs-dawn .cs-sun, .cs-dusk .cs-sun { background: radial-gradient(circle at 40% 36%, #ffd9a0, #ff9e5e 70%, #f56b3d); box-shadow: 0 0 22px 7px rgba(255,140,70,.5); }
+@keyframes csSun { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+.cs-star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; box-shadow: 0 0 4px #fff; z-index: 1; animation: csTwinkle 3s ease-in-out infinite; }
+@keyframes csTwinkle { 0%,100% { opacity: .3; transform: scale(.7); } 50% { opacity: 1; transform: scale(1); } }
+
+/* Rij grachtenpanden */
+.cs-houses {
+  position: absolute; left: 0; right: 0; bottom: 50px; z-index: 2;
+  display: flex; align-items: flex-end; justify-content: center; gap: 2px; padding: 0 6px;
+}
+.ch {
+  position: relative; width: var(--w); height: var(--h); background: var(--c);
+  box-shadow: inset -3px 0 0 rgba(0,0,0,.2), inset 3px 0 0 rgba(255,255,255,.05);
+  transition: filter .6s ease;
+}
+.ch:not(.lit) { filter: saturate(.18) brightness(.5); }
+/* Gevel-toppen (trap-, punt-, klok-, halsgevel) */
+.ch::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 13px; background: var(--c); }
+.ch:not(.lit)::before { filter: saturate(.18) brightness(.5); }
+.ch-punt::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.ch-klok::before { height: 15px; border-radius: 50% 50% 0 0 / 100% 100% 0 0; }
+.ch-hals::before { clip-path: polygon(28% 0, 72% 0, 72% 42%, 100% 42%, 100% 100%, 0 100%, 0 42%, 28% 42%); }
+.ch-trap::before { height: 15px; clip-path: polygon(0 100%, 0 64%, 24% 64%, 24% 32%, 40% 32%, 40% 0, 60% 0, 60% 32%, 76% 32%, 76% 64%, 100% 64%, 100% 100%); }
+/* Ramen */
+.ch-windows { position: absolute; inset: 7px 5px 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 4px; align-content: start; }
+.cw { width: 100%; height: 6px; border-radius: 1px; background: #222b38; box-shadow: inset 0 0 0 1px rgba(0,0,0,.3); }
+.cw.on { background: radial-gradient(circle at 50% 40%, #ffe9a8, #ffc861 72%); box-shadow: 0 0 6px rgba(255,200,90,.85); animation: cwFlicker 5s ease-in-out infinite; }
+.cw.on:nth-child(3n) { animation-delay: 1.4s; }
+.cw.on:nth-child(2n) { animation-delay: .7s; }
+@keyframes cwFlicker { 0%,100% { opacity: 1; } 46% { opacity: .82; } 70% { opacity: 1; } }
+.cs-day .cw { background: #46566a; }
+.cs-day .cw.on { background: #dff0ff; box-shadow: none; animation: none; }
+
+/* Kade + gracht */
+.cs-quay { position: absolute; left: 0; right: 0; bottom: 48px; height: 4px; z-index: 2; background: #232730; box-shadow: 0 1px 0 rgba(0,0,0,.4); }
+.cs-water { position: absolute; left: 0; right: 0; bottom: 0; height: 50px; z-index: 1; overflow: hidden; }
+.cs-day .cs-water   { background: linear-gradient(180deg, #5aa3cd, #336f99); }
+.cs-dawn .cs-water  { background: linear-gradient(180deg, #c79a8f, #6f7f93); }
+.cs-dusk .cs-water  { background: linear-gradient(180deg, #6a4f6a, #2c3350); }
+.cs-night .cs-water { background: linear-gradient(180deg, #122b4d, #0a1830); }
+/* Weerspiegeling van de panden in het water */
+.cs-reflection {
+  position: absolute; left: 0; right: 0; top: 0; height: 50px; opacity: .3; filter: blur(1px);
+  -webkit-mask: linear-gradient(180deg, #000, transparent 92%);
+          mask: linear-gradient(180deg, #000, transparent 92%);
+  animation: csReflect 4.5s ease-in-out infinite;
+}
+.cs-reflection .cs-houses { position: absolute; top: 0; bottom: auto; transform: scaleY(-1); }
+@keyframes csReflect { 0%,100% { transform: translateX(0); } 50% { transform: translateX(2px); } }
+/* Glinstering op het water */
+.cs-shimmer {
+  position: absolute; inset: 0; opacity: .5;
+  background: repeating-linear-gradient(90deg, transparent 0 13px, rgba(255,255,255,.06) 13px 15px);
+  animation: csShimmer 7s linear infinite;
+}
+@keyframes csShimmer { to { transform: translateX(15px); } }
+/* Bootje dat over de gracht vaart */
+.cs-boat { position: absolute; bottom: 13px; left: -26px; width: 24px; height: 9px; z-index: 3; animation: csBoat 18s linear infinite; }
+.cs-boat::before { content: ''; position: absolute; bottom: 0; left: 0; width: 24px; height: 6px; background: #3a2c22; border-radius: 0 0 7px 7px / 0 0 9px 9px; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.cs-boat::after  { content: ''; position: absolute; bottom: 5px; left: 6px; width: 11px; height: 5px; background: #5a4636; border-radius: 2px 2px 0 0; }
+.cs-boat-light { position: absolute; top: -2px; right: -1px; width: 3px; height: 3px; border-radius: 50%; background: #ffe9a8; box-shadow: 0 0 6px 1px #ffd166; }
+.cs-day .cs-boat-light { opacity: 0; }
+@keyframes csBoat { 0% { transform: translate(0,0); } 50% { transform: translate(190px,-1.5px); } 100% { transform: translate(380px,0); } }
+
 @media (prefers-reduced-motion: reduce) {
   .income-road *, .income-road .ir-sun::before, .streak-flame i, .pl-wave, .pl-wave2,
   .pl-fill::before, .pl-fill::after, .bu-medallion, .bu-shine,
   .badge.earned .badge-emoji::after, .hab-day.today,
-  .sky-sun, .sky-star, .sky-cloud, .coin-shimmer, .coin-disc, .shbc-bar::after, .cal-cell.today { animation: none !important; }
+  .sky-sun, .sky-star, .sky-cloud, .coin-shimmer, .coin-disc, .shbc-bar::after, .cal-cell.today,
+  .cs-sun, .cs-star, .cw.on, .cs-reflection, .cs-shimmer, .cs-boat,
+  .tp-animate .tp-item { animation: none !important; }
+}
+
+/* ── ✅ "Vandaag" paneel (dashboard): taken + agenda samen ── */
+.tp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.tp-sub { font-size: .76rem; color: var(--text-dim); white-space: nowrap; }
+.tp-progress { height: 3px; border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden; margin: 8px 0 12px; }
+.tp-progress-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width .6s var(--ease-out); }
+.tp-quick {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 12px; padding: 4px 4px 4px 13px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.tp-quick:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.tp-quick input { flex: 1; min-width: 0; border: none; background: transparent; color: var(--text); font-size: .92rem; padding: 9px 0; outline: none; }
+.tp-quick-add {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 9px; border: none; cursor: pointer;
+  background: var(--accent); color: #1b1b1b; font-size: 1.35rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center; transition: transform .15s, filter .15s;
+}
+.tp-quick-add:active { transform: scale(.9); }
+.tp-list { display: flex; flex-direction: column; gap: 6px; }
+.tp-item {
+  display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 11px;
+  background: rgba(255,255,255,.025); position: relative; max-height: 70px;
+  transition: max-height .32s var(--ease-out), opacity .3s, transform .3s, padding .32s, margin .32s, background .2s;
+}
+.tp-item.event { border-left: 3px solid var(--cat, #888); padding-left: 9px; }
+.tp-animate .tp-item { animation: tpIn .34s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 32ms); }
+.tp-item.checking { background: color-mix(in srgb, var(--accent) 13%, transparent); }
+.tp-item.leaving { max-height: 0; opacity: 0; transform: translateX(34px); padding-top: 0; padding-bottom: 0; margin-top: -6px; }
+.tp-check {
+  flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-faint);
+  cursor: pointer; position: relative; transition: background .2s, border-color .2s;
+}
+.tp-check::after {
+  content: ''; position: absolute; left: 6px; top: 2.5px; width: 5px; height: 9px;
+  border: solid #1b1b1b; border-width: 0 2px 2px 0; transform: rotate(45deg) scale(0); transform-origin: center;
+  transition: transform .2s var(--spring);
+}
+.tp-check.on, .tp-item.checking .tp-check { background: var(--accent); border-color: var(--accent); }
+.tp-check.on::after, .tp-item.checking .tp-check::after { transform: rotate(45deg) scale(1); }
+.tp-body { flex: 1; min-width: 0; }
+.tp-item-title { font-size: .92rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+.tp-item-done .tp-item-title { text-decoration: line-through; color: var(--text-dim); }
+.tp-prio-dot { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 5px color-mix(in srgb, var(--danger) 60%, transparent); }
+.tp-meta { font-size: .72rem; color: var(--text-dim); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+.tp-time { font-variant-numeric: tabular-nums; }
+.tp-badge-late { color: var(--danger); font-weight: 600; }
+.tp-dot { opacity: .5; }
+.tp-empty { text-align: center; padding: 14px 8px; color: var(--text-dim); font-size: .86rem; }
+.tp-done-toggle { width: 100%; text-align: left; margin-top: 10px; background: none; border: none; color: var(--text-dim); font-size: .78rem; cursor: pointer; padding: 4px 2px; }
+.tp-done-list { margin-top: 6px; opacity: .85; }
+@keyframes tpIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+
+/* ══ 🕋 QIBLA — dashboard-kaart ═══════════════════════════════════════════ */
+.qibla-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .18s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease, border-color .25s ease;
+}
+.qibla-card::after {
+  /* zachte gouden gloed-veeg rechtsboven, in de sfeer van het kompas */
+  content: '';
+  position: absolute;
+  top: -40%; right: -20%;
+  width: 60%; height: 160%;
+  background: radial-gradient(circle, var(--gold-glow, rgba(216,184,106,.16)) 0%, transparent 70%);
+  pointer-events: none;
+}
+.qibla-card:active { transform: scale(.985); }
+@media (hover: hover) {
+  .qibla-card:hover { border-color: rgba(216,184,106,.4); box-shadow: 0 6px 26px rgba(0,0,0,.28); }
+}
+.ql-card-dial {
+  width: 78px; height: 78px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4), inset 0 0 0 1px rgba(216,184,106,.12);
+  filter: drop-shadow(0 0 6px rgba(216,184,106,.18));
+  animation: qlCardFloat 5s ease-in-out infinite;
+}
+@keyframes qlCardFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.ql-card-info { flex: 1; min-width: 0; }
+.qibla-card .card-title { margin: 0 0 4px; }
+.ql-card-dir {
+  display: flex; align-items: baseline; gap: 8px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.75rem; font-weight: 600;
+  color: var(--gold, #c9a84c);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.ql-card-name { font-size: .95rem; font-weight: 600; color: var(--text-dim, #8a8a8a); letter-spacing: .04em; }
+.ql-card-dist { font-size: .8rem; color: var(--text-dim, #7a7a7a); margin-top: 5px; }
+.ql-card-hint {
+  font-size: .74rem; color: var(--text-faint, #5a5a5a);
+  margin-top: 8px; display: flex; align-items: center; gap: 5px;
+}
+.ql-card-arrow { display: inline-block; animation: qlArrowNudge 1.8s ease-in-out infinite; }
+@keyframes qlArrowNudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ql-card-dial, .ql-card-arrow { animation: none !important; }
 }
