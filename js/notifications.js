@@ -227,6 +227,8 @@ function _nsHay(d) {
     .filter(Boolean).join(' ').toLowerCase();
 }
 function _nsIsStrike(d) { return /staking|stakt|werkonderbreking/.test(_nsHay(d)); }
+// Noord-Holland plaatsen/stations — storing hier = kans op ritten.
+const _NS_NH_RE = /amsterdam|haarlem|schiphol|hoofddorp|nieuw-vennep|zaandam|zaanstad|wormerveer|krommenie|castricum|uitgeest|heemskerk|beverwijk|santpoort|driehuis|velsen|ijmuiden|bloemendaal|overveen|zandvoort|heemstede|halfweg|weesp|diemen|naarden|bussum|hilversum|purmerend|hoorn|enkhuizen|bovenkarspel|alkmaar|heiloo|heerhugowaard|obdam|schagen|anna paulowna|den helder|texel|edam|volendam|monnickendam/;
 
 async function checkNsDisruptions() {
   const src = (localStorage.getItem('nsProxyUrl') || '').trim() || NS_DATA_URL;
@@ -247,7 +249,7 @@ async function checkNsDisruptions() {
     if (_nsIsStrike(d)) return true;            // staking is altijd relevant (overal)
     const t = String(d.type || '').toLowerCase();
     const isDisruption = /storing|disruption|calamit/.test(t);
-    return isDisruption && /amsterdam/.test(_nsHay(d));
+    return isDisruption && _NS_NH_RE.test(_nsHay(d));
   };
 
   // Eerste keer (nog nooit gecheckt): alleen onthouden, niet melden voor reeds
@@ -269,9 +271,9 @@ async function checkNsDisruptions() {
   }
   const first = String(fresh[0].title || fresh[0].titel || 'Trein-storing').replace(/\.\s*$/, '');
   if (fresh.length === 1) {
-    _notify('ns_disruption_' + fresh[0].id, 'Trein-storing Amsterdam', first + ' — kans op ritten!');
+    _notify('ns_disruption_' + fresh[0].id, 'Trein-storing Noord-Holland', first + ' — kans op ritten!');
   } else {
-    _notify('ns_disruption_multi', `${fresh.length} trein-storingen Amsterdam`,
+    _notify('ns_disruption_multi', `${fresh.length} trein-storingen Noord-Holland`,
       first + ' e.a. — kans op ritten!');
   }
 }

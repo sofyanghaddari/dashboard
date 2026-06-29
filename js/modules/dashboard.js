@@ -888,6 +888,8 @@ function wegWidget() {
 // Alle externe tekst wordt ge-escaped in renderNs().
 const NS_CACHE_KEY = 'nsDisruptionsCache';
 const NS_DATA_URL = 'https://raw.githubusercontent.com/sofyanghaddari/dashboard/ns-data/ns-disruptions.json';
+// Noord-Holland plaatsen/stations — een storing hier = kans op ritten voor Soef.
+const NH_RE = /amsterdam|haarlem|schiphol|hoofddorp|nieuw-vennep|zaandam|zaanstad|wormerveer|krommenie|castricum|uitgeest|heemskerk|beverwijk|santpoort|driehuis|velsen|ijmuiden|bloemendaal|overveen|zandvoort|heemstede|halfweg|weesp|diemen|naarden|bussum|hilversum|purmerend|hoorn|enkhuizen|bovenkarspel|alkmaar|heiloo|heerhugowaard|obdam|schagen|anna paulowna|den helder|texel|edam|volendam|monnickendam/;
 const _setHTML = (el, html) => { el.replaceChildren(); el.insertAdjacentHTML('beforeend', html); };
 
 async function loadNs(container) {
@@ -931,12 +933,12 @@ function renderNs(body, data) {
     const type = String(d.type || '').toLowerCase();
     const hay = `${title} ${text} ${cause}`.toLowerCase();
     const isStrike = /staking|stakt|werkonderbreking/.test(hay);
-    const isAms = /amsterdam/.test(hay);
+    const isNH = NH_RE.test(hay);
     let cat;                                   // strike > alert (storing) > work
     if (isStrike) cat = 'strike';
     else if (/maintenance|werkzaam/.test(type)) cat = 'work';
     else cat = 'alert';                        // disruption / calamity
-    return { title: title.replace(/\.\s*$/, ''), cat, isAms };
+    return { title: title.replace(/\.\s*$/, ''), cat, isNH };
   });
 
   if (!items.length) {
@@ -948,8 +950,8 @@ function renderNs(body, data) {
   const alerts  = items.filter(i => i.cat === 'alert');
   const works   = items.filter(i => i.cat === 'work');
 
-  // Uitgelicht (1-regelig): eerst stakingen, dan Amsterdam-storingen.
-  const highlight = [...strikes, ...alerts.filter(i => i.isAms && i.cat !== 'strike')];
+  // Uitgelicht (1-regelig): eerst stakingen, dan Noord-Holland-storingen.
+  const highlight = [...strikes, ...alerts.filter(i => i.isNH && i.cat !== 'strike')];
   const hiSet = new Set(highlight);
   const rest = items.filter(i => !hiSet.has(i));
 
@@ -967,7 +969,7 @@ function renderNs(body, data) {
 
   const hi = highlight.length
     ? `<div class="ns-list">${highlight.slice(0, 5).map(row).join('')}</div>`
-    : `<p class="ns-clear">✓ Niets rond Amsterdam</p>`;
+    : `<p class="ns-clear">✓ Niets in Noord-Holland</p>`;
 
   const more = rest.length
     ? `<details class="ns-more"><summary>Alle meldingen (${items.length})</summary>
