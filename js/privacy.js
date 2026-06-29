@@ -2,12 +2,18 @@ const EYE_OFF = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fil
 const EYE_ON  = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 
 // Standaard zijn bedragen ZICHTBAAR bij het openen van de app. Pas wanneer de
-// gebruiker zelf op het oogje tikt worden ze geblurd. Sessie-only (module-var),
-// dus elke nieuwe app-start begint weer zichtbaar — precies wat gevraagd is.
+// gebruiker zelf op het oogje/de zon tikt worden ze geblurd. Sessie-only
+// (module-var), dus elke nieuwe app-start begint weer zichtbaar.
 let _hidden = false;
 
+export function isAmountsHidden() { return _hidden; }
+export function setAmountsHidden(v) {
+  _hidden = !!v;
+  document.body.classList.toggle('amounts-hidden', _hidden);
+}
+
+// Klassieke oog-knop (gebruikt o.a. in Taxi-overzicht).
 export function initPrivacyToggle(container) {
-  // Body-class stuurt de blur globaal aan → geen flash bij render, werkt op elke tab.
   document.body.classList.toggle('amounts-hidden', _hidden);
 
   const btn = container.querySelector('.privacy-toggle');
@@ -21,4 +27,30 @@ export function initPrivacyToggle(container) {
   };
   btn.onclick = e => { e.stopPropagation(); _hidden = !_hidden; apply(); };
   apply();
+}
+
+// ☀️ Zon/maan op het dashboard ís de verberg-knop. Tik = bedragen verbergen,
+// met een zonsondergang-animatie (stralen in, ooglid dicht, lucht wordt nacht).
+export function initSkyPrivacy(container) {
+  document.body.classList.toggle('amounts-hidden', _hidden);
+
+  const card = container.querySelector('.dagstart-card');
+  const orb  = container.querySelector('#sky-privacy');
+  if (!card || !orb) return;
+
+  const sync = () => {
+    card.classList.toggle('sky-hidden', _hidden);
+    orb.title = _hidden ? 'Toon bedragen' : 'Verberg bedragen';
+    orb.setAttribute('aria-label', orb.title);
+    orb.setAttribute('aria-pressed', _hidden ? 'true' : 'false');
+  };
+
+  orb.onclick = (e) => {
+    e.stopPropagation();
+    setAmountsHidden(!_hidden);
+    sync();
+    try { navigator.vibrate?.(12); } catch (_) {}
+  };
+
+  sync();
 }

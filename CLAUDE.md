@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v144** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v145** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -297,6 +297,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++20. **☀️→🌙 Zon = verberg-knop met zonsondergang-animatie v145 (29 juni 2026):** op verzoek van user — de blur/privacy-functie zit nu ín de zon/maan van de begroetingskaart i.p.v. een los oogje (dat is verwijderd op het dashboard; Taxi houdt de oog-knop). `skyScene()` rendert de zon/maan nu als klikbare knop `#sky-privacy` met lagen (gloed, draaiende stralen, schijf, kraters, sikkel-schaduw). Tik = bedragen verbergen met een **zonsondergang-animatie**: stralen trekken in, de schijf koelt van goud naar zilver, een sikkel-schaduw schuift in (zon → maansikkel), de lucht wordt nacht (`.sky-shade` + sterren `.sky-stars` faden in) en de bedragen blurren (`body.amounts-hidden`). Weer tikken = zonsopkomst. Gedeelde state in `privacy.js` (`setAmountsHidden`/`isAmountsHidden` + nieuwe `initSkyPrivacy(container)`), haptische tik. CSS-sectie ".so-*"/".sky-*" onderaan `styles.css`; reduced-motion-guard bijgewerkt (`.so-glow`/`.so-rays` i.p.v. oude `.sky-sun`).
 
 +19. **Hadith/Woord compacter + volgorde v144 (29 juni 2026):** op verzoek van user. Hadith- en Woord-van-de-dag staan nu **boven** het "Vandaag"-paneel (volgorde: begroeting → hadith → woord → Vandaag → quick-actions). Beide kaarten **compacter**: kleinere tekst + krappere regelafstand/marges/padding (`.hadith-arabic` .86rem, `.hadith-text` .8rem, `.woord-word` 1.05rem, `.woord-def`/`.woord-bridge`/`.woord-zin` .75–.8rem, kaart-padding 13/15px, `.daycard-head` margin 8px) — nog goed leesbaar, neemt minder verticale ruimte.
 

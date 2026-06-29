@@ -6480,11 +6480,73 @@ input, select, textarea {
 .sky-scene.sky-dawn  { background: linear-gradient(180deg, #f6b07a 0%, #ffd9a8 55%, transparent 100%); }
 .sky-scene.sky-dusk  { background: linear-gradient(180deg, #5a3f7a 0%, #c96b6b 60%, transparent 100%); }
 .sky-scene.sky-night { background: linear-gradient(180deg, #16234b 0%, #25406f 65%, transparent 100%); }
-.sky-sun, .sky-moon { position: absolute; top: 14px; right: 22px; width: 26px; height: 26px; border-radius: 50%; }
-.sky-sun  { background: radial-gradient(circle at 38% 34%, #fff6d2, #ffd23f 62%, #ffb300); box-shadow: 0 0 22px 7px rgba(255,210,70,.55); animation: skySun 5s ease-in-out infinite; }
-.sky-moon { background: radial-gradient(circle at 36% 32%, #fdfdf6, #e3e9f3 70%, #c7d0e0); box-shadow: 0 0 16px 4px rgba(200,220,255,.4); }
-.sky-moon::after { content: ''; position: absolute; top: 4px; left: 4px; width: 8px; height: 8px; border-radius: 50%; background: rgba(120,140,180,.3); box-shadow: 10px 6px 0 -2px rgba(120,140,180,.25), 3px 13px 0 -3px rgba(120,140,180,.22); }
-@keyframes skySun { 0%,100% { box-shadow: 0 0 20px 6px rgba(255,210,70,.45); } 50% { box-shadow: 0 0 28px 9px rgba(255,210,70,.7); } }
+/* Sterren- en nacht-laag (sterren verschijnen 's nachts én bij verbergen) */
+.sky-stars { position: absolute; inset: 0; opacity: 0; transition: opacity .8s; }
+.sky-night .sky-stars, .sky-dusk .sky-stars { opacity: 1; }
+.sky-shade { position: absolute; inset: 0; opacity: 0; transition: opacity .6s; background: linear-gradient(180deg, #0c1733 0%, #182a52 60%, transparent 100%); }
+
+/* ☀️→🌙 Zon/maan = verberg-knop (klikbaar, boven de kaartinhoud) */
+#sky-privacy {
+  position: absolute; top: 8px; right: 12px; z-index: 3;
+  width: 46px; height: 46px; padding: 0; border: 0; background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent; pointer-events: auto;
+  transition: transform .15s var(--ease-out);
+}
+#sky-privacy:active { transform: scale(.9); }
+#sky-privacy:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 50%; }
+.so-stage { position: relative; width: 30px; height: 30px; }
+.so-glow {
+  position: absolute; inset: -8px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,210,80,.6), rgba(255,200,60,0) 68%);
+  transition: background .6s, transform .6s, opacity .6s; animation: soGlow 5s ease-in-out infinite;
+}
+@keyframes soGlow { 0%,100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.14); opacity: 1; } }
+.so-rays {
+  position: absolute; inset: -7px; border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(255,224,135,0) 0deg, rgba(255,224,135,.9) 6deg, rgba(255,224,135,0) 12deg);
+  -webkit-mask: radial-gradient(circle, transparent 14px, #000 15px);
+          mask: radial-gradient(circle, transparent 14px, #000 15px);
+  animation: soRays 22s linear infinite;
+  transition: opacity .5s var(--ease-out), transform .5s var(--ease-out);
+}
+@keyframes soRays { to { transform: rotate(360deg); } }
+.so-orb { position: absolute; inset: 4px; border-radius: 50%; overflow: hidden; }
+.so-disc {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #fff6d2, #ffd23f 60%, #ffb300);
+  transition: background .6s, filter .6s;
+}
+.so-craters {
+  position: absolute; inset: 0; border-radius: 50%; opacity: 0; transition: opacity .5s;
+  background:
+    radial-gradient(circle at 32% 38%, rgba(120,140,180,.5) 0 17%, transparent 18%),
+    radial-gradient(circle at 65% 60%, rgba(120,140,180,.42) 0 13%, transparent 14%),
+    radial-gradient(circle at 56% 26%, rgba(120,140,180,.36) 0 9%, transparent 10%);
+}
+/* Sikkel-schaduw: schuift in bij verbergen → zon wordt een maansikkel */
+.so-lid {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: #141f42;
+  transform: translateX(-44%) scale(0); transform-origin: center;
+  transition: transform .5s var(--ease-out);
+}
+
+/* Maan-stand (echte nacht): zilveren schijf, kraters, geen stralen */
+.so-is-moon .so-disc { background: radial-gradient(circle at 36% 32%, #fdfdf6, #e3e9f3 70%, #c7d0e0); }
+.so-is-moon .so-craters { opacity: 1; }
+.so-is-moon .so-rays { opacity: 0; transform: scale(.4); }
+.so-is-moon .so-glow { background: radial-gradient(circle, rgba(200,220,255,.5), rgba(200,220,255,0) 68%); animation: none; }
+
+/* Verborgen-stand: zon gaat onder — stralen in, ooglid dicht, lucht wordt nacht */
+.sky-hidden .so-rays { opacity: 0; transform: scale(.35) rotate(40deg); }
+.sky-hidden .so-glow { background: radial-gradient(circle, rgba(150,170,210,.4), rgba(150,170,210,0) 70%); animation: none; transform: scale(.85); }
+.sky-hidden .so-disc { background: radial-gradient(circle at 36% 32%, #dfe7f5, #b9c4dc 70%, #97a3bd); }
+.sky-hidden .so-craters { opacity: 1; }
+.sky-hidden .so-lid { transform: translateX(-32%) scale(1); }
+.sky-hidden .sky-stars { opacity: 1; }
+.sky-hidden .sky-shade { opacity: .92; }
+.sky-hidden .sky-cloud { opacity: 0; transition: opacity .5s; }
 .sky-star { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff; box-shadow: 0 0 4px 1px rgba(255,255,255,.7); animation: skyTwinkle 3s ease-in-out infinite; }
 @keyframes skyTwinkle { 0%,100% { opacity: .25; transform: scale(.7); } 50% { opacity: 1; transform: scale(1); } }
 .sky-cloud { position: absolute; height: 9px; border-radius: 9px; background: rgba(255,255,255,.55); filter: blur(.5px); }
@@ -6620,7 +6682,7 @@ input, select, textarea {
   .income-road *, .income-road .ir-sun::before, .streak-flame i, .pl-wave, .pl-wave2,
   .pl-fill::before, .pl-fill::after, .bu-medallion, .bu-shine,
   .badge.earned .badge-emoji::after, .hab-day.today,
-  .sky-sun, .sky-star, .sky-cloud, .coin-shimmer, .coin-disc, .shbc-bar::after, .cal-cell.today,
+  .so-glow, .so-rays, .sky-star, .sky-cloud, .coin-shimmer, .coin-disc, .shbc-bar::after, .cal-cell.today,
   .cs-sun, .cs-star, .cw.on, .cs-reflection, .cs-shimmer, .cs-boat,
   .tp-animate .tp-item { animation: none !important; }
 }
