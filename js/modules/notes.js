@@ -226,14 +226,18 @@ function openImportProgress(container, file, isIdea) {
 function parseBulk(text, mode) {
   if (!text || !text.trim()) return [];
   let chunks;
-  if (mode === 'hr') {
-    // Splitsen op een scheidingsteken. iPhone "Combineer tekst" plakt het
-    // scheidingsteken vaak INLINE (midden in de tekst), niet op een eigen regel.
-    // En iOS verandert getypte "---" in een lang streepje (— of –). Daarom:
+  if (mode === 'eq') {
+    // Splitsen op 3+ isgelijktekens (=====) ergens in de tekst. Dit teken komt
+    // praktisch nooit in echte notities voor, dus geen vals-splitsen. Aanbevolen
+    // scheidingsteken in de iPhone-shortcut.
+    chunks = text.split(/={3,}/);
+  } else if (mode === 'hr') {
+    // Splitsen op een streepje-scheiding. iPhone "Combineer tekst" plakt het
+    // scheidingsteken vaak INLINE (midden in de tekst). LET OP: splitst ook op
+    // streepjes BINNEN een notitie — gebruik liever de ===== optie.
     //  - een lang streepje (— of –, 1 of meer) ERGENS in de tekst, of
-    //  - 3+ isgelijktekens ergens, of
     //  - een regel die enkel uit 2+ gewone streepjes bestaat (--- op eigen regel).
-    chunks = text.split(/[—–]+|={3,}|^[ \t]*-{2,}[ \t]*$/m);
+    chunks = text.split(/[—–]+|^[ \t]*-{2,}[ \t]*$/m);
   } else if (mode === 'blank') {
     // splitsen op één of meer lege regels
     chunks = text.split(/\n[ \t]*\n+/);
@@ -266,7 +270,8 @@ function openBulkImport(container, isIdea) {
       </p>
       <label>Scheiding tussen notities</label>
       <select id="bi-mode">
-        <option value="hr">Streepje — of --- (aanbevolen)</option>
+        <option value="eq">Scheidingslijn ===== (aanbevolen)</option>
+        <option value="hr">Lang streepje — of ---</option>
         <option value="blank">Een lege regel ertussen</option>
         <option value="line">Elke regel = aparte notitie</option>
       </select>
