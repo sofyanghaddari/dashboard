@@ -127,4 +127,6 @@ async function saveCfg(id, cfg) {
   });
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+// Best-effort: een push-fout (bv. verlopen token) mag de data-pijplijn nooit
+// rood maken. We loggen 'm wél, maar eindigen met exit 0.
+main().catch(err => { console.error('NS-push overgeslagen:', err?.message || err); process.exit(0); });

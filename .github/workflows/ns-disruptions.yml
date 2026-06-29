@@ -85,4 +85,5 @@ jobs:
             exit 0
           fi
           npm install --no-audit --no-fund
-          node send-ns-push.mjs
+          # Best-effort: push-fouten mogen de data-pijplijn niet rood maken.
+          node send-ns-push.mjs || echo "NS-push overgeslagen (niet-kritiek)"
