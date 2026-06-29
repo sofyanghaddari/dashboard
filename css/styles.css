@@ -2360,14 +2360,26 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
 }
 .day-empty-hint b { color: var(--text-dim); font-weight: 600; }
 
-/* NS trein-storingen kaart */
-.ns-list { display: flex; flex-direction: column; gap: 10px; }
-.ns-item { display: flex; gap: 10px; align-items: flex-start; }
-.ns-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+/* NS treinverkeer-kaart — compact: samenvatting-chips + 1-regelige rijen, rest inklapbaar */
+.ns-summary { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.ns-chip { font-size: .7rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; letter-spacing: .02em; }
+.ns-chip-strike { background: var(--danger); color: #fff; }
+.ns-chip-alert { background: rgba(217,140,132,.18); color: var(--danger); }
+.ns-chip-work { background: rgba(201,167,90,.18); color: var(--accent); }
+.ns-list { display: flex; flex-direction: column; gap: 4px; }
+.ns-row { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.ns-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.ns-dot-strike { background: var(--danger); box-shadow: 0 0 0 3px rgba(217,140,132,.22); }
 .ns-dot-alert { background: var(--danger); box-shadow: 0 0 0 3px rgba(217,140,132,.15); }
 .ns-dot-work { background: var(--accent); box-shadow: 0 0 0 3px rgba(201,167,90,.15); }
-.ns-item-title { font-size: .9rem; font-weight: 600; color: var(--text); line-height: 1.3; }
-.ns-item-text { font-size: .8rem; color: var(--text-dim); line-height: 1.4; margin-top: 2px; }
+.ns-row-title { font-size: .84rem; color: var(--text); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ns-row-title b { color: var(--danger); }
+.ns-clear { font-size: .85rem; color: var(--text-dim); }
+.ns-more { margin-top: 8px; }
+.ns-more summary { font-size: .8rem; color: var(--text-dim); cursor: pointer; list-style: none; }
+.ns-more summary::-webkit-details-marker { display: none; }
+.ns-more summary::before { content: '▸ '; }
+.ns-more[open] summary::before { content: '▾ '; }
 
 /* ══════════════════════════════════════════════
    PREMIUM COMPONENTS (nieuwe design systeem)
