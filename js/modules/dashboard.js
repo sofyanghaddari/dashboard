@@ -249,14 +249,14 @@ export async function render(container) {
       <div class="tip-text" id="tip-text-content">${tip.isShame ? escapeHTML(tip.text) : tip.text}</div>
     </div>` : ''}
 
-    <!-- VANDAAG — taken + agenda van vandaag, snel toevoegen & afvinken -->
-    <div id="today-panel-mount"></div>
-
     <!-- HADITH VAN DE DAG -->
     ${hadithWidget()}
 
     <!-- WOORD VAN DE DAG -->
     ${woordWidget(now)}
+
+    <!-- VANDAAG — taken + agenda van vandaag, snel toevoegen & afvinken -->
+    <div id="today-panel-mount"></div>
 
     <!-- QUICK ACTIONS -->
     <div class="quick-actions">

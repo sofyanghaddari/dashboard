@@ -3259,67 +3259,69 @@ body[data-density="compact"] .circular-progress { width: 120px; height: 120px; }
 .hadith-card {
   border-color: rgba(93,212,154,.15);
   background: linear-gradient(135deg, rgba(93,212,154,.04) 0%, var(--bg-elev) 60%);
+  padding: 13px 15px;
 }
 .hadith-arabic {
-  font-size: .95rem;
+  font-size: .86rem;
   color: var(--text-dim);
   text-align: right;
-  line-height: 1.8;
+  line-height: 1.55;
   font-family: "Scheherazade New", "Amiri", serif;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
   direction: rtl;
 }
 .hadith-text {
-  font-size: .9rem;
-  line-height: 1.6;
+  font-size: .8rem;
+  line-height: 1.42;
   color: var(--text);
   font-style: italic;
 }
 .hadith-source {
-  font-size: .72rem;
+  font-size: .68rem;
   color: var(--text-faint);
-  margin-top: 6px;
+  margin-top: 4px;
   text-align: right;
 }
 
 /* ── WOORD VAN DE DAG WIDGET ─────────────────────────────────── */
 .woord-card {
   border-color: var(--border);
+  padding: 13px 15px;
 }
 .woord-word {
-  font-size: 1.3rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -.01em;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 .woord-type {
-  font-size: .7rem;
+  font-size: .68rem;
   text-transform: uppercase;
   letter-spacing: .08em;
   color: var(--text-faint);
-  margin-bottom: 8px;
-}
-.woord-def {
-  font-size: .88rem;
-  color: var(--text-dim);
-  line-height: 1.5;
   margin-bottom: 6px;
 }
-.woord-bridge {
+.woord-def {
   font-size: .8rem;
-  color: var(--text-faint);
+  color: var(--text-dim);
   line-height: 1.4;
-  padding: 6px 10px;
+  margin-bottom: 4px;
+}
+.woord-bridge {
+  font-size: .75rem;
+  color: var(--text-faint);
+  line-height: 1.35;
+  padding: 5px 9px;
   background: var(--bg-elev-2);
   border-radius: 6px;
   border-left: 2px solid var(--border);
 }
 .woord-zin {
-  font-size: .8rem;
+  font-size: .75rem;
   color: var(--text-secondary);
-  line-height: 1.5;
-  margin-top: 8px;
+  line-height: 1.4;
+  margin-top: 6px;
   font-style: italic;
   opacity: .85;
 }
@@ -3327,7 +3329,7 @@ body[data-density="compact"] .circular-progress { width: 120px; height: 120px; }
 /* ── DAG-KAART CONTROLS (Hadith/Woord: vorige dag · voorlezen · volgende) ── */
 .daycard-head {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 8px; margin-bottom: var(--sp-3);
+  gap: 8px; margin-bottom: 8px;
 }
 .daycard-head .card-title { margin: 0; }
 .daycard-controls { display: flex; gap: 6px; flex-shrink: 0; }
