@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v137)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v138)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -190,7 +190,7 @@ js/
     suras.js                     — ⚠️ DEAD: 114 suras, niet meer geïmporteerd (oude soera-grid)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v137'
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v138'
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -298,6 +298,9 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 ## Recente beslissingen (chronologisch, meest recent boven)
 
++17. **🏙️ Amsterdam grachten-skyline v142 (28 juni 2026):** unieke sfeer-animatie voor het **maanddoel** in het Taxi-overzicht, op verzoek van user ("iets unieks en gaaf"). Nieuw bestand `js/canal-skyline.js` (`canalSkyline(pct, now)`) genereert een rij van 8 grachtenpanden met variërende gevels (trap-/punt-/klok-/halsgevel via clip-path/border-radius). De panden **lichten op** naarmate je je maanddoel nadert: behaald = vol in kleur met brandende ramen, nog te verdienen = donker silhouet (`litCount = round(pct/100*8)`). Dag/nacht-lucht volgt de klok (zon/maan/sterren), een bootje vaart over de gracht (`csBoat`) met een lichtje, en de panden weerspiegelen in het water (`.cs-reflection` scaleY(-1) + masker + shimmer). CSS-sectie "🏙️ Amsterdam grachten-skyline" onderaan `styles.css`; reduced-motion-guard uitgebreid.
+   - **Herschikking t.o.v. v139:** elke scène nu op zijn eigen tijdschaal — **dagdoel** = de taxi-rit door Amsterdam (`incomeRoad(goalPct)`, weer terug op de inkomen-hero i.p.v. de platte balk), **maanddoel** = de oplichtende grachten-skyline. Beide scènes benut, geen dubbeling.
+
 +16. **Qibla op dashboard + kompas herontworpen v141 (28 juni 2026):**
    - **Qibla-kaart op het dashboard** (`qiblaCard()` + `initQiblaCard()` in `js/qibla.js`, geplaatst ná de quick-actions in `dashboard.js`): premium kaart met mini-kompas-schijf, richting (bv. "126° ZO"), afstand hemelsbreed naar Mekka en "Tik om je te richten". De naald op de schijf draait naar de qibla-peiling t.o.v. noord. Locatie via `localStorage.userLocation` (fallback Amsterdam), probeert stil een verse `getCurrentPosition`. Tik → opent het volledige kompas. De Koran-subtab-knop blijft als extra ingang.
    - **Volledig kompas (`openQibla`) opgewaardeerd v3:** warmere radiale achtergrond, en een realistische "richting Mekka"-animatie bij uitlijning — lichtstraal omhoog naar de Kaäba (`#ql-beam`), uitdijende lock-ringen (`spawnLockRings`), opstijgende gouden stofdeeltjes (`spawnSparkles` → `ql-dust`), gloeiende doeldriehoek (`.ql-aligned-tri`). Alles met `prefers-reduced-motion`-guard.
@@ -321,7 +324,6 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
    - **Taxi-weg-animatie verhuisd** van dashboard naar het Taxi-overzicht (vervangt daar de platte progressbalk in de inkomen-hero). `incomeRoad()` staat nu in een gedeeld bestand `js/income-road.js` (inclusief de v136-realisme-upgrade: wolken/uitlaat/koplampbundel). `coinMeter()` (munt-meter) is verwijderd met de maand-kaart.
    - **Koran- en Arabisch-previewkaarten verwijderd** — die dupliceerden de quick-action-knoppen. De hizb-streak is nu opgenomen in de Koran quick-action-subtekst ("Vandaag ✓ · 12d streak").
    - Netto resultaat: hoofdpagina korter en minder dubbel; alle inkomensdetails leven in Taxi/Stats.
-
 
 +11. **Realistische animaties v136 (28 juni 2026):** de "levende animaties" uit v134 opgewaardeerd naar het realisme-niveau van de weer-scène (`weatherScene`), op verzoek van user (referentie = iPhone Weer-app).
    - **🔥 Streak-vlam herontworpen** (`koran.js` markup + CSS): van 2 geroteerde blokjes naar een **meerlagige vlam** — gloed-halo (`sf-glow`), oranje buitentong (`sf-outer`), gele middentong (`sf-mid`), witgloeiende kern (`sf-core`) en blauwe vlambasis (`sf-base`). Elke laag flikkert organisch en asynchroon (`sfFlick1/2/3` met skew+scaleY+drift). lvl-4 = fellere kleuren + sterkere gloed.

@@ -15,6 +15,7 @@ const ASSETS = [
   './js/utils.js',
   './js/icons.js',
   './js/income-road.js',
+  './js/canal-skyline.js',
   './js/push.js',
   './js/srs.js',
   './js/settings.js',
