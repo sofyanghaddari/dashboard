@@ -227,10 +227,13 @@ function parseBulk(text, mode) {
   if (!text || !text.trim()) return [];
   let chunks;
   if (mode === 'hr') {
-    // splitsen op een regel die enkel uit streepjes/isgelijktekens bestaat.
-    // iPhone verandert "---" automatisch in een lang streepje (— of –),
-    // dus we accepteren -, –, — (1 of meer) én === als scheiding.
-    chunks = text.split(/^[ \t]*(?:[-–—]+|={2,})[ \t]*$/m);
+    // Splitsen op een scheidingsteken. iPhone "Combineer tekst" plakt het
+    // scheidingsteken vaak INLINE (midden in de tekst), niet op een eigen regel.
+    // En iOS verandert getypte "---" in een lang streepje (— of –). Daarom:
+    //  - een lang streepje (— of –, 1 of meer) ERGENS in de tekst, of
+    //  - 3+ isgelijktekens ergens, of
+    //  - een regel die enkel uit 2+ gewone streepjes bestaat (--- op eigen regel).
+    chunks = text.split(/[—–]+|={3,}|^[ \t]*-{2,}[ \t]*$/m);
   } else if (mode === 'blank') {
     // splitsen op één of meer lege regels
     chunks = text.split(/\n[ \t]*\n+/);
@@ -263,13 +266,17 @@ function openBulkImport(container, isIdea) {
       </p>
       <label>Scheiding tussen notities</label>
       <select id="bi-mode">
-        <option value="hr">Een regel met --- (aanbevolen)</option>
+        <option value="hr">Streepje — of --- (aanbevolen)</option>
         <option value="blank">Een lege regel ertussen</option>
         <option value="line">Elke regel = aparte notitie</option>
       </select>
       <label style="margin-top:.7rem">Tekst</label>
       <textarea id="bi-text" rows="11" placeholder="Plak hier je notities…" style="font-family:'SF Mono',Consolas,monospace;font-size:.9rem"></textarea>
       <div id="bi-count" style="font-size:.85rem;opacity:.7;margin-top:.5rem">Nog niets geplakt</div>
+      <label class="bi-clear-row" style="display:flex;align-items:center;gap:9px;margin-top:.8rem;font-weight:400;font-size:.85rem;cursor:pointer;text-transform:none;letter-spacing:0">
+        <input type="checkbox" id="bi-clear" style="width:18px;height:18px;flex-shrink:0" />
+        <span>Wis eerst alle huidige ${isIdea ? 'ideeën' : 'notities'} (voor een schone herimport)</span>
+      </label>
       <div class="modal-footer row">
         <button type="button" class="btn secondary" id="bi-cancel">Annuleren</button>
         <button type="button" class="btn" id="bi-save" disabled>Importeren</button>
@@ -302,6 +309,16 @@ function openBulkImport(container, isIdea) {
   saveBtn.onclick = async () => {
     const parsed = parseBulk(textEl.value, modeEl.value);
     if (!parsed.length) return;
+    const clearFirst = overlay.querySelector('#bi-clear').checked;
+
+    if (clearFirst) {
+      const existing = (await all('notes')).filter(x => !!x.isIdea === !!isIdea);
+      if (existing.length && !window.confirm(
+        `Zeker weten? Dit verwijdert eerst je ${existing.length} huidige ${isIdea ? 'ideeën' : 'notities'} en zet daarna de ${parsed.length} geplakte erin.`
+      )) return;
+      for (const x of existing) await del('notes', x.id);
+    }
+
     saveBtn.disabled = true;
     saveBtn.textContent = 'Bezig…';
     const now = Date.now();
