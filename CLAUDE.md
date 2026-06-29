@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v143** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v145** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -40,7 +40,7 @@ Lokaal: `/Users/soef/claude code`
 
 ## Modules (10 tabs)
 
-1. **🏠 Dashboard** — begroetingskaart met dag/nacht-lucht + kleine vandaag/maand/hizb-stats (tel-animaties, % van doel), quick-actions (Inkomen/Taken/Koran/Arabisch met statussubtekst incl. streak), weer-radar Amsterdam, kalender+jaaroverzicht, patroon-insights, **Hadith- en Woord-van-de-dag met ‹ › dag-navigatie (vorige dagen herhalen) + 🔊 voorlees-knop** (hadith in Arabisch via `speechSynthesis` ar-SA, woord in NL nl-NL), spaardoelen-kaart, gewoontes-vandaag, top-prioriteit-taken, empty CTA. **Géén** inkomen-hero of maandoverzicht-kaart meer (staan in Taxi-overzicht) — v137 ontdubbeld
+1. **🏠 Dashboard** — begroetingskaart met dag/nacht-lucht + kleine vandaag/maand/hizb-stats (tel-animaties, % van doel), **"Vandaag"-paneel** (`js/today-panel.js`, ná de Hadith/Woord-van-de-dag) dat taken-van-vandaag (deadline vandaag + achterstallig + open hoge-prio zonder datum) én agenda-afspraken van vandaag bundelt — met snel toevoegen (NL-parser, tijd optioneel) en afvinken van zowel taken als afspraken (verving de oude "Prioriteiten"-kaart), quick-actions (Inkomen/Taken/Koran/Arabisch met statussubtekst incl. streak), weer-radar Amsterdam, kalender+jaaroverzicht, patroon-insights, **Hadith- en Woord-van-de-dag met ‹ › dag-navigatie (vorige dagen herhalen) + 🔊 voorlees-knop** (hadith in Arabisch via `speechSynthesis` ar-SA, woord in NL nl-NL), spaardoelen-kaart, gewoontes-vandaag, empty CTA. **Géén** inkomen-hero of maandoverzicht-kaart meer (staan in Taxi-overzicht) — v137 ontdubbeld
 2. **🚖 Taxi** — vereenvoudigd: alleen "+ Inkomen vandaag noteren" + maandkalender-grid waarop je per dag retroactief inkomen invult (klik dag → modal met items + add), CSV-export, jaarverloop bar-chart. **Geen** shift-tracker, source-breakdown, uitgaven of belasting-reserve meer
 3. **🕌 Geloof** (`geloof.js`) — wrapper met twee sub-tabs:
    - **📖 Koran** sub-tab: dagelijkse hizb afvinken + streak + 30-dagen grid + streak-repair (1× per maand gemiste dag goedmaken) + reminder-instellingen
@@ -297,6 +297,14 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++19. **Hadith/Woord compacter + volgorde v144 (29 juni 2026):** op verzoek van user. Hadith- en Woord-van-de-dag staan nu **boven** het "Vandaag"-paneel (volgorde: begroeting → hadith → woord → Vandaag → quick-actions). Beide kaarten **compacter**: kleinere tekst + krappere regelafstand/marges/padding (`.hadith-arabic` .86rem, `.hadith-text` .8rem, `.woord-word` 1.05rem, `.woord-def`/`.woord-bridge`/`.woord-zin` .75–.8rem, kaart-padding 13/15px, `.daycard-head` margin 8px) — nog goed leesbaar, neemt minder verticale ruimte.
+
++18. **✅ "Vandaag"-paneel op dashboard v143 (29 juni 2026):** op verzoek van user — één centrale balk hoog op het beginscherm (ná de begroeting) met "de dingen die ik vandaag wil doen". Nieuw bestand `js/today-panel.js` (`mountTodayPanel(root)` → vult `<div id="today-panel-mount">`).
+   - **Bundelt** taken-van-vandaag (deadline vandaag + achterstallig "te laat" + open hoge-prio zonder datum) **én** agenda-afspraken van vandaag (uit `agenda_events`), chronologisch gesorteerd (te laat → op tijd → ongedateerd, hoge prio eerst).
+   - **Snel toevoegen:** één invoerveld + ＋-knop; `parseTaskInput()` (NL-parser) → taak met `dueDate` standaard vandaag, tijd optioneel ("14:00 APK" → 14:00), prio via "prio …". Schrijft naar `todos`.
+   - **Afvinken van taken én afspraken:** ronde checkbox met check-pop + uitschuif-animatie + haptische tik. Taken → `done`+`completedAt`; afspraken → nieuw `done`-veld op `agenda_events` (ook zichtbaar als doorgestreept in de Week-tab, `.agenda-chip-done`). Inklapbare "▸ N afgerond vandaag"-sectie (opnieuw tikken = ongedaan).
+   - **Voortgangsbalk** (afgerond/totaal) + lege staten ("Niets gepland" / "Alles afgerond ✨"). Paneel ververst alleen zichzelf (eigen mount, geen volledige dashboard-rerender → scroll blijft staan). Verving de oude "Prioriteiten"-kaart (`highTodos` verwijderd). CSS-sectie ".tp-*" onderaan `styles.css`; reduced-motion-guard uitgebreid.
 
 +17. **🏙️ Amsterdam grachten-skyline v142 (28 juni 2026):** unieke sfeer-animatie voor het **maanddoel** in het Taxi-overzicht, op verzoek van user ("iets unieks en gaaf"). Nieuw bestand `js/canal-skyline.js` (`canalSkyline(pct, now)`) genereert een rij van 8 grachtenpanden met variërende gevels (trap-/punt-/klok-/halsgevel via clip-path/border-radius). De panden **lichten op** naarmate je je maanddoel nadert: behaald = vol in kleur met brandende ramen, nog te verdienen = donker silhouet (`litCount = round(pct/100*8)`). Dag/nacht-lucht volgt de klok (zon/maan/sterren), een bootje vaart over de gracht (`csBoat`) met een lichtje, en de panden weerspiegelen in het water (`.cs-reflection` scaleY(-1) + masker + shimmer). CSS-sectie "🏙️ Amsterdam grachten-skyline" onderaan `styles.css`; reduced-motion-guard uitgebreid.
    - **Herschikking t.o.v. v139:** elke scène nu op zijn eigen tijdschaal — **dagdoel** = de taxi-rit door Amsterdam (`incomeRoad(goalPct)`, weer terug op de inkomen-hero i.p.v. de platte balk), **maanddoel** = de oplichtende grachten-skyline. Beide scènes benut, geen dubbeling.

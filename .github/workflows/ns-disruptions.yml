@@ -35,7 +35,8 @@ jobs:
             echo "::error::Secret NS_API_KEY ontbreekt. Voeg 'm toe via Settings → Secrets and variables → Actions."
             exit 1
           fi
-          curl -sS -f \
+          # --compressed: NS stuurt gzip terug; curl pakt het dan automatisch uit.
+          curl -sS -f --compressed \
             -H "Ocp-Apim-Subscription-Key: $NS_API_KEY" \
             -H "Accept: application/json" \
             "https://gateway.apiportal.ns.nl/disruptions/v3?isActive=true" \

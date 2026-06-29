@@ -11,6 +11,7 @@ import { detectInsights, goalFeasibility, goalTrajectoryPath } from '../insights
 import { initPrivacyToggle } from '../privacy.js';
 import { initCountUps } from '../animate.js';
 import { qiblaCard, initQiblaCard } from '../qibla.js';
+import { mountTodayPanel } from '../today-panel.js';
 
 let weatherAbortCtrl = null;
 
@@ -171,7 +172,6 @@ export async function render(container) {
 
   const dueCards   = cards.filter(c => c.dueDate <= today).length;
   const openTodos  = todos.filter(t => !t.done);
-  const highTodos  = openTodos.filter(t => t.priority === 'high');
   const todayTodos = openTodos.filter(t => t.dueDate === today);
   const totalRides = sum(rides);
   const taxiGoals  = goals.filter(g => Number(g.taxiPercent) > 0 && Number(g.target) > 0);
@@ -255,6 +255,9 @@ export async function render(container) {
     <!-- WOORD VAN DE DAG -->
     ${woordWidget(now)}
 
+    <!-- VANDAAG — taken + agenda van vandaag, snel toevoegen & afvinken -->
+    <div id="today-panel-mount"></div>
+
     <!-- QUICK ACTIONS -->
     <div class="quick-actions">
       <button class="quick-action-btn" data-tab="taxi">
@@ -301,23 +304,6 @@ export async function render(container) {
       </div>
       <div id="ns-body"><p class="muted" style="font-size:.875rem">Laden…</p></div>
     </div>
-
-    <!-- TAKEN PREVIEW -->
-    ${highTodos.length || todayTodos.length ? `
-    <div class="card">
-      <h2 class="card-title">Prioriteiten</h2>
-      ${highTodos.slice(0, 4).map(t => `
-        <div class="todo-preview-item">
-          <span class="todo-priority-dot"></span>
-          <div>
-            <div class="todo-preview-title">${escapeHTML(t.title)}</div>
-            ${t.dueDate ? `<div class="todo-preview-meta">Deadline: ${t.dueDate}</div>` : ''}
-            ${t.note ? `<div class="todo-preview-meta">${escapeHTML(t.note.substring(0, 80))}${t.note.length > 80 ? '…' : ''}</div>` : ''}
-          </div>
-        </div>`).join('')}
-      ${todayTodos.length ? `<div class="muted" style="font-size:.82rem;padding-top:4px"><b>${todayTodos.length}</b> taak${todayTodos.length>1?'en':''} gepland voor vandaag</div>` : ''}
-      <button class="btn secondary block" style="margin-top:12px;font-size:.85rem" data-tab="todo">Alle taken →</button>
-    </div>` : ''}
 
     ${taxiGoals.length ? `
     <div class="card">
@@ -415,6 +401,7 @@ export async function render(container) {
   loadNs(container);
   initCountUps(container);
   initQiblaCard(container);
+  mountTodayPanel(container);
   bindDayWidgets(container);
   _injectArabicVoiceTip(container);
   container.querySelector('#open-calendar').onclick = () => window.openCalendar && window.openCalendar();
