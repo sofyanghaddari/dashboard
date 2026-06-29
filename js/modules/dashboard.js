@@ -8,7 +8,7 @@ import { toast } from '../components/toast.js';
 import { getWeather, codeInfo, rideOpportunities } from '../weather.js';
 import { getMascotState, shouldShame, pickShame } from '../mascot.js';
 import { detectInsights, goalFeasibility, goalTrajectoryPath } from '../insights.js';
-import { initPrivacyToggle } from '../privacy.js';
+import { initPrivacyToggle, initSkyPrivacy } from '../privacy.js';
 import { initCountUps } from '../animate.js';
 import { qiblaCard, initQiblaCard } from '../qibla.js';
 import { mountTodayPanel } from '../today-panel.js';
@@ -83,7 +83,9 @@ function weatherScene(code, info, cur, day) {
     </div>`;
 }
 
-// 🌅 Dag/nacht-lucht achter de begroeting: zon overdag, maan + twinkelende sterren 's nachts.
+// 🌅 Dag/nacht-lucht achter de begroeting: zon overdag, maan + twinkelende sterren
+// 's nachts. De zon/maan (☀️→🌙) is tevens de verberg-knop: tik = bedragen blurren
+// met een zonsondergang-animatie (zie initSkyPrivacy in privacy.js).
 function skyScene(now) {
   const hr = now.getHours() + now.getMinutes() / 60;
   let phase;
@@ -92,15 +94,33 @@ function skyScene(now) {
   else if (hr < 18) phase = 'day';
   else if (hr < 19.5) phase = 'dusk';
   else phase = 'night';
-  const orb = phase === 'night' ? '<div class="sky-moon"></div>' : '<div class="sky-sun"></div>';
-  let stars = '';
-  if (phase === 'night' || phase === 'dusk') {
-    const pts = [[12,22],[26,12],[38,30],[52,16],[64,26],[76,12],[88,28],[20,40],[70,42]];
-    stars = pts.map((p, i) => `<i class="sky-star" style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(i % 5) * 0.7}s"></i>`).join('');
-  }
-  let cloud = '';
-  if (phase === 'day' || phase === 'dawn') cloud = '<div class="sky-cloud sky-cloud-1"></div><div class="sky-cloud sky-cloud-2"></div>';
-  return `<div class="sky-scene sky-${phase}" aria-hidden="true">${orb}${stars}${cloud}</div>`;
+
+  const isMoon = phase === 'night' || phase === 'dusk';
+  const pts = [[12,22],[26,12],[38,30],[52,16],[64,26],[76,12],[88,28],[20,40],[70,42]];
+  const stars = pts.map((p, i) => `<i class="sky-star" style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(i % 5) * 0.7}s"></i>`).join('');
+  const cloud = '<div class="sky-cloud sky-cloud-1"></div><div class="sky-cloud sky-cloud-2"></div>';
+
+  const scene = `<div class="sky-scene sky-${phase}" aria-hidden="true">
+    <div class="sky-stars">${stars}</div>
+    ${cloud}
+    <div class="sky-shade"></div>
+  </div>`;
+
+  // De zon/maan = verberg-knop. Lagen: gloed, stralen, schijf (met kraters voor maan)
+  // en een ooglid dat dichtgaat bij verbergen.
+  const orb = `<button id="sky-privacy" class="sky-orb${isMoon ? ' so-is-moon' : ''}" type="button" title="Verberg bedragen" aria-label="Verberg bedragen" aria-pressed="false">
+    <span class="so-stage">
+      <span class="so-glow"></span>
+      <span class="so-rays"></span>
+      <span class="so-orb">
+        <span class="so-disc"></span>
+        <span class="so-craters"></span>
+        <span class="so-lid"></span>
+      </span>
+    </span>
+  </button>`;
+
+  return scene + orb;
 }
 
 export async function render(container) {
@@ -222,7 +242,6 @@ export async function render(container) {
           <div class="dagstart-greeting">${begroeting}, ${escapeHTML(userName)}</div>
           <div class="dagstart-date">${datumStr}</div>
         </div>
-        <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
       </div>
       <div class="dagstart-stats">
         <div class="dagstart-stat">
@@ -462,6 +481,7 @@ export async function render(container) {
     });
   });
   initPrivacyToggle(container);
+  initSkyPrivacy(container);
 }
 
 const TIP_POOL = [

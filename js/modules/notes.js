@@ -16,17 +16,11 @@ export async function render(container) {
   const ideasItems = notes.filter(n => n.isIdea);
   const pool       = view === 'notes' ? notesItems : ideasItems;
 
-  const filtered = search
-    ? pool.filter(n =>
-        (n.title || '').toLowerCase().includes(search.toLowerCase()) ||
-        (n.body  || '').toLowerCase().includes(search.toLowerCase()))
-    : pool;
-
-  const sorted = [...filtered].sort((a, b) => {
-    // Gepinde notities bovenaan
+  // Sorteer oud → nieuw (oudste bovenaan); gepinde notities blijven bovenaan.
+  const sorted = [...pool].sort((a, b) => {
     if (a.pinned && !b.pinned) return -1;
     if (!a.pinned && b.pinned) return 1;
-    return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+    return (a.createdAt || a.updatedAt || '').localeCompare(b.createdAt || b.updatedAt || '');
   });
 
   container.innerHTML = `
@@ -34,7 +28,7 @@ export async function render(container) {
 
     <div class="notes-search-wrap">
       <span class="notes-search-icon">${icon('search')}</span>
-      <input id="notes-search" placeholder="Zoek in notities…" value="${escapeHTML(search)}" />
+      <input id="notes-search" placeholder="Zoek in ${view === 'ideas' ? 'ideeën' : 'notities'}…" value="${escapeHTML(search)}" />
     </div>
 
     <div class="notes-seg">
@@ -68,12 +62,8 @@ export async function render(container) {
     list.innerHTML = `
       <div class="notes-empty">
         <div class="notes-empty-icon">${view === 'ideas' ? icon('bulb') : icon('note')}</div>
-        <div class="notes-empty-title">
-          ${search ? 'Geen resultaten' : `Nog geen ${view === 'ideas' ? 'ideeën' : 'notities'}`}
-        </div>
-        <div class="notes-empty-sub">
-          ${search ? `Geen overeenkomsten voor "${escapeHTML(search)}"` : `Tap + om je eerste ${view === 'ideas' ? 'idee' : 'notitie'} toe te voegen`}
-        </div>
+        <div class="notes-empty-title">Nog geen ${view === 'ideas' ? 'ideeën' : 'notities'}</div>
+        <div class="notes-empty-sub">Tap + om je eerste ${view === 'ideas' ? 'idee' : 'notitie'} toe te voegen</div>
       </div>`;
   } else {
     list.innerHTML = sorted.map((n, i) => {
@@ -81,8 +71,9 @@ export async function render(container) {
       const bodyPreview = n.body
         ? n.body.replace(/[#*`_]/g, '').replace(/\n/g, ' ').trim().slice(0, 120)
         : '';
+      const haystack = `${n.title || ''} ${n.body || ''}`.toLowerCase();
       return `
-        <div class="note-card ${accentClass}${n.pinned ? ' note-pinned' : ''}" data-id="${n.id}">
+        <div class="note-card ${accentClass}${n.pinned ? ' note-pinned' : ''}" data-id="${n.id}" data-search="${escapeHTML(haystack)}">
           <div class="note-card-top">
             <div class="note-card-title">${n.pinned ? icon('pin') + ' ' : ''}${escapeHTML(n.title || '(geen titel)')}</div>
             <div class="note-actions">
@@ -138,23 +129,16 @@ export async function render(container) {
   container.querySelector('#bulk-paste').onclick = () => openBulkImport(container, view === 'ideas');
 
   const searchInput = container.querySelector('#notes-search');
-  let _searchTimer = null;
+  // Instant, flikkervrij filteren op de al-gerenderde kaarten (behoudt focus).
   searchInput.oninput = (e) => {
-    const val = e.target.value;
-    container.dataset.notesSearch = val;
-    clearTimeout(_searchTimer);
-    _searchTimer = setTimeout(async () => {
-      await render(container);
-      const newInput = container.querySelector('#notes-search');
-      if (newInput && document.activeElement !== newInput) {
-        newInput.focus();
-        newInput.setSelectionRange(val.length, val.length);
-      }
-    }, 320);
+    container.dataset.notesSearch = e.target.value;
+    applyNotesSearch(container, e.target.value, view);
   };
   searchInput.addEventListener('focus', () => {
     setTimeout(() => searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
   });
+  // Pas een bestaande zoekterm meteen toe (bv. na tab-wissel of re-render).
+  applyNotesSearch(container, search, view);
 
   // ── Document importeren via MarkItDown ────────────────────────────────
   const fileInput = container.querySelector('#import-file');
@@ -169,6 +153,42 @@ export async function render(container) {
 }
 
 // ── Helpers ───────────────────────────────────────────────
+
+// Filtert de zichtbare notitie-kaarten op een zoekterm zonder opnieuw te
+// renderen. Meerdere woorden = ALLE woorden moeten voorkomen (volgorde maakt
+// niet uit), hoofdletterongevoelig, zoekt in titel én tekst.
+function applyNotesSearch(container, query, view) {
+  const list = container.querySelector('#notes-list');
+  if (!list) return;
+  const cards = list.querySelectorAll('.note-card');
+  if (!cards.length) return; // lege pool → eigen empty-state staat er al
+
+  const words = (query || '').toLowerCase().split(/\s+/).filter(Boolean);
+  let visible = 0;
+  cards.forEach(card => {
+    const hay = card.dataset.search || '';
+    const show = words.every(w => hay.includes(w));
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  // "Geen resultaten"-melding (los element, hergebruikt)
+  let nores = list.querySelector('.notes-search-empty');
+  if (words.length && visible === 0) {
+    if (!nores) {
+      nores = document.createElement('div');
+      nores.className = 'notes-empty notes-search-empty';
+      list.appendChild(nores);
+    }
+    nores.innerHTML = `
+      <div class="notes-empty-icon">${icon('search')}</div>
+      <div class="notes-empty-title">Geen resultaten</div>
+      <div class="notes-empty-sub">Geen ${view === 'ideas' ? 'ideeën' : 'notities'} gevonden voor "${escapeHTML(query)}"</div>`;
+    nores.style.display = '';
+  } else if (nores) {
+    nores.style.display = 'none';
+  }
+}
 
 function relativeDate(iso) {
   if (!iso) return '';
