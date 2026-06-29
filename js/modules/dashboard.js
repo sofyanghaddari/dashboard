@@ -299,7 +299,7 @@ export async function render(container) {
     <!-- NS TREIN-STORINGEN -->
     <div class="card" id="ns-card">
       <div class="daycard-head">
-        <h2 class="card-title">NS · trein-storingen</h2>
+        <h2 class="card-title">NS · treinverkeer</h2>
         <button class="daycard-btn" id="ns-refresh" title="Vernieuwen" aria-label="Vernieuwen">⟳</button>
       </div>
       <div id="ns-body"><p class="muted" style="font-size:.875rem">Laden…</p></div>
@@ -923,23 +923,58 @@ async function loadNs(container) {
 
 function renderNs(body, data) {
   const list = Array.isArray(data) ? data : (data.disruptions || data.payload || []);
-  const items = (list || []).map(d => ({
-    title: d.title || d.titel || d.description || 'Verstoring',
-    type: String(d.type || '').toLowerCase(),
-    text: d?.timespans?.[0]?.situation?.label || d.text || d.body || '',
-  }));
+  const items = (list || []).map(d => {
+    const title = d.title || d.titel || d.description || 'Verstoring';
+    const ts = d?.timespans?.[0] || {};
+    const text = ts?.situation?.label || d.text || d.body || '';
+    const cause = ts?.cause?.label || '';
+    const type = String(d.type || '').toLowerCase();
+    const hay = `${title} ${text} ${cause}`.toLowerCase();
+    const isStrike = /staking|stakt|werkonderbreking/.test(hay);
+    const isAms = /amsterdam/.test(hay);
+    let cat;                                   // strike > alert (storing) > work
+    if (isStrike) cat = 'strike';
+    else if (/maintenance|werkzaam/.test(type)) cat = 'work';
+    else cat = 'alert';                        // disruption / calamity
+    return { title: title.replace(/\.\s*$/, ''), cat, isAms };
+  });
+
   if (!items.length) {
-    _setHTML(body, `<p class="muted" style="font-size:.875rem">✓ Geen grote storingen op dit moment.</p>`);
+    _setHTML(body, `<p class="ns-clear">✓ Geen storingen of stakingen nu</p>`);
     return;
   }
-  _setHTML(body, `<div class="ns-list">${items.slice(0, 6).map(d => `
-    <div class="ns-item">
-      <span class="ns-dot ${/storing|disruption|calamit/.test(d.type) ? 'ns-dot-alert' : 'ns-dot-work'}"></span>
-      <div class="ns-item-body">
-        <div class="ns-item-title">${escapeHTML(d.title)}</div>
-        ${d.text ? `<div class="ns-item-text">${escapeHTML(String(d.text).slice(0, 140))}</div>` : ''}
-      </div>
-    </div>`).join('')}</div>`);
+
+  const strikes = items.filter(i => i.cat === 'strike');
+  const alerts  = items.filter(i => i.cat === 'alert');
+  const works   = items.filter(i => i.cat === 'work');
+
+  // Uitgelicht (1-regelig): eerst stakingen, dan Amsterdam-storingen.
+  const highlight = [...strikes, ...alerts.filter(i => i.isAms && i.cat !== 'strike')];
+  const hiSet = new Set(highlight);
+  const rest = items.filter(i => !hiSet.has(i));
+
+  const chip = (cls, n, label) => n ? `<span class="ns-chip ${cls}">${n} ${label}</span>` : '';
+  const summary = `<div class="ns-summary">
+    ${chip('ns-chip-strike', strikes.length, strikes.length === 1 ? 'staking' : 'stakingen')}
+    ${chip('ns-chip-alert', alerts.length, alerts.length === 1 ? 'storing' : 'storingen')}
+    ${chip('ns-chip-work', works.length, 'werk')}
+  </div>`;
+
+  const row = (i) => `<div class="ns-row">
+    <span class="ns-dot ns-dot-${i.cat}"></span>
+    <span class="ns-row-title">${i.cat === 'strike' ? '<b>Staking:</b> ' : ''}${escapeHTML(i.title)}</span>
+  </div>`;
+
+  const hi = highlight.length
+    ? `<div class="ns-list">${highlight.slice(0, 5).map(row).join('')}</div>`
+    : `<p class="ns-clear">✓ Niets rond Amsterdam</p>`;
+
+  const more = rest.length
+    ? `<details class="ns-more"><summary>Alle meldingen (${items.length})</summary>
+        <div class="ns-list" style="margin-top:8px">${rest.map(row).join('')}</div></details>`
+    : '';
+
+  _setHTML(body, summary + hi + more);
 }
 
 async function loadWeather(container) {
