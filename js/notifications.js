@@ -214,11 +214,19 @@ async function checkWeatherAlert() {
   } catch (_) {}
 }
 
-// NS trein-storingen — melding bij een NIEUWE storing rond Amsterdam.
-// Storing op een station = gestrande reizigers = kans op ritten. We halen de
-// storingen op via de door de gebruiker ingestelde proxy (zie dashboard NS-kaart),
-// onthouden welke we al gezien hebben, en melden alleen nieuwe Amsterdamse storingen.
+// NS treinverkeer — melding bij een NIEUWE staking (overal) of storing rond Amsterdam.
+// Storing/staking = gestrande reizigers = kans op ritten. We halen de data op via de
+// GitHub-databron (of een eigen proxy), onthouden welke meldingen we al gezien hebben,
+// en melden alleen nieuwe relevante meldingen.
 const NS_DATA_URL = 'https://raw.githubusercontent.com/sofyanghaddari/dashboard/ns-data/ns-disruptions.json';
+
+// Doorzoekbare tekst van een melding (titel + situatie + oorzaak).
+function _nsHay(d) {
+  const ts = (d.timespans && d.timespans[0]) || {};
+  return [d.title, d.titel, ts.situation && ts.situation.label, ts.cause && ts.cause.label, d.text, d.body]
+    .filter(Boolean).join(' ').toLowerCase();
+}
+function _nsIsStrike(d) { return /staking|stakt|werkonderbreking/.test(_nsHay(d)); }
 
 async function checkNsDisruptions() {
   const src = (localStorage.getItem('nsProxyUrl') || '').trim() || NS_DATA_URL;
@@ -236,14 +244,14 @@ async function checkNsDisruptions() {
   const withId = list.filter(d => d && d.id != null);
   const allIds = withId.map(d => String(d.id));
   const isRelevant = (d) => {
+    if (_nsIsStrike(d)) return true;            // staking is altijd relevant (overal)
     const t = String(d.type || '').toLowerCase();
     const isDisruption = /storing|disruption|calamit/.test(t);
-    const title = String(d.title || d.titel || '');
-    return isDisruption && /amsterdam/i.test(title);
+    return isDisruption && /amsterdam/.test(_nsHay(d));
   };
 
   // Eerste keer (nog nooit gecheckt): alleen onthouden, niet melden voor reeds
-  // bestaande storingen — anders krijg je een melding-explosie bij setup.
+  // bestaande meldingen — anders krijg je een melding-explosie bij setup.
   const firstRun = localStorage.getItem('ns_seen_ids') === null;
   const seen = new Set(JSON.parse(localStorage.getItem('ns_seen_ids') || '[]'));
   localStorage.setItem('ns_seen_ids', JSON.stringify(allIds.slice(0, 200)));
@@ -252,7 +260,14 @@ async function checkNsDisruptions() {
   const fresh = withId.filter(d => isRelevant(d) && !seen.has(String(d.id)));
   if (!fresh.length) return;
 
-  const first = String(fresh[0].title || fresh[0].titel || 'Trein-storing');
+  // Staking krijgt voorrang in de melding (grootste kans op werk).
+  const strike = fresh.find(_nsIsStrike);
+  if (strike) {
+    const t = String(strike.title || strike.titel || 'NS-staking').replace(/\.\s*$/, '');
+    _notify('ns_strike_' + strike.id, 'NS-staking — extra drukte', t + ' — topdag voor ritten!');
+    return;
+  }
+  const first = String(fresh[0].title || fresh[0].titel || 'Trein-storing').replace(/\.\s*$/, '');
   if (fresh.length === 1) {
     _notify('ns_disruption_' + fresh[0].id, 'Trein-storing Amsterdam', first + ' — kans op ritten!');
   } else {
