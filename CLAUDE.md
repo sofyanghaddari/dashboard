@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v149** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v155** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -297,6 +297,26 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++24. **🌈🐦✈️ Volledige levende begroetingslucht v153 (30 juni 2026):** op verzoek van user ("allemaal") acht extra sfeer-effecten toegevoegd, conditioneel op het echte weer/tijdstip (helpers `cachedWeather()`/`skyExtras()`/`moonPhase()` in `dashboard.js`, CSS-sectie "Sfeer-extra's"):
+   - **🌈 Regenboog** (`.sky-rainbow`, radial-gradient-boog) bij regen/motregen overdag (zon + regen).
+   - **☔ Regendruppel-rimpels** (`.sky-ripples`) bij neerslag.
+   - **🐦 Vogels** overdag (helder/wisselend/bewolkt), **🦇 vleermuizen** bij schemer/nacht (`.sky-birds`/`.sky-bats`, CSS-vleugels via border-arcs).
+   - **✈️ Vliegtuig + contrail** (`.sky-plane`) overdag bij helder/wisselend.
+   - **🍂 Wegwaaiende bladeren** + snellere wolken bij wind ≥ 28 km/u (`.sky-leaves`/`.sky-windy`); windsnelheid nu opgehaald (`wind_speed_10m` toegevoegd aan de Open-Meteo-call in `weather.js`).
+   - **🌡️ Hittegloed** (`.sky-heat`) bij ≥ 28 °C, **❄️ vorst-kristallen** in de hoeken (`.sky-frost`) bij ≤ 0 °C.
+   - **🌙 Echte maanfase** in de orb (`.so-phase` terminator-schaduw via `moonPhase()`), verborgen tijdens de bloedmaan-eclipse.
+   - **🎉 Confetti-regen** in de lucht (`skyConfettiBurst()`) bij een nieuwe badge (naast de bestaande badge-viering).
+   - `applySkyWeather(container, cur)` ververst nu ook de extra's met code+temp+wind. Reduced-motion-guard uitgebreid.
+
++23. **Boekhouding-overzicht professioneler v152 + factuur-PDF-logo v154 (30 juni 2026):** eerste rondes van de "maak boekhouding perfect"-opdracht. Het Overzicht-scherm heeft nu een **financiële hero-kaart** (groot serif winstgetal met pos/neg-kleur, marge-pill, dunne omzet/kosten-ratiobalk met legenda-stippen) i.p.v. de vlakke 4-KPI-grid; daaronder een verfijnd 2-tegel-grid (BTW-kwartaal incl. "terug te ontvangen" bij negatief saldo + Openstaand bedrag). Alle inline `style="color:…"` vervangen door CSS-klassen (`.bk-kpi-val.pos/.neg/.accent`, `.bk-hero-val.pos/.neg`). Color-emoji `⚠️` overal in `boekhouding.js` vervangen door de toegestane monochrome glyph `⚠` (de overdue-alert op Overzicht gebruikt nu een line-icon SVG). Status-pills (`.bk-status`) kregen een gekleurd indicatorstipje (`::before`, currentColor) — Moneybird-stijl. CSS-sectie uitgebreid met `.bk-hero*`/`.bk-leg`/`.bk-dot*`. **Factuur-PDF — vector-logo + woordmerk v154:** `drawCompanyLogo()` tekent een afgeronde badge in accentkleur (geen afbeelding nodig) met een **taxi-silhouet** (witte body/dak, dambord-streep, zwarte wielen met witte naaf) voor de Taxi-administratie en een **blad** voor Olijfolie (`logoGlyph` op het ADMINS-object: 'taxi'/'leaf'). In de PDF-header staat de badge links + woordmerk (`bedrijf.naam`) + **tagline** in kapitalen accentkleur (`tagline` op ADMINS). Logo visueel geverifieerd via SVG-mirror + headless-chromium screenshot. **Nog te doen** (volgende rondes): lijsten (kosten/km/klanten) verder gelijktrekken; eventueel rustiger PDF-tabelkop.
+
++22. **🌦️ Begroetingslucht volgt het echte weer + 3 extra sky-animaties v149 (29 juni 2026):** op verzoek van user.
+   - **Weer-volgen:** `skyScene()` leest de gecachte weercode (`localStorage.weatherCache`) en toont passende lagen in de begroetingslucht — **regen** (`wx-rain`), **motregen**, **onweer** (regen + bliksem `wx-flash`/`wx-bolt`), **sneeuw** (`wx-snow`), **mist** (`wx-fogband`) — plus een grijze waas + grijzere wolken bij bewolkt/nat (`.sky-overcast`). Hergebruikt de bestaande `wx-*` klassen van de weer-banner. `applySkyWeather(container, code)` ververst de lucht zodra verse weer-data binnen is (in `loadWeather`). Helpers `wxCondition()`/`cachedWeatherCode()`/`skyWeatherLayers()`.
+   - **☁️ Drift-wolk** (`.sky-drift`, z-index boven de orb): een wolk die langs de zon/maan drijft en 'm af en toe half bedekt; grijzer/voller bij bewolkt.
+   - **🌌 Noorderlicht** (`.sky-aurora`, `mix-blend-mode:screen`): groen→blauw→paars gloed bovenin, **alleen 's nachts bij een mijlpaal** (dagdoel gehaald óf maanddoel 100%). Vlag via `skyScene(now, { milestone })`.
+   - **🌇 Warme zon** (`.so-warm`): bij dawn/dusk kleurt de zonschijf + gloed warm oranje (zonsop-/ondergang).
+   - Reduced-motion-guard uitgebreid (`.sky-drift`, `.sky-aurora`).
 
 +21. **🌒 Verberg-knop = verduistering i.p.v. nacht v148 (29 juni 2026):** op verzoek van user — i.p.v. de lucht nacht te maken bij verbergen, toont de zon nu een **zonsverduistering** (de maan `.so-shadow` schuift voor de zon, gloeiende **corona** `.so-corona` + **diamond-ring glinster** `.so-glint`) en de maan een **maansverduistering/bloedmaan** (`.so-disc` wordt koperrood + umbra). Zo blijft het **dagdeel** behouden: overdag dimt de lucht slechts subtiel (`.sky-shade` schemering .4, geen sterren geforceerd), 's nachts blijft het nacht. Extra leuke sky-animaties: **vallende ster** (`.sky-meteor`, alleen 's nachts) en de pulserende corona. De `.so-lid`/sikkel-aanpak uit v145 is vervangen. Reduced-motion-guard uitgebreid (`.so-corona`, `.sky-meteor`).
 

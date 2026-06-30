@@ -37,6 +37,8 @@ const ADMINS = {
     prefix:      'WOOSH',
     defaultVat:  9,
     defaultDesc: 'Vervoersdienst',
+    tagline:     'Taxivervoer Amsterdam',
+    logoGlyph:   'taxi',
   },
   olijfolie: {
     id:          'olijfolie',
@@ -53,6 +55,8 @@ const ADMINS = {
     prefix:      'OLIE',
     defaultVat:  21,
     defaultDesc: 'Levering olijfolie',
+    tagline:     'Premium olijfolie',
+    logoGlyph:   'leaf',
   },
 };
 
@@ -308,6 +312,7 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
   const omzetYear   = invoices.filter(i => inYear(i.date, y)).reduce((s, i) => s + (i.totalExcl || 0), 0);
   const kostenYear  = purchases.filter(i => inYear(i.date, y)).reduce((s, i) => s + (i.amountExcl || 0), 0);
   const winstYear   = omzetYear - kostenYear;
+  const marge       = omzetYear > 0 ? Math.round(winstYear / omzetYear * 100) : 0;
   const openCount   = invoices.filter(i => i._status !== 'betaald').length;
   const openAmount  = invoices.filter(i => i._status !== 'betaald').reduce((s, i) => s + (i.totalIncl || 0), 0);
   const overdueCount = invoices.filter(i => i._status === 'te-laat').length;
@@ -325,32 +330,36 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
   const recent = [...openInv, ...otherInv].slice(0, 5);
 
   view.innerHTML = `
+    <div class="bk-hero card">
+      <div class="bk-hero-head">
+        <span class="bk-hero-label">Winst ${y}</span>
+        <span class="bk-hero-marge">${marge}% marge</span>
+      </div>
+      <div class="bk-hero-val money blurred-amount ${winstYear >= 0 ? 'pos' : 'neg'}" data-bk-count="${winstYear}">${fmtMoney(winstYear, true)}</div>
+      <div class="bk-hero-bar"><div class="bk-hero-bar-fill" style="width:${Math.max(2, Math.min(100, marge))}%"></div></div>
+      <div class="bk-hero-legend">
+        <span class="bk-leg"><i class="bk-dot bk-dot-rev"></i>Omzet <b class="money blurred-amount">${fmtMoney(omzetYear)}</b></span>
+        <span class="bk-leg"><i class="bk-dot bk-dot-cost"></i>Kosten <b class="money blurred-amount">${fmtMoney(kostenYear)}</b></span>
+      </div>
+    </div>
+
     <div class="bk-kpi-grid">
       <div class="bk-kpi">
-        <div class="bk-kpi-label">Omzet ${y}</div>
-        <div class="bk-kpi-val money blurred-amount" data-bk-count="${omzetYear}">${fmtMoney(omzetYear, true)}</div>
-        <div class="bk-kpi-sub">excl. BTW</div>
-      </div>
-      <div class="bk-kpi">
-        <div class="bk-kpi-label">Kosten ${y}</div>
-        <div class="bk-kpi-val money blurred-amount" style="color:var(--danger)" data-bk-count="${kostenYear}">${fmtMoney(kostenYear, true)}</div>
-        <div class="bk-kpi-sub">excl. BTW</div>
-      </div>
-      <div class="bk-kpi">
-        <div class="bk-kpi-label">Winst ${y}</div>
-        <div class="bk-kpi-val money blurred-amount" style="color:${winstYear >= 0 ? 'var(--ok)' : 'var(--danger)'}" data-bk-count="${winstYear}">${fmtMoney(winstYear, true)}</div>
-        <div class="bk-kpi-sub">excl. aftrekken</div>
-      </div>
-      <div class="bk-kpi">
         <div class="bk-kpi-label">BTW Q${q + 1}</div>
-        <div class="bk-kpi-val money blurred-amount" style="color:var(--accent)" data-bk-count="${btwSaldo}">${fmtMoney(btwSaldo, true)}</div>
-        <div class="bk-kpi-sub">te betalen</div>
+        <div class="bk-kpi-val money blurred-amount accent" data-bk-count="${btwSaldo}">${fmtMoney(btwSaldo, true)}</div>
+        <div class="bk-kpi-sub">${btwSaldo >= 0 ? 'te betalen' : 'terug te ontvangen'}</div>
+      </div>
+      <div class="bk-kpi">
+        <div class="bk-kpi-label">Openstaand</div>
+        <div class="bk-kpi-val money blurred-amount" data-bk-count="${openAmount}">${fmtMoney(openAmount, true)}</div>
+        <div class="bk-kpi-sub">${openCount} factuur${openCount === 1 ? '' : 'en'} incl. BTW</div>
       </div>
     </div>
 
     ${overdueCount > 0 ? `
       <div class="bk-alert">
-        ⚠️ <strong>${overdueCount} factuur${overdueCount > 1 ? 'en' : ''} vervallen</strong> — betaling achterstallig
+        <svg class="bk-alert-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 2.5 20h19L12 3.5z"/><path d="M12 9.5v5"/><path d="M12 17.6h.01"/></svg>
+        <span><strong>${overdueCount} factuur${overdueCount > 1 ? 'en' : ''} vervallen</strong> — betaling achterstallig</span>
       </div>
     ` : ''}
 
@@ -440,7 +449,7 @@ function renderFacturen(view, invoices, container) {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div>
         <span style="font-size:.82rem;color:var(--text-dim)">${invoices.length} facturen · ${fmtMoney(totalOpen)} open</span>
-        ${totalLate > 0 ? `<span style="color:var(--danger);margin-left:8px;font-size:.82rem">⚠️ ${totalLate} vervallen</span>` : ''}
+        ${totalLate > 0 ? `<span style="color:var(--danger);margin-left:8px;font-size:.82rem">⚠ ${totalLate} vervallen</span>` : ''}
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn" id="inv-csv-btn" style="background:var(--bg-elev-2);color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;font-size:.8rem">${icon('stats')} CSV</button>
@@ -493,7 +502,7 @@ function renderFacturen(view, invoices, container) {
                 <button class="bk-btn-print" data-id="${escapeHTML(inv.id)}">${icon('print')}</button>
               </div>
             </div>
-            ${inv._status === 'te-laat' ? `<div class="bk-overdue-bar">⚠️ Vervallen op ${fmtDateLong(inv.dueDate)}</div>` : ''}
+            ${inv._status === 'te-laat' ? `<div class="bk-overdue-bar">⚠ Vervallen op ${fmtDateLong(inv.dueDate)}</div>` : ''}
           </div>
         `).join('')}
       </div>
@@ -1014,7 +1023,7 @@ function renderWV(view, invoices, purchases, kmLogs, container) {
     </div>
 
     <div class="bk-btw-disclaimer">
-      ⚠️ Dit is een ruwe schatting. Heffingskortingen, startersaftrek en andere persoonlijke omstandigheden zijn niet meegenomen. Laat je aangifte controleren door een boekhouder.
+      ⚠ Dit is een ruwe schatting. Heffingskortingen, startersaftrek en andere persoonlijke omstandigheden zijn niet meegenomen. Laat je aangifte controleren door een boekhouder.
     </div>
   `;
 
@@ -1176,7 +1185,7 @@ function openClientDetailModal(client, invoices, container) {
 
   let delStep = 0;
   backdrop.querySelector('#cd-del').onclick = async function () {
-    if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
+    if (delStep === 0) { delStep = 1; this.textContent = '⚠ Nogmaals tikken om te verwijderen'; return; }
     await del('clients', client.id);
     ok('Klant verwijderd');
     backdrop.remove();
@@ -2275,7 +2284,7 @@ function openDetailModal(inv, container) {
   backdrop.querySelector('#det-del').onclick = async function () {
     if (delStep === 0) {
       delStep = 1;
-      this.textContent = '⚠️ Nogmaals tikken om definitief te verwijderen';
+      this.textContent = '⚠ Nogmaals tikken om definitief te verwijderen';
       return;
     }
     await del('invoices', inv.id);
@@ -2325,7 +2334,7 @@ function openPurchaseDetailModal(purchase, container) {
 
   let delStep = 0;
   backdrop.querySelector('#pd-del').onclick = async function () {
-    if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
+    if (delStep === 0) { delStep = 1; this.textContent = '⚠ Nogmaals tikken om te verwijderen'; return; }
     await del('purchase_invoices', purchase.id);
     ok('Kosten verwijderd');
     backdrop.remove();
@@ -2459,7 +2468,7 @@ function openKmDetailModal(k, container) {
 
   let delStep = 0;
   backdrop.querySelector('#kd-del').onclick = async function () {
-    if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
+    if (delStep === 0) { delStep = 1; this.textContent = '⚠ Nogmaals tikken om te verwijderen'; return; }
     await del('km_log', k.id);
     ok('Rit verwijderd');
     backdrop.remove();
@@ -2675,6 +2684,40 @@ function loadJsPdf() {
   return _jsPdfLoading;
 }
 
+// Vector-logo (geen afbeelding nodig) — taxi-badge of blad, in accentkleur
+function drawCompanyLogo(doc, bedrijf, x, y, s, TAUPE, DARK) {
+  // Afgeronde badge in accentkleur
+  doc.setFillColor(...TAUPE);
+  doc.roundedRect(x, y, s, s, s * 0.17, s * 0.17, 'F');
+
+  const glyph = bedrijf.logoGlyph || (bedrijf.id === 'olijfolie' ? 'leaf' : 'taxi');
+
+  if (glyph === 'taxi') {
+    // Witte taxi-silhouet
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(x + s * 0.30, y + s * 0.24, s * 0.40, s * 0.18, 0.5, 0.5, 'F'); // dak
+    doc.roundedRect(x + s * 0.15, y + s * 0.40, s * 0.70, s * 0.26, 0.9, 0.9, 'F'); // body
+    // Dambord-streep (taupe blokjes op de body)
+    doc.setFillColor(...TAUPE);
+    const cw = s * 0.075, cby = y + s * 0.46;
+    for (let i = 0; i < 3; i++) doc.rect(x + s * 0.31 + i * cw * 1.5, cby, cw, cw, 'F');
+    // Wielen (donker) met witte naaf
+    const wy = y + s * 0.70, r = s * 0.105;
+    doc.setFillColor(...DARK);
+    doc.circle(x + s * 0.33, wy, r, 'F');
+    doc.circle(x + s * 0.67, wy, r, 'F');
+    doc.setFillColor(255, 255, 255);
+    doc.circle(x + s * 0.33, wy, r * 0.42, 'F');
+    doc.circle(x + s * 0.67, wy, r * 0.42, 'F');
+  } else {
+    // Blad-silhouet voor olijfolie
+    doc.setFillColor(255, 255, 255);
+    doc.ellipse(x + s * 0.5, y + s * 0.5, s * 0.17, s * 0.31, 'F');
+    doc.setDrawColor(...TAUPE); doc.setLineWidth(0.45);
+    doc.line(x + s * 0.5, y + s * 0.24, x + s * 0.5, y + s * 0.74);
+  }
+}
+
 async function generateInvoicePDF(inv, bedrijf) {
   const JsPDF = await loadJsPdf();
   const doc    = new JsPDF({ unit: 'mm', format: 'a4' });
@@ -2692,17 +2735,24 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.setFillColor(...TAUPE);
   doc.rect(0, 0, 210, 6, 'F');
 
-  // ── Bedrijfsnaam ──
+  // ── Logo-badge + woordmerk ──
+  drawCompanyLogo(doc, bedrijf, L, 9, 13, TAUPE, DARK);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(15);
+  doc.setFontSize(14);
   doc.setTextColor(...DARK);
-  doc.text(bedrijf.naam, L, 18);
+  doc.text(bedrijf.naam, L + 17, 16);
+  if (bedrijf.tagline) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...TAUPE);
+    doc.text(bedrijf.tagline.toUpperCase(), L + 17, 20.5, { charSpace: 0.3 });
+  }
 
   // ── Bedrijfsgegevens ──
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(...MED);
-  doc.text([bedrijf.adres, bedrijf.postcode, `KvK: ${bedrijf.kvk}   BTW: ${bedrijf.btw}`, `IBAN: ${fmtIBAN(bedrijf.iban)}`].join('\n'), L, 25, { lineHeightFactor: 1.6 });
+  doc.text([bedrijf.adres, bedrijf.postcode, `KvK: ${bedrijf.kvk}   BTW: ${bedrijf.btw}`, `IBAN: ${fmtIBAN(bedrijf.iban)}`].join('\n'), L, 28, { lineHeightFactor: 1.6 });
 
   // ── "FACTUUR" + meta rechts ──
   doc.setFont('helvetica', 'bold');
