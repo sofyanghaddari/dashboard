@@ -189,7 +189,10 @@ export async function render(container) {
       }
     } catch (_) {}
     if (!fromCache) {
-      const cur = new Date();
+      // Zelfde logica als koran.js: als vandaag nog niet afgevinkt is, begin bij
+      // gisteren — anders toont de streak 0 zolang de hizb van vandaag nog open is.
+      const cur = new Date(now);
+      if (!doneSet.has(today)) cur.setDate(cur.getDate() - 1);
       while (doneSet.has(ymd(cur))) { streak++; cur.setDate(cur.getDate() - 1); }
       try { localStorage.setItem('streakCache', JSON.stringify({ ts: Date.now(), streak, logLength: hizb.length, lastEntry })); } catch (_) {}
     }
