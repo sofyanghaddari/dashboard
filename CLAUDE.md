@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v148** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v149** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -297,6 +297,13 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++22. **🌦️ Begroetingslucht volgt het echte weer + 3 extra sky-animaties v149 (29 juni 2026):** op verzoek van user.
+   - **Weer-volgen:** `skyScene()` leest de gecachte weercode (`localStorage.weatherCache`) en toont passende lagen in de begroetingslucht — **regen** (`wx-rain`), **motregen**, **onweer** (regen + bliksem `wx-flash`/`wx-bolt`), **sneeuw** (`wx-snow`), **mist** (`wx-fogband`) — plus een grijze waas + grijzere wolken bij bewolkt/nat (`.sky-overcast`). Hergebruikt de bestaande `wx-*` klassen van de weer-banner. `applySkyWeather(container, code)` ververst de lucht zodra verse weer-data binnen is (in `loadWeather`). Helpers `wxCondition()`/`cachedWeatherCode()`/`skyWeatherLayers()`.
+   - **☁️ Drift-wolk** (`.sky-drift`, z-index boven de orb): een wolk die langs de zon/maan drijft en 'm af en toe half bedekt; grijzer/voller bij bewolkt.
+   - **🌌 Noorderlicht** (`.sky-aurora`, `mix-blend-mode:screen`): groen→blauw→paars gloed bovenin, **alleen 's nachts bij een mijlpaal** (dagdoel gehaald óf maanddoel 100%). Vlag via `skyScene(now, { milestone })`.
+   - **🌇 Warme zon** (`.so-warm`): bij dawn/dusk kleurt de zonschijf + gloed warm oranje (zonsop-/ondergang).
+   - Reduced-motion-guard uitgebreid (`.sky-drift`, `.sky-aurora`).
 
 +21. **🌒 Verberg-knop = verduistering i.p.v. nacht v148 (29 juni 2026):** op verzoek van user — i.p.v. de lucht nacht te maken bij verbergen, toont de zon nu een **zonsverduistering** (de maan `.so-shadow` schuift voor de zon, gloeiende **corona** `.so-corona` + **diamond-ring glinster** `.so-glint`) en de maan een **maansverduistering/bloedmaan** (`.so-disc` wordt koperrood + umbra). Zo blijft het **dagdeel** behouden: overdag dimt de lucht slechts subtiel (`.sky-shade` schemering .4, geen sterren geforceerd), 's nachts blijft het nacht. Extra leuke sky-animaties: **vallende ster** (`.sky-meteor`, alleen 's nachts) en de pulserende corona. De `.so-lid`/sikkel-aanpak uit v145 is vervangen. Reduced-motion-guard uitgebreid (`.so-corona`, `.sky-meteor`).
 
