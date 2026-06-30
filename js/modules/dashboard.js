@@ -83,10 +83,51 @@ function weatherScene(code, info, cur, day) {
     </div>`;
 }
 
-// 🌅 Dag/nacht-lucht achter de begroeting: zon overdag, maan + twinkelende sterren
-// 's nachts. De zon/maan (☀️→🌙) is tevens de verberg-knop: tik = bedragen blurren
-// met een zonsondergang-animatie (zie initSkyPrivacy in privacy.js).
-function skyScene(now) {
+// Weercode → conditie (zelfde indeling als de weer-banner).
+function wxCondition(code) {
+  if (code == null) return 'clear';
+  if (code <= 1) return 'clear';
+  if (code === 2) return 'partly';
+  if (code === 3) return 'cloudy';
+  if (code <= 48) return 'fog';
+  if (code <= 57) return 'drizzle';
+  if (code <= 65) return 'rain';
+  if (code <= 77) return 'snow';
+  if (code <= 82) return 'rain';
+  return 'storm';
+}
+const OVERCAST = ['cloudy', 'rain', 'storm', 'drizzle', 'snow', 'fog'];
+
+function cachedWeatherCode() {
+  try { return JSON.parse(localStorage.getItem('weatherCache') || 'null')?.data?.current?.weather_code ?? null; }
+  catch { return null; }
+}
+
+// Neerslag-/onweerslagen voor de begroetingslucht (hergebruikt de wx-* klassen
+// van de weer-banner, zodat de lucht het echte weer volgt: regen, onweer, sneeuw, mist).
+function skyWeatherLayers(code) {
+  const cond = wxCondition(code);
+  const rain = (n, cls = '') => Array.from({ length: n }, (_, i) =>
+    `<span class="wx-rain ${cls}" style="--x:${(i * 100 / n + (i % 3) * 4)}%;--d:${((i * 0.13) % 1).toFixed(2)}s;--dur:${cls === 'heavy' ? 0.55 : 0.85}s"></span>`).join('');
+  const snow = (n) => Array.from({ length: n }, (_, i) =>
+    `<span class="wx-snow" style="--x:${(i * 100 / n)}%;--d:${((i * 0.31) % 2).toFixed(2)}s;--dur:${(3 + (i % 3))}s;--sway:${(i % 2 ? 8 : -8)}px"></span>`).join('');
+  const fog = `<span class="wx-fogband" style="top:42%;--d:0s"></span><span class="wx-fogband" style="top:64%;--d:1.3s"></span>`;
+  const bolt = `<div class="wx-flash"></div><svg class="wx-bolt" viewBox="0 0 24 48" fill="none"><path d="M14 2 L5 26 H12 L9 46 L20 20 H13 Z" fill="#fde68a" stroke="#fff" stroke-width="0.5"/></svg>`;
+  switch (cond) {
+    case 'drizzle': return rain(7, 'light');
+    case 'rain':    return rain(12, '');
+    case 'snow':    return snow(10);
+    case 'storm':   return rain(14, 'heavy') + bolt;
+    case 'fog':     return fog;
+    default:        return '';
+  }
+}
+
+// 🌅 Dag/nacht-lucht achter de begroeting die het ECHTE weer volgt (regen, onweer,
+// sneeuw, mist, bewolking). De zon/maan (☀️→🌙) is tevens de verberg-knop: tik =
+// verduistering + bedragen blurren (zie initSkyPrivacy in privacy.js).
+// opts.milestone = true → noorderlicht 's nachts.
+function skyScene(now, opts = {}) {
   const hr = now.getHours() + now.getMinutes() / 60;
   let phase;
   if (hr < 5.5 || hr >= 21) phase = 'night';
@@ -96,12 +137,20 @@ function skyScene(now) {
   else phase = 'night';
 
   const isMoon = phase === 'night' || phase === 'dusk';
+  const warm = (phase === 'dawn' || phase === 'dusk') && !isMoon ? ' so-warm' : '';
+  const code = cachedWeatherCode();
+  const cond = wxCondition(code);
+  const overcast = OVERCAST.includes(cond) ? ' sky-overcast' : '';
+  const aurora = opts.milestone && phase === 'night' ? '<div class="sky-aurora"></div>' : '';
+
   const pts = [[12,22],[26,12],[38,30],[52,16],[64,26],[76,12],[88,28],[20,40],[70,42]];
   const stars = pts.map((p, i) => `<i class="sky-star" style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(i % 5) * 0.7}s"></i>`).join('');
   const cloud = '<div class="sky-cloud sky-cloud-1"></div><div class="sky-cloud sky-cloud-2"></div>';
 
-  const scene = `<div class="sky-scene sky-${phase}" aria-hidden="true">
+  const scene = `<div class="sky-scene sky-${phase}${overcast}" data-cond="${cond}" aria-hidden="true">
     <div class="sky-stars">${stars}</div>
+    ${aurora}
+    <div id="sky-weather" class="sky-weather">${skyWeatherLayers(code)}</div>
     ${cloud}
     <div class="sky-meteor"></div>
     <div class="sky-shade"></div>
@@ -111,7 +160,7 @@ function skyScene(now) {
   // ervoor (corona gloeit), bij de maan wordt het een bloedmaan — het dagdeel
   // blijft behouden. Lagen: gloed, stralen, corona, glinster, schijf, kraters,
   // en de eclipserende schaduw-schijf.
-  const orb = `<button id="sky-privacy" class="sky-orb${isMoon ? ' so-is-moon' : ''}" type="button" title="Verberg bedragen" aria-label="Verberg bedragen" aria-pressed="false">
+  const orb = `<button id="sky-privacy" class="sky-orb${isMoon ? ' so-is-moon' : ''}${warm}" type="button" title="Verberg bedragen" aria-label="Verberg bedragen" aria-pressed="false">
     <span class="so-stage">
       <span class="so-glow"></span>
       <span class="so-rays"></span>
@@ -125,7 +174,21 @@ function skyScene(now) {
     </span>
   </button>`;
 
-  return scene + orb;
+  // Wolk die langs de zon/maan drijft en 'm af en toe half bedekt.
+  const drift = '<div class="sky-drift" aria-hidden="true"></div>';
+
+  return scene + orb + drift;
+}
+
+// Werk de begroetingslucht bij met verse weer-data (na het ophalen).
+function applySkyWeather(container, code) {
+  const scene = container.querySelector('.dagstart-card .sky-scene');
+  const wx = container.querySelector('#sky-weather');
+  if (!scene || !wx) return;
+  const cond = wxCondition(code);
+  wx.innerHTML = skyWeatherLayers(code);
+  scene.classList.toggle('sky-overcast', OVERCAST.includes(cond));
+  scene.dataset.cond = cond;
 }
 
 export async function render(container) {
@@ -241,7 +304,7 @@ export async function render(container) {
 
     <!-- HERO GREETING -->
     <div class="card dagstart-card">
-      ${skyScene(now)}
+      ${skyScene(now, { milestone: (dailyGoal > 0 && todayIncome >= dailyGoal) || (monthlyGoal > 0 && monthGoalPct >= 100) })}
       <div class="dagstart-top">
         <div>
           <div class="dagstart-greeting">${begroeting}, ${escapeHTML(userName)}</div>
@@ -1018,6 +1081,7 @@ async function loadWeather(container) {
     const day  = w.daily;
     const info = codeInfo(cur.weather_code);
     const opps = rideOpportunities(w);
+    applySkyWeather(container, cur.weather_code); // begroetingslucht volgt het echte weer
     body.innerHTML = `
       ${weatherScene(cur.weather_code, info, cur, day)}
       ${opps.length ? `
