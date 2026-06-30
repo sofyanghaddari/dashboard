@@ -98,9 +98,32 @@ function wxCondition(code) {
 }
 const OVERCAST = ['cloudy', 'rain', 'storm', 'drizzle', 'snow', 'fog'];
 
-function cachedWeatherCode() {
-  try { return JSON.parse(localStorage.getItem('weatherCache') || 'null')?.data?.current?.weather_code ?? null; }
-  catch { return null; }
+function skyPhase(now) {
+  const hr = now.getHours() + now.getMinutes() / 60;
+  if (hr < 5.5 || hr >= 21) return 'night';
+  if (hr < 8) return 'dawn';
+  if (hr < 18) return 'day';
+  if (hr < 19.5) return 'dusk';
+  return 'night';
+}
+
+function cachedWeather() {
+  try {
+    const c = JSON.parse(localStorage.getItem('weatherCache') || 'null');
+    const cur = c?.data?.current || {};
+    const day = c?.data?.daily || {};
+    return { code: cur.weather_code ?? null, temp: cur.temperature_2m ?? null, wind: cur.wind_speed_10m ?? null, rainProb: day.precipitation_probability_max?.[0] ?? null };
+  } catch { return { code: null, temp: null, wind: null, rainProb: null }; }
+}
+
+// 🌙 Echte maanfase (synodisch): verlichte fractie + wassend/afnemend.
+function moonPhase(date) {
+  const syn = 29.53058867;
+  const ref = Date.UTC(2000, 0, 6, 18, 14) / 86400000;
+  let age = (date.getTime() / 86400000 - ref) % syn; if (age < 0) age += syn;
+  const p = age / syn;
+  const f = (1 - Math.cos(2 * Math.PI * p)) / 2;
+  return { f, waxing: p < 0.5 };
 }
 
 // Neerslag-/onweerslagen voor de begroetingslucht (hergebruikt de wx-* klassen
@@ -123,43 +146,57 @@ function skyWeatherLayers(code) {
   }
 }
 
+// Sfeer-extra's bovenop het weer: regenboog, regendruppel-rimpels, vogels,
+// vleermuizen, vliegtuig+contrail, wegwaaiende bladeren, hittegloed.
+function skyExtras(cond, phase, temp, wind) {
+  const day = phase === 'day' || phase === 'dawn';
+  const night = phase === 'night';
+  const dusk = phase === 'dusk';
+  const wet = cond === 'rain' || cond === 'drizzle' || cond === 'storm';
+  let out = '';
+  if ((cond === 'rain' || cond === 'drizzle') && day) out += '<div class="sky-rainbow"></div>';     // 🌈 zon + regen
+  if (wet) out += '<div class="sky-ripples"><i style="left:18%"></i><i style="left:52%"></i><i style="left:80%"></i></div>'; // ☔ rimpels
+  if (day && ['clear', 'partly', 'cloudy'].includes(cond)) out += '<div class="sky-birds"><i></i><i></i><i></i></div>';      // 🐦 vogels
+  if ((night || dusk) && cond !== 'storm') out += '<div class="sky-bats"><i></i><i></i></div>';      // 🦇 vleermuizen
+  if (day && ['clear', 'partly'].includes(cond)) out += '<div class="sky-plane"><i></i></div>';      // ✈️ vliegtuig + contrail
+  if (wind != null && wind >= 28) out += '<div class="sky-leaves"><i></i><i></i><i></i></div>';      // 🍂 bladeren bij wind
+  if (temp != null && temp >= 28) out += '<div class="sky-heat"></div>';                              // 🌡️ hittegloed
+  return out;
+}
+
 // 🌅 Dag/nacht-lucht achter de begroeting die het ECHTE weer volgt (regen, onweer,
-// sneeuw, mist, bewolking). De zon/maan (☀️→🌙) is tevens de verberg-knop: tik =
-// verduistering + bedragen blurren (zie initSkyPrivacy in privacy.js).
+// sneeuw, mist, bewolking, wind, hitte, vorst) + sfeer-extra's. De zon/maan (☀️→🌙)
+// is tevens de verberg-knop: tik = verduistering + bedragen blurren (initSkyPrivacy).
 // opts.milestone = true → noorderlicht 's nachts.
 function skyScene(now, opts = {}) {
-  const hr = now.getHours() + now.getMinutes() / 60;
-  let phase;
-  if (hr < 5.5 || hr >= 21) phase = 'night';
-  else if (hr < 8) phase = 'dawn';
-  else if (hr < 18) phase = 'day';
-  else if (hr < 19.5) phase = 'dusk';
-  else phase = 'night';
-
+  const phase = skyPhase(now);
   const isMoon = phase === 'night' || phase === 'dusk';
   const warm = (phase === 'dawn' || phase === 'dusk') && !isMoon ? ' so-warm' : '';
-  const code = cachedWeatherCode();
+  const { code, temp, wind } = cachedWeather();
   const cond = wxCondition(code);
   const overcast = OVERCAST.includes(cond) ? ' sky-overcast' : '';
+  const frost = temp != null && temp <= 0 ? ' sky-frost' : '';
+  const windy = wind != null && wind >= 28 ? ' sky-windy' : '';
   const aurora = opts.milestone && phase === 'night' ? '<div class="sky-aurora"></div>' : '';
 
   const pts = [[12,22],[26,12],[38,30],[52,16],[64,26],[76,12],[88,28],[20,40],[70,42]];
   const stars = pts.map((p, i) => `<i class="sky-star" style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(i % 5) * 0.7}s"></i>`).join('');
   const cloud = '<div class="sky-cloud sky-cloud-1"></div><div class="sky-cloud sky-cloud-2"></div>';
 
-  const scene = `<div class="sky-scene sky-${phase}${overcast}" data-cond="${cond}" aria-hidden="true">
+  const scene = `<div class="sky-scene sky-${phase}${overcast}${frost}${windy}" data-cond="${cond}" aria-hidden="true">
     <div class="sky-stars">${stars}</div>
     ${aurora}
     <div id="sky-weather" class="sky-weather">${skyWeatherLayers(code)}</div>
+    <div id="sky-extras" class="sky-extras">${skyExtras(cond, phase, temp, wind)}</div>
     ${cloud}
     <div class="sky-meteor"></div>
     <div class="sky-shade"></div>
   </div>`;
 
-  // De zon/maan = verberg-knop. Tik = verduistering: bij de zon schuift de maan
-  // ervoor (corona gloeit), bij de maan wordt het een bloedmaan — het dagdeel
-  // blijft behouden. Lagen: gloed, stralen, corona, glinster, schijf, kraters,
-  // en de eclipserende schaduw-schijf.
+  // De zon/maan = verberg-knop. Tik = verduistering. De maan toont de echte maanfase
+  // (wassend/afnemend) via de terminator-schaduw .so-phase.
+  const mp = moonPhase(now);
+  const phShift = ((mp.waxing ? -1 : 1) * (1 - mp.f) * 100).toFixed(0);
   const orb = `<button id="sky-privacy" class="sky-orb${isMoon ? ' so-is-moon' : ''}${warm}" type="button" title="Verberg bedragen" aria-label="Verberg bedragen" aria-pressed="false">
     <span class="so-stage">
       <span class="so-glow"></span>
@@ -169,6 +206,7 @@ function skyScene(now, opts = {}) {
       <span class="so-orb">
         <span class="so-disc"></span>
         <span class="so-craters"></span>
+        <span class="so-phase" style="--ph:${phShift}"></span>
         <span class="so-shadow"></span>
       </span>
     </span>
@@ -181,14 +219,37 @@ function skyScene(now, opts = {}) {
 }
 
 // Werk de begroetingslucht bij met verse weer-data (na het ophalen).
-function applySkyWeather(container, code) {
-  const scene = container.querySelector('.dagstart-card .sky-scene');
-  const wx = container.querySelector('#sky-weather');
+function applySkyWeather(container, cur) {
+  const card = container.querySelector('.dagstart-card');
+  const scene = card?.querySelector('.sky-scene');
+  const wx = card?.querySelector('#sky-weather');
+  const ex = card?.querySelector('#sky-extras');
   if (!scene || !wx) return;
+  const code = cur?.weather_code ?? null;
+  const temp = cur?.temperature_2m ?? null;
+  const wind = cur?.wind_speed_10m ?? null;
   const cond = wxCondition(code);
+  const phase = skyPhase(effectiveNow());
   wx.innerHTML = skyWeatherLayers(code);
+  if (ex) ex.innerHTML = skyExtras(cond, phase, temp, wind);
   scene.classList.toggle('sky-overcast', OVERCAST.includes(cond));
+  scene.classList.toggle('sky-frost', temp != null && temp <= 0);
+  scene.classList.toggle('sky-windy', wind != null && wind >= 28);
   scene.dataset.cond = cond;
+}
+
+// 🎉 Korte confetti-regen in de begroetingslucht (bij een nieuwe badge).
+function skyConfettiBurst(container) {
+  const card = container.querySelector('.dagstart-card');
+  if (!card || card.querySelector('.sky-confetti')) return;
+  const cols = ['#ffd23f', '#5dd49a', '#6ec9ff', '#fb7185', '#a78bfa'];
+  const wrap = document.createElement('div');
+  wrap.className = 'sky-confetti';
+  wrap.setAttribute('aria-hidden', 'true');
+  wrap.innerHTML = Array.from({ length: 22 }, (_, i) =>
+    `<i style="left:${(i * 4.6 + (i % 3) * 3) % 100}%;--c:${cols[i % cols.length]};--d:${(i % 7) * 0.12}s;--r:${(i % 2 ? 1 : -1) * (180 + i * 12)}deg;--dur:${(1.5 + (i % 4) * 0.25)}s"></i>`).join('');
+  card.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 3200);
 }
 
 export async function render(container) {
@@ -544,6 +605,7 @@ export async function render(container) {
     }
   }
   checkNewBadges().then(newOnes => {
+    if (newOnes.length) skyConfettiBurst(container);
     newOnes.forEach((b, i) => {
       setTimeout(() => celebrateBadge(b), 700 + i * 3600);
     });
@@ -1081,7 +1143,7 @@ async function loadWeather(container) {
     const day  = w.daily;
     const info = codeInfo(cur.weather_code);
     const opps = rideOpportunities(w);
-    applySkyWeather(container, cur.weather_code); // begroetingslucht volgt het echte weer
+    applySkyWeather(container, cur); // begroetingslucht volgt het echte weer (code, temp, wind)
     body.innerHTML = `
       ${weatherScene(cur.weather_code, info, cur, day)}
       ${opps.length ? `
