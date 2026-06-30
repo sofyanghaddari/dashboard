@@ -3614,6 +3614,30 @@ label[for="import-csv"]:hover, label[for="import-pdf"]:hover, #add-card:hover {
 }
 
 /* Expense items */
+/* ── 💸 Kostenoverzicht (Taxi → Kosten) ── */
+.cost-ov { padding: 16px; margin-bottom: 12px; }
+.cost-ov-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.cost-period { display: inline-flex; gap: 2px; background: var(--bg-elev-2); border-radius: 9px; padding: 2px; }
+.cost-period-btn {
+  border: none; background: none; color: var(--text-dim); cursor: pointer;
+  font-size: .76rem; font-weight: 600; padding: 5px 9px; border-radius: 7px; transition: background .15s, color .15s;
+}
+.cost-period-btn.active { background: var(--accent); color: #1b1b1b; }
+.cost-ov-total { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 14px; flex-wrap: wrap; }
+.cost-ov-total .big-money { color: var(--danger); font-size: 1.7rem; }
+.cost-ov-sub { font-size: .78rem; color: var(--text-faint); }
+.cost-bars { display: flex; flex-direction: column; gap: 10px; }
+.cost-bar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.cost-bar-name { display: flex; align-items: center; gap: 7px; font-size: .85rem; color: var(--text); }
+.cost-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.cost-bar-amt { font-size: .85rem; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.cost-bar-track { height: 7px; border-radius: 5px; background: var(--bg-elev-3); overflow: hidden; }
+.cost-bar-fill { height: 100%; border-radius: 5px; transition: width .7s var(--ease-out); animation: costBarRise .7s var(--ease-out); }
+@keyframes costBarRise { from { width: 0 !important; } }
+.cost-ov-foot { font-size: .8rem; color: var(--text-faint); margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+.cost-ov-foot b { color: var(--text); }
+.cost-ov-note { font-size: .68rem; color: var(--text-faint); margin-top: 6px; opacity: .8; }
+
 .expense-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .expense-item {
   display: flex; align-items: center; gap: 10px;
@@ -6912,7 +6936,7 @@ input, select, textarea {
   .badge.earned .badge-emoji::after, .hab-day.today,
   .so-glow, .so-rays, .so-corona, .sky-meteor, .sky-star, .sky-cloud, .sky-drift, .sky-aurora, .coin-shimmer, .coin-disc, .shbc-bar::after, .cal-cell.today,
   .mg-done .mg-bar-fill,
-  .sky-ripples i, .sky-birds i, .sky-bats i, .sky-plane, .sky-leaves i, .sky-heat, .sky-confetti i,
+  .cost-bar-fill, .sky-ripples i, .sky-birds i, .sky-bats i, .sky-plane, .sky-leaves i, .sky-heat, .sky-confetti i,
   .tp-animate .tp-item { animation: none !important; }
 }
 

@@ -235,7 +235,8 @@ async function checkNsDisruptions() {
   let data;
   try {
     const url = src + (src.includes('?') ? '&' : '?') + '_=' + Math.floor(Date.now() / 60000);
-    const res = await fetch(url, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+    // GÉÉN cache:'no-store' (laat cross-origin fetch op iOS mislukken).
+    const res = await fetch(url);
     if (!res.ok) return;
     data = await res.json();
   } catch (_) { return; }
