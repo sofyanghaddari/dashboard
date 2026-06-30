@@ -8,7 +8,7 @@ import { toast } from '../components/toast.js';
 import { getWeather, codeInfo, rideOpportunities } from '../weather.js';
 import { getMascotState, shouldShame, pickShame } from '../mascot.js';
 import { detectInsights, goalFeasibility, goalTrajectoryPath } from '../insights.js';
-import { initPrivacyToggle } from '../privacy.js';
+import { initPrivacyToggle, initSkyPrivacy } from '../privacy.js';
 import { initCountUps } from '../animate.js';
 import { qiblaCard, initQiblaCard } from '../qibla.js';
 import { mountTodayPanel } from '../today-panel.js';
@@ -83,7 +83,9 @@ function weatherScene(code, info, cur, day) {
     </div>`;
 }
 
-// 🌅 Dag/nacht-lucht achter de begroeting: zon overdag, maan + twinkelende sterren 's nachts.
+// 🌅 Dag/nacht-lucht achter de begroeting: zon overdag, maan + twinkelende sterren
+// 's nachts. De zon/maan (☀️→🌙) is tevens de verberg-knop: tik = bedragen blurren
+// met een zonsondergang-animatie (zie initSkyPrivacy in privacy.js).
 function skyScene(now) {
   const hr = now.getHours() + now.getMinutes() / 60;
   let phase;
@@ -92,15 +94,33 @@ function skyScene(now) {
   else if (hr < 18) phase = 'day';
   else if (hr < 19.5) phase = 'dusk';
   else phase = 'night';
-  const orb = phase === 'night' ? '<div class="sky-moon"></div>' : '<div class="sky-sun"></div>';
-  let stars = '';
-  if (phase === 'night' || phase === 'dusk') {
-    const pts = [[12,22],[26,12],[38,30],[52,16],[64,26],[76,12],[88,28],[20,40],[70,42]];
-    stars = pts.map((p, i) => `<i class="sky-star" style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(i % 5) * 0.7}s"></i>`).join('');
-  }
-  let cloud = '';
-  if (phase === 'day' || phase === 'dawn') cloud = '<div class="sky-cloud sky-cloud-1"></div><div class="sky-cloud sky-cloud-2"></div>';
-  return `<div class="sky-scene sky-${phase}" aria-hidden="true">${orb}${stars}${cloud}</div>`;
+
+  const isMoon = phase === 'night' || phase === 'dusk';
+  const pts = [[12,22],[26,12],[38,30],[52,16],[64,26],[76,12],[88,28],[20,40],[70,42]];
+  const stars = pts.map((p, i) => `<i class="sky-star" style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(i % 5) * 0.7}s"></i>`).join('');
+  const cloud = '<div class="sky-cloud sky-cloud-1"></div><div class="sky-cloud sky-cloud-2"></div>';
+
+  const scene = `<div class="sky-scene sky-${phase}" aria-hidden="true">
+    <div class="sky-stars">${stars}</div>
+    ${cloud}
+    <div class="sky-shade"></div>
+  </div>`;
+
+  // De zon/maan = verberg-knop. Lagen: gloed, stralen, schijf (met kraters voor maan)
+  // en een ooglid dat dichtgaat bij verbergen.
+  const orb = `<button id="sky-privacy" class="sky-orb${isMoon ? ' so-is-moon' : ''}" type="button" title="Verberg bedragen" aria-label="Verberg bedragen" aria-pressed="false">
+    <span class="so-stage">
+      <span class="so-glow"></span>
+      <span class="so-rays"></span>
+      <span class="so-orb">
+        <span class="so-disc"></span>
+        <span class="so-craters"></span>
+        <span class="so-lid"></span>
+      </span>
+    </span>
+  </button>`;
+
+  return scene + orb;
 }
 
 export async function render(container) {
@@ -222,7 +242,6 @@ export async function render(container) {
           <div class="dagstart-greeting">${begroeting}, ${escapeHTML(userName)}</div>
           <div class="dagstart-date">${datumStr}</div>
         </div>
-        <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
       </div>
       <div class="dagstart-stats">
         <div class="dagstart-stat">
@@ -462,6 +481,7 @@ export async function render(container) {
     });
   });
   initPrivacyToggle(container);
+  initSkyPrivacy(container);
 }
 
 const TIP_POOL = [
@@ -888,6 +908,8 @@ function wegWidget() {
 // Alle externe tekst wordt ge-escaped in renderNs().
 const NS_CACHE_KEY = 'nsDisruptionsCache';
 const NS_DATA_URL = 'https://raw.githubusercontent.com/sofyanghaddari/dashboard/ns-data/ns-disruptions.json';
+// Noord-Holland plaatsen/stations — een storing hier = kans op ritten voor Soef.
+const NH_RE = /amsterdam|haarlem|schiphol|hoofddorp|nieuw-vennep|zaandam|zaanstad|wormerveer|krommenie|castricum|uitgeest|heemskerk|beverwijk|santpoort|driehuis|velsen|ijmuiden|bloemendaal|overveen|zandvoort|heemstede|halfweg|weesp|diemen|naarden|bussum|hilversum|purmerend|hoorn|enkhuizen|bovenkarspel|alkmaar|heiloo|heerhugowaard|obdam|schagen|anna paulowna|den helder|texel|edam|volendam|monnickendam/;
 const _setHTML = (el, html) => { el.replaceChildren(); el.insertAdjacentHTML('beforeend', html); };
 
 async function loadNs(container) {
@@ -931,12 +953,12 @@ function renderNs(body, data) {
     const type = String(d.type || '').toLowerCase();
     const hay = `${title} ${text} ${cause}`.toLowerCase();
     const isStrike = /staking|stakt|werkonderbreking/.test(hay);
-    const isAms = /amsterdam/.test(hay);
+    const isNH = NH_RE.test(hay);
     let cat;                                   // strike > alert (storing) > work
     if (isStrike) cat = 'strike';
     else if (/maintenance|werkzaam/.test(type)) cat = 'work';
     else cat = 'alert';                        // disruption / calamity
-    return { title: title.replace(/\.\s*$/, ''), cat, isAms };
+    return { title: title.replace(/\.\s*$/, ''), cat, isNH };
   });
 
   if (!items.length) {
@@ -948,8 +970,8 @@ function renderNs(body, data) {
   const alerts  = items.filter(i => i.cat === 'alert');
   const works   = items.filter(i => i.cat === 'work');
 
-  // Uitgelicht (1-regelig): eerst stakingen, dan Amsterdam-storingen.
-  const highlight = [...strikes, ...alerts.filter(i => i.isAms && i.cat !== 'strike')];
+  // Uitgelicht (1-regelig): eerst stakingen, dan Noord-Holland-storingen.
+  const highlight = [...strikes, ...alerts.filter(i => i.isNH && i.cat !== 'strike')];
   const hiSet = new Set(highlight);
   const rest = items.filter(i => !hiSet.has(i));
 
@@ -967,7 +989,7 @@ function renderNs(body, data) {
 
   const hi = highlight.length
     ? `<div class="ns-list">${highlight.slice(0, 5).map(row).join('')}</div>`
-    : `<p class="ns-clear">✓ Niets rond Amsterdam</p>`;
+    : `<p class="ns-clear">✓ Niets in Noord-Holland</p>`;
 
   const more = rest.length
     ? `<details class="ns-more"><summary>Alle meldingen (${items.length})</summary>

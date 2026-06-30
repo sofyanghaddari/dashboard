@@ -5,8 +5,14 @@ name: NS storingen ophalen
 # raw.githubusercontent.com (CORS '*'). Zo blijft je NS-sleutel veilig server-side
 # en hoef je geen Cloudflare/proxy zelf te beheren.
 #
+# Daarnaast: ACHTERGROND-push (ook als de app dicht is) bij een nieuwe staking
+# (overal) of nieuwe storing in Noord-Holland — via dezelfde push-config gist +
+# VAPID-sleutels als de gewone meldingen.
+#
 # Eenmalig instellen (Settings → Secrets and variables → Actions → New repository secret):
-#   NS_API_KEY   je gratis NS Primary key (apiportal.ns.nl → NS App → Subscribe → Profile)
+#   NS_API_KEY          je gratis NS Primary key (apiportal.ns.nl → NS App → Subscribe → Profile)
+#   VAPID_PRIVATE_KEY   (al ingesteld voor de gewone push) — nodig voor achtergrond-push
+#   PUSH_GH_PAT         GitHub-token met `gist` scope (al ingesteld voor de gewone push)
 #
 # Je kunt 'm ook handmatig draaien via tab "Actions" → deze workflow → "Run workflow".
 
@@ -27,6 +33,12 @@ jobs:
   fetch:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Haal NS-storingen op
         env:
           NS_API_KEY: ${{ secrets.NS_API_KEY }}
@@ -40,15 +52,15 @@ jobs:
             -H "Ocp-Apim-Subscription-Key: $NS_API_KEY" \
             -H "Accept: application/json" \
             "https://gateway.apiportal.ns.nl/disruptions/v3?isActive=true" \
-            -o ns-disruptions.json
+            -o "$GITHUB_WORKSPACE/ns-disruptions.json"
           # Validatie: het antwoord moet geldige JSON zijn (anders niet publiceren).
-          python3 -c "import json; json.load(open('ns-disruptions.json'))"
-          echo "Aantal storingen: $(python3 -c 'import json;print(len(json.load(open("ns-disruptions.json"))))')"
+          python3 -c "import json; json.load(open('$GITHUB_WORKSPACE/ns-disruptions.json'))"
+          echo "Aantal storingen: $(python3 -c "import json;print(len(json.load(open('$GITHUB_WORKSPACE/ns-disruptions.json'))))")"
 
       - name: Publiceer naar ns-data branch
         run: |
           mkdir -p /tmp/ns-out
-          cp ns-disruptions.json /tmp/ns-out/
+          cp "$GITHUB_WORKSPACE/ns-disruptions.json" /tmp/ns-out/
           cd /tmp/ns-out
           git init -q
           git config user.name "ns-bot"
@@ -58,3 +70,20 @@ jobs:
           git commit -q -m "NS-storingen bijgewerkt ($(date -u +%FT%TZ))"
           # Force-push: de branch blijft altijd één commit groot (geen history-spam).
           git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ns-data
+
+      - name: Achtergrond-push bij nieuwe staking/NH-storing
+        working-directory: scripts
+        env:
+          GH_PAT: ${{ secrets.PUSH_GH_PAT || secrets.GH_PAT || secrets.GIST_PAT || secrets.GH_TOKEN }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY || secrets.VAPID_PRIVATE || secrets.VAPID_KEY }}
+          VAPID_PUBLIC_KEY: 'BIJ7ZhuzZAXmhzuq8z5uck90V1W1UIltLgiz6HaWts1HICNaGHDdEyg89oBr9Wl0hgmmClKFZxWdDT_bDlDpluc'
+          VAPID_SUBJECT: 'mailto:sofyanghaddari@gmail.com'
+          NS_FILE: ${{ github.workspace }}/ns-disruptions.json
+        run: |
+          if [ -z "$GH_PAT" ] || [ -z "$VAPID_PRIVATE_KEY" ]; then
+            echo "Push-secrets (PUSH_GH_PAT / VAPID_PRIVATE_KEY) ontbreken — achtergrond-push overgeslagen."
+            exit 0
+          fi
+          npm install --no-audit --no-fund
+          # Best-effort: push-fouten mogen de data-pijplijn niet rood maken.
+          node send-ns-push.mjs || echo "NS-push overgeslagen (niet-kritiek)"
