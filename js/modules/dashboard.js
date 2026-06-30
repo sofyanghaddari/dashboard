@@ -103,19 +103,24 @@ function skyScene(now) {
   const scene = `<div class="sky-scene sky-${phase}" aria-hidden="true">
     <div class="sky-stars">${stars}</div>
     ${cloud}
+    <div class="sky-meteor"></div>
     <div class="sky-shade"></div>
   </div>`;
 
-  // De zon/maan = verberg-knop. Lagen: gloed, stralen, schijf (met kraters voor maan)
-  // en een ooglid dat dichtgaat bij verbergen.
+  // De zon/maan = verberg-knop. Tik = verduistering: bij de zon schuift de maan
+  // ervoor (corona gloeit), bij de maan wordt het een bloedmaan — het dagdeel
+  // blijft behouden. Lagen: gloed, stralen, corona, glinster, schijf, kraters,
+  // en de eclipserende schaduw-schijf.
   const orb = `<button id="sky-privacy" class="sky-orb${isMoon ? ' so-is-moon' : ''}" type="button" title="Verberg bedragen" aria-label="Verberg bedragen" aria-pressed="false">
     <span class="so-stage">
       <span class="so-glow"></span>
       <span class="so-rays"></span>
+      <span class="so-corona"></span>
+      <span class="so-glint"></span>
       <span class="so-orb">
         <span class="so-disc"></span>
         <span class="so-craters"></span>
-        <span class="so-lid"></span>
+        <span class="so-shadow"></span>
       </span>
     </span>
   </button>`;
