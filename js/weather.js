@@ -28,7 +28,7 @@ export async function getWeather(signal) {
   if (cached && Date.now() - cached.ts < TTL) return cached.data;
 
   const loc = await getLocation();
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weather_code&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=3`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weather_code,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=3`;
   const res = await fetch(url, signal ? { signal } : undefined);
   if (!res.ok) throw new Error('Weer ophalen mislukt');
   const data = await res.json();

@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v152** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v153** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -297,6 +297,17 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++23. **🌈🐦✈️ Volledige levende begroetingslucht v153 (30 juni 2026):** op verzoek van user ("allemaal") acht extra sfeer-effecten toegevoegd, conditioneel op het echte weer/tijdstip (helpers `cachedWeather()`/`skyExtras()`/`moonPhase()` in `dashboard.js`, CSS-sectie "Sfeer-extra's"):
+   - **🌈 Regenboog** (`.sky-rainbow`, radial-gradient-boog) bij regen/motregen overdag (zon + regen).
+   - **☔ Regendruppel-rimpels** (`.sky-ripples`) bij neerslag.
+   - **🐦 Vogels** overdag (helder/wisselend/bewolkt), **🦇 vleermuizen** bij schemer/nacht (`.sky-birds`/`.sky-bats`, CSS-vleugels via border-arcs).
+   - **✈️ Vliegtuig + contrail** (`.sky-plane`) overdag bij helder/wisselend.
+   - **🍂 Wegwaaiende bladeren** + snellere wolken bij wind ≥ 28 km/u (`.sky-leaves`/`.sky-windy`); windsnelheid nu opgehaald (`wind_speed_10m` toegevoegd aan de Open-Meteo-call in `weather.js`).
+   - **🌡️ Hittegloed** (`.sky-heat`) bij ≥ 28 °C, **❄️ vorst-kristallen** in de hoeken (`.sky-frost`) bij ≤ 0 °C.
+   - **🌙 Echte maanfase** in de orb (`.so-phase` terminator-schaduw via `moonPhase()`), verborgen tijdens de bloedmaan-eclipse.
+   - **🎉 Confetti-regen** in de lucht (`skyConfettiBurst()`) bij een nieuwe badge (naast de bestaande badge-viering).
+   - `applySkyWeather(container, cur)` ververst nu ook de extra's met code+temp+wind. Reduced-motion-guard uitgebreid.
 
 +22. **🌦️ Begroetingslucht volgt het echte weer + 3 extra sky-animaties v149 (29 juni 2026):** op verzoek van user.
    - **Weer-volgen:** `skyScene()` leest de gecachte weercode (`localStorage.weatherCache`) en toont passende lagen in de begroetingslucht — **regen** (`wx-rain`), **motregen**, **onweer** (regen + bliksem `wx-flash`/`wx-bolt`), **sneeuw** (`wx-snow`), **mist** (`wx-fogband`) — plus een grijze waas + grijzere wolken bij bewolkt/nat (`.sky-overcast`). Hergebruikt de bestaande `wx-*` klassen van de weer-banner. `applySkyWeather(container, code)` ververst de lucht zodra verse weer-data binnen is (in `loadWeather`). Helpers `wxCondition()`/`cachedWeatherCode()`/`skyWeatherLayers()`.
