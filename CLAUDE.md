@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v153** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v154** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -297,6 +297,10 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++25. **🚖 Taxi: inkomen-knop bovenaan + kostenoverzicht per periode v154 (30 juni 2026):** op verzoek van user.
+   - **"+ Inkomen vandaag noteren"** staat nu **bovenaan** het Taxi-overzicht (vóór de income-hero) i.p.v. onderaan.
+   - **Kostenoverzicht** in de Kosten-tab (`costsForPeriod()`/`periodSpec()` in `taxi.js`): periodekiezer **Maand / 3 mnd / 6 mnd / Jaar** (`container.dataset.costPeriod`), groot rood totaal voor de periode, en een **uitsplitsing per post** (Brandstof, Onderhoud, Verzekering, …) met gekleurde balken (`.cost-bars`, palet `COST_COLORS`), gesorteerd op bedrag. Vaste kosten worden over de periode geprojecteerd (`amount × maanden`, weekly × ~4.348/mnd), eenmalige kosten tellen mee op hun datum. Verving de oude platte "Totaal maandkosten"-kaart; break-even/dag + eenmalig-deze-maand staan nu in de voet. CSS-sectie "💸 Kostenoverzicht".
 
 +24. **🌈🐦✈️ Volledige levende begroetingslucht v153 (30 juni 2026):** op verzoek van user ("allemaal") acht extra sfeer-effecten toegevoegd, conditioneel op het echte weer/tijdstip (helpers `cachedWeather()`/`skyExtras()`/`moonPhase()` in `dashboard.js`, CSS-sectie "Sfeer-extra's"):
    - **🌈 Regenboog** (`.sky-rainbow`, radial-gradient-boog) bij regen/motregen overdag (zon + regen).

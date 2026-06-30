@@ -56,6 +56,43 @@ function calcOneTimeThisMonth(expenses, now = new Date()) {
   }, 0);
 }
 
+// Kostenoverzicht per periode: vaste kosten worden over de periode geprojecteerd,
+// eenmalige kosten tellen mee op hun datum. Gegroepeerd per post (Brandstof, Onderhoud, …).
+const WEEKS_PER_MONTH = 365.25 / 12 / 7; // ≈ 4.348
+const COST_PERIODS = [
+  { key: 'month', label: 'Maand', long: 'deze maand' },
+  { key: '3m',    label: '3 mnd', long: 'afgelopen 3 maanden' },
+  { key: '6m',    label: '6 mnd', long: 'afgelopen 6 maanden' },
+  { key: 'year',  label: 'Jaar',  long: 'dit jaar' },
+];
+function periodSpec(key, now) {
+  const y = now.getFullYear(), m = now.getMonth();
+  if (key === '3m')   return { months: 3,     start: new Date(y, m - 2, 1) };
+  if (key === '6m')   return { months: 6,     start: new Date(y, m - 5, 1) };
+  if (key === 'year') return { months: m + 1, start: new Date(y, 0, 1) };
+  return { months: 1, start: new Date(y, m, 1) }; // 'month'
+}
+function costsForPeriod(expenses, key, now) {
+  const { months, start } = periodSpec(key, now);
+  const byPost = {};
+  const add = (name, amt) => { byPost[name] = (byPost[name] || 0) + amt; };
+  for (const e of expenses) {
+    const amt = Number(e.amount) || 0;
+    if (amt <= 0) continue;
+    if (e.frequency === 'weekly') add(e.name, amt * months * WEEKS_PER_MONTH);
+    else if (e.frequency === 'eenmalig') {
+      const d = e.date ? new Date(e.date + 'T12:00:00') : null;
+      if (d && d >= start && d <= now) add(e.name, amt);
+    } else {
+      add(e.name, amt * months); // monthly
+    }
+  }
+  const posts = Object.entries(byPost).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total);
+  const total = posts.reduce((s, p) => s + p.total, 0);
+  return { total, posts, months };
+}
+const COST_COLORS = ['#ffb454', '#6ec9ff', '#fb7185', '#5dd49a', '#a78bfa', '#e0b341', '#f97316', '#94a3b8'];
+
 function checkBreakEven(todayIncome, expenses) {
   const monthly = calcMonthlyTotal(expenses);
   if (monthly <= 0) return;
@@ -163,6 +200,12 @@ function renderOverview(content, container, d) {
   const breakEvenHit = dailyBreakEven > 0 && todayIncome >= dailyBreakEven;
 
   content.innerHTML = `
+    <!-- INKOMEN TOEVOEGEN (bovenaan) -->
+    <button class="add-income-btn" id="quick-today">
+      <span class="add-income-btn-icon">＋</span>
+      Inkomen vandaag noteren
+    </button>
+
     <!-- INCOME HERO -->
     <div class="income-hero">
       <div class="income-hero-label" style="display:flex;justify-content:space-between;align-items:center">
@@ -243,12 +286,6 @@ function renderOverview(content, container, d) {
       <button class="btn secondary" id="go-costs" style="font-size:.85rem">→ Kosten instellen</button>
     </div>
     `}
-
-    <!-- INKOMEN TOEVOEGEN -->
-    <button class="add-income-btn" id="quick-today">
-      <span class="add-income-btn-icon">＋</span>
-      Inkomen vandaag noteren
-    </button>
   `;
 
   content.querySelector('#quick-today').onclick = () => openDayModal(container, ymd(now), byDate?.[ymd(now)]);
@@ -304,9 +341,14 @@ function renderRitten(content, container, year, month, byDate, rides, now) {
 
 // ─── KOSTEN TAB ───────────────────────────────────────────────────────────
 function renderKosten(content, container, expenses) {
+  const now = effectiveNow();
   const monthly = calcMonthlyTotal(expenses);
   const oneTime = calcOneTimeThisMonth(expenses);
   const freqLabel = (f) => f === 'weekly' ? '/week' : f === 'eenmalig' ? 'eenmalig' : '/maand';
+
+  const period = container.dataset.costPeriod || 'month';
+  const ov = costsForPeriod(expenses, period, now);
+  const periodLong = (COST_PERIODS.find(p => p.key === period) || COST_PERIODS[0]).long;
 
   const PRESETS = [
     { name: 'Brandstof', amount: 600, frequency: 'monthly' },
@@ -317,11 +359,32 @@ function renderKosten(content, container, expenses) {
   ];
 
   content.innerHTML = `
-    <div class="card" style="padding:14px;margin-bottom:12px">
-      <h2 class="card-title">Totaal maandkosten</h2>
-      <div style="font-size:1.6rem;font-family:Georgia,serif;font-weight:700;color:var(--danger);margin:6px 0 2px"><span class="blurred-amount" data-countup="${monthly}">${fmtMoney(monthly)}</span><span style="font-size:.9rem;font-weight:400;color:var(--text-faint)">/maand</span></div>
-      <div style="font-size:.82rem;color:var(--text-faint)">Break-even per dag: <b class="blurred-amount" style="color:var(--text)">${fmtMoney(monthly / 30)}</b></div>
-      ${oneTime > 0 ? `<div style="font-size:.82rem;color:var(--text-faint);margin-top:6px;padding-top:6px;border-top:1px solid var(--border-soft)">Eenmalig deze maand: <b class="blurred-amount" style="color:var(--text)">${fmtMoney(oneTime)}</b></div>` : ''}
+    <!-- KOSTENOVERZICHT (per periode, uitgesplitst per post) -->
+    <div class="card cost-ov">
+      <div class="cost-ov-head">
+        <h2 class="card-title" style="margin:0">Kostenoverzicht</h2>
+        <div class="cost-period" role="tablist">
+          ${COST_PERIODS.map(p => `<button class="cost-period-btn ${p.key === period ? 'active' : ''}" data-cp="${p.key}" type="button">${p.label}</button>`).join('')}
+        </div>
+      </div>
+      <div class="cost-ov-total">
+        <span class="big-money blurred-amount" data-countup="${Math.round(ov.total)}">${fmtMoney(ov.total)}</span>
+        <span class="cost-ov-sub">totaal — ${periodLong}</span>
+      </div>
+      ${ov.posts.length ? `
+        <div class="cost-bars">
+          ${ov.posts.map((p, i) => `
+            <div class="cost-bar-row">
+              <div class="cost-bar-top">
+                <span class="cost-bar-name"><span class="cost-dot" style="background:${COST_COLORS[i % COST_COLORS.length]}"></span>${escapeHTML(p.name)}</span>
+                <span class="cost-bar-amt blurred-amount">${fmtMoney(p.total)}</span>
+              </div>
+              <div class="cost-bar-track"><div class="cost-bar-fill" style="width:${ov.total > 0 ? Math.round(p.total / ov.total * 100) : 0}%;background:${COST_COLORS[i % COST_COLORS.length]}"></div></div>
+            </div>`).join('')}
+        </div>
+        <div class="cost-ov-foot">Break-even per dag: <b class="blurred-amount">${fmtMoney(monthly / 30)}</b>${oneTime > 0 ? ` · eenmalig deze maand: <b class="blurred-amount">${fmtMoney(oneTime)}</b>` : ''}</div>
+        <div class="cost-ov-note">Vaste kosten zijn geschat over de periode; eenmalige kosten tellen op hun datum mee.</div>
+      ` : `<p class="muted" style="text-align:center;font-size:.875rem;padding:8px 0 4px">Nog geen kosten — voeg hieronder je vaste lasten toe.</p>`}
     </div>
 
     <div class="expense-list" id="expense-list">
@@ -360,6 +423,14 @@ function renderKosten(content, container, expenses) {
       <button class="btn block" id="save-expense">Toevoegen</button>
     </div>
   `;
+
+  // Periode-knoppen kostenoverzicht
+  content.querySelectorAll('.cost-period-btn').forEach(btn => {
+    btn.onclick = () => {
+      container.dataset.costPeriod = btn.dataset.cp;
+      render(container);
+    };
+  });
 
   // Delete handler
   content.querySelectorAll('[data-del]').forEach(btn => {
