@@ -478,7 +478,7 @@ body.amounts-hidden .blurred-amount .blurred-amount {
 }
 .settings-btn:hover { color: var(--text); border-color: rgba(255,255,255,.18); }
 .settings-btn:active { transform: rotate(45deg) scale(.93); }
-.settings-btn svg { width: 26px; height: 26px; }
+.settings-btn svg { width: 28px; height: 28px; }
 
 /* FORM */
 input, select, textarea {
