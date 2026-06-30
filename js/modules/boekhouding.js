@@ -37,6 +37,8 @@ const ADMINS = {
     prefix:      'WOOSH',
     defaultVat:  9,
     defaultDesc: 'Vervoersdienst',
+    tagline:     'Taxivervoer Amsterdam',
+    logoGlyph:   'taxi',
   },
   olijfolie: {
     id:          'olijfolie',
@@ -53,6 +55,8 @@ const ADMINS = {
     prefix:      'OLIE',
     defaultVat:  21,
     defaultDesc: 'Levering olijfolie',
+    tagline:     'Premium olijfolie',
+    logoGlyph:   'leaf',
   },
 };
 
@@ -2680,6 +2684,40 @@ function loadJsPdf() {
   return _jsPdfLoading;
 }
 
+// Vector-logo (geen afbeelding nodig) — taxi-badge of blad, in accentkleur
+function drawCompanyLogo(doc, bedrijf, x, y, s, TAUPE, DARK) {
+  // Afgeronde badge in accentkleur
+  doc.setFillColor(...TAUPE);
+  doc.roundedRect(x, y, s, s, s * 0.17, s * 0.17, 'F');
+
+  const glyph = bedrijf.logoGlyph || (bedrijf.id === 'olijfolie' ? 'leaf' : 'taxi');
+
+  if (glyph === 'taxi') {
+    // Witte taxi-silhouet
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(x + s * 0.30, y + s * 0.24, s * 0.40, s * 0.18, 0.5, 0.5, 'F'); // dak
+    doc.roundedRect(x + s * 0.15, y + s * 0.40, s * 0.70, s * 0.26, 0.9, 0.9, 'F'); // body
+    // Dambord-streep (taupe blokjes op de body)
+    doc.setFillColor(...TAUPE);
+    const cw = s * 0.075, cby = y + s * 0.46;
+    for (let i = 0; i < 3; i++) doc.rect(x + s * 0.31 + i * cw * 1.5, cby, cw, cw, 'F');
+    // Wielen (donker) met witte naaf
+    const wy = y + s * 0.70, r = s * 0.105;
+    doc.setFillColor(...DARK);
+    doc.circle(x + s * 0.33, wy, r, 'F');
+    doc.circle(x + s * 0.67, wy, r, 'F');
+    doc.setFillColor(255, 255, 255);
+    doc.circle(x + s * 0.33, wy, r * 0.42, 'F');
+    doc.circle(x + s * 0.67, wy, r * 0.42, 'F');
+  } else {
+    // Blad-silhouet voor olijfolie
+    doc.setFillColor(255, 255, 255);
+    doc.ellipse(x + s * 0.5, y + s * 0.5, s * 0.17, s * 0.31, 'F');
+    doc.setDrawColor(...TAUPE); doc.setLineWidth(0.45);
+    doc.line(x + s * 0.5, y + s * 0.24, x + s * 0.5, y + s * 0.74);
+  }
+}
+
 async function generateInvoicePDF(inv, bedrijf) {
   const JsPDF = await loadJsPdf();
   const doc    = new JsPDF({ unit: 'mm', format: 'a4' });
@@ -2697,17 +2735,24 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.setFillColor(...TAUPE);
   doc.rect(0, 0, 210, 6, 'F');
 
-  // ── Bedrijfsnaam ──
+  // ── Logo-badge + woordmerk ──
+  drawCompanyLogo(doc, bedrijf, L, 9, 13, TAUPE, DARK);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(15);
+  doc.setFontSize(14);
   doc.setTextColor(...DARK);
-  doc.text(bedrijf.naam, L, 18);
+  doc.text(bedrijf.naam, L + 17, 16);
+  if (bedrijf.tagline) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...TAUPE);
+    doc.text(bedrijf.tagline.toUpperCase(), L + 17, 20.5, { charSpace: 0.3 });
+  }
 
   // ── Bedrijfsgegevens ──
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(...MED);
-  doc.text([bedrijf.adres, bedrijf.postcode, `KvK: ${bedrijf.kvk}   BTW: ${bedrijf.btw}`, `IBAN: ${fmtIBAN(bedrijf.iban)}`].join('\n'), L, 25, { lineHeightFactor: 1.6 });
+  doc.text([bedrijf.adres, bedrijf.postcode, `KvK: ${bedrijf.kvk}   BTW: ${bedrijf.btw}`, `IBAN: ${fmtIBAN(bedrijf.iban)}`].join('\n'), L, 28, { lineHeightFactor: 1.6 });
 
   // ── "FACTUUR" + meta rechts ──
   doc.setFont('helvetica', 'bold');
