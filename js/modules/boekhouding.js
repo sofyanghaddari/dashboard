@@ -2256,7 +2256,7 @@ function openDetailModal(inv, container) {
       const clientName = inv.client?.name || 'Geachte relatie';
       const isLate = status === 'te-laat';
       const _remAdmin = ADMINS[inv.adminId || 'taxi'] || ADMINS.taxi;
-      const text = `${isLate ? 'Herinnering' : 'Betalingsverzoek'}: Factuur ${inv.number}\n\nGeachte ${clientName},\n\n${isLate ? 'Wij constateren dat onderstaande factuur nog niet is voldaan.' : 'Wij verzoeken u vriendelijk het onderstaande bedrag te voldoen.'}\n\nFactuurnummer: ${inv.number}\nFactuurdatum: ${fmtDateLong(inv.date)}\nVervaldatum: ${fmtDateLong(inv.dueDate)}\nBedrag: ${fmtMoney(inv.totalIncl || 0)}\n\nOmschrijving: ${inv.lines?.[0]?.description || '—'}\n\nGelieve het bedrag over te maken naar:\nIBAN: ${fmtIBAN(_remAdmin.iban || '')}${_remAdmin.bic ? '\nBIC: ' + _remAdmin.bic : ''}\nt.n.v. ${_remAdmin.naam || ''}\no.v.v. ${inv.number}\n\nMet vriendelijke groet,\n${_remAdmin.naam || ''}`;
+      const text = `${isLate ? 'Herinnering' : 'Betalingsverzoek'}: Factuur ${inv.number}\n\nGeachte ${clientName},\n\n${isLate ? 'Wij constateren dat onderstaande factuur nog niet is voldaan.' : 'Wij verzoeken u vriendelijk het onderstaande bedrag te voldoen.'}\n\nFactuurnummer: ${inv.number}\nFactuurdatum: ${fmtDateLong(inv.date)}\nVervaldatum: ${fmtDateLong(inv.dueDate)}\nBedrag: ${fmtMoney(inv.totalIncl || 0, true)}\n\nOmschrijving: ${inv.lines?.[0]?.description || '—'}\n\nGelieve het bedrag over te maken naar:\nIBAN: ${fmtIBAN(_remAdmin.iban || '')}${_remAdmin.bic ? '\nBIC: ' + _remAdmin.bic : ''}\nt.n.v. ${_remAdmin.naam || ''}\no.v.v. ${inv.number}\n\nMet vriendelijke groet,\n${_remAdmin.naam || ''}`;
       navigator.clipboard.writeText(text).then(() => ok('Herinneringstekst gekopieerd ✓')).catch(() => err('Kopiëren mislukt'));
     };
   }
@@ -3015,12 +3015,12 @@ function openSendModal(inv, bedrijf, container) {
 
   const MESSAGES = {
     normaal:     `Geachte ${clientName || 'relatie'},\n\nGelieve bijgevoegde factuur voor de daarop vermelde datum te betalen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
-    herinnering: `Geachte ${clientName || 'relatie'},\n\nWij willen u vriendelijk herinneren dat factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0)} op ${fmtDateLong(inv.dueDate)} betaald diende te zijn.\n\nHebt u al betaald? Dan kunt u deze herinnering als niet verzonden beschouwen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
-    aanmaning:   `Geachte ${clientName || 'relatie'},\n\nOndanks onze eerdere herinnering staat factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0)} nog steeds open. Wij verzoeken u dringend het verschuldigde bedrag binnen 7 dagen te voldoen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
+    herinnering: `Geachte ${clientName || 'relatie'},\n\nWij willen u vriendelijk herinneren dat factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0, true)} op ${fmtDateLong(inv.dueDate)} betaald diende te zijn.\n\nHebt u al betaald? Dan kunt u deze herinnering als niet verzonden beschouwen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
+    aanmaning:   `Geachte ${clientName || 'relatie'},\n\nOndanks onze eerdere herinnering staat factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0, true)} nog steeds open. Wij verzoeken u dringend het verschuldigde bedrag binnen 7 dagen te voldoen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
   };
 
   const waText = encodeURIComponent(
-    `Hallo${clientName ? ' ' + clientName : ''}, hierbij de factuurgegevens van ${bedrijf.naam}:\n\nFactuur: ${inv.number}\nBedrag: ${fmtMoney(inv.totalIncl || 0)}\nVervaldatum: ${fmtDateLong(inv.dueDate)}\n\nBetalen via:\nIBAN: ${ibanFmt}${bedrijf.bic ? '\nBIC: ' + bedrijf.bic : ''}\nt.n.v. ${bedrijf.naam}\no.v.v. ${inv.number}\n\nBedankt!`
+    `Hallo${clientName ? ' ' + clientName : ''}, hierbij de factuurgegevens van ${bedrijf.naam}:\n\nFactuur: ${inv.number}\nBedrag: ${fmtMoney(inv.totalIncl || 0, true)}\nVervaldatum: ${fmtDateLong(inv.dueDate)}\n\nBetalen via:\nIBAN: ${ibanFmt}${bedrijf.bic ? '\nBIC: ' + bedrijf.bic : ''}\nt.n.v. ${bedrijf.naam}\no.v.v. ${inv.number}\n\nBedankt!`
   );
 
   const configured = gmailConfigured();
