@@ -365,7 +365,7 @@ export async function render(container) {
         return `<div class="db-habit-row">
           <button class="db-habit-check ${done?'done':''}" data-htoggle="${h.id}">${done?'✓':''}</button>
           <div class="db-habit-body">
-            <div class="db-habit-name">${h.emoji||'✨'} ${escapeHTML(h.name)}</div>
+            <div class="db-habit-name">${escapeHTML(h.name)}</div>
             <div class="habit-strip">${strip}</div>
           </div>
         </div>`;

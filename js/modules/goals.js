@@ -188,7 +188,7 @@ function renderHabits(container, habits, log) {
             ${done ? '✓' : ''}
           </button>
           <div class="habit-name-row">
-            <div class="habit-name"><span style="font-size:1.1rem">${h.emoji || '✨'}</span> ${escapeHTML(h.name)}</div>
+            <div class="habit-name">${escapeHTML(h.name)}</div>
           </div>
           <div class="habit-actions">
             <button class="task-btn" data-habit-edit="${h.id}">✎</button>
@@ -320,7 +320,6 @@ function openHabitModal(container, existing, allHabits) {
   const others = allHabits.filter(h => !existing || h.id !== existing.id);
   openModal(existing ? 'Gewoonte bewerken' : 'Nieuwe gewoonte', `
     <label>Naam *</label><input name="name" required value="${existing ? escapeHTML(existing.name) : ''}" />
-    <label>Emoji (1 teken)</label><input name="emoji" maxlength="2" value="${existing?.emoji || '✨'}" />
     <label>Onderdeel van keten? (na welke gewoonte)</label>
     <select name="after">
       <option value="">— zelfstandig —</option>
@@ -329,7 +328,7 @@ function openHabitModal(container, existing, allHabits) {
   `, async (d) => {
     if (!d.name) throw new Error('Naam verplicht');
     const base = existing || { id: uid(), createdAt: new Date().toISOString() };
-    await put('habits', { ...base, name: d.name, emoji: d.emoji || '✨', after: d.after || null });
+    await put('habits', { ...base, name: d.name, after: d.after || null });
     ok('Opgeslagen');
     render(container);
   });
