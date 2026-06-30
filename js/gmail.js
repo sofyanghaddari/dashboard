@@ -103,6 +103,26 @@ function buildHtmlEmail(inv, bedrijf, options = {}) {
   const client  = inv.client || {};
   const line    = inv.lines?.[0] || {};
   const TAUPE   = '#8a7e6f';
+
+  // Alle factuurregels renderen (niet alleen de eerste). Eerste tekstregel =
+  // vette kop, overige regels = kleinere detailregels (zoals in de PDF).
+  const linesArr = (inv.lines && inv.lines.length) ? inv.lines : [line];
+  const vatRates = [...new Set(linesArr.map(l => l.vatRate ?? 0))];
+  const btwLabel = vatRates.length === 1 ? `BTW ${vatRates[0]}%` : 'BTW';
+  const lineRows = linesArr.map(l => {
+    const desc  = String(l.description || bedrijf.defaultDesc || 'Vervoersdienst');
+    const parts = desc.split('\n').map(s => s.trim()).filter(Boolean);
+    const head  = esc(parts[0] || desc);
+    const rest  = parts.slice(1);
+    return `
+        <tr>
+          <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;color:#444;line-height:1.5">
+            <div style="font-weight:600">${head}</div>
+            ${rest.length ? `<div style="font-size:12px;color:#999;margin-top:3px">${rest.map(esc).join('<br>')}</div>` : ''}
+          </td>
+          <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;text-align:right;white-space:nowrap;vertical-align:top">${esc(fmtMoney(l.amountExcl ?? l.amountIncl ?? 0, true))}</td>
+        </tr>`;
+  }).join('');
   const opening = options.message
     ? nl2br(options.message)
     : `Beste${client.name ? ' ' + esc(client.name) : ''},<br><br>Gelieve bijgevoegde factuur voor de daarop vermelde datum te betalen.`;
@@ -152,12 +172,8 @@ function buildHtmlEmail(inv, bedrijf, options = {}) {
           </td>
         </tr>
 
-        <!-- Omschrijving -->
-        ${line.description ? `
-        <tr>
-          <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;color:#888">Omschrijving</td>
-          <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;text-align:right">${esc(line.description)}</td>
-        </tr>` : ''}
+        <!-- Factuurregels -->
+        ${lineRows}
 
         <!-- Subtotaal -->
         <tr>
@@ -167,7 +183,7 @@ function buildHtmlEmail(inv, bedrijf, options = {}) {
 
         <!-- BTW -->
         <tr>
-          <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;color:#888">BTW ${line.vatRate ?? 0}%</td>
+          <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;color:#888">${btwLabel}</td>
           <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;text-align:right">${esc(fmtMoney(inv.totalVat || 0, true))}</td>
         </tr>
 
