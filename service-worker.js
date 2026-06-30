@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v154';
+const CACHE = 'dashboard-v155';
 
 
 
@@ -15,7 +15,6 @@ const ASSETS = [
   './js/utils.js',
   './js/icons.js',
   './js/income-road.js',
-  './js/canal-skyline.js',
   './js/today-panel.js',
   './js/push.js',
   './js/srs.js',
