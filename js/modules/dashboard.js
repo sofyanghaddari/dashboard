@@ -932,12 +932,23 @@ async function loadNs(container) {
   } catch (_) {}
 
   _setHTML(body, `<p class="muted" style="font-size:.875rem">Laden…</p>`);
-  try {
-    // cache-buster zodat we niet op een verouderde CDN-kopie blijven hangen
-    const url = src + (src.includes('?') ? '&' : '?') + '_=' + Math.floor(Date.now() / 60000);
-    const res = await fetch(url, { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+  // Eén bron ophalen. GÉÉN cache:'no-store' (iOS Safari/PWA laat cross-origin
+  // fetches daarmee mislukken); de cache-buster in de URL is genoeg.
+  const _fetchNs = async (base) => {
+    const u = base + (base.includes('?') ? '&' : '?') + '_=' + Math.floor(Date.now() / 60000);
+    const res = await fetch(u);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+    return res.json();
+  };
+  try {
+    let data;
+    try {
+      data = await _fetchNs(src);
+    } catch (e1) {
+      // Terugval naar de standaard GitHub-bron als een eigen proxy-URL faalt.
+      if (src !== NS_DATA_URL) data = await _fetchNs(NS_DATA_URL);
+      else throw e1;
+    }
     localStorage.setItem(NS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
     renderNs(body, data);
   } catch (e) {
