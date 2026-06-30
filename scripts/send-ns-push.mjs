@@ -120,11 +120,25 @@ async function main() {
   await saveCfg(meta.id, cfg);
 }
 
+// Schrijf nsSeen terug. Re-lees telkens vers zodat we de gewone push-workflow
+// (die cfg.sent schrijft) niet overschrijven; retry bij 409 (gelijktijdige update).
 async function saveCfg(id, cfg) {
-  await gh(`/gists/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ files: { [PUSH_GIST_FILE]: { content: JSON.stringify(cfg, null, 2) } } }),
-  });
+  for (let i = 0; i < 4; i++) {
+    try {
+      const full = await gh(`/gists/${id}`);
+      const cur = JSON.parse(full.files[PUSH_GIST_FILE].content);
+      cur.nsSeen = cfg.nsSeen;
+      if (cfg.subscriptionExpired) cur.subscriptionExpired = true;
+      await gh(`/gists/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ files: { [PUSH_GIST_FILE]: { content: JSON.stringify(cur, null, 2) } } }),
+      });
+      return;
+    } catch (e) {
+      if (String(e.message).includes('GitHub 409') && i < 3) { await new Promise(r => setTimeout(r, 800 * (i + 1))); continue; }
+      throw e;
+    }
+  }
 }
 
 // Best-effort: een push-fout (bv. verlopen token) mag de data-pijplijn nooit

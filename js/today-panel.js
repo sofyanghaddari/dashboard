@@ -72,6 +72,8 @@ function itemHTML(it, i) {
   </div>`;
 }
 
+const TP_LIMIT = 5; // toon standaard maximaal dit aantal openstaande items
+
 async function renderPanel(mount, animate = false) {
   const { items } = await gather();
   const active = items.filter(i => !i.done).sort((a, b) => minsOf(a) - minsOf(b));
@@ -79,6 +81,11 @@ async function renderPanel(mount, animate = false) {
   const total = active.length + done.length;
   const pct = total ? Math.round(done.length / total * 100) : 0;
   const showDone = mount.dataset.showDone === '1';
+
+  // Inklappen: standaard alleen de eerste TP_LIMIT tonen om de balk rustig te houden.
+  const expanded = mount.dataset.expanded === '1';
+  const hiddenCount = Math.max(0, active.length - TP_LIMIT);
+  const shownActive = expanded ? active : active.slice(0, TP_LIMIT);
 
   mount.innerHTML = `
     <div class="card today-panel">
@@ -92,8 +99,11 @@ async function renderPanel(mount, animate = false) {
         <button class="tp-quick-add" id="tp-add" aria-label="Toevoegen" type="button">+</button>
       </div>
       <div class="tp-list${animate ? ' tp-animate' : ''}" id="tp-list">
-        ${active.map((it, i) => itemHTML(it, i)).join('')}
+        ${shownActive.map((it, i) => itemHTML(it, i)).join('')}
       </div>
+      ${hiddenCount > 0 || expanded && active.length > TP_LIMIT ? `
+        <button class="tp-more-toggle" id="tp-more-toggle" type="button">${expanded ? `▾ Minder tonen` : `▸ Nog ${hiddenCount} tonen`}</button>
+      ` : ''}
       ${active.length === 0 ? `<div class="tp-empty">${total ? 'Alles afgerond voor vandaag ✨' : 'Niets gepland — voeg snel iets toe of plan in je Week.'}</div>` : ''}
       ${done.length ? `
         <button class="tp-done-toggle" id="tp-done-toggle" type="button">${showDone ? '▾' : '▸'} ${done.length} afgerond vandaag</button>
@@ -153,6 +163,12 @@ function wire(mount) {
   const dt = mount.querySelector('#tp-done-toggle');
   if (dt) dt.onclick = async () => {
     mount.dataset.showDone = mount.dataset.showDone === '1' ? '0' : '1';
+    await renderPanel(mount, false);
+  };
+
+  const more = mount.querySelector('#tp-more-toggle');
+  if (more) more.onclick = async () => {
+    mount.dataset.expanded = mount.dataset.expanded === '1' ? '0' : '1';
     await renderPanel(mount, false);
   };
 }

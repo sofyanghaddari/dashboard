@@ -462,7 +462,7 @@ body.amounts-hidden .blurred-amount .blurred-amount {
 /* FLOATING CONTROLS (settings + search) */
 .settings-btn {
   position: fixed; top: calc(14px + var(--safe-top)); right: 14px;
-  width: 38px; height: 38px;
+  width: 44px; height: 44px;
   background: rgba(22, 27, 34, .9);
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 50%;
@@ -478,6 +478,7 @@ body.amounts-hidden .blurred-amount .blurred-amount {
 }
 .settings-btn:hover { color: var(--text); border-color: rgba(255,255,255,.18); }
 .settings-btn:active { transform: rotate(45deg) scale(.93); }
+.settings-btn svg { width: 28px; height: 28px; }
 
 /* FORM */
 input, select, textarea {
@@ -1257,7 +1258,7 @@ body.is-offline .view { padding-top: calc(50px + var(--safe-top)); }
   box-shadow: var(--shadow-inner);
 }
 .dagstart-stat-val {
-  font-size: clamp(.92rem, 3.8vw, 1.12rem);
+  font-size: clamp(1.02rem, 4.2vw, 1.25rem);
   font-weight: 700;
   color: var(--gold);
   font-family: Georgia, 'Times New Roman', serif;
@@ -3259,20 +3260,20 @@ body[data-density="compact"] .circular-progress { width: 120px; height: 120px; }
 .hadith-card {
   border-color: rgba(93,212,154,.15);
   background: linear-gradient(135deg, rgba(93,212,154,.04) 0%, var(--bg-elev) 60%);
-  padding: 13px 15px;
+  padding: 16px 17px;
 }
 .hadith-arabic {
-  font-size: .86rem;
+  font-size: 1.02rem;
   color: var(--text-dim);
   text-align: right;
-  line-height: 1.55;
+  line-height: 1.7;
   font-family: "Scheherazade New", "Amiri", serif;
-  margin-bottom: 5px;
+  margin-bottom: 7px;
   direction: rtl;
 }
 .hadith-text {
-  font-size: .8rem;
-  line-height: 1.42;
+  font-size: .92rem;
+  line-height: 1.5;
   color: var(--text);
   font-style: italic;
 }
@@ -3286,14 +3287,14 @@ body[data-density="compact"] .circular-progress { width: 120px; height: 120px; }
 /* ── WOORD VAN DE DAG WIDGET ─────────────────────────────────── */
 .woord-card {
   border-color: var(--border);
-  padding: 13px 15px;
+  padding: 16px 17px;
 }
 .woord-word {
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -.01em;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 .woord-type {
   font-size: .68rem;
@@ -3303,25 +3304,25 @@ body[data-density="compact"] .circular-progress { width: 120px; height: 120px; }
   margin-bottom: 6px;
 }
 .woord-def {
-  font-size: .8rem;
+  font-size: .9rem;
   color: var(--text-dim);
-  line-height: 1.4;
-  margin-bottom: 4px;
+  line-height: 1.5;
+  margin-bottom: 5px;
 }
 .woord-bridge {
-  font-size: .75rem;
+  font-size: .84rem;
   color: var(--text-faint);
-  line-height: 1.35;
-  padding: 5px 9px;
+  line-height: 1.45;
+  padding: 6px 10px;
   background: var(--bg-elev-2);
   border-radius: 6px;
   border-left: 2px solid var(--border);
 }
 .woord-zin {
-  font-size: .75rem;
+  font-size: .84rem;
   color: var(--text-secondary);
-  line-height: 1.4;
-  margin-top: 6px;
+  line-height: 1.5;
+  margin-top: 7px;
   font-style: italic;
   opacity: .85;
 }
@@ -5228,9 +5229,8 @@ label.subtask {
   gap: 8px;
   padding: 12px 16px 8px;
   background: var(--bg);
-  position: sticky;
-  top: calc(58px + var(--safe-top)); /* onder de vaste knoppen (z-index:15) */
-  z-index: 5;
+  /* niet sticky — scrollt gewoon mee weg met de pagina (gebruikerswens) */
+  position: static;
 }
 .geloof-sub-btn {
   flex: 1;
@@ -6423,7 +6423,7 @@ input, select, textarea {
 .pl-wave  { top: -7px; background: #7ce0cf; opacity: .9;  animation: plWave 3.4s linear infinite; }
 .pl-wave2 { top: -5px; background: #2bb8a3; opacity: .92; animation: plWave 5s linear infinite reverse; }
 @keyframes plWave { from { transform: translateX(0) rotate(0); } to { transform: translateX(40%) rotate(360deg); } }
-.pl-emoji { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 3; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
+.pl-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 700; color: #fff; letter-spacing: .02em; z-index: 3; text-shadow: 0 1px 2px rgba(0,0,0,.45); }
 
 /* ── 🏆 Badge-unlock cinematisch ── */
 .badge-unlock-backdrop {
@@ -6825,7 +6825,8 @@ input, select, textarea {
 .tp-badge-late { color: var(--danger); font-weight: 600; }
 .tp-dot { opacity: .5; }
 .tp-empty { text-align: center; padding: 14px 8px; color: var(--text-dim); font-size: .86rem; }
-.tp-done-toggle { width: 100%; text-align: left; margin-top: 10px; background: none; border: none; color: var(--text-dim); font-size: .78rem; cursor: pointer; padding: 4px 2px; }
+.tp-done-toggle, .tp-more-toggle { width: 100%; text-align: left; margin-top: 10px; background: none; border: none; color: var(--text-dim); font-size: .78rem; cursor: pointer; padding: 4px 2px; }
+.tp-more-toggle { color: var(--accent); font-weight: 600; }
 .tp-done-list { margin-top: 6px; opacity: .85; }
 @keyframes tpIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
 

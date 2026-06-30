@@ -18,7 +18,9 @@ name: NS storingen ophalen
 
 on:
   schedule:
-    - cron: '*/10 * * * *'   # elke 10 min (UTC; GitHub-cron kan iets vertragen)
+    # Elke 10 min, maar net naast de push-notifications-cron (*/30 op :00/:30),
+    # zodat ze niet gelijktijdig naar dezelfde config-gist schrijven (409-botsing).
+    - cron: '5,15,25,35,45,55 * * * *'
   workflow_dispatch:
 
 # Eén run tegelijk; nieuwere mag de oudere afbreken (alleen de laatste data telt).

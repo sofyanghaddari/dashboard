@@ -188,7 +188,7 @@ function renderHabits(container, habits, log) {
             ${done ? '✓' : ''}
           </button>
           <div class="habit-name-row">
-            <div class="habit-name"><span style="font-size:1.1rem">${h.emoji || '✨'}</span> ${escapeHTML(h.name)}</div>
+            <div class="habit-name">${escapeHTML(h.name)}</div>
           </div>
           <div class="habit-actions">
             <button class="task-btn" data-habit-edit="${h.id}">✎</button>
@@ -248,7 +248,7 @@ function renderPots(container, pots) {
             <div class="pl-fill" style="--pct:${pct}%">
               <div class="pl-wave"></div><div class="pl-wave2"></div>
             </div>
-            <div class="pl-emoji">${p.emoji || '🏺'}</div>
+            <div class="pl-pct">${pct}%</div>
           </div>
           <div class="pot-info">
             <div class="pot-name">${escapeHTML(p.name)}</div>
@@ -320,7 +320,6 @@ function openHabitModal(container, existing, allHabits) {
   const others = allHabits.filter(h => !existing || h.id !== existing.id);
   openModal(existing ? 'Gewoonte bewerken' : 'Nieuwe gewoonte', `
     <label>Naam *</label><input name="name" required value="${existing ? escapeHTML(existing.name) : ''}" />
-    <label>Emoji (1 teken)</label><input name="emoji" maxlength="2" value="${existing?.emoji || '✨'}" />
     <label>Onderdeel van keten? (na welke gewoonte)</label>
     <select name="after">
       <option value="">— zelfstandig —</option>
@@ -329,7 +328,7 @@ function openHabitModal(container, existing, allHabits) {
   `, async (d) => {
     if (!d.name) throw new Error('Naam verplicht');
     const base = existing || { id: uid(), createdAt: new Date().toISOString() };
-    await put('habits', { ...base, name: d.name, emoji: d.emoji || '✨', after: d.after || null });
+    await put('habits', { ...base, name: d.name, after: d.after || null });
     ok('Opgeslagen');
     render(container);
   });
@@ -338,14 +337,13 @@ function openHabitModal(container, existing, allHabits) {
 function openPotModal(container, existing) {
   openModal(existing ? 'Potje bewerken' : 'Nieuw potje', `
     <label>Naam *</label><input name="name" required value="${existing ? escapeHTML(existing.name) : ''}" />
-    <label>Emoji</label><input name="emoji" maxlength="2" value="${existing?.emoji || '🏺'}" />
     <label>Doelbedrag (€)</label><input name="target" type="text" inputmode="decimal" autocomplete="off" value="${existing?.target || ''}" />
     <label>Huidig bedrag (€)</label><input name="current" type="text" inputmode="decimal" autocomplete="off" value="${existing?.current || 0}" />
   `, async (d) => {
     if (!d.name) throw new Error('Naam verplicht');
     const base = existing || { id: uid(), createdAt: new Date().toISOString() };
     await put('pots', {
-      ...base, name: d.name, emoji: d.emoji || '🏺',
+      ...base, name: d.name,
       target: parseAmount(d.target) || 0,
       current: Math.max(0, parseAmount(d.current) || 0),
     });
