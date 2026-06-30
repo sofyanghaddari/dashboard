@@ -6423,7 +6423,7 @@ input, select, textarea {
 .pl-wave  { top: -7px; background: #7ce0cf; opacity: .9;  animation: plWave 3.4s linear infinite; }
 .pl-wave2 { top: -5px; background: #2bb8a3; opacity: .92; animation: plWave 5s linear infinite reverse; }
 @keyframes plWave { from { transform: translateX(0) rotate(0); } to { transform: translateX(40%) rotate(360deg); } }
-.pl-emoji { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 3; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
+.pl-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 700; color: #fff; letter-spacing: .02em; z-index: 3; text-shadow: 0 1px 2px rgba(0,0,0,.45); }
 
 /* ── 🏆 Badge-unlock cinematisch ── */
 .badge-unlock-backdrop {

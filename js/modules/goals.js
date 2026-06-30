@@ -248,7 +248,7 @@ function renderPots(container, pots) {
             <div class="pl-fill" style="--pct:${pct}%">
               <div class="pl-wave"></div><div class="pl-wave2"></div>
             </div>
-            <div class="pl-emoji">${p.emoji || '🏺'}</div>
+            <div class="pl-pct">${pct}%</div>
           </div>
           <div class="pot-info">
             <div class="pot-name">${escapeHTML(p.name)}</div>
@@ -337,14 +337,13 @@ function openHabitModal(container, existing, allHabits) {
 function openPotModal(container, existing) {
   openModal(existing ? 'Potje bewerken' : 'Nieuw potje', `
     <label>Naam *</label><input name="name" required value="${existing ? escapeHTML(existing.name) : ''}" />
-    <label>Emoji</label><input name="emoji" maxlength="2" value="${existing?.emoji || '🏺'}" />
     <label>Doelbedrag (€)</label><input name="target" type="text" inputmode="decimal" autocomplete="off" value="${existing?.target || ''}" />
     <label>Huidig bedrag (€)</label><input name="current" type="text" inputmode="decimal" autocomplete="off" value="${existing?.current || 0}" />
   `, async (d) => {
     if (!d.name) throw new Error('Naam verplicht');
     const base = existing || { id: uid(), createdAt: new Date().toISOString() };
     await put('pots', {
-      ...base, name: d.name, emoji: d.emoji || '🏺',
+      ...base, name: d.name,
       target: parseAmount(d.target) || 0,
       current: Math.max(0, parseAmount(d.current) || 0),
     });
