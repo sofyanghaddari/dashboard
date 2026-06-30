@@ -4530,6 +4530,9 @@ label.subtask {
 
 /* Status pills */
 .bk-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: .65rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -4537,6 +4540,13 @@ label.subtask {
   padding: 3px 10px;
   border-radius: var(--radius-full);
   white-space: nowrap;
+  flex-shrink: 0;
+}
+.bk-status::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
   flex-shrink: 0;
 }
 .bk-status-open    { background: rgba(191,176,154,.15); color: var(--accent); }
@@ -4958,6 +4968,52 @@ label.subtask {
   border-color: var(--accent); font-weight: 600;
 }
 
+/* Overzicht — financiële hero */
+.bk-hero {
+  position: relative; overflow: hidden;
+  padding: 18px 18px 16px; margin-bottom: 12px;
+}
+.bk-hero-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+}
+.bk-hero-label {
+  font-size: .66rem; text-transform: uppercase; letter-spacing: .09em;
+  color: var(--text-dim);
+}
+.bk-hero-marge {
+  font-size: .68rem; font-weight: 600; color: var(--text-dim);
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  border-radius: var(--radius-full); padding: 3px 9px;
+}
+.bk-hero-val {
+  font-family: Georgia, serif; font-weight: 700;
+  font-size: 2.1rem; letter-spacing: -.025em; line-height: 1.1;
+  margin: 4px 0 12px;
+}
+.bk-hero-val.pos { color: var(--ok); }
+.bk-hero-val.neg { color: var(--danger); }
+.bk-hero-bar {
+  height: 6px; border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--danger) 26%, transparent);
+  overflow: hidden;
+}
+.bk-hero-bar-fill {
+  height: 100%; border-radius: var(--radius-full);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ok) 80%, var(--accent)), var(--ok));
+  transition: width 1s var(--ease-out);
+}
+.bk-hero-legend {
+  display: flex; gap: 18px; margin-top: 11px; flex-wrap: wrap;
+}
+.bk-leg {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .76rem; color: var(--text-dim);
+}
+.bk-leg b { color: var(--text); font-weight: 600; }
+.bk-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.bk-dot-rev  { background: var(--ok); }
+.bk-dot-cost { background: var(--danger); }
+
 /* Overzicht KPI grid */
 .bk-kpi-grid {
   display: grid; grid-template-columns: repeat(2, 1fr);
@@ -4973,14 +5029,20 @@ label.subtask {
   letter-spacing: .07em; color: var(--text-dim); margin-bottom: 4px;
 }
 .bk-kpi-val { font-size: 1.25rem; font-family: Georgia, serif; font-weight: 700; letter-spacing: -.02em; }
+.bk-kpi-val.pos    { color: var(--ok); }
+.bk-kpi-val.neg    { color: var(--danger); }
+.bk-kpi-val.accent { color: var(--accent); }
 .bk-kpi-sub { font-size: .65rem; color: var(--text-faint); margin-top: 2px; }
 
 /* Alert */
 .bk-alert {
+  display: flex; align-items: center; gap: 9px;
   background: rgba(217,140,132,.1); border: 1px solid rgba(217,140,132,.3);
   border-radius: var(--radius-sm); padding: 10px 14px;
   font-size: .85rem; color: var(--danger); margin-bottom: 14px;
 }
+.bk-alert-ic { width: 18px; height: 18px; flex-shrink: 0; }
+.bk-alert strong { font-weight: 700; }
 
 /* Quick actions */
 .bk-quick-actions {

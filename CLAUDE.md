@@ -298,7 +298,7 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 ## Recente beslissingen (chronologisch, meest recent boven)
 
-+23. **🌈🐦✈️ Volledige levende begroetingslucht v153 (30 juni 2026):** op verzoek van user ("allemaal") acht extra sfeer-effecten toegevoegd, conditioneel op het echte weer/tijdstip (helpers `cachedWeather()`/`skyExtras()`/`moonPhase()` in `dashboard.js`, CSS-sectie "Sfeer-extra's"):
++24. **🌈🐦✈️ Volledige levende begroetingslucht v153 (30 juni 2026):** op verzoek van user ("allemaal") acht extra sfeer-effecten toegevoegd, conditioneel op het echte weer/tijdstip (helpers `cachedWeather()`/`skyExtras()`/`moonPhase()` in `dashboard.js`, CSS-sectie "Sfeer-extra's"):
    - **🌈 Regenboog** (`.sky-rainbow`, radial-gradient-boog) bij regen/motregen overdag (zon + regen).
    - **☔ Regendruppel-rimpels** (`.sky-ripples`) bij neerslag.
    - **🐦 Vogels** overdag (helder/wisselend/bewolkt), **🦇 vleermuizen** bij schemer/nacht (`.sky-birds`/`.sky-bats`, CSS-vleugels via border-arcs).
@@ -308,6 +308,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
    - **🌙 Echte maanfase** in de orb (`.so-phase` terminator-schaduw via `moonPhase()`), verborgen tijdens de bloedmaan-eclipse.
    - **🎉 Confetti-regen** in de lucht (`skyConfettiBurst()`) bij een nieuwe badge (naast de bestaande badge-viering).
    - `applySkyWeather(container, cur)` ververst nu ook de extra's met code+temp+wind. Reduced-motion-guard uitgebreid.
+
++23. **Boekhouding-overzicht professioneler v152 (30 juni 2026):** eerste ronde van de "maak boekhouding perfect"-opdracht. Het Overzicht-scherm heeft nu een **financiële hero-kaart** (groot serif winstgetal met pos/neg-kleur, marge-pill, dunne omzet/kosten-ratiobalk met legenda-stippen) i.p.v. de vlakke 4-KPI-grid; daaronder een verfijnd 2-tegel-grid (BTW-kwartaal incl. "terug te ontvangen" bij negatief saldo + Openstaand bedrag). Alle inline `style="color:…"` vervangen door CSS-klassen (`.bk-kpi-val.pos/.neg/.accent`, `.bk-hero-val.pos/.neg`). Color-emoji `⚠️` overal in `boekhouding.js` vervangen door de toegestane monochrome glyph `⚠` (de overdue-alert op Overzicht gebruikt nu een line-icon SVG). Status-pills (`.bk-status`) kregen een gekleurd indicatorstipje (`::before`, currentColor) — Moneybird-stijl. CSS-sectie uitgebreid met `.bk-hero*`/`.bk-leg`/`.bk-dot*`. **Nog te doen** (volgende rondes): factuur-PDF verfijnen (logo/woordmerk, rustiger accent), lijsten (kosten/km/klanten) verder gelijktrekken.
 
 +22. **🌦️ Begroetingslucht volgt het echte weer + 3 extra sky-animaties v149 (29 juni 2026):** op verzoek van user.
    - **Weer-volgen:** `skyScene()` leest de gecachte weercode (`localStorage.weatherCache`) en toont passende lagen in de begroetingslucht — **regen** (`wx-rain`), **motregen**, **onweer** (regen + bliksem `wx-flash`/`wx-bolt`), **sneeuw** (`wx-snow`), **mist** (`wx-fogband`) — plus een grijze waas + grijzere wolken bij bewolkt/nat (`.sky-overcast`). Hergebruikt de bestaande `wx-*` klassen van de weer-banner. `applySkyWeather(container, code)` ververst de lucht zodra verse weer-data binnen is (in `loadWeather`). Helpers `wxCondition()`/`cachedWeatherCode()`/`skyWeatherLayers()`.

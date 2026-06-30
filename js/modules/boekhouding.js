@@ -308,6 +308,7 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
   const omzetYear   = invoices.filter(i => inYear(i.date, y)).reduce((s, i) => s + (i.totalExcl || 0), 0);
   const kostenYear  = purchases.filter(i => inYear(i.date, y)).reduce((s, i) => s + (i.amountExcl || 0), 0);
   const winstYear   = omzetYear - kostenYear;
+  const marge       = omzetYear > 0 ? Math.round(winstYear / omzetYear * 100) : 0;
   const openCount   = invoices.filter(i => i._status !== 'betaald').length;
   const openAmount  = invoices.filter(i => i._status !== 'betaald').reduce((s, i) => s + (i.totalIncl || 0), 0);
   const overdueCount = invoices.filter(i => i._status === 'te-laat').length;
@@ -325,32 +326,36 @@ function renderOverview(view, invoices, purchases, kmLogs, container) {
   const recent = [...openInv, ...otherInv].slice(0, 5);
 
   view.innerHTML = `
+    <div class="bk-hero card">
+      <div class="bk-hero-head">
+        <span class="bk-hero-label">Winst ${y}</span>
+        <span class="bk-hero-marge">${marge}% marge</span>
+      </div>
+      <div class="bk-hero-val money blurred-amount ${winstYear >= 0 ? 'pos' : 'neg'}" data-bk-count="${winstYear}">${fmtMoney(winstYear, true)}</div>
+      <div class="bk-hero-bar"><div class="bk-hero-bar-fill" style="width:${Math.max(2, Math.min(100, marge))}%"></div></div>
+      <div class="bk-hero-legend">
+        <span class="bk-leg"><i class="bk-dot bk-dot-rev"></i>Omzet <b class="money blurred-amount">${fmtMoney(omzetYear)}</b></span>
+        <span class="bk-leg"><i class="bk-dot bk-dot-cost"></i>Kosten <b class="money blurred-amount">${fmtMoney(kostenYear)}</b></span>
+      </div>
+    </div>
+
     <div class="bk-kpi-grid">
       <div class="bk-kpi">
-        <div class="bk-kpi-label">Omzet ${y}</div>
-        <div class="bk-kpi-val money blurred-amount" data-bk-count="${omzetYear}">${fmtMoney(omzetYear, true)}</div>
-        <div class="bk-kpi-sub">excl. BTW</div>
-      </div>
-      <div class="bk-kpi">
-        <div class="bk-kpi-label">Kosten ${y}</div>
-        <div class="bk-kpi-val money blurred-amount" style="color:var(--danger)" data-bk-count="${kostenYear}">${fmtMoney(kostenYear, true)}</div>
-        <div class="bk-kpi-sub">excl. BTW</div>
-      </div>
-      <div class="bk-kpi">
-        <div class="bk-kpi-label">Winst ${y}</div>
-        <div class="bk-kpi-val money blurred-amount" style="color:${winstYear >= 0 ? 'var(--ok)' : 'var(--danger)'}" data-bk-count="${winstYear}">${fmtMoney(winstYear, true)}</div>
-        <div class="bk-kpi-sub">excl. aftrekken</div>
-      </div>
-      <div class="bk-kpi">
         <div class="bk-kpi-label">BTW Q${q + 1}</div>
-        <div class="bk-kpi-val money blurred-amount" style="color:var(--accent)" data-bk-count="${btwSaldo}">${fmtMoney(btwSaldo, true)}</div>
-        <div class="bk-kpi-sub">te betalen</div>
+        <div class="bk-kpi-val money blurred-amount accent" data-bk-count="${btwSaldo}">${fmtMoney(btwSaldo, true)}</div>
+        <div class="bk-kpi-sub">${btwSaldo >= 0 ? 'te betalen' : 'terug te ontvangen'}</div>
+      </div>
+      <div class="bk-kpi">
+        <div class="bk-kpi-label">Openstaand</div>
+        <div class="bk-kpi-val money blurred-amount" data-bk-count="${openAmount}">${fmtMoney(openAmount, true)}</div>
+        <div class="bk-kpi-sub">${openCount} factuur${openCount === 1 ? '' : 'en'} incl. BTW</div>
       </div>
     </div>
 
     ${overdueCount > 0 ? `
       <div class="bk-alert">
-        ⚠️ <strong>${overdueCount} factuur${overdueCount > 1 ? 'en' : ''} vervallen</strong> — betaling achterstallig
+        <svg class="bk-alert-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 2.5 20h19L12 3.5z"/><path d="M12 9.5v5"/><path d="M12 17.6h.01"/></svg>
+        <span><strong>${overdueCount} factuur${overdueCount > 1 ? 'en' : ''} vervallen</strong> — betaling achterstallig</span>
       </div>
     ` : ''}
 
@@ -440,7 +445,7 @@ function renderFacturen(view, invoices, container) {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div>
         <span style="font-size:.82rem;color:var(--text-dim)">${invoices.length} facturen · ${fmtMoney(totalOpen)} open</span>
-        ${totalLate > 0 ? `<span style="color:var(--danger);margin-left:8px;font-size:.82rem">⚠️ ${totalLate} vervallen</span>` : ''}
+        ${totalLate > 0 ? `<span style="color:var(--danger);margin-left:8px;font-size:.82rem">⚠ ${totalLate} vervallen</span>` : ''}
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn" id="inv-csv-btn" style="background:var(--bg-elev-2);color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;font-size:.8rem">${icon('stats')} CSV</button>
@@ -493,7 +498,7 @@ function renderFacturen(view, invoices, container) {
                 <button class="bk-btn-print" data-id="${escapeHTML(inv.id)}">${icon('print')}</button>
               </div>
             </div>
-            ${inv._status === 'te-laat' ? `<div class="bk-overdue-bar">⚠️ Vervallen op ${fmtDateLong(inv.dueDate)}</div>` : ''}
+            ${inv._status === 'te-laat' ? `<div class="bk-overdue-bar">⚠ Vervallen op ${fmtDateLong(inv.dueDate)}</div>` : ''}
           </div>
         `).join('')}
       </div>
@@ -1014,7 +1019,7 @@ function renderWV(view, invoices, purchases, kmLogs, container) {
     </div>
 
     <div class="bk-btw-disclaimer">
-      ⚠️ Dit is een ruwe schatting. Heffingskortingen, startersaftrek en andere persoonlijke omstandigheden zijn niet meegenomen. Laat je aangifte controleren door een boekhouder.
+      ⚠ Dit is een ruwe schatting. Heffingskortingen, startersaftrek en andere persoonlijke omstandigheden zijn niet meegenomen. Laat je aangifte controleren door een boekhouder.
     </div>
   `;
 
@@ -1176,7 +1181,7 @@ function openClientDetailModal(client, invoices, container) {
 
   let delStep = 0;
   backdrop.querySelector('#cd-del').onclick = async function () {
-    if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
+    if (delStep === 0) { delStep = 1; this.textContent = '⚠ Nogmaals tikken om te verwijderen'; return; }
     await del('clients', client.id);
     ok('Klant verwijderd');
     backdrop.remove();
@@ -2275,7 +2280,7 @@ function openDetailModal(inv, container) {
   backdrop.querySelector('#det-del').onclick = async function () {
     if (delStep === 0) {
       delStep = 1;
-      this.textContent = '⚠️ Nogmaals tikken om definitief te verwijderen';
+      this.textContent = '⚠ Nogmaals tikken om definitief te verwijderen';
       return;
     }
     await del('invoices', inv.id);
@@ -2325,7 +2330,7 @@ function openPurchaseDetailModal(purchase, container) {
 
   let delStep = 0;
   backdrop.querySelector('#pd-del').onclick = async function () {
-    if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
+    if (delStep === 0) { delStep = 1; this.textContent = '⚠ Nogmaals tikken om te verwijderen'; return; }
     await del('purchase_invoices', purchase.id);
     ok('Kosten verwijderd');
     backdrop.remove();
@@ -2459,7 +2464,7 @@ function openKmDetailModal(k, container) {
 
   let delStep = 0;
   backdrop.querySelector('#kd-del').onclick = async function () {
-    if (delStep === 0) { delStep = 1; this.textContent = '⚠️ Nogmaals tikken om te verwijderen'; return; }
+    if (delStep === 0) { delStep = 1; this.textContent = '⚠ Nogmaals tikken om te verwijderen'; return; }
     await del('km_log', k.id);
     ok('Rit verwijderd');
     backdrop.remove();
