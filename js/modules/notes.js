@@ -295,7 +295,10 @@ function openBulkImport(container, isIdea) {
         <option value="blank">Een lege regel ertussen</option>
         <option value="line">Elke regel = aparte notitie</option>
       </select>
-      <label style="margin-top:.7rem">Tekst</label>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.7rem">
+        <label style="margin:0">Tekst</label>
+        <button type="button" class="btn secondary" id="bi-paste" style="font-size:.78rem;padding:5px 11px">${icon('doc')} Plak uit klembord</button>
+      </div>
       <textarea id="bi-text" rows="11" placeholder="Plak hier je notities…" style="font-family:'SF Mono',Consolas,monospace;font-size:.9rem"></textarea>
       <div id="bi-count" style="font-size:.85rem;opacity:.7;margin-top:.5rem">Nog niets geplakt</div>
       <label class="bi-clear-row" style="display:flex;align-items:center;gap:9px;margin-top:.8rem;font-weight:400;font-size:.85rem;cursor:pointer;text-transform:none;letter-spacing:0">
@@ -325,6 +328,19 @@ function openBulkImport(container, isIdea) {
   };
   textEl.oninput = refresh;
   modeEl.onchange = refresh;
+
+  // "Plak uit klembord" — leest direct van het klembord (iOS vraagt 1× toestemming)
+  overlay.querySelector('#bi-paste').onclick = async () => {
+    try {
+      const txt = await navigator.clipboard.readText();
+      if (!txt || !txt.trim()) { toastErr('Klembord is leeg'); return; }
+      textEl.value = txt;
+      refresh();
+      ok('Geplakt uit klembord');
+    } catch {
+      toastErr('Plakken mislukt — houd het tekstvak ingedrukt en kies Plak');
+    }
+  };
 
   const close = () => overlay.remove();
   overlay.querySelector('#bi-cancel').onclick = close;
