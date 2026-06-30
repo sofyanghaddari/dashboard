@@ -166,13 +166,24 @@ async function main() {
     }
   }
 
-  // 5) Schrijf de bijgewerkte "sent"-status terug
+  // 5) Schrijf de bijgewerkte "sent"-status terug. Re-lees telkens vers zodat we
+  // niet de nsSeen overschrijven die de NS-workflow schrijft; retry bij 409.
   if (anySent || cfg.subscriptionExpired) {
-    cfg.sent = sent;
-    await gh(`/gists/${meta.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ files: { [PUSH_GIST_FILE]: { content: JSON.stringify(cfg, null, 2) } } }),
-    });
+    for (let i = 0; i < 4; i++) {
+      try {
+        const fresh = JSON.parse((await gh(`/gists/${meta.id}`)).files[PUSH_GIST_FILE].content);
+        fresh.sent = { ...(fresh.sent || {}), ...sent };
+        if (cfg.subscriptionExpired) fresh.subscriptionExpired = true;
+        await gh(`/gists/${meta.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ files: { [PUSH_GIST_FILE]: { content: JSON.stringify(fresh, null, 2) } } }),
+        });
+        break;
+      } catch (e) {
+        if (String(e.message).includes('GitHub 409') && i < 3) { await new Promise(r => setTimeout(r, 800 * (i + 1))); continue; }
+        throw e;
+      }
+    }
   }
 }
 
