@@ -2,7 +2,8 @@ import { getSetting, setSetting } from './settings.js';
 
 // Één accent (goud), twee varianten: donker en licht
 const GOLD_DARK  = { gold: '#C9A75A', goldBright: '#D8B86A', glow: 'rgba(201,167,90,.18)' };
-const GOLD_LIGHT = { gold: '#8B6B2A', goldBright: '#A67F30', glow: 'rgba(139,107,42,.15)' };
+// Iets donkerder dan voorheen (#8B6B2A) zodat kleine bedragen op lichte kaarten WCAG AA halen
+const GOLD_LIGHT = { gold: '#7A5C20', goldBright: '#A67F30', glow: 'rgba(139,107,42,.15)' };
 
 export const THEME_PRESETS = ['onyx', 'midnight', 'daylight'];
 

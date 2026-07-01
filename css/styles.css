@@ -9,7 +9,7 @@
   --text: #F2F1EE;
   --text-strong: #FFFFFF;
   --text-dim: #8C8A85;
-  --text-faint: #5A5854;
+  --text-faint: #85837E; /* WCAG AA (≥4.5:1) op --bg-elev-2; hiërarchie via grootte/gewicht */
   --accent: #C9A75A;
   --accent-dim: #A8883E;
   --on-accent: #0A0A0C;
@@ -93,11 +93,11 @@ body[data-preset="daylight"] {
   --text:        #1C1814;
   --text-strong: #090705;
   --text-dim:    #5C5750;
-  --text-faint:  #9A948C;
-  --accent:      #8B6B2A;
+  --text-faint:  #66625C; /* WCAG AA op --bg-elev-2 licht */
+  --accent:      #7A5C20;
   --accent-dim:  #6E5420;
   --on-accent:   #FAF7F2;
-  --gold:        #8B6B2A;
+  --gold:        #7A5C20; /* donkerder goud: AA voor kleine serif-bedragen op licht */
   --gold-bright: #A67F30;
   --gold-glow:   rgba(139,107,42,.15);
   --gold-glow-strong: rgba(139,107,42,.25);
