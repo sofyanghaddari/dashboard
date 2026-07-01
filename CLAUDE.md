@@ -12,8 +12,8 @@ Lokaal: `/Users/soef/claude code`
 ## Stack
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
-- IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v159** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- IndexedDB voor data (DB_VERSION=7), localStorage voor settings
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v160** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -49,7 +49,7 @@ Lokaal: `/Users/soef/claude code`
 4. **🎯 Doelen** — lange/korte termijn met taxi-koppeling (% per rit + streefbedrag), gewoontes met chains + 14-dagen-strip, spaarpotjes (Bunq-style met current/target)
 5. **✅ To-do** — compacte layout (v54): header met open-teller-pill, quick-add + ＋-knop bovenaan, daaronder direct de taken; alléén niet-lege prioriteitsgroepen (geen lege placeholder-blokken), één scrollbare chip-rij (filters+tags+selecteer), horizontale actieknoppen op de kaart, afvink-animatie (check-pop + kaart glijdt uit), stagger-entree. Verder: prioriteit/medium/waiting, tags, subtaken, herhalend, bulk, undo, later-parkeren, quick-NL-input ("morgen 10:00 APK")
 6. **📝 Notities** — notities + ideeën sub-tabs, lichte markdown
-7. **🗓 Week** (`agenda.js`) — week-tijdrooster 06:00–24:00, dag-selector met dag-inkomen, blokken per categorie; tik een leeg tijdvak om te plannen (werkt op mobiel, geen hover nodig). Events in localStorage (`agenda_events`)
+7. **🗓 Week** (`agenda.js`) — week-tijdrooster 06:00–24:00, dag-selector met dag-inkomen, blokken per categorie; tik een leeg tijdvak om te plannen (werkt op mobiel, geen hover nodig). Events in IndexedDB-store `agenda_events` (eenmalige migratie vanuit localStorage)
 8. **📊 Stats** (`stats.js`) — inkomen-inzichten met 7d/30d/90d/Alles filter, totalen + per-week bar-chart (WIP, serif titel)
 9. **🧾 Boekhouding** (`boekhouding.js`) — volledig boekhoudprogramma Moneybird-stijl:
    - **Verkoopfacturen:** maak + verstuur facturen (Taxi-administratie of Olijfolie-bedrijf), PDF-generatie via jsPDF, HTML-print versie
@@ -75,10 +75,8 @@ Lokaal: `/Users/soef/claude code`
 - 👤 **Splash-screen** met goud "✦ Dashboard" bij openen (geen FOUC)
 
 ### Visueel
-- ✦ **12 thema-presets** (alleen neutraal/professioneel):
-  - **Donker:** onyx, graphite, midnight, slate, sterling, sage, espresso, ash, marble, mosque
-  - **Licht:** linen, pearl, paper, ivory, stone, cloud
-- 🎨 **5 accent-kleuren:** gold, blue, green, purple, red
+- ✦ **3 thema-presets:** onyx, midnight (donker, default) en daylight (licht) — oudere presets zijn verwijderd; auto-thema wisselt overdag naar daylight
+- 🎨 **1 accent:** gold (licht thema gebruikt donkerder goud #7A5C20 voor WCAG AA-contrast)
 - ⚪ **Density toggle:** Ruim / Compact
 - 🔠 **Apple-vibe typografie:** serif (Georgia) voor money/big-money, uppercase card-titles met letterspacing
 - 🧊 **Frosted-glass tabbar** (saturate-blur)
@@ -131,13 +129,13 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v138)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v160)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
   app.js                         — bootstrap + wiring
   router.js                      — tab navigation + staggerIn na render
-  db.js                          — IndexedDB wrapper (DB_VERSION=4) met _updatedAt injection + onWrite callback
+  db.js                          — IndexedDB wrapper (DB_VERSION=7) met _updatedAt injection + onWrite callback + STORE_NAMES (één bron van waarheid voor sync/backup/export)
   utils.js                       — uid/fmtMoney/ymd/startOfWeek/parseAmount etc
   settings.js                    — localStorage helpers met defaults
   theme.js                       — dark/light/auto + accent + preset + density
@@ -171,6 +169,11 @@ js/
   receipt-ocr.js                 — Tesseract.js OCR wrapper: ocrReceipt() + parseReceiptText()
   invoice-nlp.js                 — NLP parser voor factuur-extractie
   income-road.js                 — gedeelde incomeRoad() taxi-weg-animatie (Taxi-overzicht)
+  icons.js                       — icon(name) inline SVG line-iconen helper
+  push.js                        — web-push subscription + push-config gist (refreshPushConfig)
+  qibla.js                       — qibla-kaart dashboard + volledig kompas-modal
+  today-panel.js                 — "Vandaag"-paneel (taken + agenda) op dashboard
+  markitdown.js                  — document→Markdown import voor Notities (lokale MarkItDown-server, valt terug op pdf.js/mammoth/Tesseract via CDN)
   modules/
     dashboard.js                 — home view, hero, weer, alles aggregatie
     taxi.js                      — alleen inkomen-kalender, geen shift
@@ -187,10 +190,9 @@ js/
   data/
     arabic-words.js              — Arabische woordenlijst
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
-    suras.js                     — ⚠️ DEAD: 114 suras, niet meer geïmporteerd (oude soera-grid)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v138'
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v160'
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -208,7 +210,7 @@ docs/superpowers/
   plans/2026-06-04-personal-dashboard.md
 ```
 
-## IndexedDB stores (v4)
+## IndexedDB stores (v7)
 
 Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolution.
 
@@ -216,7 +218,7 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - `expenses`: { id, date, amount, category, note? } — UI verborgen
 - `hizb_log`: { date (YYYY-MM-DD), completed, repaired? }
 - `cards`: { id, front, back, note, interval, ease, repetitions, dueDate, createdAt }
-- `goals`: { id, title, description, term, deadline, progress, target?, taxiPercent? }
+- `goals`: { id, title, description, term, deadline, progress, target?, taxiPercent?, milestones?[{id,title,done}] }
 - `todos`: { id, title, note, priority, done, dueDate?, recurring?, tags[], subtasks[], savedForLater, createdAt, completedAt? }
 - `shifts`: { id, startTime, endTime?|null } — UI verwijderd maar store blijft voor data
 - `notes`: { id, title, body, isIdea, createdAt, updatedAt }
@@ -227,6 +229,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - `purchase_invoices`: { id, adminId, vendor, date, amount, vatRate, vatAmount, category, note?, receiptText? } — inkoop/bonnetjes
 - `km_log`: { id, date, from, to, km, purpose, adminId } — km-registratie
 - `clients`: { id, adminId, name, email, phone?, address?, kvk?, btw? } — klantenbeheer
+- `taxi_expenses`: { id, name, amount, frequency ('monthly'|'weekly'|'eenmalig'), date?, note? } — taxikosten (vaste lasten + eenmalig geboekte kosten)
+- `agenda_events`: { id, date, hour, minute, duration, title, cat, done? } — Week-tab afspraken (gemigreerd uit localStorage)
 
 ## LocalStorage keys
 
@@ -268,7 +272,7 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - Modals hebben rechtsboven een ×-knop (`.modal-close`)
 - Card-titles `.card-title` class (uppercase, small, letterspacing)
 - Service worker CACHE versie bumpen bij elke wijziging van static assets — én `APP_VERSION` in `js/components/settings.js` gelijk houden
-- Bij nieuwe IndexedDB store: bump `DB_VERSION` én voeg toe aan STORES lijsten in `db.js`, `github-sync.js`, `components/settings.js`
+- Bij nieuwe IndexedDB store: bump `DB_VERSION` en voeg toe aan het `STORES`-object in `db.js` — sync/backup/export volgen automatisch via `STORE_NAMES` (géén losse lijsten meer bijwerken)
 - `safe-area-inset-top` (--safe-top) voor alle floating top elementen
 - `_updatedAt` automatisch via `db.js put()` — niet handmatig zetten
 - Bij `onWrite` event auto-push naar GitHub na 8s debounce
@@ -297,6 +301,19 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++27. **🔧 Grote overhaul-ronde v160 (1 juli 2026):** volledige audit + fixronde op verzoek van user.
+   - **App-iconen gerepareerd:** `icon-192/512.png` waren sinds het begin **0 bytes** (kapot homescreen-icoon, kapotte notificatie-iconen, PWA-install faalde). Nieuwe iconen gegenereerd (goud ✦ op donker, matcht de splash) + `icon-180.png` (apple-touch) + aparte `icon-maskable-192/512.png` (ster binnen safe zone) + favicon-link en meta description in `index.html`.
+   - **Backup-bug:** `auto-export.js` had een verouderde stores-lijst zonder `taxi_expenses`/`agenda_events` → wekelijkse export was incompleet. Nu **`STORE_NAMES` in `db.js`** als enige bron; `github-sync.js`, `components/settings.js` en `auto-export.js` importeren die.
+   - **NL-geldnotatie overal:** `fmtMoney()`, tel-animaties (`animate.js`) en `fmtMoneyCompact` gebruiken nu een komma ("€ 187,50") — was een punt, inconsistent met Boekhouding.
+   - **Settings-doelvelden** dag-/maanddoel: `type="number"` → `type="text" inputmode="decimal"` + `parseAmount()` (de bekende NL-komma-bug) met validatie.
+   - **Router:** `hashchange`-listener (terugknop + manifest-shortcuts werken nu terwijl de app open is); eerste navigatie via `history.replaceState` (geen redirect-penalty/extra history-entry).
+   - **Lazy tabs:** alle tab-modules behalve dashboard worden via dynamic `import()` geladen (`lazyRender()` in `app.js`) — fors minder parse-werk bij boot; SW pre-cachet alles dus offline blijft werken. Lighthouse Performance 62 → hoger (zie changelog).
+   - **Qibla:** geen geolocatie-prompt meer bij het laden van het dashboard — alleen stil verversen als permissie al 'granted' is (`navigator.permissions.query`). Volledige prompt pas bij openen van het kompas.
+   - **iCal-export:** RFC 5545-escaping van `, ; \` en newlines in SUMMARY/DESCRIPTION.
+   - **WCAG AA-contrast:** `--text-faint` donker `#85837E`, licht `#66625C`; licht goud/accent `#7A5C20` (theme.js GOLD_LIGHT mee aangepast).
+   - **Doelen: mijlpalen + deadline-countdown** (zie module-beschrijving; `milestones` op het goals-record, geen DB-bump).
+   - **Dead code:** `js/data/suras.js` verwijderd.
 
 +26. **🧾 Taxi: werkelijke kosten boeken i.p.v. schatting v157 (1 juli 2026):** op verzoek van user — het kostenoverzicht toont nu **daadwerkelijk geboekte** kosten, geen projectie. `costsForPeriod()` telt alléén `frequency:'eenmalig'`-posten (gedateerd) op, gegroepeerd per categorie, met datum-string-vergelijking (tijdstip speelt niet mee). Periodekiezer kreeg **Alles** erbij. Nieuw in de Kosten-tab: **"Kosten boeken"**-formulier (datum + categorie via datalist `COST_CATS` + snelkeuze-chips + bedrag + optionele notitie → `taxi_expenses` eenmalig), een **"Geboekte kosten"**-lijst (gesorteerd op datum, per categorie-kleur `catColor()`, verwijderbaar), en een aparte **"Vaste lasten (voor break-even)"**-kaart met alleen de terugkerende maand/week-posten + presets. CSS: `.cost-book-grid`/`.cost-cat-chip`/`.cost-log-*`. (Vervangt de projectie-aanpak uit v154; de Netto-kaart op Overzicht blijft bruto − vaste lasten − eenmalig-deze-maand.)
 
