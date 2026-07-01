@@ -9,7 +9,7 @@
   --text: #F2F1EE;
   --text-strong: #FFFFFF;
   --text-dim: #8C8A85;
-  --text-faint: #85837E; /* WCAG AA (≥4.5:1) op --bg-elev-2; hiërarchie via grootte/gewicht */
+  --text-faint: #8B8984; /* WCAG AA (≥4.5:1) op --bg-elev-2; hiërarchie via grootte/gewicht */
   --accent: #C9A75A;
   --accent-dim: #A8883E;
   --on-accent: #0A0A0C;

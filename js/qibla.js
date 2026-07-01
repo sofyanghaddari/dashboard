@@ -57,7 +57,7 @@ function buildCardDial() {
 
 export function qiblaCard() {
   return `
-    <div class="card qibla-card" id="qibla-card" role="button" tabindex="0" aria-label="Qibla — richting Mekka, open het kompas">
+    <div class="card qibla-card" id="qibla-card" role="button" tabindex="0">
       <div class="ql-card-dial" id="ql-card-dial">${buildCardDial()}</div>
       <div class="ql-card-info">
         <h2 class="card-title">Qibla — richting Mekka</h2>
