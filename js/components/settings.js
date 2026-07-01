@@ -1,4 +1,4 @@
-import { all, put, clear } from '../db.js';
+import { all, put, clear, STORE_NAMES } from '../db.js';
 import { escapeHTML } from '../utils.js';
 import { getSetting, setSetting } from '../settings.js';
 import { openModal, confirmModal } from './modal.js';
@@ -17,7 +17,7 @@ import { getArabicSettings, saveArabicSettings, resetAllProgress as resetArabicP
 import { requestNotificationPermission, checkPendingNotifications, sendTestNotification } from '../notifications.js';
 import { enablePush, pushSupported } from '../push.js';
 
-const STORES = ['rides', 'expenses', 'hizb_log', 'cards', 'goals', 'todos', 'shifts', 'notes', 'habits', 'habit_log', 'pots', 'invoices', 'purchase_invoices', 'km_log', 'clients', 'taxi_expenses', 'agenda_events'];
+const STORES = STORE_NAMES;
 
 export async function openGistPicker() {
   const backdrop = document.createElement('div');

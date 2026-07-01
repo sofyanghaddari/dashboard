@@ -20,6 +20,10 @@ const STORES = {
   agenda_events:     { keyPath: 'id',   indexes: [['date', 'date']] },
 };
 
+// Eén bron van waarheid voor alle store-namen (sync, backup, export).
+// Nieuwe store? Alleen hierboven in STORES toevoegen — deze lijst volgt mee.
+export const STORE_NAMES = Object.keys(STORES);
+
 let _dbPromise = null;
 
 export function openDB() {

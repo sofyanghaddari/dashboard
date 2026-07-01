@@ -1,5 +1,5 @@
 // Auto-backup naar GitHub Gist met versie-historie, multi-gist en restore.
-import { all, put, clear } from './db.js';
+import { all, put, clear, STORE_NAMES } from './db.js';
 import { getSetting, setSetting, removeSetting } from './settings.js';
 import { encrypt, decrypt, isEncrypted } from './crypto.js';
 
@@ -31,7 +31,7 @@ function askPassword() {
   });
 }
 
-const STORES = ['rides','expenses','hizb_log','cards','goals','todos','shifts','notes','habits','habit_log','pots','invoices','purchase_invoices','km_log','clients','taxi_expenses','agenda_events'];
+const STORES = STORE_NAMES;
 const LATEST_FILE = 'dashboard-backup.json';
 const KEEP_VERSIONS = 30;
 
