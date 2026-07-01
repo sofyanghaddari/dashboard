@@ -7222,3 +7222,64 @@ body[data-preset="daylight"] .cabman { border-color: rgba(0,0,0,.25); }
 @media (prefers-reduced-motion: reduce) {
   .cb-col { transition: none !important; }
 }
+
+/* ═══ 🌙 HIJRI-DATUM + RAMADAN/EID-SFEER ═══ */
+.dagstart-hijri {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-top: 3px;
+  font-size: .78rem;
+}
+.dh-nl { color: var(--text-faint); letter-spacing: .01em; }
+.dh-ar { color: var(--gold); font-size: .85rem; opacity: .9; }
+
+/* 🏮 Fanoos-lantaarns tijdens Ramadan: hangen aan een koordje en wiegen zacht */
+.sky-fanoos { position: absolute; inset: 0; pointer-events: none; }
+.sky-fanoos i {
+  position: absolute; top: 0;
+  width: 10px; height: 14px;
+  background: linear-gradient(180deg, #E8C87E, #C9A75A 60%, #8A6E33);
+  border-radius: 4px 4px 5px 5px;
+  box-shadow: 0 0 12px 3px rgba(232,200,126,.5);
+  transform-origin: 50% -26px;
+  animation: fanoosSway 5.2s ease-in-out infinite;
+}
+.sky-fanoos i::before { /* koordje */
+  content: ''; position: absolute; left: 50%; top: -26px;
+  width: 1px; height: 26px; background: rgba(255,255,255,.25);
+}
+.sky-fanoos i::after { /* kapje */
+  content: ''; position: absolute; left: 2px; top: -3px;
+  width: 6px; height: 3px; border-radius: 2px 2px 0 0; background: #8A6E33;
+}
+.sky-fanoos i:nth-child(1) { left: 14%; top: 18px; }
+.sky-fanoos i:nth-child(2) { left: 46%; top: 8px; width: 8px; height: 11px; animation-delay: 1.4s; }
+.sky-fanoos i:nth-child(3) { left: 80%; top: 22px; animation-delay: 2.6s; }
+@keyframes fanoosSway { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+
+/* 🎆 Eid: stil goudvuurwerk — dot schiet op, barst uit tot ring en vervaagt */
+.sky-fireworks { position: absolute; inset: 0; pointer-events: none; }
+.sky-fireworks i {
+  position: absolute;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: #E8C87E;
+  opacity: 0;
+  animation: eidBurst 4.8s ease-out infinite;
+}
+.sky-fireworks i::after {
+  content: ''; position: absolute; inset: -2px; border-radius: 50%;
+  border: 1.5px solid rgba(232,200,126,.85);
+  box-shadow: 0 0 10px rgba(232,200,126,.6);
+}
+.sky-fireworks i:nth-child(1) { left: 22%; top: 34%; }
+.sky-fireworks i:nth-child(2) { left: 58%; top: 22%; animation-delay: 1.6s; }
+.sky-fireworks i:nth-child(3) { left: 82%; top: 40%; animation-delay: 3.2s; }
+@keyframes eidBurst {
+  0%, 55%  { opacity: 0; transform: scale(.2); }
+  60%      { opacity: 1; transform: scale(.4); }
+  78%      { opacity: .9; transform: scale(5); }
+  95%,100% { opacity: 0; transform: scale(7); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sky-fanoos i, .sky-fireworks i { animation: none !important; }
+  .sky-fireworks i { opacity: .6; transform: scale(3); }
+}

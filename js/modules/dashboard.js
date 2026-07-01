@@ -12,6 +12,7 @@ import { initPrivacyToggle, initSkyPrivacy } from '../privacy.js';
 import { initCountUps } from '../animate.js';
 import { qiblaCard, initQiblaCard } from '../qibla.js';
 import { mountTodayPanel } from '../today-panel.js';
+import { hijriToday, isRamadan, isEid } from '../hijri.js';
 
 let weatherAbortCtrl = null;
 
@@ -178,6 +179,11 @@ function skyScene(now, opts = {}) {
   const frost = temp != null && temp <= 0 ? ' sky-frost' : '';
   const windy = wind != null && wind >= 28 ? ' sky-windy' : '';
   const aurora = opts.milestone && phase === 'night' ? '<div class="sky-aurora"></div>' : '';
+  // 🏮 Ramadan: hangende fanoos-lantaarns · 🎆 Eid: stil goudvuurwerk ('s avonds)
+  const hij = hijriToday(now);
+  const fanoos = isRamadan(hij) ? '<div class="sky-fanoos"><i></i><i></i><i></i></div>' : '';
+  const eidFx = isEid(hij) && (phase === 'night' || phase === 'dusk')
+    ? '<div class="sky-fireworks"><i></i><i></i><i></i></div>' : '';
 
   const pts = [[12,22],[26,12],[38,30],[52,16],[64,26],[76,12],[88,28],[20,40],[70,42]];
   const stars = pts.map((p, i) => `<i class="sky-star" style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(i % 5) * 0.7}s"></i>`).join('');
@@ -185,7 +191,7 @@ function skyScene(now, opts = {}) {
 
   const scene = `<div class="sky-scene sky-${phase}${overcast}${frost}${windy}" data-cond="${cond}" aria-hidden="true">
     <div class="sky-stars">${stars}</div>
-    ${aurora}
+    ${aurora}${fanoos}${eidFx}
     <div id="sky-weather" class="sky-weather">${skyWeatherLayers(code)}</div>
     <div id="sky-extras" class="sky-extras">${skyExtras(cond, phase, temp, wind)}</div>
     ${cloud}
@@ -370,6 +376,11 @@ export async function render(container) {
         <div>
           <div class="dagstart-greeting">${begroeting}, ${escapeHTML(userName)}</div>
           <div class="dagstart-date">${datumStr}</div>
+          ${(() => { const h = hijriToday(now); return h ? `
+          <div class="dagstart-hijri" title="Islamitische datum (Umm al-Qura)">
+            <span class="dh-nl">${escapeHTML(h.nl)}</span>
+            <span class="dh-ar" lang="ar" dir="rtl">${escapeHTML(h.ar)}</span>
+          </div>` : ''; })()}
         </div>
       </div>
       <div class="dagstart-stats">
