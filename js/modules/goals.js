@@ -55,6 +55,16 @@ export async function render(container) {
 
 // ── Goals ─────────────────────────────────────────────────
 
+// Countdown-info voor een deadline: label + urgentie-klasse
+function deadlineInfo(deadline) {
+  const days = Math.ceil((new Date(deadline + 'T23:59:59') - Date.now()) / 86400000);
+  const label = days < 0 ? `${-days} ${-days === 1 ? 'dag' : 'dagen'} over tijd`
+    : days === 0 ? 'vandaag'
+    : `nog ${days} ${days === 1 ? 'dag' : 'dagen'}`;
+  const cls = days < 0 ? 'late' : days <= 7 ? 'warn' : '';
+  return { label, cls };
+}
+
 function renderGoals(container, sel, items, totalRides) {
   const el = container.querySelector(sel);
   if (!items.length) {
@@ -69,18 +79,24 @@ function renderGoals(container, sel, items, totalRides) {
     const target      = Number(g.target || 0);
     const taxiPct     = Number(g.taxiPercent || 0);
     const taxiSaved   = taxiPct > 0 ? totalRides * (taxiPct / 100) : 0;
-    const progress    = target > 0 && taxiPct > 0
-      ? Math.min(100, Math.round(taxiSaved / target * 100))
-      : Number(g.progress || 0);
+    const ms          = Array.isArray(g.milestones) ? g.milestones : [];
+    const msDone      = ms.filter(m => m.done).length;
     const isAutoTrack = taxiPct > 0 && target > 0;
+    // Voortgang: taxi-koppeling > mijlpalen > handmatige slider
+    const progress    = isAutoTrack
+      ? Math.min(100, Math.round(taxiSaved / target * 100))
+      : ms.length ? Math.round(msDone / ms.length * 100)
+      : Number(g.progress || 0);
     const status      = progress >= 100 ? 'voltooid' : 'actief';
 
+    const dl = g.deadline && status !== 'voltooid' ? deadlineInfo(g.deadline) : null;
     const deadlineChip = g.deadline
-      ? `<span class="goal-meta-chip">${icon('calendar')} ${new Date(g.deadline + 'T12:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}</span>` : '';
+      ? `<span class="goal-meta-chip ${dl ? 'goal-dl-' + dl.cls : ''}">${icon('calendar')} ${new Date(g.deadline + 'T12:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}${dl ? ` · ${dl.label}` : ''}</span>` : '';
     const taxiChip = isAutoTrack
       ? `<span class="goal-meta-chip">${icon('taxi')} ${taxiPct}% per rit · <b class="money blurred-amount">${fmtMoney(taxiSaved)}</b> / <span class="blurred-amount">${fmtMoney(target)}</span></span>` : '';
 
-    const progressControl = isAutoTrack
+    // Met mijlpalen of taxi-koppeling is de balk afgeleid — alleen anders een slider
+    const progressControl = (isAutoTrack || ms.length)
       ? `<div class="goal-progress-row">
            <div class="progress-bar goal-progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
            <span class="goal-pct">${progress}%</span>
@@ -92,6 +108,16 @@ function renderGoals(container, sel, items, totalRides) {
            </div>
            <input type="range" min="0" max="100" value="${progress}" data-progress="${g.id}" style="margin-top:8px" />
          </div>`;
+
+    const milestoneList = ms.length ? `
+      <div class="goal-ms-list">
+        <div class="goal-ms-count">Mijlpalen · ${msDone}/${ms.length}</div>
+        ${ms.map(m => `
+          <button type="button" class="goal-ms-item ${m.done ? 'done' : ''}" data-ms-goal="${g.id}" data-ms-id="${m.id}">
+            <span class="goal-ms-box" aria-hidden="true">${m.done ? '✓' : ''}</span>
+            <span class="goal-ms-title">${escapeHTML(m.title)}</span>
+          </button>`).join('')}
+      </div>` : '';
 
     return `
       <div class="goal-card">
@@ -109,9 +135,25 @@ function renderGoals(container, sel, items, totalRides) {
           </div>
         </div>
         ${progressControl}
+        ${milestoneList}
         ${(deadlineChip || taxiChip) ? `<div class="goal-meta-row">${deadlineChip}${taxiChip}</div>` : ''}
       </div>`;
   }).join('');
+
+  // Mijlpaal afvinken/ontvinken
+  el.querySelectorAll('[data-ms-goal]').forEach(btn => {
+    btn.onclick = async () => {
+      const g = items.find(x => x.id === btn.dataset.msGoal);
+      if (!g || !Array.isArray(g.milestones)) return;
+      const milestones = g.milestones.map(m =>
+        m.id === btn.dataset.msId ? { ...m, done: !m.done } : m);
+      await put('goals', { ...g, milestones });
+      const allDone = milestones.length && milestones.every(m => m.done);
+      const wasAllDone = g.milestones.length && g.milestones.every(m => m.done);
+      if (allDone && !wasAllDone) { celebrateTask(); ok('Alle mijlpalen afgerond — doel behaald!'); }
+      render(container);
+    };
+  });
 
   el.querySelectorAll('[data-del]').forEach(b =>
     b.onclick = async () => { await del('goals', b.dataset.del); render(container); });
@@ -357,6 +399,8 @@ function openGoalModal(container, existing, term) {
     <label>Titel *</label><input name="title" required value="${existing ? escapeHTML(existing.title) : ''}" />
     <label>Beschrijving</label><textarea name="description" rows="2">${existing?.description ? escapeHTML(existing.description) : ''}</textarea>
     <label>Deadline</label><input name="deadline" type="date" value="${existing?.deadline || ''}" />
+    <label>Mijlpalen — één per regel (optioneel)</label>
+    <textarea name="milestones" rows="3" placeholder="bijv.&#10;Rijbewijs halen&#10;Auto uitzoeken&#10;Verzekering regelen">${(existing?.milestones || []).map(m => escapeHTML(m.title)).join('\n')}</textarea>
     <label>Streefbedrag (€) — optioneel</label>
     <input name="target" type="text" inputmode="decimal" autocomplete="off" value="${existing?.target || ''}" />
     <label>% van elke taxi-rit — optioneel (auto-voortgang)</label>
@@ -368,10 +412,19 @@ function openGoalModal(container, existing, term) {
       if (isNaN(pct) || pct < 0 || pct > 100) throw new Error('Percentage moet tussen 0 en 100 liggen');
     }
     const base = existing || { id: uid(), term, progress: 0 };
+    // Mijlpalen uit de textarea; afvink-status van ongewijzigde titels blijft behouden
+    const oldMs = existing?.milestones || [];
+    const milestones = String(d.milestones || '').split('\n')
+      .map(s => s.trim()).filter(Boolean)
+      .map(title => {
+        const prev = oldMs.find(m => m.title === title);
+        return prev || { id: uid(), title, done: false };
+      });
     await put('goals', {
       ...base, title: d.title,
       description: d.description || '',
       deadline: d.deadline || null,
+      milestones,
       target: d.target ? parseAmount(d.target) : null,
       taxiPercent: d.taxiPercent ? Math.min(100, Math.max(0, parseAmount(d.taxiPercent))) : null,
     });

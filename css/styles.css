@@ -7089,3 +7089,54 @@ input, select, textarea {
 @media (prefers-reduced-motion: reduce) {
   .ql-card-dial, .ql-card-arrow { animation: none !important; }
 }
+
+/* ═══ 🎯 DOELEN — mijlpalen + deadline-countdown ═══ */
+.goal-ms-list { margin-top: 10px; display: flex; flex-direction: column; gap: 2px; }
+.goal-ms-count {
+  font-size: var(--font-2xs);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--text-faint);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.goal-ms-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: .9rem;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.goal-ms-item:active { background: var(--bg-elev-2); }
+.goal-ms-box {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-hi);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--on-accent);
+  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+}
+.goal-ms-item.done .goal-ms-box {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.goal-ms-item.done .goal-ms-title {
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+.goal-ms-item:not(.done):active .goal-ms-box { transform: scale(1.15); }
+.goal-meta-chip.goal-dl-warn { color: var(--gold-bright); font-weight: 600; }
+.goal-meta-chip.goal-dl-late { color: var(--danger); font-weight: 600; }
