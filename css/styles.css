@@ -2687,6 +2687,9 @@ body[data-density="compact"] .quick-action-icon { width: 32px; height: 32px; fon
   opacity: .75;
   pointer-events: none;
 }
+/* De "dubbel hizb"-knop deelt de done-styling maar moet WÉL klikbaar blijven
+   (pointer-events:none maakte hem voorheen onbedienbaar — tikken deed niets) */
+#double-hizb:not([disabled]) { pointer-events: auto; cursor: pointer; }
 
 /* ── INCOME CALENDAR ──────────────────────────── */
 .cal-nav {
@@ -7343,14 +7346,15 @@ body[data-preset="daylight"] .cabman { border-color: rgba(0,0,0,.25); }
 .hizb-letter {
   position: fixed; z-index: 9999; pointer-events: none;
   color: var(--gold-bright);
-  font-size: 1.25rem; font-weight: 600;
-  text-shadow: 0 0 10px rgba(216,184,106,.7);
-  animation: hizbLetterRise 1.7s ease-out both;
+  font-size: 1.7rem; font-weight: 700;
+  text-shadow: 0 0 14px rgba(216,184,106,.9), 0 0 4px rgba(255,240,200,.8);
+  animation: hizbLetterRise 2.4s ease-out both;
 }
 @keyframes hizbLetterRise {
-  0%   { transform: translate(0, 0) rotate(0) scale(.6); opacity: 0; }
-  15%  { opacity: 1; }
-  100% { transform: translate(var(--dx, 0), -84px) rotate(10deg) scale(1.15); opacity: 0; }
+  0%   { transform: translate(0, 0) rotate(0) scale(.5); opacity: 0; }
+  12%  { opacity: 1; transform: translate(0, -8px) rotate(-4deg) scale(1.05); }
+  70%  { opacity: .95; }
+  100% { transform: translate(var(--dx, 0), -130px) rotate(8deg) scale(1.25); opacity: 0; }
 }
 
 /* 🏁 Victory lap: bij dagdoel 100% scheurt de Mercedes één keer de hele weg over */

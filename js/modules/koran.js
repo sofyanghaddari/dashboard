@@ -231,6 +231,7 @@ async function renderHizb(container) {
   const catchupBtn = el.querySelector('#catchup-btn');
   if (catchupBtn) {
     catchupBtn.onclick = async () => {
+      spawnHizbLetters(catchupBtn);
       if (todayRec) {
         // Today already done — mark today count:2 and yesterday as catchup
         await put('hizb_log', { date: today, completed: true, count: 2 });
@@ -250,6 +251,7 @@ async function renderHizb(container) {
   const doubleBtn = el.querySelector('#double-hizb');
   if (doubleBtn && todayCount < 2) {
     doubleBtn.onclick = async () => {
+      spawnHizbLetters(doubleBtn);
       if (!yestRec && !alreadyCaughtUp) {
         // yesterday not done — this is the catchup action
         await put('hizb_log', { date: today, completed: true, count: 2 });
@@ -519,15 +521,15 @@ function spawnHizbLetters(btn) {
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
   const letters = ['ا', 'ل', 'ح', 'م', 'د', 'ن', 'و', 'ر', 'ق'];
   const r = btn.getBoundingClientRect();
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 9; i++) {
     const s = document.createElement('span');
     s.className = 'hizb-letter';
     s.textContent = letters[Math.floor(Math.random() * letters.length)];
-    s.style.left = (r.left + r.width / 2 + (Math.random() * 90 - 45)) + 'px';
+    s.style.left = (r.left + r.width / 2 + (Math.random() * 150 - 75)) + 'px';
     s.style.top = (r.top + r.height / 2) + 'px';
-    s.style.setProperty('--dx', (Math.random() * 50 - 25).toFixed(0) + 'px');
-    s.style.animationDelay = (i * 80) + 'ms';
+    s.style.setProperty('--dx', (Math.random() * 60 - 30).toFixed(0) + 'px');
+    s.style.animationDelay = (i * 70) + 'ms';
     document.body.appendChild(s);
-    setTimeout(() => s.remove(), 2000);
+    setTimeout(() => s.remove(), 2800);
   }
 }
