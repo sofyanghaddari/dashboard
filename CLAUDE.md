@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=4), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v156** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v157** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -297,6 +297,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++26. **🧾 Taxi: werkelijke kosten boeken i.p.v. schatting v157 (1 juli 2026):** op verzoek van user — het kostenoverzicht toont nu **daadwerkelijk geboekte** kosten, geen projectie. `costsForPeriod()` telt alléén `frequency:'eenmalig'`-posten (gedateerd) op, gegroepeerd per categorie, met datum-string-vergelijking (tijdstip speelt niet mee). Periodekiezer kreeg **Alles** erbij. Nieuw in de Kosten-tab: **"Kosten boeken"**-formulier (datum + categorie via datalist `COST_CATS` + snelkeuze-chips + bedrag + optionele notitie → `taxi_expenses` eenmalig), een **"Geboekte kosten"**-lijst (gesorteerd op datum, per categorie-kleur `catColor()`, verwijderbaar), en een aparte **"Vaste lasten (voor break-even)"**-kaart met alleen de terugkerende maand/week-posten + presets. CSS: `.cost-book-grid`/`.cost-cat-chip`/`.cost-log-*`. (Vervangt de projectie-aanpak uit v154; de Netto-kaart op Overzicht blijft bruto − vaste lasten − eenmalig-deze-maand.)
 
 +25. **🚖 Taxi: inkomen-knop bovenaan + kostenoverzicht per periode v154 (30 juni 2026):** op verzoek van user.
    - **"+ Inkomen vandaag noteren"** staat nu **bovenaan** het Taxi-overzicht (vóór de income-hero) i.p.v. onderaan.

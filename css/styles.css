@@ -3638,6 +3638,28 @@ label[for="import-csv"]:hover, label[for="import-pdf"]:hover, #add-card:hover {
 .cost-ov-foot b { color: var(--text); }
 .cost-ov-note { font-size: .68rem; color: var(--text-faint); margin-top: 6px; opacity: .8; }
 
+/* Kosten boeken-formulier + categorie-chips */
+.cost-book-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cost-cat-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.cost-cat-chip {
+  border: 1px solid var(--border); background: var(--bg-elev-2); color: var(--text-dim);
+  border-radius: 999px; padding: 4px 11px; font-size: .76rem; cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.cost-cat-chip:hover { color: var(--text); border-color: var(--accent-dim, var(--border)); }
+.cost-cat-chip:active { transform: scale(.94); }
+
+/* Geboekte-kosten lijst */
+.cost-log-list { display: flex; flex-direction: column; gap: 8px; }
+.cost-log-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px;
+}
+.cost-log-main { flex: 1; min-width: 0; }
+.cost-log-name { font-size: .88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cost-log-note { color: var(--text-faint); font-weight: 400; }
+.cost-log-date { font-size: .72rem; color: var(--text-faint); margin-top: 1px; }
+.cost-log-amt { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); flex-shrink: 0; }
+
 .expense-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .expense-item {
   display: flex; align-items: center; gap: 10px;

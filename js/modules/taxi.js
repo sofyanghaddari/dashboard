@@ -56,42 +56,46 @@ function calcOneTimeThisMonth(expenses, now = new Date()) {
   }, 0);
 }
 
-// Kostenoverzicht per periode: vaste kosten worden over de periode geprojecteerd,
-// eenmalige kosten tellen mee op hun datum. Gegroepeerd per post (Brandstof, Onderhoud, …).
-const WEEKS_PER_MONTH = 365.25 / 12 / 7; // ≈ 4.348
+// Kostenoverzicht per periode — telt de WERKELIJK geboekte (eenmalige, gedateerde)
+// kosten op, gegroepeerd per categorie (Brandstof, Onderhoud, …). Geen schatting.
 const COST_PERIODS = [
   { key: 'month', label: 'Maand', long: 'deze maand' },
   { key: '3m',    label: '3 mnd', long: 'afgelopen 3 maanden' },
   { key: '6m',    label: '6 mnd', long: 'afgelopen 6 maanden' },
   { key: 'year',  label: 'Jaar',  long: 'dit jaar' },
+  { key: 'all',   label: 'Alles', long: 'alles' },
 ];
-function periodSpec(key, now) {
+function periodStart(key, now) {
   const y = now.getFullYear(), m = now.getMonth();
-  if (key === '3m')   return { months: 3,     start: new Date(y, m - 2, 1) };
-  if (key === '6m')   return { months: 6,     start: new Date(y, m - 5, 1) };
-  if (key === 'year') return { months: m + 1, start: new Date(y, 0, 1) };
-  return { months: 1, start: new Date(y, m, 1) }; // 'month'
+  if (key === '3m')   return new Date(y, m - 2, 1);
+  if (key === '6m')   return new Date(y, m - 5, 1);
+  if (key === 'year') return new Date(y, 0, 1);
+  if (key === 'all')  return null;
+  return new Date(y, m, 1); // 'month'
 }
+// Alleen echte, geboekte kosten (frequency 'eenmalig' met datum) binnen de periode.
+// Vergelijk op datum-string (YYYY-MM-DD) zodat het tijdstip niet meespeelt.
 function costsForPeriod(expenses, key, now) {
-  const { months, start } = periodSpec(key, now);
+  const start = periodStart(key, now);
+  const startYmd = start ? ymd(start) : null;
+  const todayYmd = ymd(now);
   const byPost = {};
-  const add = (name, amt) => { byPost[name] = (byPost[name] || 0) + amt; };
+  let count = 0;
   for (const e of expenses) {
+    if (e.frequency !== 'eenmalig') continue;
     const amt = Number(e.amount) || 0;
-    if (amt <= 0) continue;
-    if (e.frequency === 'weekly') add(e.name, amt * months * WEEKS_PER_MONTH);
-    else if (e.frequency === 'eenmalig') {
-      const d = e.date ? new Date(e.date + 'T12:00:00') : null;
-      if (d && d >= start && d <= now) add(e.name, amt);
-    } else {
-      add(e.name, amt * months); // monthly
-    }
+    if (amt <= 0 || !e.date) continue;
+    if (startYmd && e.date < startYmd) continue;
+    if (e.date > todayYmd) continue;
+    byPost[e.name] = (byPost[e.name] || 0) + amt;
+    count++;
   }
   const posts = Object.entries(byPost).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total);
   const total = posts.reduce((s, p) => s + p.total, 0);
-  return { total, posts, months };
+  return { total, posts, count };
 }
 const COST_COLORS = ['#ffb454', '#6ec9ff', '#fb7185', '#5dd49a', '#a78bfa', '#e0b341', '#f97316', '#94a3b8'];
+const COST_CATS = ['Brandstof', 'Onderhoud', 'Verzekering', 'Banden', 'Wasstraat', 'Parkeren', 'Boete', 'Reiniging', 'Lease', 'Overig'];
 
 function checkBreakEven(todayIncome, expenses) {
   const monthly = calcMonthlyTotal(expenses);
@@ -343,23 +347,29 @@ function renderRitten(content, container, year, month, byDate, rides, now) {
 function renderKosten(content, container, expenses) {
   const now = effectiveNow();
   const monthly = calcMonthlyTotal(expenses);
-  const oneTime = calcOneTimeThisMonth(expenses);
-  const freqLabel = (f) => f === 'weekly' ? '/week' : f === 'eenmalig' ? 'eenmalig' : '/maand';
+  const catColor = (name) => { let h = 0; for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0; return COST_COLORS[h % COST_COLORS.length]; };
+  const freqLabel = (f) => f === 'weekly' ? '/week' : '/maand';
 
   const period = container.dataset.costPeriod || 'month';
   const ov = costsForPeriod(expenses, period, now);
   const periodLong = (COST_PERIODS.find(p => p.key === period) || COST_PERIODS[0]).long;
 
-  const PRESETS = [
-    { name: 'Brandstof', amount: 600, frequency: 'monthly' },
-    { name: 'Verzekering', amount: 150, frequency: 'monthly' },
-    { name: 'Lease/afschrijving', amount: 400, frequency: 'monthly' },
-    { name: 'TLC/vergunning', amount: 80, frequency: 'monthly' },
-    { name: 'Onderhoud', amount: 100, frequency: 'monthly' },
+  // Werkelijk geboekte kosten (gedateerd) vs. vaste lasten (terugkerend).
+  const logged = expenses.filter(e => e.frequency === 'eenmalig' && e.date)
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  const recurring = expenses.filter(e => e.frequency !== 'eenmalig');
+
+  const RECUR_PRESETS = [
+    { name: 'Brandstof', amount: 600 },
+    { name: 'Verzekering', amount: 150 },
+    { name: 'Lease/afschrijving', amount: 400 },
+    { name: 'TLC/vergunning', amount: 80 },
+    { name: 'Onderhoud', amount: 100 },
   ];
+  const today = ymd(now);
 
   content.innerHTML = `
-    <!-- KOSTENOVERZICHT (per periode, uitgesplitst per post) -->
+    <!-- KOSTENOVERZICHT (werkelijk geboekt, per periode + categorie) -->
     <div class="card cost-ov">
       <div class="cost-ov-head">
         <h2 class="card-title" style="margin:0">Kostenoverzicht</h2>
@@ -368,92 +378,136 @@ function renderKosten(content, container, expenses) {
         </div>
       </div>
       <div class="cost-ov-total">
-        <span class="big-money blurred-amount" data-countup="${Math.round(ov.total)}">${fmtMoney(ov.total)}</span>
-        <span class="cost-ov-sub">totaal — ${periodLong}</span>
+        <span class="big-money blurred-amount" data-countup="${ov.total}">${fmtMoney(ov.total)}</span>
+        <span class="cost-ov-sub">werkelijk uitgegeven — ${periodLong}</span>
       </div>
       ${ov.posts.length ? `
         <div class="cost-bars">
-          ${ov.posts.map((p, i) => `
+          ${ov.posts.map((p) => `
             <div class="cost-bar-row">
               <div class="cost-bar-top">
-                <span class="cost-bar-name"><span class="cost-dot" style="background:${COST_COLORS[i % COST_COLORS.length]}"></span>${escapeHTML(p.name)}</span>
+                <span class="cost-bar-name"><span class="cost-dot" style="background:${catColor(p.name)}"></span>${escapeHTML(p.name)}</span>
                 <span class="cost-bar-amt blurred-amount">${fmtMoney(p.total)}</span>
               </div>
-              <div class="cost-bar-track"><div class="cost-bar-fill" style="width:${ov.total > 0 ? Math.round(p.total / ov.total * 100) : 0}%;background:${COST_COLORS[i % COST_COLORS.length]}"></div></div>
+              <div class="cost-bar-track"><div class="cost-bar-fill" style="width:${ov.total > 0 ? Math.round(p.total / ov.total * 100) : 0}%;background:${catColor(p.name)}"></div></div>
             </div>`).join('')}
         </div>
-        <div class="cost-ov-foot">Break-even per dag: <b class="blurred-amount">${fmtMoney(monthly / 30)}</b>${oneTime > 0 ? ` · eenmalig deze maand: <b class="blurred-amount">${fmtMoney(oneTime)}</b>` : ''}</div>
-        <div class="cost-ov-note">Vaste kosten zijn geschat over de periode; eenmalige kosten tellen op hun datum mee.</div>
-      ` : `<p class="muted" style="text-align:center;font-size:.875rem;padding:8px 0 4px">Nog geen kosten — voeg hieronder je vaste lasten toe.</p>`}
+        <div class="cost-ov-foot">${ov.count} ${ov.count === 1 ? 'boeking' : 'boekingen'} in deze periode</div>
+      ` : `<p class="muted" style="text-align:center;font-size:.875rem;padding:8px 0 4px">Nog geen kosten geboekt in deze periode.</p>`}
     </div>
 
-    <div class="expense-list" id="expense-list">
-      ${expenses.length ? expenses.map(e => `
-        <div class="expense-item" data-id="${e.id}">
-          <div class="expense-item-name">${escapeHTML(e.name)}</div>
-          <div>
-            <span class="expense-item-amount blurred-amount">${fmtMoney(e.amount)}</span>
-            <span class="expense-item-freq">${freqLabel(e.frequency)}${e.frequency === 'eenmalig' && e.date ? ' · ' + new Date(e.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : ''}</span>
-          </div>
-          <button class="expense-item-del" data-del="${e.id}" title="Verwijder">×</button>
-        </div>`).join('') : `<p class="muted" style="text-align:center;font-size:.875rem;padding:10px 0">Nog geen kosten ingesteld</p>`}
+    <!-- KOSTEN BOEKEN -->
+    <div class="card cost-book" id="cost-book-form">
+      <h2 class="card-title" style="margin-bottom:10px">Kosten boeken</h2>
+      <div class="cost-book-grid">
+        <div>
+          <label>Datum</label>
+          <input id="cost-date" type="date" value="${today}" max="${today}" />
+        </div>
+        <div>
+          <label>Bedrag (€)</label>
+          <input id="cost-amount" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" />
+        </div>
+      </div>
+      <label style="margin-top:8px">Categorie</label>
+      <input id="cost-cat" list="cost-cats" autocomplete="off" placeholder="bijv. Brandstof" />
+      <datalist id="cost-cats">${COST_CATS.map(c => `<option value="${c}"></option>`).join('')}</datalist>
+      <div class="cost-cat-chips">${COST_CATS.slice(0, 6).map(c => `<button type="button" class="cost-cat-chip" data-cat="${c}">${c}</button>`).join('')}</div>
+      <label style="margin-top:8px">Notitie <span style="font-weight:400;opacity:.6;text-transform:none;letter-spacing:0">(optioneel)</span></label>
+      <input id="cost-note" autocomplete="off" placeholder="bijv. Shell A10, grote beurt…" />
+      <button class="btn block" id="cost-save" style="margin-top:12px">Boeken</button>
     </div>
 
-    <!-- SNELKEUZE PRESETS -->
+    <!-- GEBOEKTE KOSTEN -->
     <div class="card" style="padding:14px;margin-bottom:12px">
-      <h2 class="card-title" style="margin-bottom:10px">Snel toevoegen</h2>
-      <div class="expense-preset-row">
-        ${PRESETS.map(p => `<button class="expense-preset-btn" data-preset-name="${escapeHTML(p.name)}" data-preset-amount="${p.amount}" data-preset-freq="${p.frequency}">${p.name}</button>`).join('')}
+      <h2 class="card-title" style="margin-bottom:10px">Geboekte kosten</h2>
+      <div class="cost-log-list">
+        ${logged.length ? logged.map(e => `
+          <div class="cost-log-item" data-id="${e.id}">
+            <span class="cost-dot" style="background:${catColor(e.name)}"></span>
+            <div class="cost-log-main">
+              <div class="cost-log-name">${escapeHTML(e.name)}${e.note ? ` <span class="cost-log-note">· ${escapeHTML(e.note)}</span>` : ''}</div>
+              <div class="cost-log-date">${new Date(e.date + 'T12:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+            </div>
+            <span class="cost-log-amt blurred-amount">${fmtMoney(e.amount)}</span>
+            <button class="expense-item-del" data-del="${e.id}" title="Verwijder">×</button>
+          </div>`).join('') : `<p class="muted" style="text-align:center;font-size:.875rem;padding:8px 0">Nog niets geboekt — boek hierboven je eerste kostenpost.</p>`}
       </div>
     </div>
 
-    <!-- HANDMATIG TOEVOEGEN -->
-    <div class="card expense-add-form" id="add-expense-form">
-      <h2 class="card-title" style="margin-bottom:10px">Handmatig toevoegen</h2>
-      <label>Naam</label>
-      <input id="exp-name" placeholder="bijv. Parkeervergunning" />
-      <label>Bedrag (€)</label>
-      <input id="exp-amount" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" />
-      <label>Frequentie</label>
-      <div class="segmented" style="margin-bottom:12px">
-        <button type="button" class="seg active" data-freq="monthly">Per maand</button>
-        <button type="button" class="seg" data-freq="weekly">Per week</button>
-        <button type="button" class="seg" data-freq="eenmalig">Eenmalig</button>
+    <!-- VASTE LASTEN (voor break-even) -->
+    <div class="card" style="padding:14px;margin-bottom:12px">
+      <div class="cost-ov-head" style="margin-bottom:8px">
+        <h2 class="card-title" style="margin:0">Vaste lasten</h2>
+        <span style="font-size:.72rem;color:var(--text-faint)">voor break-even</span>
       </div>
-      <button class="btn block" id="save-expense">Toevoegen</button>
+      ${monthly > 0 ? `<div style="font-size:.85rem;color:var(--text-faint);margin-bottom:10px">Samen <b class="blurred-amount" style="color:var(--text)">${fmtMoney(monthly)}</b>/maand · break-even per dag <b class="blurred-amount" style="color:var(--text)">${fmtMoney(monthly / 30)}</b></div>` : ''}
+      <div class="expense-list">
+        ${recurring.length ? recurring.map(e => `
+          <div class="expense-item" data-id="${e.id}">
+            <div class="expense-item-name">${escapeHTML(e.name)}</div>
+            <div>
+              <span class="expense-item-amount blurred-amount">${fmtMoney(e.amount)}</span>
+              <span class="expense-item-freq">${freqLabel(e.frequency)}</span>
+            </div>
+            <button class="expense-item-del" data-del="${e.id}" title="Verwijder">×</button>
+          </div>`).join('') : `<p class="muted" style="text-align:center;font-size:.85rem;padding:6px 0">Nog geen vaste lasten ingesteld</p>`}
+      </div>
+      <div class="expense-preset-row" style="margin-top:10px">
+        ${RECUR_PRESETS.map(p => `<button class="expense-preset-btn" data-preset-name="${escapeHTML(p.name)}" data-preset-amount="${p.amount}">${p.name}</button>`).join('')}
+      </div>
+      <div class="expense-add-form" id="add-expense-form" style="margin-top:12px">
+        <label>Naam</label>
+        <input id="exp-name" placeholder="bijv. Parkeervergunning" />
+        <label>Bedrag (€)</label>
+        <input id="exp-amount" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" />
+        <label>Frequentie</label>
+        <div class="segmented" style="margin-bottom:12px">
+          <button type="button" class="seg active" data-freq="monthly">Per maand</button>
+          <button type="button" class="seg" data-freq="weekly">Per week</button>
+        </div>
+        <button class="btn secondary block" id="save-expense">Vaste last toevoegen</button>
+      </div>
     </div>
   `;
 
   // Periode-knoppen kostenoverzicht
   content.querySelectorAll('.cost-period-btn').forEach(btn => {
-    btn.onclick = () => {
-      container.dataset.costPeriod = btn.dataset.cp;
-      render(container);
-    };
+    btn.onclick = () => { container.dataset.costPeriod = btn.dataset.cp; render(container); };
   });
 
-  // Delete handler
+  // Delete (zowel geboekte kosten als vaste lasten)
   content.querySelectorAll('[data-del]').forEach(btn => {
-    btn.onclick = async () => {
-      await del('taxi_expenses', btn.dataset.del);
-      render(container);
-    };
+    btn.onclick = async () => { await del('taxi_expenses', btn.dataset.del); render(container); };
   });
 
-  // Frequency segmented control
-  let selectedFreq = 'monthly';
+  // Categorie-chips vullen het categorieveld
+  content.querySelectorAll('.cost-cat-chip').forEach(chip => {
+    chip.onclick = () => { content.querySelector('#cost-cat').value = chip.dataset.cat; content.querySelector('#cost-amount').focus(); };
+  });
 
-  // Preset buttons — vul formulier in inclusief het voorgestelde bedrag
+  // Kosten boeken (werkelijke, gedateerde kostenpost)
+  content.querySelector('#cost-save').onclick = async () => {
+    const cat = content.querySelector('#cost-cat').value.trim();
+    const amount = parseAmount(content.querySelector('#cost-amount').value);
+    const date = content.querySelector('#cost-date').value || today;
+    const note = content.querySelector('#cost-note').value.trim();
+    if (!cat) { content.querySelector('#cost-cat').focus(); err('Kies of typ een categorie'); return; }
+    if (!isFinite(amount) || amount <= 0) { content.querySelector('#cost-amount').focus(); err('Vul een geldig bedrag in'); return; }
+    const item = { id: uid(), name: cat, amount, frequency: 'eenmalig', date };
+    if (note) item.note = note;
+    await put('taxi_expenses', item);
+    ok('Kosten geboekt');
+    render(container);
+  };
+
+  // Vaste lasten — frequentie + presets + toevoegen
+  let selectedFreq = 'monthly';
   content.querySelectorAll('.expense-preset-btn').forEach(btn => {
     btn.onclick = () => {
       content.querySelector('#exp-name').value = btn.dataset.presetName;
       content.querySelector('#exp-amount').value = btn.dataset.presetAmount || '';
-      // Zet frequentie
-      content.querySelectorAll('[data-freq]').forEach(s => s.classList.remove('active'));
-      const freqBtn = content.querySelector(`[data-freq="${btn.dataset.presetFreq}"]`);
-      if (freqBtn) { freqBtn.classList.add('active'); selectedFreq = btn.dataset.presetFreq; }
-      // Scroll naar formulier en focus bedrag
-      content.querySelector('#add-expense-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      content.querySelector('#add-expense-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
       content.querySelector('#exp-amount').focus();
     };
   });
@@ -464,16 +518,12 @@ function renderKosten(content, container, expenses) {
       selectedFreq = seg.dataset.freq;
     };
   });
-
-  // Save new expense
   content.querySelector('#save-expense').onclick = async () => {
     const name = content.querySelector('#exp-name').value.trim();
     const amount = parseAmount(content.querySelector('#exp-amount').value);
     if (!name) { content.querySelector('#exp-name').focus(); err('Vul eerst een naam in'); return; }
     if (!isFinite(amount) || amount <= 0) { content.querySelector('#exp-amount').focus(); err('Vul een geldig bedrag in'); return; }
-    const item = { id: uid(), name, amount, frequency: selectedFreq };
-    if (selectedFreq === 'eenmalig') item.date = ymd(new Date());
-    await put('taxi_expenses', item);
+    await put('taxi_expenses', { id: uid(), name, amount, frequency: selectedFreq });
     render(container);
   };
 }
