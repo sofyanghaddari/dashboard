@@ -17,7 +17,8 @@ export function effectiveDate(d) {
 }
 export function fmtMoney(n, raw = false) {
   const v = isFinite(n) ? +n : 0;
-  const text = '€ ' + (Math.round(v * 100) / 100).toFixed(2);
+  // NL-notatie: komma als decimaalteken (consistent met Boekhouding)
+  const text = '€ ' + (Math.round(v * 100) / 100).toFixed(2).replace('.', ',');
   return raw ? text : `<span class="blurred-amount">${text}</span>`;
 }
 // Bedrag-invoer tolerant parsen: het NL-toetsenbord op iPhone typt een KOMMA

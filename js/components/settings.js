@@ -1,5 +1,5 @@
 import { all, put, clear, STORE_NAMES } from '../db.js';
-import { escapeHTML } from '../utils.js';
+import { escapeHTML, parseAmount } from '../utils.js';
 import { getSetting, setSetting } from '../settings.js';
 import { openModal, confirmModal } from './modal.js';
 import { setPreset, THEME_PRESETS, setDensity, PRESET_DOT_COLORS } from '../theme.js';
@@ -257,7 +257,7 @@ export async function openSettings(onClose) {
             </div>
             <div class="settings-euro">
               <span>€</span>
-              <input id="set-goal" type="number" step="1" min="0" value="${getSetting('dailyIncomeGoal')}" />
+              <input id="set-goal" type="text" inputmode="decimal" value="${getSetting('dailyIncomeGoal')}" />
             </div>
           </div>
           <div class="settings-row">
@@ -267,7 +267,7 @@ export async function openSettings(onClose) {
             </div>
             <div class="settings-euro">
               <span>€</span>
-              <input id="set-mgoal" type="number" step="50" min="0" value="${getSetting('monthlyIncomeGoal')}" />
+              <input id="set-mgoal" type="text" inputmode="decimal" value="${getSetting('monthlyIncomeGoal')}" />
             </div>
           </div>
         </div>
@@ -806,8 +806,15 @@ export async function openSettings(onClose) {
 
   // Doelen
   backdrop.querySelector('#save-settings').onclick = () => {
-    setSetting('dailyIncomeGoal', backdrop.querySelector('#set-goal').value);
-    setSetting('monthlyIncomeGoal', backdrop.querySelector('#set-mgoal').value);
+    // Komma-tolerant parsen (NL-toetsenbord) en genormaliseerd opslaan
+    const goal = parseAmount(backdrop.querySelector('#set-goal').value);
+    const mgoal = parseAmount(backdrop.querySelector('#set-mgoal').value);
+    if (!isFinite(goal) || goal < 0 || !isFinite(mgoal) || mgoal < 0) {
+      err('Voer een geldig bedrag in');
+      return;
+    }
+    setSetting('dailyIncomeGoal', String(goal));
+    setSetting('monthlyIncomeGoal', String(mgoal));
     ok('Doelen opgeslagen');
   };
 

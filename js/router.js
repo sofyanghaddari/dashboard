@@ -1,6 +1,8 @@
 const routes = {};
 let currentView = null;
 let renderToken = 0;
+let firstNav = true;      // eerste navigatie: hash via replaceState (geen redirect/history-entry)
+let suppressHash = false; // eigen hash-schrijfactie niet nogmaals afhandelen in hashchange
 
 const prefersReduced = () =>
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
@@ -48,7 +50,15 @@ export async function navigate(name) {
   });
 
   currentView = route;
-  location.hash = '#' + route;
+  if (location.hash !== '#' + route) {
+    if (firstNav) {
+      history.replaceState(null, '', '#' + route);
+    } else {
+      suppressHash = true;
+      location.hash = '#' + route;
+    }
+  }
+  firstNav = false;
   const token = ++renderToken;
   try {
     await routes[route](view);
@@ -66,6 +76,12 @@ export function currentRoute() { return currentView; }
 export function initRouter() {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => navigate(tab.dataset.route));
+  });
+  // Terugknop in Safari + app-shortcuts ("./#taxi") terwijl de app al open is
+  window.addEventListener('hashchange', () => {
+    if (suppressHash) { suppressHash = false; return; }
+    const r = (location.hash || '#dashboard').slice(1);
+    if (r !== currentView) navigate(r);
   });
   const initial = (location.hash || '#dashboard').slice(1);
   navigate(initial);

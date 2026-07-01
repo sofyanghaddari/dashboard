@@ -57,7 +57,7 @@ function buildCardDial() {
 
 export function qiblaCard() {
   return `
-    <div class="card qibla-card" id="qibla-card" role="button" tabindex="0" aria-label="Open Qibla kompas">
+    <div class="card qibla-card" id="qibla-card" role="button" tabindex="0" aria-label="Qibla — richting Mekka, open het kompas">
       <div class="ql-card-dial" id="ql-card-dial">${buildCardDial()}</div>
       <div class="ql-card-info">
         <h2 class="card-title">Qibla — richting Mekka</h2>
@@ -87,15 +87,19 @@ export function initQiblaCard(container) {
 
   const loc = storedLocation();
   apply(loc.lat, loc.lon);
-  // Probeer een verse locatie (stil; bij weigering blijft de fallback staan)
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        localStorage.setItem('userLocation', JSON.stringify({ lat: coords.latitude, lon: coords.longitude }));
-        apply(coords.latitude, coords.longitude);
-      },
-      () => {}, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
-    );
+  // Ververs de locatie alléén stil als toestemming al eerder is gegeven —
+  // nooit een permissie-prompt bij het laden van het dashboard.
+  if (navigator.geolocation && navigator.permissions?.query) {
+    navigator.permissions.query({ name: 'geolocation' }).then(p => {
+      if (p.state !== 'granted') return;
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          localStorage.setItem('userLocation', JSON.stringify({ lat: coords.latitude, lon: coords.longitude }));
+          apply(coords.latitude, coords.longitude);
+        },
+        () => {}, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+      );
+    }).catch(() => {});
   }
 
   const open = () => openQibla();

@@ -23,16 +23,17 @@ import { maybeAutoExport } from './auto-export.js';
 import { maybeShowWeeklyReview } from './components/weekly-review.js';
 import { checkAllNotifications, scheduleSwNotifications } from './notifications.js';
 import { render as renderDashboard } from './modules/dashboard.js';
-import { render as renderTaxi } from './modules/taxi.js';
-import { render as renderKoran } from './modules/koran.js';
-import { render as renderArabic } from './modules/arabic.js';
-import { render as renderGeloof } from './modules/geloof.js';
-import { render as renderGoals } from './modules/goals.js';
-import { render as renderTodo } from './modules/todo.js';
-import { render as renderNotes } from './modules/notes.js';
-import { render as renderAgenda } from './modules/agenda.js';
-import { render as renderStats } from './modules/stats.js';
-import { render as renderBoekhouding } from './modules/boekhouding.js';
+
+// Overige tabs lazy laden: scheelt fors parse-werk bij het opstarten
+// (boekhouding alleen al is ±3200 regels). De service worker pre-cachet
+// alle modules, dus offline werkt dit gewoon.
+const lazyRender = (load) => {
+  let mod = null;
+  return async (view) => {
+    mod ??= await load();
+    return mod.render(view);
+  };
+};
 
 async function bootApp() {
   migrateSessionKeys(); // Promoveer ghToken/ghEncPwd eenmalig van sessionStorage naar localStorage
@@ -57,16 +58,16 @@ async function bootApp() {
     }
   }
   register('dashboard', renderDashboard);
-  register('taxi', renderTaxi);
-  register('geloof', renderGeloof);
+  register('taxi', lazyRender(() => import('./modules/taxi.js')));
+  register('geloof', lazyRender(() => import('./modules/geloof.js')));
   register('koran',  (v) => { v.dataset.geloofSub = 'koran';  navigate('geloof'); });
   register('arabic', (v) => { v.dataset.geloofSub = 'arabic'; navigate('geloof'); });
-  register('goals', renderGoals);
-  register('todo', renderTodo);
-  register('notes', renderNotes);
-  register('agenda', renderAgenda);
-  register('stats', renderStats);
-  register('boekhouding', renderBoekhouding);
+  register('goals', lazyRender(() => import('./modules/goals.js')));
+  register('todo', lazyRender(() => import('./modules/todo.js')));
+  register('notes', lazyRender(() => import('./modules/notes.js')));
+  register('agenda', lazyRender(() => import('./modules/agenda.js')));
+  register('stats', lazyRender(() => import('./modules/stats.js')));
+  register('boekhouding', lazyRender(() => import('./modules/boekhouding.js')));
   initRouter();
   initAutoTheme();
   bindRipple();

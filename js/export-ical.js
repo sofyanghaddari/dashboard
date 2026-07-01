@@ -8,6 +8,15 @@ function fmt(d) {
 function fmtDate(yyyymmdd) {
   return yyyymmdd.replace(/-/g, '');
 }
+// RFC 5545: backslash, puntkomma, komma en newlines escapen in tekstvelden,
+// anders breekt een titel met een komma de import in Apple/Google Agenda.
+function esc(s) {
+  return String(s ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r?\n/g, '\\n');
+}
 
 export async function exportICal() {
   const [goals, todos] = await Promise.all([all('goals'), all('todos')]);
@@ -25,8 +34,8 @@ export async function exportICal() {
       `UID:goal-${g.id}@dashboard`,
       `DTSTAMP:${fmt(now)}`,
       `DTSTART;VALUE=DATE:${fmtDate(g.deadline)}`,
-      `SUMMARY:Doel: ${g.title}`,
-      g.description ? `DESCRIPTION:${g.description.replace(/\n/g, '\\n')}` : '',
+      `SUMMARY:Doel: ${esc(g.title)}`,
+      g.description ? `DESCRIPTION:${esc(g.description)}` : '',
       'END:VEVENT',
     );
   });
@@ -39,8 +48,8 @@ export async function exportICal() {
       `UID:todo-${t.id}@dashboard`,
       `DTSTAMP:${fmt(now)}`,
       `DTSTART;VALUE=DATE:${fmtDate(t.dueDate)}`,
-      `SUMMARY:Taak: ${t.title}`,
-      t.note ? `DESCRIPTION:${t.note.replace(/\n/g, '\\n')}` : '',
+      `SUMMARY:Taak: ${esc(t.title)}`,
+      t.note ? `DESCRIPTION:${esc(t.note)}` : '',
       rrule,
       'END:VEVENT',
     );

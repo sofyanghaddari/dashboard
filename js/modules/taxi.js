@@ -581,7 +581,7 @@ function renderGrid(content, container, year, month, byDate) {
 }
 
 function fmtMoneyCompact(n) {
-  if (n >= 1000) return '€' + (n / 1000).toFixed(1) + 'k';
+  if (n >= 1000) return '€' + (n / 1000).toFixed(1).replace('.', ',') + 'k';
   return '€' + Math.round(n);
 }
 

@@ -3,11 +3,12 @@ export function countUp(element, to, opts = {}) {
   const { duration = 800, prefix = '€ ', suffix = '', decimals = 2 } = opts;
   const start = performance.now();
   const ease = (t) => 1 - Math.pow(1 - t, 3);
+  const fmt = (v) => prefix + v.toFixed(decimals).replace('.', ',') + suffix;
   function step(now) {
     const t = Math.min(1, (now - start) / duration);
-    element.textContent = prefix + (to * ease(t)).toFixed(decimals) + suffix;
+    element.textContent = fmt(to * ease(t));
     if (t < 1) requestAnimationFrame(step);
-    else element.textContent = prefix + to.toFixed(decimals) + suffix;
+    else element.textContent = fmt(to);
   }
   requestAnimationFrame(step);
 }
@@ -28,7 +29,7 @@ export function initCountUps(root = document) {
     const decimals = el.dataset.decimals != null ? parseInt(el.dataset.decimals, 10) : 2;
     const prefix   = el.dataset.prefix  != null ? el.dataset.prefix  : '€ ';
     const suffix   = el.dataset.suffix  || '';
-    const fmt      = (v) => prefix + v.toFixed(decimals) + suffix;
+    const fmt      = (v) => prefix + v.toFixed(decimals).replace('.', ',') + suffix;
     if (reduced || target === 0) { el.textContent = fmt(target); return; }
     // Natural stagger: first element starts immediately, others ramp in
     const baseDelay = idx * 60;
