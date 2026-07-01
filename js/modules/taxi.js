@@ -6,6 +6,7 @@ import { getNumber } from '../settings.js';
 import { ok, err } from '../components/toast.js';
 import { initCountUps } from '../animate.js';
 import { incomeRoad } from '../income-road.js';
+import { cabmanMeter, initCabman } from '../cabman.js';
 
 const BREAKEVEN_KEY = 'breakEvenToastDate';
 
@@ -205,19 +206,12 @@ function renderOverview(content, container, d) {
   const breakEvenHit = dailyBreakEven > 0 && todayIncome >= dailyBreakEven;
 
   content.innerHTML = `
-    <!-- INKOMEN TOEVOEGEN (bovenaan) -->
-    <button class="add-income-btn" id="quick-today">
-      <span class="add-income-btn-icon">＋</span>
-      Inkomen vandaag noteren
-    </button>
+    <!-- CABMAN-METER: bedrag van vandaag + inkomen noteren -->
+    ${cabmanMeter({ amount: todayIncome, goalPct, monthIncome, now })}
 
-    <!-- INCOME HERO -->
+    <!-- INCOME HERO (dagdoel-scène) -->
     <div class="income-hero">
-      <div class="income-hero-label" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Vandaag verdiend</span>
-        <button class="privacy-toggle" title="Toon bedragen" aria-label="Toon bedragen"></button>
-      </div>
-      <div class="income-hero-amount blurred-amount" data-countup="${todayIncome}">${fmtMoney(todayIncome)}</div>
+      <div class="income-hero-label">Dagdoel</div>
       ${dailyGoal > 0 ? `
         ${incomeRoad(goalPct, now)}
         <div class="income-hero-meta">
@@ -307,6 +301,7 @@ function renderOverview(content, container, d) {
   `;
 
   content.querySelector('#quick-today').onclick = () => openDayModal(container, ymd(now), byDate?.[ymd(now)]);
+  initCabman(content);
   const goCosts = content.querySelector('#go-costs');
   if (goCosts) goCosts.onclick = () => {
     container.dataset.taxiTab = 'costs';

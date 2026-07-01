@@ -7140,3 +7140,85 @@ input, select, textarea {
 .goal-ms-item:not(.done):active .goal-ms-box { transform: scale(1.15); }
 .goal-meta-chip.goal-dl-warn { color: var(--gold-bright); font-weight: 600; }
 .goal-meta-chip.goal-dl-late { color: var(--danger); font-weight: 600; }
+
+/* ═══ 🚕 CABMAN-TAXIMETER — gestileerd display (Taxi-overzicht) ═══ */
+.cabman {
+  background: linear-gradient(160deg, #101318 0%, #0A0C10 70%);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 18px;
+  padding: 12px 12px 8px;
+  position: relative;
+  overflow: hidden;
+}
+/* subtiele schermglans, diagonaal zoals op het echte apparaat */
+.cabman::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.045) 46%, rgba(255,255,255,.01) 60%, transparent 64%);
+  pointer-events: none;
+}
+.cb-status {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .68rem; letter-spacing: .06em; text-transform: uppercase;
+  color: #7C8894; padding: 2px 4px 8px;
+}
+.cb-status-right { display: inline-flex; align-items: center; gap: 8px; color: #9FB4C8; }
+.cabman .privacy-toggle { position: static; }
+.cb-screen {
+  background: #05070B;
+  border: 1px solid rgba(90,160,230,.14);
+  border-radius: 12px;
+  padding: 10px 14px 12px;
+  position: relative;
+}
+.cb-label { font-size: .72rem; color: #8FA6BC; letter-spacing: .04em; }
+.cb-amount {
+  display: flex; align-items: baseline; justify-content: center; gap: 10px;
+  padding: 6px 0 10px;
+  color: #4FB3FF;
+  font-family: ui-monospace, 'SF Mono', 'Menlo', monospace;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 14px rgba(79,179,255,.45), 0 0 2px rgba(79,179,255,.8);
+}
+.cb-euro { font-size: 1.6rem; opacity: .9; }
+.cb-digits { display: inline-flex; align-items: flex-start; font-size: 2.7rem; font-weight: 600; line-height: 1; }
+.cb-digit { display: inline-block; height: 1em; overflow: hidden; }
+.cb-col {
+  display: flex; flex-direction: column;
+  transition: transform 1.15s cubic-bezier(.22,.9,.3,1);
+  will-change: transform;
+}
+.cb-col i { font-style: normal; height: 1em; line-height: 1; display: block; }
+.cb-sep { font-size: 2.7rem; font-weight: 600; line-height: 1; }
+.cb-row {
+  display: flex; justify-content: space-between; gap: 8px;
+  border-top: 1px solid rgba(90,160,230,.14);
+  padding-top: 9px;
+  font-size: .72rem; color: #8FA6BC;
+}
+.cb-cell b {
+  color: #4FB3FF; font-weight: 600; margin-left: 4px;
+  font-family: ui-monospace, 'SF Mono', 'Menlo', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.cb-bar {
+  display: block; width: 100%;
+  margin-top: 10px;
+  background: linear-gradient(180deg, #2F9BEE, #1F7FD0);
+  color: #fff; font-weight: 700; font-size: .95rem;
+  border: none; border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform var(--transition), filter var(--transition);
+}
+.cb-bar:active { transform: scale(.98); filter: brightness(1.1); }
+.cb-brand {
+  text-align: center; padding: 7px 0 2px;
+  font-size: .7rem; letter-spacing: .35em; text-transform: lowercase;
+  color: #55606B; font-weight: 600;
+}
+body[data-preset="daylight"] .cabman { border-color: rgba(0,0,0,.25); }
+@media (prefers-reduced-motion: reduce) {
+  .cb-col { transition: none !important; }
+}
