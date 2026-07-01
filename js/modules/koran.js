@@ -266,6 +266,7 @@ async function renderHizb(container) {
   const checkBtn = el.querySelector('#check');
   if (checkBtn) {
     checkBtn.onclick = async () => {
+      spawnHizbLetters(checkBtn);
       await put('hizb_log', { date: today, completed: true, count: 1 });
       celebrateTask();
       render(container);
@@ -510,4 +511,23 @@ export function registerHizbPushReminder(time) {
     if (res === 'granted') scheduleReminder();
     return res;
   });
+}
+
+// ✨ Gouden Arabische letters die opstijgen bij het afvinken van de hizb.
+// Gespawnd op document.body (fixed) zodat de re-render ze niet opruimt.
+function spawnHizbLetters(btn) {
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  const letters = ['ا', 'ل', 'ح', 'م', 'د', 'ن', 'و', 'ر', 'ق'];
+  const r = btn.getBoundingClientRect();
+  for (let i = 0; i < 6; i++) {
+    const s = document.createElement('span');
+    s.className = 'hizb-letter';
+    s.textContent = letters[Math.floor(Math.random() * letters.length)];
+    s.style.left = (r.left + r.width / 2 + (Math.random() * 90 - 45)) + 'px';
+    s.style.top = (r.top + r.height / 2) + 'px';
+    s.style.setProperty('--dx', (Math.random() * 50 - 25).toFixed(0) + 'px');
+    s.style.animationDelay = (i * 80) + 'ms';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 2000);
+  }
 }

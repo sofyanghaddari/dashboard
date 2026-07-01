@@ -62,7 +62,7 @@ function deadlineInfo(deadline) {
     : days === 0 ? 'vandaag'
     : `nog ${days} ${days === 1 ? 'dag' : 'dagen'}`;
   const cls = days < 0 ? 'late' : days <= 7 ? 'warn' : '';
-  return { label, cls };
+  return { label, cls, days };
 }
 
 function renderGoals(container, sel, items, totalRides) {
@@ -119,8 +119,10 @@ function renderGoals(container, sel, items, totalRides) {
           </button>`).join('')}
       </div>` : '';
 
+    // Hartslag-puls als de deadline nadert (≤3 dagen) of is verstreken
+    const beat = dl ? (dl.cls === 'late' ? ' goal-beat goal-beat-late' : (dl.days <= 3 ? ' goal-beat' : '')) : '';
     return `
-      <div class="goal-card">
+      <div class="goal-card${beat}">
         <div class="goal-card-top">
           <div class="goal-card-left">
             <div class="goal-card-title">${escapeHTML(g.title)}</div>
@@ -271,6 +273,9 @@ function renderHabits(container, habits, log) {
 
 // ── Pots ──────────────────────────────────────────────────
 
+// Pot-id die na de eerstvolgende render een munt-plons krijgt (net geld toegevoegd)
+let _splashPotId = null;
+
 function renderPots(container, pots) {
   const el = container.querySelector('#pots-list');
   if (!pots.length) {
@@ -284,7 +289,7 @@ function renderPots(container, pots) {
   el.innerHTML = pots.map(p => {
     const pct = p.target > 0 ? Math.min(100, Math.round(p.current / p.target * 100)) : 0;
     return `
-      <div class="pot-item">
+      <div class="pot-item" data-pot="${p.id}">
         <div class="pot-item-top">
           <div class="pot-glass" aria-hidden="true">
             <div class="pl-fill" style="--pct:${pct}%">
@@ -314,6 +319,20 @@ function renderPots(container, pots) {
       </div>`;
   }).join('');
 
+  // 💰 Munt-plons: na geld toevoegen valt er een €-munt in het glas
+  if (_splashPotId) {
+    const glass = el.querySelector(`.pot-item[data-pot="${_splashPotId}"] .pot-glass`);
+    _splashPotId = null;
+    if (glass && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      const coin = document.createElement('span');
+      coin.className = 'pot-coin';
+      coin.textContent = '€';
+      glass.appendChild(coin);
+      glass.classList.add('pot-splash');
+      setTimeout(() => { coin.remove(); glass.classList.remove('pot-splash'); }, 1500);
+    }
+  }
+
   el.querySelectorAll('[data-pot-add]').forEach(b => {
     b.onclick = () => {
       const p = pots.find(x => x.id === b.dataset.potAdd);
@@ -326,6 +345,7 @@ function renderPots(container, pots) {
         if (!isFinite(amt) || amt <= 0) throw new Error('Bedrag moet groter dan 0 zijn');
         await put('pots', { ...p, current: Number(p.current || 0) + amt });
         ok(`${fmtMoney(amt)} toegevoegd aan ${escapeHTML(p.name)}`);
+        _splashPotId = p.id;
         render(container);
       });
     };

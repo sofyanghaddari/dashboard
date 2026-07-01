@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=7), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v160** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v161** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -129,7 +129,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v160)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v161)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -169,6 +169,8 @@ js/
   receipt-ocr.js                 — Tesseract.js OCR wrapper: ocrReceipt() + parseReceiptText()
   invoice-nlp.js                 — NLP parser voor factuur-extractie
   income-road.js                 — gedeelde incomeRoad() taxi-weg-animatie (Taxi-overzicht)
+  cabman.js                      — gestileerde Cabman-taximeter (Taxi-overzicht): rolling digits + live klok
+  hijri.js                       — hijri-datum via Intl islamic-umalqura + isRamadan/isEid
   icons.js                       — icon(name) inline SVG line-iconen helper
   push.js                        — web-push subscription + push-config gist (refreshPushConfig)
   qibla.js                       — qibla-kaart dashboard + volledig kompas-modal
@@ -192,7 +194,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v160'
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v161'
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -301,6 +303,12 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++28. **🚕📿 Cabman-meter + hijri + animatie-pakket v161 (1 juli 2026):** op verzoek van user (foto van zijn echte Cabman-meter als referentie).
+   - **Cabman-taximeter** (`js/cabman.js`, Taxi-overzicht bovenaan): gestileerd donker display met **blauwe rolling digits** (per cijfer een 0-9-strip die naar positie rolt, `.cb-digit`/`.cb-col`), dagbedrag van vandaag, statusregel met datum + privacy-oogje, onderrij Doel-% / **live klok** (interval stopt zelf buiten DOM/verborgen tab) / maandtotaal, blauwe balk = "Inkomen noteren" (id `quick-today`, zelfde handler), "cabman"-woordmerk. Verving de losse add-income-knop én het dubbele hero-bedrag — de income-hero is nu puur de dagdoel-wegscène.
+   - **Hijri-datum** (`js/hijri.js`, geen library): Umm al-Qura via `Intl.DateTimeFormat('nl-NL-u-ca-islamic-umalqura')`; op de begroetingskaart onder de datum in NL-transliteratie + Arabisch (leer-element, `.dagstart-hijri`). `isRamadan()`/`isEid()` sturen sfeer: **Ramadan = wiegende fanoos-lantaarns** (`.sky-fanoos`), **Eid (1-3 Sjawal, 10-13 Doe al-hizja) = stil goudvuurwerk** 's avonds (`.sky-fireworks`).
+   - **Animatie-pakket** (CSS-sectie "✨ ANIMATIE-PAKKET v161", alles met reduced-motion-guard): 💰 **munt-plons** — €-munt valt in het potglas na toevoegen (`_splashPotId` in goals.js, `.pot-coin`/`.pot-splash`); ❤️ **deadline-hartslag** — doel-kaart pulseert bij deadline ≤3 dagen (`.goal-beat`), rood+sneller bij over tijd (`.goal-beat-late`); 🚕 **taxi-daklicht** op hoge-prio taken (puur CSS `::after` op `.task-card[data-priority="high"]`); ✨ **gouden Arabische letters** stijgen op bij hizb-afvinken (`spawnHizbLetters()` in koran.js, gespawnd op body dus re-render-proof); 🏁 **victory lap** — bij dagdoel 100% scheurt de Mercedes één keer de hele weg over + daklicht-flits (`.ir-win .ir-car-svg`, op de binnenste svg om niet te botsen met de bob/translate op `.ir-car`).
+   - Streak-lantaarnpad bewust NIET gebouwd (user: hoeft niet).
 
 +27. **🔧 Grote overhaul-ronde v160 (1 juli 2026):** volledige audit + fixronde op verzoek van user.
    - **App-iconen gerepareerd:** `icon-192/512.png` waren sinds het begin **0 bytes** (kapot homescreen-icoon, kapotte notificatie-iconen, PWA-install faalde). Nieuwe iconen gegenereerd (goud ✦ op donker, matcht de splash) + `icon-180.png` (apple-touch) + aparte `icon-maskable-192/512.png` (ster binnen safe zone) + favicon-link en meta description in `index.html`.
