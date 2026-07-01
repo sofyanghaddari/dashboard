@@ -1514,7 +1514,7 @@ function _renderRideTable(rides, backdrop, vatRate = 9) {
   updateTotal();
 }
 
-async function openRitImportModal(container) {
+async function openRitImportModal(container, { initialText = '', clientPrefill = null } = {}) {
   const bedrijf = getAdmin(container);
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
@@ -1560,14 +1560,24 @@ async function openRitImportModal(container) {
 
   let parsedRides = [];
 
-  backdrop.querySelector('#ri-parse-btn').onclick = () => {
+  const runParse = () => {
     const text = backdrop.querySelector('#ri-text').value;
     parsedRides = parseRidesText(text);
     if (!parsedRides.length) { err('Geen ritten herkend — controleer het formaat en probeer opnieuw.'); return; }
     _renderRideTable(parsedRides, backdrop, bedrijf.defaultVat ?? 9);
     backdrop.querySelector('#ri-step1').style.display = 'none';
     backdrop.querySelector('#ri-step2').style.display = '';
+    if (clientPrefill) {
+      if (clientPrefill.name)  backdrop.querySelector('#ri-client-name').value  = clientPrefill.name;
+      if (clientPrefill.email) backdrop.querySelector('#ri-client-email').value = clientPrefill.email;
+    }
   };
+  backdrop.querySelector('#ri-parse-btn').onclick = runParse;
+
+  if (initialText) {
+    backdrop.querySelector('#ri-text').value = initialText;
+    runParse();
+  }
 
   backdrop.querySelector('#ri-back').onclick = () => {
     backdrop.querySelector('#ri-step1').style.display = '';
@@ -1691,6 +1701,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         <textarea id="bk-paste" class="bk-paste-area" rows="3"
           placeholder="Supreme Transit Solutions&#10;Baden Powellweg, Amsterdam 1069 LK&#10;KvK: 85234362&#10;€320 incl 9% btw"></textarea>
         <div id="bk-parsed-preview" class="bk-parsed-preview" style="display:none"></div>
+        <div id="bk-rides-banner" class="bk-rides-banner" style="display:none"></div>
       </div>
 
       <div class="bk-divider">— of handmatig —</div>
@@ -1780,14 +1791,46 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
 
     // Smart paste
     const pasteArea = backdrop.querySelector('#bk-paste');
+    const ridesBanner = backdrop.querySelector('#bk-rides-banner');
     let parseTimer = null;
+    const runSmartParse = () => {
+      const text = pasteArea.value;
+      const parsed = parseInvoiceText(text);
+      applyParsed(parsed, backdrop);
+      refreshCalc(backdrop);
+
+      // Rit-detectie: als de plaktekst er als één of meer ritten uitziet
+      // (met passagier/pickup/dropoff), toon een knop om per-rit te boeken.
+      const rides = parseRidesText(text);
+      const hasRideSignal = rides.length >= 1 && rides.some(r => r.passenger || r.location);
+      if (hasRideSignal) {
+        const label = rides.length > 1 ? `${rides.length} ritten` : '1 rit';
+        ridesBanner.style.display = 'flex';
+        ridesBanner.innerHTML = `
+          <div class="bk-rides-banner-text">
+            ${icon('taxi')} <strong>${label} herkend</strong> — elke rit als aparte regel met passagier en bedrag?
+          </div>
+          <button type="button" id="bk-to-rides" class="btn">Per rit boeken →</button>`;
+      } else {
+        ridesBanner.style.display = 'none';
+        ridesBanner.innerHTML = '';
+      }
+    };
     pasteArea.addEventListener('input', () => {
       clearTimeout(parseTimer);
-      parseTimer = setTimeout(() => {
-        const parsed = parseInvoiceText(pasteArea.value);
-        applyParsed(parsed, backdrop);
-        refreshCalc(backdrop);
-      }, 300);
+      parseTimer = setTimeout(runSmartParse, 300);
+    });
+
+    ridesBanner.addEventListener('click', (e) => {
+      if (!e.target.closest('#bk-to-rides')) return;
+      const text = pasteArea.value;
+      const clientName  = backdrop.querySelector('#bk-client-name').value.trim();
+      const clientEmail = backdrop.querySelector('#bk-client-email').value.trim();
+      backdrop.remove();
+      openRitImportModal(container, {
+        initialText: text,
+        clientPrefill: { name: clientName, email: clientEmail },
+      });
     });
   }
 

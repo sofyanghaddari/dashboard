@@ -6,7 +6,6 @@ import { getNumber } from '../settings.js';
 import { ok, err } from '../components/toast.js';
 import { initCountUps } from '../animate.js';
 import { incomeRoad } from '../income-road.js';
-import { canalSkyline } from '../canal-skyline.js';
 
 const BREAKEVEN_KEY = 'breakEvenToastDate';
 
@@ -199,7 +198,9 @@ function renderOverview(content, container, d) {
     return dt >= lastMonthStart && dt <= lastMonthEnd && dt.getDate() <= daysIntoMonth;
   });
   const trendPct = lastMonthAtPos > 0 ? Math.round((monthIncome - lastMonthAtPos) / lastMonthAtPos * 100) : null;
-  const monthGoalPct = monthlyGoal > 0 ? Math.min(100, Math.round(monthIncome / monthlyGoal * 100)) : 0;
+  const monthGoalPct = monthlyGoal > 0 ? Math.round(monthIncome / monthlyGoal * 100) : 0;
+  const monthRemaining = Math.max(0, monthlyGoal - monthIncome);
+  const monthSurplus = Math.max(0, monthIncome - monthlyGoal);
 
   const breakEvenHit = dailyBreakEven > 0 && todayIncome >= dailyBreakEven;
 
@@ -227,14 +228,27 @@ function renderOverview(content, container, d) {
       ${breakEvenHit ? `<div class="breakeven-badge">✓ Break-even bereikt</div>` : (dailyBreakEven > 0 ? `<div style="font-size:.78rem;color:var(--text-faint);margin-top:6px">Break-even vandaag: <span class="blurred-amount">${fmtMoney(dailyBreakEven)}</span></div>` : '')}
     </div>
 
-    <!-- MAANDDOEL — Amsterdam grachten-skyline die oplicht -->
+    <!-- MAANDDOEL — strakke progressiebalk -->
     ${monthlyGoal > 0 ? `
-    <div class="card month-road-card">
-      <div class="income-hero-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
-        <span>Maanddoel</span>
-        <span style="font-size:.78rem;color:var(--text-faint)">${monthGoalPct}% · doel <span class="blurred-amount">${fmtMoney(monthlyGoal)}</span></span>
+    <div class="card month-goal-card${monthGoalPct >= 100 ? ' mg-done' : ''}">
+      <div class="mg-head">
+        <span class="card-title">Maanddoel</span>
+        <span class="mg-amt">
+          <span class="blurred-amount" data-countup="${monthIncome}">${fmtMoney(monthIncome)}</span>
+          <span class="mg-amt-sep">/</span>
+          <span class="blurred-amount">${fmtMoney(monthlyGoal)}</span>
+        </span>
       </div>
-      ${canalSkyline(monthGoalPct, now)}
+      <div class="mg-stat">
+        <span class="mg-pct" data-countup="${monthGoalPct}" data-decimals="0" data-prefix="" data-suffix="%">${monthGoalPct}%</span>
+        ${monthGoalPct >= 100
+          ? `<span class="mg-pill mg-pill-done">✓ Behaald${monthSurplus > 0 ? ` <span class="blurred-amount">+${fmtMoney(monthSurplus)}</span>` : ''}</span>`
+          : `<span class="mg-rem">Nog <span class="blurred-amount">${fmtMoney(monthRemaining)}</span></span>`}
+      </div>
+      <div class="mg-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100, monthGoalPct)}">
+        <div class="mg-bar-fill" style="width:${Math.min(100, monthGoalPct)}%"></div>
+        ${monthGoalPct > 100 ? `<div class="mg-bar-over">+${monthGoalPct - 100}%</div>` : ''}
+      </div>
     </div>` : ''}
 
     <!-- KPI GRID -->
