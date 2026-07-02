@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>AJAR — spec-sheet template</title>
+  <!--
+    Template voor het downloadbare spec-sheet (1 A4).
+    Leest alle gegevens uit ../js/content.js (sectie "specsheet").
+    PDF hergenereren na een contentwijziging: zie README.md.
+  -->
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 210mm; height: 297mm;
+      background: #F7F5F0;
+      color: #1E1E1C;
+      font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+      display: flex; flex-direction: column;
+      padding: 18mm 20mm 14mm;
+    }
+    .logo { width: 62mm; margin: 0 auto 4mm; display: block; }
+    .doc-title {
+      text-align: center;
+      font-size: 10pt; font-weight: 600;
+      letter-spacing: .28em; text-transform: uppercase;
+      color: #B8934A;
+      margin: 0 0 10mm;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    td {
+      padding: 4.2mm 3mm;
+      border-bottom: 0.4pt solid #DDD7C8;
+      font-size: 10.5pt;
+      vertical-align: top;
+    }
+    td.label {
+      width: 42mm;
+      font-size: 7.5pt; font-weight: 600;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: #8A8578;
+      padding-top: 5mm;
+    }
+    tr.todo td:not(.label) { color: #B8934A; font-style: italic; }
+    .foot {
+      margin-top: auto;
+      border-top: 1pt solid #B8934A;
+      padding-top: 5mm;
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 8.5pt; color: #5C5850;
+    }
+    .foot .brand { font-family: Georgia, serif; letter-spacing: .2em; color: #3E4B2E; font-size: 10pt; }
+  </style>
+</head>
+<body>
+  <img class="logo" src="../assets/logo/ajar-wordmark.svg" alt="AJAR">
+  <p class="doc-title" id="doc-title"></p>
+  <table id="rows"></table>
+  <div class="foot">
+    <span class="brand">AJAR</span>
+    <span id="foot-text"></span>
+  </div>
+  <script src="../js/content.js"></script>
+  <script>
+    const S = window.AJAR_CONTENT.specsheet;
+    document.getElementById('doc-title').textContent = S.title;
+    document.getElementById('rows').innerHTML = S.rows.map(r =>
+      '<tr' + (r.todo ? ' class="todo"' : '') + '><td class="label">' + r.label + '</td><td>' + r.value + '</td></tr>'
+    ).join('');
+    document.getElementById('foot-text').textContent = S.footer;
+  </script>
+</body>
+</html>

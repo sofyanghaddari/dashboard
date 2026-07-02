@@ -1,0 +1,14 @@
+ajar-olijfolie.nl
+# ─────────────────────────────────────────────────────────────
+# LET OP — nog NIET activeren. Dit is een voorbeeldbestand.
+#
+# Een echt CNAME-bestand hoort in de ROOT van de repo die de
+# GitHub Pages-site serveert, en geldt dan voor de HELE site.
+# Deze AJAR-site deelt op dit moment de Pages-deploy met het
+# dashboard (sofyanghaddari.github.io/dashboard/) — een CNAME
+# hier zou dus óók het dashboard naar het nieuwe domein
+# verhuizen en de PWA breken.
+#
+# Zie README.md ("Custom domein koppelen") voor de juiste
+# stappen zodra het domein geregistreerd is.
+# ─────────────────────────────────────────────────────────────
