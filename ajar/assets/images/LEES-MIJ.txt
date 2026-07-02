@@ -1,0 +1,19 @@
+AJAR — foto's
+=============
+
+Zet hier je eigen foto's neer met exact deze bestandsnamen (JPG).
+De site pakt ze automatisch op; zolang een bestand ontbreekt zie je
+een nette olijfgroene placeholder met de bestandsnaam erin.
+
+hero-01.jpg      — Home hero (staand werkt het mooist, ± 4:5, min. 1200px breed)
+story-02.jpg     — Home "het verhaal" (familie / fabriek / Taourirt)
+product-03.jpg   — De fles 500 ml (ook gebruikt op Product-pagina, ± 3:4)
+proces-04.jpg    — Stap 1: oogst (olijfbomen / plukken)
+proces-05.jpg    — Stap 2: persing (de pers)
+proces-06.jpg    — Stap 3: botteling
+proces-07.jpg    — Stap 4: import / onderweg naar NL
+overons-08.jpg   — Over ons (familie / drie generaties)
+
+Tips:
+- JPG, max ± 300 KB per foto (voor snelheid), 1600px breed is genoeg.
+- Zelfde bestandsnaam = automatisch vervangen, niets anders nodig.
