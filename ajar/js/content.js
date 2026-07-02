@@ -14,11 +14,16 @@ window.AJAR_CONTENT = {
     origin: 'Taourirt · Marokko',
     payoff: 'Extra vierge olijfolie, rechtstreeks uit Taourirt, Marokko.',
 
-    gaId: '',                                 // TODO: GA4 measurement ID (bijv. 'G-XXXXXXXXXX') — leeg = GA uit
+    gaId: '',                                 // TODO: GA4 measurement ID (bijv. 'G-XXXXXXXXXX') — leeg = GA uit, banner verborgen
+    formspreeId: '',                          // TODO (FORMSPREE_PLACEHOLDER): Formspree form-ID (bijv. 'xqkrgwyz') — leeg = formulier valt terug op WhatsApp
+    email: '',                                // TODO (EMAIL_PLACEHOLDER): zakelijk e-mailadres — leeg = e-mail nergens getoond, WhatsApp is primair kanaal
     whatsappNumber: '31640293567',            // internationaal formaat zonder + of spaties
-    email: 'sofyanghaddari@gmail.com',        // ontvanger van offerte-aanvragen (mailto)
     kvk: '',                                  // TODO: KvK-nummer zodra beschikbaar
-    domain: 'https://sofyanghaddari.github.io/dashboard/ajar/'  // later: custom domain
+    domain: 'https://sofyanghaddari.github.io/dashboard/ajar/',  // later: custom domain (zie README.md)
+
+    showPartners: false,                      // true zodra er echte verkooppunten/logo's zijn ("Verkrijgbaar bij")
+    presentationPdf: '',                      // TODO: pad naar bedrijfspresentatie-PDF zodra gemaakt (bijv. 'assets/ajar-presentatie.pdf')
+    specsheetPdf: 'assets/ajar-specsheet.pdf' // vrij downloadbaar spec-sheet (gegenereerd uit deze content, zie README.md)
   },
 
   /* ---------- Importeur (verplicht conform EU-regelgeving) ---------- */
@@ -48,7 +53,17 @@ window.AJAR_CONTENT = {
     { id: 'contact',  label: 'Contact',           href: 'contact.html' }
   ],
   ctaLabel: 'Offerte aanvragen',
-  ctaHref: 'contact.html',
+  ctaHref: 'contact.html?aanvraag=offerte',
+  sampleCtaLabel: 'Gratis sample aanvragen',
+  sampleCtaHref: 'contact.html?aanvraag=sample',
+
+  /* ---------- Cookiebanner ---------- */
+  cookies: {
+    text: 'We gebruiken anonieme bezoekersstatistieken (Google Analytics) om te zien hoe de site wordt gebruikt. U kiest zelf of u dat goed vindt.',
+    accept: 'Accepteren',
+    decline: 'Weigeren',
+    moreLabel: 'Privacyverklaring'
+  },
 
   /* ---------- Home ---------- */
   home: {
@@ -63,6 +78,13 @@ window.AJAR_CONTENT = {
       { title: 'ISO 22000-gecertificeerd', text: 'De productie is ISO 22000-gecertificeerd (uitgegeven door SGS): voedselveiligheid en traceerbaarheid, gedocumenteerd.' },
       { title: 'Korte, directe keten', text: 'Van de pers in Taourirt naar uw zaak in Nederland — vers, traceerbaar en zonder anonieme tussenhandel.' }
     ],
+    /* Verkooppuntenwall — verborgen zolang config.showPartners = false. Alleen échte afnemers tonen. */
+    partners: {
+      kicker: 'Verkrijgbaar bij',
+      items: [
+        /* { name: 'Naam zaak', logo: 'partner-01.png' } */
+      ]
+    },
     story: {
       kicker: 'Het verhaal',
       title: 'Drie generaties, één ambacht',
@@ -92,8 +114,11 @@ window.AJAR_CONTENT = {
     },
     cta: {
       title: 'Proeven zegt meer dan lezen',
-      text: 'Vraag een offerte of proefbestelling aan — we denken graag mee over volume en levering.',
-      button: 'Offerte aanvragen'
+      text: 'Vraag een gratis sample of offerte aan — we denken graag mee over volume en levering.',
+      button: 'Gratis sample aanvragen',
+      buttonHref: 'contact.html?aanvraag=sample',
+      secondary: 'Offerte aanvragen',
+      secondaryHref: 'contact.html?aanvraag=offerte'
     }
   },
 
@@ -120,7 +145,19 @@ window.AJAR_CONTENT = {
         text: 'AJAR was tot nu toe niet officieel verkrijgbaar in Nederland. Als familie van de oprichters brengen wij de olie nu rechtstreeks naar de Nederlandse markt — met de importeursvermelding, documentatie en korte lijnen die daarbij horen. Geen tussenhandel, wél één aanspreekpunt in Amsterdam.',
         image: ''
       }
-    ]
+    ],
+    /* Familie-tijdlijn — namen/jaartallen van de generaties volgen na overleg met de familie (augustus). */
+    timeline: {
+      kicker: 'De tijdlijn',
+      title: 'Drie generaties in jaartallen',
+      items: [
+        { year: "Begin jaren '90", title: 'Oprichting als MOUSTAINE', text: 'Het familiebedrijf begint in Taourirt met het persen van olijven uit de eigen regio.', todo: false },
+        { year: 'Jaartal volgt', title: 'Groei tot ConservAjar SARL', text: 'Het bedrijf groeit en gaat verder onder de naam ConservAjar SARL, met het eigen merk AJAR.', todo: true },
+        { year: 'Jaartal volgt', title: 'ISO 22000-certificering (SGS)', text: 'De productie wordt gecertificeerd volgens ISO 22000 — voedselveiligheid en traceerbaarheid, extern getoetst door SGS.', todo: true },
+        { year: '2026', title: 'Eerste officiële import in Nederland', text: 'AJAR komt via S. Ghaddari (Amsterdam) voor het eerst officieel op de Nederlandse markt.', todo: false }
+      ],
+      note: 'Namen en jaartallen van de generaties worden aangevuld na overleg met de familie.'
+    }
   },
 
   /* ---------- Product ---------- */
@@ -143,6 +180,17 @@ window.AJAR_CONTENT = {
         { label: 'Smaakprofiel', value: 'Volgt — proefnotities huidige oogst', todo: true }
       ]
     },
+    /* Meetbare kwaliteitscijfers — lab-analyse wordt in Marokko geregeld (actie Soef). */
+    quality: {
+      kicker: 'De cijfers',
+      title: 'Meetbare kwaliteit',
+      note: 'Lab-analyse van de huidige oogst volgt — deze waarden worden ingevuld zodra het rapport binnen is.',
+      items: [
+        { label: 'Zuurgraad', value: 'Volgt', unit: '% vrije vetzuren', todo: true },
+        { label: 'Polyfenolen', value: 'Volgt', unit: 'mg/kg', todo: true },
+        { label: 'Oogstjaar', value: 'Volgt', unit: '', todo: true }
+      ]
+    },
     why: {
       kicker: 'Waarom deze olie',
       title: 'Wat AJAR anders maakt',
@@ -150,6 +198,19 @@ window.AJAR_CONTENT = {
         { title: 'Koud geperst', text: 'De olijven worden koud geperst, waardoor smaak, geur en natuurlijke inhoudsstoffen behouden blijven.' },
         { title: 'Korte keten', text: 'Eigen productie in Taourirt en directe import naar Nederland: geen anonieme bulk, geen blends van onbekende herkomst.' },
         { title: 'Directe import', text: 'Eén importeur, één producent. Vragen over een partij of levering worden direct beantwoord — niet via drie schakels.' }
+      ]
+    },
+    /* Vergelijkingsblok — alléén feitelijke claims. */
+    compare: {
+      kicker: 'Het verschil',
+      title: 'AJAR naast supermarkt-olijfolie',
+      colA: 'AJAR',
+      colB: 'Gangbare supermarkt-olijfolie',
+      rows: [
+        { label: 'Herkomst', a: 'Traceerbaar tot één familiebedrijf in Taourirt', b: 'Vaak een mengsel van oliën uit de EU en daarbuiten' },
+        { label: 'Keten', a: 'Kort: van de eigen pers direct naar uw zaak', b: 'Lange keten met meerdere tussenschakels' },
+        { label: 'Persing', a: 'Koud geperst in de eigen perserij', b: 'Wisselend per merk en partij' },
+        { label: 'Contact', a: 'Persoonlijk contact met de importeur', b: 'Anoniem schap, geen aanspreekpunt' }
       ]
     },
     process: {
@@ -184,8 +245,11 @@ window.AJAR_CONTENT = {
     },
     cta: {
       title: 'Zelf proeven?',
-      text: 'Vraag een proefbestelling aan en beoordeel de olie in uw eigen keuken of zaak.',
-      button: 'Proefbestelling aanvragen'
+      text: 'Vraag een gratis sample aan en beoordeel de olie in uw eigen keuken of zaak.',
+      button: 'Gratis sample aanvragen',
+      buttonHref: 'contact.html?aanvraag=sample',
+      secondary: 'Offerte aanvragen',
+      secondaryHref: 'contact.html?aanvraag=offerte'
     }
   },
 
@@ -194,7 +258,7 @@ window.AJAR_CONTENT = {
     hero: {
       kicker: 'Voor zakelijke klanten',
       title: 'Rechtstreeks inkopen bij de bron',
-      sub: 'AJAR levert uitsluitend B2B — aan zaken die weten wat goede olie voor hun keuken of schap betekent.'
+      sub: 'AJAR levert uitsluitend B2B — aan zaken die weten wat goede olie voor hun keuken of schap betekent. Eerst proeven, dan praten.'
     },
     audiences: {
       kicker: 'Voor wie',
@@ -209,19 +273,67 @@ window.AJAR_CONTENT = {
       kicker: 'Hoe het werkt',
       title: 'Van kennismaking tot levering',
       steps: [
-        { title: 'Sample', text: 'U vraagt een proefbestelling aan; wij zorgen dat u de olie zelf kunt proeven en beoordelen.' },
+        { title: 'Sample', text: 'U vraagt een gratis sample aan; wij zorgen dat u de olie zelf kunt proeven en beoordelen.' },
         { title: 'Gesprek', text: 'We bespreken uw volume, frequentie en toepassing — aan tafel of via WhatsApp, wat u het beste uitkomt.' },
         { title: 'Offerte', text: 'U ontvangt een offerte op maat. Prijzen zijn volume-afhankelijk en altijd op aanvraag.' }
       ]
     },
     pricing: {
       title: 'Prijs op aanvraag',
-      text: 'We publiceren bewust geen prijslijst: B2B-prijzen hangen af van volume, frequentie en afspraken over levering. In één kort gesprek weet u waar u aan toe bent.'
+      text: 'We publiceren bewust geen prijslijst: B2B-prijzen hangen af van volume, frequentie en afspraken over levering. In één kort gesprek weet u waar u aan toe bent.',
+      /* B2B rekent in dozen, niet in flessen. Definitieve doosinhoud volgt. */
+      packaging: 'Levering per doos à 12 × 500 ml (definitieve doosinhoud volgt).',
+      packagingTodo: true
+    },
+    /* Relatiegeschenken — tweede B2B-invalshoek. */
+    gift: {
+      kicker: 'Relatiegeschenk',
+      title: 'AJAR als relatiegeschenk voor uw klanten of team',
+      text: 'Een fles goede olijfolie met een echt verhaal is een geschenk dat blijft hangen — voor eindejaarspakketten, jubilea of als bedankje aan vaste relaties. We denken graag mee over aantallen en presentatie.',
+      button: 'Vraag naar de mogelijkheden',
+      buttonHref: 'contact.html?aanvraag=offerte'
+    },
+    /* Spec-sheet (vrij downloadbaar) + bedrijfspresentatie (achter mini-formulier). */
+    downloads: {
+      kicker: 'Voor uw inkoopdossier',
+      title: 'Documentatie',
+      specsheet: {
+        title: 'Product spec-sheet (PDF)',
+        text: 'Eén A4 met alle technische productinformatie — product, herkomst, producent, certificering en importeur. Direct door te sturen naar uw inkoop of keuken.',
+        button: 'Download spec-sheet'
+      },
+      presentation: {
+        title: 'AJAR bedrijfspresentatie',
+        text: 'Uitgebreidere presentatie over het bedrijf, de familie en de olie. Laat uw gegevens achter, dan ontvangt u de presentatie zodra die beschikbaar is.',
+        nameLabel: 'Naam',
+        emailLabel: 'E-mailadres',
+        companyLabel: 'Bedrijfsnaam',
+        phoneLabel: 'Telefoonnummer',
+        button: 'Presentatie aanvragen',
+        success: 'Bedankt — u ontvangt de presentatie zodra die klaar is.',
+        successDownload: 'Bedankt! U kunt de presentatie nu downloaden:',
+        downloadLabel: 'Download presentatie'
+      }
+    },
+    faq: {
+      kicker: 'Veelgestelde vragen',
+      title: 'B2B in het kort',
+      items: [
+        { q: 'Wat is de minimale afname?', a: 'De definitieve minimale afname wordt op dit moment vastgesteld — vraag ernaar via het formulier of WhatsApp, dan hoort u het direct.', todo: true },
+        { q: 'Wat is de levertijd?', a: 'De standaard levertijd wordt binnenkort hier vermeld. Voor nu: vraag ernaar bij uw sample- of offerte-aanvraag, dan krijgt u een concrete datum.', todo: true },
+        { q: 'Hoe werkt een sample aanvragen?', a: 'U vraagt via het formulier of WhatsApp een gratis sample aan. U proeft de olie rustig in uw eigen keuken of zaak, daarna bespreken we volume en prijs. Geen verplichtingen.' },
+        { q: 'Wat zijn de betaalvoorwaarden?', a: 'De standaard betaalvoorwaarden worden binnenkort hier vermeld en staan altijd op de offerte.', todo: true },
+        { q: 'Hoe bewaar ik de olie en hoe lang is die houdbaar?', a: 'Koel, donker en goed afgesloten bewaren — dan behoudt extra vierge olijfolie zijn smaak het langst. De exacte houdbaarheidsdatum staat op elke fles; de THT-informatie per partij volgt hier.', todo: true },
+        { q: 'Wie is de importeur en waarom maakt dat uit?', a: 'S. Ghaddari (Amsterdam) is de officiële importeur en staat als zodanig op de fles. Voor u betekent dat: één aanspreekpunt in Nederland, duidelijke aansprakelijkheid en traceerbaarheid per partij — precies wat uw HACCP-dossier vraagt.' }
+      ]
     },
     cta: {
       title: 'Klaar om te proeven?',
-      text: 'Vraag vandaag een offerte of proefbestelling aan.',
-      button: 'Offerte aanvragen'
+      text: 'Vraag vandaag een gratis sample aan — of direct een offerte.',
+      button: 'Gratis sample aanvragen',
+      buttonHref: 'contact.html?aanvraag=sample',
+      secondary: 'Offerte aanvragen',
+      secondaryHref: 'contact.html?aanvraag=offerte'
     }
   },
 
@@ -229,7 +341,7 @@ window.AJAR_CONTENT = {
   contact: {
     hero: {
       kicker: 'Contact',
-      title: 'Vraag een offerte aan',
+      title: 'Vraag een sample of offerte aan',
       sub: 'Vertel kort wie u bent en wat u zoekt — u hoort snel van ons.'
     },
     form: {
@@ -239,16 +351,19 @@ window.AJAR_CONTENT = {
       phoneLabel: 'Telefoonnummer',
       volumeLabel: 'Gewenst volume',
       volumeOptions: [
-        { value: 'proefbestelling', label: 'Proefbestelling' },
+        { value: 'sample', label: 'Gratis sample / proefbestelling' },
         { value: 'maandelijks-vast', label: 'Maandelijks vast volume' },
         { value: 'horeca-bulk', label: 'Horeca bulk' }
       ],
       messageLabel: 'Bericht',
       messagePlaceholder: 'Vertel kort iets over uw zaak en waar u de olie voor wilt gebruiken…',
-      submitEmail: 'Verstuur via e-mail',
+      submit: 'Verstuur aanvraag',
       submitWhatsApp: 'Verstuur via WhatsApp',
-      privacyNote: 'Uw gegevens worden alleen gebruikt om uw aanvraag te beantwoorden.',
-      emailSubject: 'Offerte-aanvraag AJAR olijfolie'
+      sending: 'Versturen…',
+      success: 'Bedankt voor uw aanvraag — u hoort snel van ons.',
+      error: 'Versturen is niet gelukt. Probeer het nog eens, of stuur direct een WhatsApp-bericht.',
+      privacyNote: 'Uw gegevens worden alleen gebruikt om uw aanvraag te beantwoorden. Zie de privacyverklaring.',
+      emailSubject: 'Aanvraag AJAR olijfolie'
     },
     direct: {
       title: 'Liever direct contact?',
@@ -258,9 +373,76 @@ window.AJAR_CONTENT = {
     }
   },
 
+  /* ---------- Privacyverklaring ---------- */
+  privacy: {
+    hero: {
+      kicker: 'Privacy',
+      title: 'Privacyverklaring',
+      sub: 'Kort en duidelijk: welke gegevens we verwerken en waarom.'
+    },
+    updated: 'Laatst bijgewerkt: juli 2026',
+    sections: [
+      {
+        title: 'Wie is verantwoordelijk?',
+        body: 'Verwerkingsverantwoordelijke voor deze website is S. Ghaddari, Jephtastraat 28H, 1055 JV Amsterdam (importeur van AJAR olijfolie). Contact verloopt via WhatsApp (+31 6 40 29 35 67).'
+      },
+      {
+        title: 'Welke gegevens verzamelen we?',
+        body: 'Twee soorten. (1) Formuliergegevens: als u een sample, offerte of presentatie aanvraagt, ontvangen we de gegevens die u zelf invult — naam, bedrijfsnaam, e-mailadres, telefoonnummer en uw bericht. (2) Bezoekersstatistieken: alléén als u dat accepteert via de cookiemelding, gebruiken we Google Analytics 4 om anoniem te zien hoe de site wordt gebruikt (bezochte pagina’s, herkomst van het bezoek). IP-adressen worden daarbij geanonimiseerd. Weigert u, dan wordt er niets gemeten.'
+      },
+      {
+        title: 'Waarvoor gebruiken we die gegevens?',
+        body: 'Formuliergegevens gebruiken we uitsluitend om uw aanvraag te beantwoorden en een eventuele zakelijke relatie op te volgen. Statistieken gebruiken we om de site te verbeteren en te zien welke kanalen bezoekers opleveren. We verkopen of delen uw gegevens niet met derden voor marketing.'
+      },
+      {
+        title: 'Hoe lang bewaren we gegevens?',
+        body: 'Aanvragen bewaren we zolang dat nodig is voor het contact en maximaal 2 jaar na het laatste contactmoment, tenzij er een klantrelatie ontstaat (dan gelden de wettelijke administratietermijnen). Analytics-gegevens worden maximaal 14 maanden bewaard.'
+      },
+      {
+        title: 'Wie verwerken er gegevens voor ons?',
+        body: 'Het contactformulier wordt technisch verwerkt door Formspree; statistieken door Google (Google Analytics 4). Met deze partijen gelden verwerkersvoorwaarden. Stuurt u een WhatsApp-bericht, dan gelden de voorwaarden van WhatsApp.'
+      },
+      {
+        title: 'Uw rechten',
+        body: 'U heeft recht op inzage, correctie en verwijdering van uw gegevens, en u kunt bezwaar maken tegen verwerking. Stuur daarvoor een bericht via WhatsApp. U kunt daarnaast een klacht indienen bij de Autoriteit Persoonsgegevens.'
+      },
+      {
+        title: 'Cookies',
+        body: 'Deze site plaatst alleen cookies voor Google Analytics, en alléén nadat u daarvoor toestemming heeft gegeven via de cookiemelding. Uw keuze wordt lokaal in uw browser opgeslagen en kunt u altijd terugdraaien door de sitegegevens te wissen.'
+      }
+    ]
+  },
+
+  /* ---------- 404 ---------- */
+  notFound: {
+    title: 'Deze pagina bestaat niet',
+    text: 'De link klopt niet meer of de pagina is verplaatst.',
+    homeLabel: 'Naar de homepage',
+    whatsappLabel: 'Stel uw vraag via WhatsApp'
+  },
+
+  /* ---------- Spec-sheet (bron voor de PDF — zie README.md voor hergenereren) ---------- */
+  specsheet: {
+    title: 'Product spec-sheet',
+    rows: [
+      { label: 'Product', value: 'Extra vierge olijfolie (eerste persing, koud geperst)' },
+      { label: 'Inhoud', value: '500 ml per fles' },
+      { label: 'Herkomst', value: 'Taourirt, Marokko — eigen productie' },
+      { label: 'Producent', value: 'ConservAjar SARL, Taourirt, Marokko' },
+      { label: 'Certificering', value: 'ISO 22000 (uitgegeven door SGS)' },
+      { label: 'HS-code', value: '1509 2000 10' },
+      { label: 'Houdbaarheid', value: 'Volgt — THT per partij op de fles', todo: true },
+      { label: 'Bewaaradvies', value: 'Koel, donker en goed afgesloten bewaren' },
+      { label: 'Verpakking', value: 'Doos à 12 × 500 ml (definitief volgt)', todo: true },
+      { label: 'Importeur', value: 'S. Ghaddari, Jephtastraat 28H, 1055 JV Amsterdam' }
+    ],
+    footer: 'Prijzen op aanvraag — volume-afhankelijk. Contact via WhatsApp: +31 6 40 29 35 67.'
+  },
+
   /* ---------- Footer ---------- */
   footer: {
     aboutLine: 'AJAR — extra vierge olijfolie uit Taourirt, Marokko. Rechtstreeks geïmporteerd voor de Nederlandse horeca, delicatessenzaak en retail.',
+    privacyLabel: 'Privacyverklaring',
     socials: [
       /* Later invullen — leeg = niet getoond. Voorbeeld: { label:'Instagram', href:'https://instagram.com/…' } */
     ]
