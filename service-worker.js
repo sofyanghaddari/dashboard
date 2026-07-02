@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v162';
+const CACHE = 'dashboard-v163';
 
 
 
@@ -77,6 +77,7 @@ const ASSETS = [
   './js/data/hizbs.js',
   './js/vendor/motion.min.js',
   './js/modules/geloof.js',
+  './js/modules/grammatica.js',
   './js/receipt-ocr.js',
   './js/markitdown.js',
   './icons/icon-96.png',

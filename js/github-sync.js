@@ -62,6 +62,7 @@ async function buildPayload() {
     accentColor: getSetting('accentColor'),
     themePreset: getSetting('themePreset'),
     density: getSetting('density'),
+    grammarWorkerUrl: getSetting('grammarWorkerUrl'),
   };
   data._syncedAt = new Date().toISOString();
   return JSON.stringify(data, null, 2);

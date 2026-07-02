@@ -50,6 +50,7 @@ export async function openSearch() {
         { icon: 'taxi', label: 'Taxi', action: () => navigate('taxi') },
         { icon: 'book', label: 'Koran', action: () => { document.getElementById('view').dataset.geloofSub = 'koran'; navigate('geloof'); } },
         { icon: 'books', label: 'Arabisch', action: () => { document.getElementById('view').dataset.geloofSub = 'arabic'; navigate('geloof'); } },
+        { icon: 'note', label: 'Stof (grammatica)', action: () => { document.getElementById('view').dataset.geloofSub = 'grammatica'; navigate('geloof'); } },
         { icon: 'target', label: 'Doelen', action: () => navigate('goals') },
         { icon: 'check', label: 'To-do', action: () => navigate('todo') },
         { icon: 'note', label: 'Notities', action: () => navigate('notes') },

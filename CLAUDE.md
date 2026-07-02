@@ -12,8 +12,8 @@ Lokaal: `/Users/soef/claude code`
 ## Stack
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
-- IndexedDB voor data (DB_VERSION=7), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v162** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- IndexedDB voor data (DB_VERSION=8), localStorage voor settings
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v163** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -42,9 +42,10 @@ Lokaal: `/Users/soef/claude code`
 
 1. **🏠 Dashboard** — begroetingskaart met dag/nacht-lucht + kleine vandaag/maand/hizb-stats (tel-animaties, % van doel), **"Vandaag"-paneel** (`js/today-panel.js`, ná de Hadith/Woord-van-de-dag) dat taken-van-vandaag (deadline vandaag + achterstallig + open hoge-prio zonder datum) én agenda-afspraken van vandaag bundelt — met snel toevoegen (NL-parser, tijd optioneel) en afvinken van zowel taken als afspraken (verving de oude "Prioriteiten"-kaart), quick-actions (Inkomen/Taken/Koran/Arabisch met statussubtekst incl. streak), weer-radar Amsterdam, kalender+jaaroverzicht, patroon-insights, **Hadith- en Woord-van-de-dag met ‹ › dag-navigatie (vorige dagen herhalen) + 🔊 voorlees-knop** (hadith in Arabisch via `speechSynthesis` ar-SA, woord in NL nl-NL), spaardoelen-kaart, gewoontes-vandaag, empty CTA. **Géén** inkomen-hero of maandoverzicht-kaart meer (staan in Taxi-overzicht) — v137 ontdubbeld
 2. **🚖 Taxi** — vereenvoudigd: alleen "+ Inkomen vandaag noteren" + maandkalender-grid waarop je per dag retroactief inkomen invult (klik dag → modal met items + add), CSV-export, jaarverloop bar-chart. **Geen** shift-tracker, source-breakdown, uitgaven of belasting-reserve meer
-3. **🕌 Geloof** (`geloof.js`) — wrapper met twee sub-tabs:
+3. **🕌 Geloof** (`geloof.js`) — wrapper met drie sub-tabs:
    - **📖 Koran** sub-tab: dagelijkse hizb afvinken + streak + 30-dagen grid + streak-repair (1× per maand gemiste dag goedmaken) + reminder-instellingen
    - **📚 Arabisch** sub-tab: SRS (SM-2 lite) met 4 knoppen, CSV-import (Anki tab/comma), sessies, kaarten-overzicht met search
+   - **📖 Stof** sub-tab (`grammatica.js`, v163): grammatica-onderwerpen uit het lesboek (Fusha niveau 3) invoeren via 📷 boekfoto of ✍️ tekst → AI (Cloudflare Worker `proxy/grammatica-worker.js`, Sonnet 4.6) zet om naar gestructureerd onderwerp met referentie-i3rab; oefensessies mixen i3rab-ontleding + eigen-woorden-uitleg, AI beoordeelt (ja/deels/nee + fouttype naamval/functie/regel/overig), licht interval-schema 1d/3d/1w/2w/1m. LOS van de vocab-SRS — geen overlap
    - Sub-tab staat opgeslagen in `container.dataset.geloofSub`; diep linken via `document.getElementById('view').dataset.geloofSub = 'koran'` vóór `navigate('geloof')`
 4. **🎯 Doelen** — lange/korte termijn met taxi-koppeling (% per rit + streefbedrag), gewoontes met chains + 14-dagen-strip, spaarpotjes (Bunq-style met current/target)
 5. **✅ To-do** — compacte layout (v54): header met open-teller-pill, quick-add + ＋-knop bovenaan, daaronder direct de taken; alléén niet-lege prioriteitsgroepen (geen lege placeholder-blokken), één scrollbare chip-rij (filters+tags+selecteer), horizontale actieknoppen op de kaart, afvink-animatie (check-pop + kaart glijdt uit), stagger-entree. Verder: prioriteit/medium/waiting, tags, subtaken, herhalend, bulk, undo, later-parkeren, quick-NL-input ("morgen 10:00 APK")
@@ -129,7 +130,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v162)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v163)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -181,7 +182,8 @@ js/
     taxi.js                      — alleen inkomen-kalender, geen shift
     koran.js                     — hizb afvinken + streak-repair
     arabic.js                    — SRS
-    geloof.js                    — wrapper: sub-tab Koran + Arabisch onder "Geloof" tab
+    geloof.js                    — wrapper: sub-tabs Koran + Arabisch + Stof onder "Geloof" tab
+    grammatica.js                — Stof-module: AI-grammatica-docent (ingest + oefenen via Worker)
     goals.js                     — doelen + habits chains + spaarpotjes
     todo.js                      — taken met smart filters
     notes.js                     — notes + ideas
@@ -194,7 +196,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v162'
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v163'
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -212,7 +214,7 @@ docs/superpowers/
   plans/2026-06-04-personal-dashboard.md
 ```
 
-## IndexedDB stores (v7)
+## IndexedDB stores (v8)
 
 Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolution.
 
@@ -233,6 +235,7 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - `clients`: { id, adminId, name, email, phone?, address?, kvk?, btw? } — klantenbeheer
 - `taxi_expenses`: { id, name, amount, frequency ('monthly'|'weekly'|'eenmalig'), date?, note? } — taxikosten (vaste lasten + eenmalig geboekte kosten)
 - `agenda_events`: { id, date, hour, minute, duration, title, cat, done? } — Week-tab afspraken (gemigreerd uit localStorage)
+- `grammar_topics`: { id, titelAr, titelNl, uitleg{regel, puntenNl[], puntenAr[]}, voorbeeldzinnen[{id, zin, vertaling, i3rab[{woord, analyse}]}], status ('nieuw'|'bezig'|'beheerst'), srs{stap, laatsteHerhaling, volgendeHerhaling}, foutgeschiedenis[{datum, oefentype, fouttype, zinId}], bron, createdAt } — Stof-module
 
 ## LocalStorage keys
 
@@ -253,6 +256,7 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - `weatherCache`: { ts, data } (30 min TTL)
 - `ghToken`, `ghGistId`, `ghGistIds[]`, `lastGhSync`
 - `gmailClientId`, `gmailClientSecret` — Google OAuth credentials (persistent in localStorage)
+- `grammarWorkerUrl` — URL van de grammatica-Worker (Stof-module); gaat mee in gist-`_settings`
 - `pinHash` (SHA-256 hex)
 - `bioCredId` (WebAuthn credential ID, base64)
 - `lastUnlock` (grace-period timestamp)
@@ -303,6 +307,13 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++29. **📖 Stof/grammatica-module v163 (2 juli 2026):** nieuwe, aparte module onder Geloof → Stof (bouwprompt v2; vocab-module ongemoeid).
+   - **Architectuur:** onderwerpen in IndexedDB-store `grammar_topics` (DB_VERSION 7→8; bewuste afwijking van de bouwprompt-localStorage zodat gist-sync/backup/export automatisch meelopen via `STORE_NAMES`) + export/import-knop als extra vangnet. AI via **Cloudflare Worker** `proxy/grammatica-worker.js` (model `claude-sonnet-4-6`, API-key als Worker-secret, CORS-allowlist, daglimiet via KV-binding `RATE_KV`, default 100/dag). Deploy-gids: `proxy/README-grammatica-worker.md`; handmatige test: `proxy/test-grammatica-worker.mjs`.
+   - **Endpoints:** `/ingest-topic` (boekfoto base64 — client-side verkleind naar max 1568px — of getypte tekst → titel/regel/uitlegpunten NL+Ar/voorbeeldzinnen met referentie-i3rab, met preview vóór opslaan) en `/check-grammar` (beoordeelt i3rab-antwoord of eigen-woorden-uitleg → ja/deels/nee + NL-feedback + fouttype naamval/functie/regel/overig).
+   - **Herhaling:** licht interval-schema (1d/3d/1w/2w/1m, simpeler dan SM-2); sessie mixt per onderwerp een uitleg-check + een i3rab-oefening (random zin); slechtste resultaat telt (ja→stap+1, deels→zelfde stap+morgen, nee→stap-1+morgen); status beheerst bij stap ≥ 4. Fouttypes gelogd (max 100) → "meeste fouten: X"-chip.
+   - **Integratie:** derde sub-tab in `geloof.js`, route-redirect `grammatica` in app.js, ⌘K-entry, `grammarWorkerUrl` mee in gist-`_settings`. CSS-sectie ".gram-*". E2E getest op 375px (headless, mock-worker): ingest→preview→opslaan→sessie→beoordeling→SRS-update→export, geen overflow/JS-fouten.
+   - **Fase-status bouwprompt:** Fase 0-2 gebouwd; Fase 3 (validatieweek met إعراب + الأسماء الخمسة, échte boekfoto-test na Worker-deploy) ligt bij de user; Fase 4 (volledige boek-uitrol + gecombineerd overzicht) bewust NIET gebouwd tot na akkoord.
 
 +28. **🚕📿 Cabman-meter + hijri + animatie-pakket v161 (1 juli 2026):** op verzoek van user (foto van zijn echte Cabman-meter als referentie).
    - **Cabman-taximeter** (`js/cabman.js`, Taxi-overzicht bovenaan): gestileerd donker display met **blauwe rolling digits** (per cijfer een 0-9-strip die naar positie rolt, `.cb-digit`/`.cb-col`), dagbedrag van vandaag, statusregel met datum + privacy-oogje, onderrij Doel-% / **live klok** (interval stopt zelf buiten DOM/verborgen tab) / maandtotaal, blauwe balk = "Inkomen noteren" (id `quick-today`, zelfde handler), "cabman"-woordmerk. Verving de losse add-income-knop én het dubbele hero-bedrag — de income-hero is nu puur de dagdoel-wegscène.

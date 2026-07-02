@@ -1,5 +1,5 @@
 const DB_NAME = 'dashboard';
-const DB_VERSION = 7;
+const DB_VERSION = 8;
 const STORES = {
   rides:             { keyPath: 'id',   indexes: [['date', 'date']] },
   expenses:          { keyPath: 'id',   indexes: [['date', 'date']] },
@@ -18,6 +18,7 @@ const STORES = {
   clients:           { keyPath: 'id' },
   taxi_expenses:     { keyPath: 'id' },
   agenda_events:     { keyPath: 'id',   indexes: [['date', 'date']] },
+  grammar_topics:    { keyPath: 'id' },
 };
 
 // Eén bron van waarheid voor alle store-namen (sync, backup, export).

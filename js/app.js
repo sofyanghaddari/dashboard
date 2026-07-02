@@ -62,6 +62,7 @@ async function bootApp() {
   register('geloof', lazyRender(() => import('./modules/geloof.js')));
   register('koran',  (v) => { v.dataset.geloofSub = 'koran';  navigate('geloof'); });
   register('arabic', (v) => { v.dataset.geloofSub = 'arabic'; navigate('geloof'); });
+  register('grammatica', (v) => { v.dataset.geloofSub = 'grammatica'; navigate('geloof'); });
   register('goals', lazyRender(() => import('./modules/goals.js')));
   register('todo', lazyRender(() => import('./modules/todo.js')));
   register('notes', lazyRender(() => import('./modules/notes.js')));

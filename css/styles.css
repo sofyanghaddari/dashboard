@@ -7374,3 +7374,88 @@ body[data-preset="daylight"] .cabman { border-color: rgba(0,0,0,.25); }
   .income-road.ir-win .ir-car-svg, .income-road.ir-win .ir-taxisign,
   .task-card[data-priority="high"]:not(.task-card-done)::after { animation: none !important; }
 }
+
+/* ── 📖 STOF/GRAMMATICA-MODULE (Geloof → Stof) ─────────────────────── */
+.gram-add-row { display: flex; gap: 10px; margin-bottom: 16px; }
+.gram-add-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer; }
+/* label-knoppen erven de form-labelstijl (uppercase/faint) — terugzetten naar knop-stijl */
+label.gram-add-btn, .gram-footer label.btn {
+  text-transform: none; letter-spacing: normal; font-size: inherit;
+  color: inherit; margin: 0; font-weight: 600;
+}
+.gram-add-btn .ic { width: 17px; height: 17px; }
+
+.gram-topic {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer;
+}
+.gram-topic-ar { font-size: 1.3rem; min-width: 90px; text-align: right; }
+.gram-topic-info { flex: 1; min-width: 0; }
+.gram-topic-nl { font-weight: 600; font-size: .92rem; }
+.gram-topic-meta { font-size: .76rem; color: var(--text-faint); margin-top: 2px; }
+.gram-fout-chip {
+  display: inline-block; font-size: .72rem; padding: 1px 8px; border-radius: 999px;
+  background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger);
+}
+
+.gram-footer { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+.gram-footer .btn { flex: 1; min-width: 100px; font-size: .82rem; padding: 8px 10px; }
+.gram-setup-hint { font-size: .8rem; line-height: 1.5; margin-top: 12px; }
+
+.gram-preview { max-height: 55vh; overflow-y: auto; }
+.gram-regel { font-size: .9rem; line-height: 1.5; margin: 8px 0; }
+.gram-punten { margin: 0 0 8px 18px; padding: 0; font-size: .85rem; line-height: 1.55; color: var(--text-dim); }
+.gram-punten li { margin-bottom: 4px; }
+.gram-zin-preview { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: .95rem; }
+.gram-ar-punt { padding: 4px 0; font-size: 1.05rem; }
+
+.gram-exercise textarea {
+  width: 100%; margin-top: 10px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--card); color: var(--text); padding: 10px 12px; font-size: .95rem; resize: vertical;
+}
+.gram-ex-type {
+  font-size: .74rem; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--accent); font-weight: 700; margin-bottom: 4px;
+}
+.gram-ex-zin { font-size: 1.55rem; line-height: 1.9; margin: 10px 0 6px; }
+
+.gram-feedback {
+  margin-top: 14px; border-radius: 14px; padding: 12px 14px;
+  border: 1px solid var(--border); background: var(--card);
+  font-size: .88rem; line-height: 1.5;
+}
+.gram-feedback p { margin: 6px 0 0; color: var(--text-dim); }
+.gram-fb-head { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.gram-fb-ja .gram-fb-head { color: var(--ok); }
+.gram-fb-deels .gram-fb-head { color: #f59e0b; }
+.gram-fb-nee .gram-fb-head { color: var(--danger); }
+
+.gram-ref { margin-top: 10px; font-size: .84rem; }
+.gram-ref summary { cursor: pointer; color: var(--text-faint); }
+.gram-ref-row {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 5px 0; border-bottom: 1px solid var(--border);
+}
+.gram-ref-row .arabic-text { font-size: 1.05rem; }
+.gram-ref-row span:last-child { color: var(--text-dim); text-align: left; flex: 1; }
+.gram-fout-overzicht { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+.gram-busy {
+  position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .55); backdrop-filter: blur(3px);
+}
+.gram-busy-box {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 22px 26px; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  font-size: .9rem; max-width: 260px; text-align: center;
+}
+.gram-spinner {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--accent);
+  animation: gramSpin .8s linear infinite;
+}
+@keyframes gramSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .gram-spinner { animation-duration: 2s; }
+}
