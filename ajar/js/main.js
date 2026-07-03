@@ -957,23 +957,13 @@
       if (im.complete && im.naturalWidth > 0) im.classList.add('imgok');
     });
 
-    /* Olijftak-scrollindicator (tak + meezakkend olijfje, valt onderaan) */
-    const OLIVE_SVG = '<svg viewBox="0 0 14 17" fill="none" aria-hidden="true">' +
-      '<path d="M8.2 4.4c1.4-1.5 3.4-1.9 4.9-1.7-.3 1.7-1.5 3.2-3.3 3.5-.7.1-1.3 0-1.7-.3" fill="#3E4B2E"/>' +
-      '<path d="M6.6 5.2C7.4 4 8.6 3.1 9.9 2.6" stroke="#3E4B2E" stroke-width="1" stroke-linecap="round"/>' +
-      '<ellipse cx="6.4" cy="10.7" rx="4.4" ry="5.4" fill="#B8934A"/>' +
-      '<ellipse cx="4.9" cy="8.9" rx="1.1" ry="1.6" fill="#D8BC86"/></svg>';
-    let track = null, fill = null, olive = null;
+    /* Scroll-voortgangslijn (dun goud, bovenaan) */
+    let bar = null;
     if (!reduce) {
-      const bs = document.createElement('div');
-      bs.className = 'branch-scroll';
-      bs.setAttribute('aria-hidden', 'true');
-      bs.innerHTML = '<div class="branch-track"></div><div class="branch-fill"></div>' +
-        '<div class="branch-olive">' + OLIVE_SVG + '</div>';
-      document.body.appendChild(bs);
-      track = bs; fill = bs.querySelector('.branch-fill'); olive = bs.querySelector('.branch-olive');
+      bar = document.createElement('div');
+      bar.className = 'scroll-progress';
+      document.body.appendChild(bar);
     }
-    let dropped = false;
 
     /* terug-naar-boven */
     let toTop = document.createElement('button');
@@ -992,25 +982,8 @@
         const h = document.documentElement;
         const y = window.scrollY || h.scrollTop || 0;
         const max = h.scrollHeight - window.innerHeight;
-        const pct = max > 0 ? Math.min(y / max, 1) : 0;
-        if (fill && olive) {
-          const trackTop = 92, trackBottomInset = 46;
-          const len = Math.max(window.innerHeight - trackTop - trackBottomInset, 0);
-          fill.style.height = (pct * len) + 'px';
-          olive.style.top = (trackTop + pct * len) + 'px';
-          /* payoff: onderaan laat het olijfje één druppel vallen */
-          if (pct > 0.985 && !dropped) {
-            dropped = true;
-            const d = document.createElement('span');
-            d.className = 'branch-drop';
-            d.style.top = (trackTop + len) + 'px';
-            d.innerHTML = '<svg viewBox="0 0 9 12" aria-hidden="true"><path d="M4.5 0C2.5 3 1 5 1 7a3.5 3.5 0 0 0 7 0c0-2-1.5-4-3.5-7z" fill="#B8934A"/></svg>';
-            track.appendChild(d);
-            d.addEventListener('animationend', () => d.remove());
-          } else if (pct < 0.9) {
-            dropped = false; /* opnieuw scrollen naar beneden = opnieuw payoff */
-          }
-        }
+        const pct = max > 0 ? Math.min(y / max, 1) * 100 : 0;
+        if (bar) bar.style.width = pct + '%';
         toTop.classList.toggle('show', y > 700);
       });
     };
