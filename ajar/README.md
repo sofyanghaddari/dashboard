@@ -50,6 +50,15 @@ De download op de B2B-pagina is `assets/ajar-specsheet.pdf`, gegenereerd uit de 
 - **Makkelijkst:** open `tools/specsheet.html` in de browser → afdrukken → "Bewaar als PDF" (A4, geen marges, achtergronden aan) → opslaan als `assets/ajar-specsheet.pdf`.
 - Of vraag het in een Claude Code-sessie ("hergenereer het spec-sheet").
 
+## Bedrijfspresentatie-PDF hergenereren
+
+De download achter het mini-formulier op de B2B-pagina is `assets/ajar-presentatie.pdf`,
+gegenereerd uit `content.js` via `tools/presentatie.html` (4 A4-pagina's: cover, verhaal,
+product, kwaliteit & zakelijk). Na een contentwijziging opnieuw genereren: open
+`tools/presentatie.html` in de browser → afdrukken → "Bewaar als PDF" (A4, geen marges,
+achtergronden aan) → opslaan als `assets/ajar-presentatie.pdf`. Of vraag het in een
+Claude Code-sessie ("hergenereer de bedrijfspresentatie").
+
 ## Custom domein koppelen (zodra geregistreerd)
 
 **Let op:** deze site deelt de GitHub Pages-deploy met het dashboard (zelfde repo). Een `CNAME`-bestand geldt voor de héle repo-site en zou ook het dashboard verhuizen. Daarom staat hier alleen `CNAME.example`. De juiste route:

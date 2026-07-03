@@ -152,6 +152,26 @@
 
   /* ---------- Herbruikbare blokken ---------- */
 
+  /* Line-iconen voor processtappen (getoond als er nog geen foto is) */
+  function stepIcon(name) {
+    const paths = {
+      olive: '<circle cx="9" cy="14" r="3.2"/><circle cx="15.5" cy="10.5" r="2.6"/><path d="M15 8c1.5-2.5 4-3.5 6-3.5-.2 2.4-1.6 4.3-3.8 4.8"/>',
+      press: '<path d="M6 4h12M12 4v5m-4 0h8l-1.5 4h-5L8 9z"/><path d="M12 13v4"/><path d="M8.5 21h7"/><path d="M10 17h4v4h-4z"/>',
+      bottle: '<path d="M10.5 3h3v3l1.2 2.2c.5.9.8 1.9.8 2.9V19a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-7.9c0-1 .3-2 .8-2.9L10.5 6z"/><path d="M9.5 13h5"/>',
+      truck: '<path d="M2 6h11v9H2z"/><path d="M13 9h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>'
+    };
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (paths[name] || '') + '</svg>';
+  }
+
+  /* Procesbeeld: toont de foto zodra die er is, anders een net gouden line-icoon (geen kale placeholder) */
+  function processMedia(file, icon, alt) {
+    return '<figure class="img-slot img-step proc-media" data-file="' + esc(file) + '">' +
+      (file ? '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" loading="lazy" ' +
+        'onerror="this.closest(\'.img-slot\').classList.add(\'noimg\');this.remove()">' : '') +
+      '<span class="proc-icon">' + stepIcon(icon) + '</span>' +
+      '</figure>';
+  }
+
   function uspGrid(items) {
     return '<div class="grid-3">' + items.map(u =>
       '<article class="card reveal"><span class="card-rule" aria-hidden="true"></span>' +
@@ -214,17 +234,35 @@
         '</div>' +
       '</div></section>' +
 
-      '<section class="section testimonials"><div class="wrap">' +
-        '<div class="section-head reveal">' + kickerTitle(h.testimonials.kicker, h.testimonials.title) + '</div>' +
-        '<div class="grid-3">' + h.testimonials.items.map(t => t.quote
-          ? '<figure class="card quote-card reveal"><blockquote>“' + esc(t.quote) + '”</blockquote>' +
-            '<figcaption>' + esc(t.author) + (t.company ? ' · ' + esc(t.company) : '') + '</figcaption></figure>'
-          : '<div class="card quote-card quote-empty reveal" aria-hidden="true"><span class="quote-empty-mark">”</span>' +
-            '<p>' + esc(h.testimonials.note) + '</p></div>').join('') +
-        '</div>' +
-      '</div></section>' +
+      testimonialsOrTrust(h) +
 
       ctaBand(h.cta);
+  }
+
+  /* Echte quotes zodra ze er zijn; anders een eerlijke vertrouwensrij (feiten, geen nep-quotes) */
+  function testimonialsOrTrust(h) {
+    const real = h.testimonials.items.filter(t => t.quote);
+    if (real.length) {
+      return '<section class="section testimonials"><div class="wrap">' +
+        '<div class="section-head reveal">' + kickerTitle(h.testimonials.kicker, h.testimonials.title) + '</div>' +
+        '<div class="grid-3">' + real.map(t =>
+          '<figure class="card quote-card reveal"><blockquote>“' + esc(t.quote) + '”</blockquote>' +
+          '<figcaption>' + esc(t.author) + (t.company ? ' · ' + esc(t.company) : '') + '</figcaption></figure>').join('') +
+        '</div>' +
+      '</div></section>';
+    }
+    const tr = h.trust;
+    return '<section class="section trust-sec"><div class="wrap">' +
+      '<div class="section-head reveal">' + kickerTitle(tr.kicker, tr.title) + '</div>' +
+      '<div class="trust-row">' + tr.items.map(t =>
+        '<div class="trust-tile reveal">' +
+          '<span class="trust-big">' + esc(t.big) + '</span>' +
+          '<span class="trust-label">' + esc(t.label) + '</span>' +
+          '<p>' + esc(t.text) + '</p>' +
+        '</div>').join('') +
+      '</div>' +
+      '<p class="form-note reveal trust-note">' + esc(tr.note) + '</p>' +
+    '</div></section>';
   }
 
   function renderAbout() {
@@ -283,6 +321,7 @@
           return '<div class="quality-tile reveal' + (q.todo ? ' is-todo' : '') + '">' +
             '<span class="quality-value"' + (countable ? ' data-countup="' + num + '" data-raw="' + esc(q.value) + '"' : '') + '>' + esc(q.value) + '</span>' +
             '<span class="quality-label">' + esc(q.label) + (q.unit ? ' · ' + esc(q.unit) : '') + '</span>' +
+            (q.explain ? '<p class="quality-explain">' + esc(q.explain) + '</p>' : '') +
           '</div>';
         }).join('') +
         '</div>' +
@@ -310,7 +349,7 @@
         '<div class="section-head reveal">' + kickerTitle(p.process.kicker, p.process.title) + '</div>' +
         '<ol class="process" data-anim>' + p.process.steps.map((s, i) =>
           '<li class="process-step reveal">' +
-            imgSlot(s.image, s.title, 'img-step') +
+            processMedia(s.image, s.icon, s.title) +
             '<span class="process-num">' + (i + 1) + '</span>' +
             '<h3>' + esc(s.title) + '</h3><p>' + esc(s.text) + '</p>' +
           '</li>').join('') +
@@ -623,8 +662,14 @@
     if (v._gotcha) { showMsg(form, 'success', okMsg); return true; } // honeypot: stil laten vallen
 
     if (!cfg.formspreeId) {
-      // Geen Formspree ingesteld → nette degradatie naar WhatsApp met voorgevuld bericht
-      window.open(waLink(waText), '_blank', 'noopener');
+      // Geen Formspree → nette degradatie: e-mail als er een adres is, anders WhatsApp
+      if (cfg.email) {
+        location.href = 'mailto:' + cfg.email +
+          '?subject=' + encodeURIComponent(v._subject || (cfg.brandName + ' — aanvraag')) +
+          '&body=' + encodeURIComponent(waText);
+      } else {
+        window.open(waLink(waText), '_blank', 'noopener');
+      }
       showMsg(form, 'success', okMsg);
       dropCelebrate(form);
       return true;

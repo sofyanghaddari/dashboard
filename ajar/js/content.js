@@ -22,7 +22,7 @@ window.AJAR_CONTENT = {
     domain: 'https://sofyanghaddari.github.io/dashboard/ajar/',  // later: custom domain (zie README.md)
 
     showPartners: false,                      // true zodra er echte verkooppunten/logo's zijn ("Verkrijgbaar bij")
-    presentationPdf: '',                      // TODO: pad naar bedrijfspresentatie-PDF zodra gemaakt (bijv. 'assets/ajar-presentatie.pdf')
+    presentationPdf: 'assets/ajar-presentatie.pdf', // bedrijfspresentatie (gegenereerd uit deze content — zie README.md)
     specsheetPdf: 'assets/ajar-specsheet.pdf' // vrij downloadbaar spec-sheet (gegenereerd uit deze content, zie README.md)
   },
 
@@ -114,7 +114,8 @@ window.AJAR_CONTENT = {
       linkHref: 'product.html',
       image: 'product-03.jpg'
     },
-    /* Testimonials: bewust leeg — invullen zodra er echte klanten/quotes zijn. Niet verzinnen. */
+    /* Testimonials: bewust leeg — invullen zodra er echte klanten/quotes zijn. Niet verzinnen.
+       Zolang leeg tonen we i.p.v. nep-quotes een eerlijke "waarom AJAR"-vertrouwensrij (home.trust). */
     testimonials: {
       kicker: 'Vertrouwd door',
       title: 'Onze eerste partners',
@@ -123,6 +124,18 @@ window.AJAR_CONTENT = {
         { quote: '', author: '', company: '' },
         { quote: '', author: '', company: '' },
         { quote: '', author: '', company: '' }
+      ]
+    },
+    /* Echte vertrouwenssignalen (feiten, geen verzonnen quotes) — getoond zolang er geen testimonials zijn. */
+    trust: {
+      kicker: 'Waarom AJAR',
+      title: 'Waarop u kunt bouwen',
+      note: 'Zodra de eerste zaken met AJAR werken, leest u hier hun ervaring. Tot dan: waar wij nu al voor staan.',
+      items: [
+        { big: 'ISO 22000', label: 'Gecertificeerd door SGS', text: 'Voedselveiligheid en traceerbaarheid per partij — extern getoetst.' },
+        { big: '1e', label: 'Officiële NL-importeur', text: 'AJAR wordt als eerste officieel in Nederland geïmporteerd.' },
+        { big: '3', label: 'Generaties vakkennis', text: 'Een familiebedrijf dat al sinds begin jaren ’90 olijven perst.' },
+        { big: '0', label: 'Tussenschakels', text: 'Van de eigen pers rechtstreeks naar uw zaak — geen anonieme bulk.' }
       ]
     },
     cta: {
@@ -199,9 +212,9 @@ window.AJAR_CONTENT = {
       title: 'Meetbare kwaliteit',
       note: 'Lab-analyse van de huidige oogst volgt — deze waarden worden ingevuld zodra het rapport binnen is.',
       items: [
-        { label: 'Zuurgraad', value: 'Volgt', unit: '% vrije vetzuren', todo: true },
-        { label: 'Polyfenolen', value: 'Volgt', unit: 'mg/kg', todo: true },
-        { label: 'Oogstjaar', value: 'Volgt', unit: '', todo: true }
+        { label: 'Zuurgraad', value: 'Volgt', unit: '% vrije vetzuren', todo: true, explain: 'Hoe lager, hoe verser en zuiverder de olie. Extra vierge zit per definitie onder 0,8%.' },
+        { label: 'Polyfenolen', value: 'Volgt', unit: 'mg/kg', todo: true, explain: 'Natuurlijke antioxidanten uit de olijf. Hoger betekent een vollere, pittigere smaak en langere houdbaarheid.' },
+        { label: 'Oogstjaar', value: 'Volgt', unit: '', todo: true, explain: 'Verse oogst, geen jarenlange opslag — u weet precies uit welk seizoen uw olie komt.' }
       ]
     },
     why: {
@@ -230,10 +243,10 @@ window.AJAR_CONTENT = {
       kicker: 'Van boom tot fles',
       title: 'Vier stappen, één keten',
       steps: [
-        { title: 'Oogst', text: 'De olijven worden met de hand geoogst en dezelfde periode verwerkt.', image: 'proces-04.jpg' },
-        { title: 'Persing', text: 'Koude persing in de eigen perserij — de kern van drie generaties vakkennis.', image: 'proces-05.jpg' },
-        { title: 'Botteling', text: 'De olie wordt aan de bron gebotteld in flessen van 500 ml, onder ISO 22000-condities.', image: 'proces-06.jpg' },
-        { title: 'Import naar Nederland', text: 'Rechtstreeks naar Amsterdam, met de vereiste importdocumentatie en importeursvermelding.', image: 'proces-07.jpg' }
+        { title: 'Oogst', text: 'De olijven worden met de hand geoogst en dezelfde periode verwerkt.', image: 'proces-04.jpg', icon: 'olive' },
+        { title: 'Persing', text: 'Koude persing in de eigen perserij — de kern van drie generaties vakkennis.', image: 'proces-05.jpg', icon: 'press' },
+        { title: 'Botteling', text: 'De olie wordt aan de bron gebotteld in flessen van 500 ml, onder ISO 22000-condities.', image: 'proces-06.jpg', icon: 'bottle' },
+        { title: 'Import naar Nederland', text: 'Rechtstreeks naar Amsterdam, met de vereiste importdocumentatie en importeursvermelding.', image: 'proces-07.jpg', icon: 'truck' }
       ]
     },
     certification: {

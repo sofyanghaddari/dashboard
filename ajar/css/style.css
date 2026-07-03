@@ -674,6 +674,72 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   letter-spacing: .04em;
 }
 
+/* ---------- Vertrouwensrij (i.p.v. lege testimonials) ---------- */
+.trust-row { display: grid; gap: 16px; }
+@media (min-width: 640px) { .trust-row { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 940px) { .trust-row { grid-template-columns: repeat(4, 1fr); } }
+.trust-tile {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 26px 22px;
+  box-shadow: var(--shadow);
+}
+.trust-big {
+  display: block;
+  font-family: var(--serif);
+  font-size: 2.1rem;
+  line-height: 1;
+  color: var(--olive);
+  margin-bottom: .3em;
+}
+.trust-label {
+  display: block;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .7em;
+}
+.trust-tile p { color: var(--ink-soft); font-size: .9rem; margin: 0; }
+.trust-note { text-align: center; margin-top: 1.6rem; }
+
+/* ---------- Kwaliteit-uitleg ---------- */
+.quality-explain {
+  margin: .8em 0 0;
+  padding-top: .8em;
+  border-top: 1px solid var(--line);
+  font-size: .82rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-align: left;
+}
+.quality-tile { text-align: center; }
+.quality-tile .quality-explain { text-align: center; }
+
+/* ---------- Proces: line-icoon als er nog geen foto is ---------- */
+.proc-media { position: relative; }
+.proc-icon {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+}
+.proc-icon svg { width: 40%; max-width: 88px; height: auto; color: var(--gold); opacity: .9; }
+/* geen foto → toon icoon op een rustige crème/olijf-tint i.p.v. donkere placeholder */
+.proc-media.noimg, .proc-media:not(:has(img)) {
+  background:
+    radial-gradient(120% 120% at 30% 20%, rgba(184,147,74,.12), transparent 60%),
+    var(--bg-tint);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+.proc-media.noimg::before, .proc-media:not(:has(img))::before { display: none; } /* geen olie-glans op icoon-tegel */
+.proc-media.noimg .proc-icon, .proc-media:not(:has(img)) .proc-icon { display: flex; }
+.proc-media.noimg .img-slot-note, .proc-media:not(:has(img)) .img-slot-note { display: none; }
+
 /* ---------- CTA-band: dubbele knoppen ---------- */
 .cta-band-actions { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
 .btn-ghost-light { color: #F3F0E8; border-color: rgba(247,245,240,.4); }

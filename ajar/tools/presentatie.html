@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>AJAR — bedrijfspresentatie (template)</title>
+  <!--
+    Template voor de downloadbare bedrijfspresentatie (meerdere A4-pagina's).
+    Leest alles uit ../js/content.js. PDF hergenereren: zie README.md.
+  -->
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif; color: #1E1E1C; }
+    .page {
+      width: 210mm; min-height: 297mm;
+      padding: 20mm 20mm 16mm;
+      background: #F7F5F0;
+      page-break-after: always;
+      position: relative;
+      display: flex; flex-direction: column;
+    }
+    h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; font-weight: 500; margin: 0; }
+    .kicker { font-size: 8pt; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: #B8934A; margin: 0 0 3mm; }
+    p { line-height: 1.6; color: #3A3A36; font-size: 10.5pt; }
+    .gold-rule { height: 1.5pt; background: #B8934A; width: 34mm; margin: 4mm 0; border: 0; }
+
+    /* Cover */
+    .cover { justify-content: center; align-items: center; text-align: center; }
+    .cover img { width: 92mm; margin-bottom: 8mm; }
+    .cover .doc { font-size: 11pt; letter-spacing: .28em; text-transform: uppercase; color: #3E4B2E; }
+    .cover .pay { font-family: Georgia, serif; font-size: 15pt; color: #3E4B2E; max-width: 130mm; margin: 6mm auto 0; }
+    .cover .origin { margin-top: 10mm; font-size: 9pt; letter-spacing: .2em; text-transform: uppercase; color: #8A8578; }
+
+    .sec-title { font-size: 20pt; color: #1E1E1C; margin-bottom: 2mm; }
+    .lead { font-size: 11pt; color: #556B2F; margin-bottom: 6mm; }
+    .block { margin-bottom: 7mm; }
+    .block h3 { font-size: 13pt; margin-bottom: 1.5mm; }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+    .card { border: .5pt solid #E5E0D3; border-radius: 3mm; padding: 6mm; background: #FDFCFA; }
+    .card h3 { font-size: 12pt; margin-bottom: 1.5mm; }
+    .card p { font-size: 9.5pt; margin: 0; }
+
+    dl { margin: 0; }
+    .row { display: grid; grid-template-columns: 40mm 1fr; gap: 3mm; padding: 2.6mm 0; border-bottom: .4pt solid #E5E0D3; }
+    .row:last-child { border-bottom: 0; }
+    .row dt { font-size: 8pt; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #8A8578; }
+    .row dd { margin: 0; font-size: 10pt; }
+
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; margin-top: 3mm; }
+    .step { text-align: center; }
+    .step .n { display: inline-flex; width: 8mm; height: 8mm; align-items: center; justify-content: center; border: 1pt solid #B8934A; border-radius: 50%; color: #B8934A; font-family: Georgia, serif; margin-bottom: 2mm; }
+    .step h3 { font-size: 10.5pt; }
+    .step p { font-size: 8.5pt; }
+
+    .foot { margin-top: auto; padding-top: 6mm; border-top: 1pt solid #B8934A; display: flex; justify-content: space-between; font-size: 8pt; color: #8A8578; }
+    .foot .brand { font-family: Georgia, serif; letter-spacing: .2em; color: #3E4B2E; font-size: 10pt; }
+    .contact-box { background: linear-gradient(150deg,#46542F,#3E4B2E); color: #F3F0E8; border-radius: 3mm; padding: 8mm; }
+    .contact-box h3 { color: #fff; font-size: 14pt; margin-bottom: 3mm; }
+    .contact-box p { color: rgba(247,245,240,.85); font-size: 10pt; }
+    .contact-box a { color: #D8BC86; }
+  </style>
+</head>
+<body>
+  <div id="doc"></div>
+  <script src="../js/content.js"></script>
+  <script>
+    const C = window.AJAR_CONTENT, cfg = C.config;
+    const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const foot = n => '<div class="foot"><span class="brand">AJAR</span><span>Bedrijfspresentatie · '+n+'</span></div>';
+
+    // 1) Cover
+    let html = '<div class="page cover">'+
+      '<img src="../assets/logo/ajar-wordmark.svg" alt="AJAR">'+
+      '<div class="doc">Bedrijfspresentatie</div>'+
+      '<p class="pay">'+esc(cfg.payoff)+'</p>'+
+      '<div class="origin">'+esc(cfg.origin)+' · Extra vierge olijfolie</div>'+
+    '</div>';
+
+    // 2) Het verhaal + tijdlijn
+    html += '<div class="page">'+
+      '<p class="kicker">'+esc(C.about.hero.kicker)+'</p>'+
+      '<h2 class="sec-title">'+esc(C.about.hero.title)+'</h2>'+
+      '<hr class="gold-rule">'+
+      C.about.blocks.map(b=>'<div class="block"><h3>'+esc(b.title)+'</h3><p>'+esc(b.text)+'</p></div>').join('')+
+      '<div class="block"><h3>'+esc(C.about.timeline.title)+'</h3>'+
+        C.about.timeline.items.map(t=>'<p style="margin:0 0 2mm"><b>'+esc(t.year)+'</b> — '+esc(t.title)+'</p>').join('')+
+      '</div>'+
+      foot('Het verhaal')+
+    '</div>';
+
+    // 3) Het product
+    const p = C.product;
+    html += '<div class="page">'+
+      '<p class="kicker">'+esc(p.hero.kicker)+'</p>'+
+      '<h2 class="sec-title">'+esc(p.specs.title)+'</h2>'+
+      '<hr class="gold-rule">'+
+      '<dl>'+p.specs.rows.filter(r=>!r.todo).map(r=>'<div class="row"><dt>'+esc(r.label)+'</dt><dd>'+esc(r.value)+'</dd></div>').join('')+'</dl>'+
+      '<div class="block" style="margin-top:7mm"><h3>Wat AJAR anders maakt</h3>'+
+        '<div class="grid2">'+p.why.items.map(u=>'<div class="card"><h3>'+esc(u.title)+'</h3><p>'+esc(u.text)+'</p></div>').join('')+'</div>'+
+      '</div>'+
+      '<div class="block"><h3>'+esc(p.process.title)+'</h3>'+
+        '<div class="steps">'+p.process.steps.map((s,i)=>'<div class="step"><span class="n">'+(i+1)+'</span><h3>'+esc(s.title)+'</h3><p>'+esc(s.text)+'</p></div>').join('')+'</div>'+
+      '</div>'+
+      foot('Het product')+
+    '</div>';
+
+    // 4) Certificering + B2B + contact
+    const b = C.b2b;
+    html += '<div class="page">'+
+      '<p class="kicker">'+esc(p.certification.kicker)+'</p>'+
+      '<h2 class="sec-title">Kwaliteit & zakelijk</h2>'+
+      '<hr class="gold-rule">'+
+      '<div class="grid2">'+p.certification.items.map(c=>'<div class="card"><h3>'+esc(c.badge)+' — '+esc(c.title)+'</h3><p>'+esc(c.text)+'</p></div>').join('')+'</div>'+
+      '<div class="block" style="margin-top:7mm"><h3>'+esc(b.how.title)+'</h3>'+
+        '<div class="steps" style="grid-template-columns:repeat(3,1fr)">'+b.how.steps.map((s,i)=>'<div class="step"><span class="n">'+(i+1)+'</span><h3>'+esc(s.title)+'</h3><p>'+esc(s.text)+'</p></div>').join('')+'</div>'+
+      '</div>'+
+      '<div class="contact-box" style="margin-top:6mm"><h3>Interesse?</h3>'+
+        '<p>'+esc(b.pricing.text)+'</p>'+
+        '<p style="margin-top:3mm">WhatsApp: +31 6 40 29 35 67'+(cfg.email?' · '+esc(cfg.email):'')+'<br>'+
+        'Importeur: '+esc(C.importer.name)+', '+esc(C.importer.address)+', '+esc(C.importer.postalCity)+'<br>'+
+        'Producent: '+esc(C.producer.name)+', '+esc(C.producer.city)+', '+esc(C.producer.country)+'</p>'+
+      '</div>'+
+      foot('Kwaliteit & zakelijk')+
+    '</div>';
+
+    document.getElementById('doc').innerHTML = html;
+  </script>
+</body>
+</html>
