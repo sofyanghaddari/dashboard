@@ -142,13 +142,18 @@ p { margin: 0 0 1em; }
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(247,245,240,.88);
-  -webkit-backdrop-filter: saturate(160%) blur(14px);
-  backdrop-filter: saturate(160%) blur(14px);
+  /* Bovenaan de pagina: SOLIDE crème (geen backdrop-filter).
+     iOS Safari rendert elementen boven een backdrop-filter soms wit/onzichtbaar
+     — dat maakte de hamburger-streepjes onzichtbaar. Het matglas-effect komt
+     pas terug zodra je scrolt (dan staat er ook content achter de balk). */
+  background: var(--bg);
   border-bottom: 1px solid transparent;
-  transition: border-color .3s var(--ease), box-shadow .3s var(--ease);
+  transition: border-color .3s var(--ease), box-shadow .3s var(--ease), background .3s var(--ease);
 }
 body.scrolled .site-header {
+  background: rgba(247,245,240,.9);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
   border-bottom-color: var(--line);
   box-shadow: 0 2px 20px rgba(30,30,28,.05);
 }
@@ -190,7 +195,8 @@ body.scrolled .site-header {
 }
 .nav-toggle span {
   display: block;
-  height: 2px;
+  width: 24px;
+  height: 2.5px;
   background: var(--olive);
   border-radius: 2px;
   transition: transform .3s var(--ease);

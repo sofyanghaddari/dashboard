@@ -11,8 +11,8 @@ window.AJAR_CONTENT = {
     brandName: 'AJAR',                       // werkbedrijfsnaam — kan later wijzigen, alléén hier
     legalProducer: 'ConservAjar SARL',
     tagline: 'Extra vierge olijfolie',
-    origin: 'Taourirt · Marokko',
-    payoff: 'Extra vierge olijfolie, rechtstreeks uit Taourirt, Marokko.',
+    origin: 'Marokko',
+    payoff: 'Extra vierge olijfolie, rechtstreeks uit Marokko.',
 
     gaId: '',                                 // TODO: GA4 measurement ID (bijv. 'G-XXXXXXXXXX') — leeg = GA uit, banner verborgen
     formspreeId: '',                          // TODO (FORMSPREE_PLACEHOLDER): Formspree form-ID (bijv. 'xqkrgwyz') — leeg = formulier valt terug op WhatsApp
@@ -75,15 +75,15 @@ window.AJAR_CONTENT = {
   /* ---------- Home ---------- */
   home: {
     hero: {
-      kicker: 'Extra vierge olijfolie · Taourirt, Marokko',
-      title: 'Extra vierge olijfolie, rechtstreeks uit Taourirt, Marokko',
+      kicker: 'Voor de Nederlandse horeca & speciaalzaak',
+      title: 'Extra vierge olijfolie, rechtstreeks uit Marokko',
       sub: 'AJAR levert koudgeperste extra vierge olijfolie van een familiebedrijf met drie generaties kennis — via één korte, directe keten naar de Nederlandse horeca en speciaalzaak.',
       image: 'hero-01.jpg'
     },
     usps: [
       { title: 'Eerste officiële importeur', text: 'AJAR wordt als eerste officieel in Nederland geïmporteerd — rechtstreeks van de producent, zonder tussenschakels.' },
       { title: 'ISO 22000-gecertificeerd', text: 'De productie is ISO 22000-gecertificeerd (uitgegeven door SGS): voedselveiligheid en traceerbaarheid, gedocumenteerd.' },
-      { title: 'Korte, directe keten', text: 'Van de pers in Taourirt naar uw zaak in Nederland — vers, traceerbaar en zonder anonieme tussenhandel.' }
+      { title: 'Korte, directe keten', text: 'Van de eigen pers rechtstreeks naar uw zaak in Nederland — vers, traceerbaar en zonder anonieme tussenhandel.' }
     ],
     /* Verkooppuntenwall — verborgen zolang config.showPartners = false. Alleen échte afnemers tonen. */
     partners: {
@@ -95,14 +95,14 @@ window.AJAR_CONTENT = {
     story: {
       kicker: 'Het verhaal',
       title: 'Drie generaties, één ambacht',
-      text: "ConservAjar SARL is een familiebedrijf uit Taourirt, in het noordoosten van Marokko, opgericht begin jaren '90. Wat begon als een lokale perserij groeide uit tot een producent van high-end olijfolie onder het eigen merk AJAR — nationaal en internationaal.",
+      text: "ConservAjar SARL is een familiebedrijf uit het noordoosten van Marokko, opgericht begin jaren '90. Wat begon als een lokale perserij groeide uit tot een producent van high-end olijfolie onder het eigen merk AJAR — nationaal en internationaal.",
       linkLabel: 'Lees ons verhaal',
       linkHref: 'over-ons.html',
       image: 'story-02.jpg'
     },
     /* Full-bleed sfeer-band met quote — foto volgt uit Marokko (sfeer-09.jpg) */
     mood: {
-      quote: 'Van de boomgaard in Taourirt naar de tafels van Nederland.',
+      quote: 'Van de Marokkaanse boomgaard naar de Nederlandse tafel.',
       sub: 'Drie generaties, één pers, één keten.',
       image: 'sfeer-09.jpg'
     },
@@ -139,13 +139,13 @@ window.AJAR_CONTENT = {
   about: {
     hero: {
       kicker: 'Over ons',
-      title: 'Een familiebedrijf uit Taourirt',
+      title: 'Een familiebedrijf uit noordoost-Marokko',
       sub: "Sinds begin jaren '90 — eerlijk, vakkundig en zonder omwegen."
     },
     blocks: [
       {
         title: 'Van MOUSTAINE naar AJAR',
-        text: "ConservAjar SARL werd begin jaren '90 opgericht onder de naam MOUSTAINE, in Taourirt, Marokko. Het bedrijf is en blijft een familiebedrijf: de kennis van het persen en verwerken van olijven is er over drie generaties opgebouwd en doorgegeven. Onder het eigen merk AJAR maakt het bedrijf high-end producten die nationaal en internationaal hun weg vinden.",
+        text: "ConservAjar SARL werd begin jaren '90 opgericht onder de naam MOUSTAINE, in het noordoosten van Marokko. Het bedrijf is en blijft een familiebedrijf: de kennis van het persen en verwerken van olijven is er over drie generaties opgebouwd en doorgegeven. Onder het eigen merk AJAR maakt het bedrijf high-end producten die nationaal en internationaal hun weg vinden.",
         image: 'overons-08.jpg'
       },
       {
@@ -164,7 +164,7 @@ window.AJAR_CONTENT = {
       kicker: 'De tijdlijn',
       title: 'Drie generaties in jaartallen',
       items: [
-        { year: "Begin jaren '90", title: 'Oprichting als MOUSTAINE', text: 'Het familiebedrijf begint in Taourirt met het persen van olijven uit de eigen regio.', todo: false },
+        { year: "Begin jaren '90", title: 'Oprichting als MOUSTAINE', text: 'Het familiebedrijf begint met het persen van olijven uit de eigen boomgaarden.', todo: false },
         { year: 'Jaartal volgt', title: 'Groei tot ConservAjar SARL', text: 'Het bedrijf groeit en gaat verder onder de naam ConservAjar SARL, met het eigen merk AJAR.', todo: true },
         { year: 'Jaartal volgt', title: 'ISO 22000-certificering (SGS)', text: 'De productie wordt gecertificeerd volgens ISO 22000 — voedselveiligheid en traceerbaarheid, extern getoetst door SGS.', todo: true },
         { year: '2026', title: 'Eerste officiële import in Nederland', text: 'AJAR komt vanuit Amsterdam voor het eerst officieel op de Nederlandse markt.', todo: false }
@@ -187,7 +187,7 @@ window.AJAR_CONTENT = {
         { label: 'Categorie', value: 'Extra vierge olijfolie (eerste persing)' },
         { label: 'Inhoud', value: '500 ml' },
         { label: 'Persing', value: 'Koud geperst' },
-        { label: 'Herkomst', value: 'Taourirt, Marokko — eigen productie' },
+        { label: 'Herkomst', value: 'Noordoost-Marokko — eigen productie' },
         /* TODO: onderstaande vult Soef later aan (na de Marokko-trip / oogstinfo) */
         { label: 'Oogst', value: 'Volgt — informatie huidige oogst', todo: true },
         { label: 'Smaakprofiel', value: 'Volgt — proefnotities huidige oogst', todo: true }
@@ -209,7 +209,7 @@ window.AJAR_CONTENT = {
       title: 'Wat AJAR anders maakt',
       items: [
         { title: 'Koud geperst', text: 'De olijven worden koud geperst, waardoor smaak, geur en natuurlijke inhoudsstoffen behouden blijven.' },
-        { title: 'Korte keten', text: 'Eigen productie in Taourirt en directe import naar Nederland: geen anonieme bulk, geen blends van onbekende herkomst.' },
+        { title: 'Korte keten', text: 'Eigen productie in Marokko en directe import naar Nederland: geen anonieme bulk, geen blends van onbekende herkomst.' },
         { title: 'Directe import', text: 'Eén importeur, één producent. Vragen over een partij of levering worden direct beantwoord — niet via drie schakels.' }
       ]
     },
@@ -220,7 +220,7 @@ window.AJAR_CONTENT = {
       colA: 'AJAR',
       colB: 'Gangbare supermarkt-olijfolie',
       rows: [
-        { label: 'Herkomst', a: 'Traceerbaar tot één familiebedrijf in Taourirt', b: 'Vaak een mengsel van oliën uit de EU en daarbuiten' },
+        { label: 'Herkomst', a: 'Traceerbaar tot één familiebedrijf in Marokko', b: 'Vaak een mengsel van oliën uit de EU en daarbuiten' },
         { label: 'Keten', a: 'Kort: van de eigen pers direct naar uw zaak', b: 'Lange keten met meerdere tussenschakels' },
         { label: 'Persing', a: 'Koud geperst in de eigen perserij', b: 'Wisselend per merk en partij' },
         { label: 'Contact', a: 'Persoonlijk contact met de importeur', b: 'Anoniem schap, geen aanspreekpunt' }
@@ -230,7 +230,7 @@ window.AJAR_CONTENT = {
       kicker: 'Van boom tot fles',
       title: 'Vier stappen, één keten',
       steps: [
-        { title: 'Oogst', text: 'De olijven worden geoogst in de omgeving van Taourirt en dezelfde periode verwerkt.', image: 'proces-04.jpg' },
+        { title: 'Oogst', text: 'De olijven worden met de hand geoogst en dezelfde periode verwerkt.', image: 'proces-04.jpg' },
         { title: 'Persing', text: 'Koude persing in de eigen perserij — de kern van drie generaties vakkennis.', image: 'proces-05.jpg' },
         { title: 'Botteling', text: 'De olie wordt aan de bron gebotteld in flessen van 500 ml, onder ISO 22000-condities.', image: 'proces-06.jpg' },
         { title: 'Import naar Nederland', text: 'Rechtstreeks naar Amsterdam, met de vereiste importdocumentatie en importeursvermelding.', image: 'proces-07.jpg' }
@@ -294,7 +294,7 @@ window.AJAR_CONTENT = {
     pricing: {
       title: 'Prijs op aanvraag',
       text: 'We publiceren bewust geen prijslijst: B2B-prijzen hangen af van volume, frequentie en afspraken over levering. In één kort gesprek weet u waar u aan toe bent.',
-      fair: 'Eén uitgangspunt staat vast: eerlijke prijzen voor iedereen in de keten — de familie in Taourirt, u als ondernemer, en uw klant.',
+      fair: 'Eén uitgangspunt staat vast: eerlijke prijzen voor iedereen in de keten — de familie achter de olie, u als ondernemer, en uw klant.',
       /* B2B rekent in dozen, niet in flessen. Definitieve doosinhoud volgt. */
       packaging: 'Levering per doos à 12 × 500 ml (definitieve doosinhoud volgt).',
       packagingTodo: true
@@ -305,7 +305,7 @@ window.AJAR_CONTENT = {
       title: 'Eén olie, twee rollen in uw zaak',
       items: [
         { title: 'In de keuken', text: 'Een constante, koudgeperste basis voor koude én warme gerechten — dezelfde kwaliteit in elke fles, rechtstreeks van één pers.' },
-        { title: 'Op tafel', text: 'Zet de fles bij het brood op tafel en het verhaal vertelt zichzelf: één familie, één boomgaard, Taourirt. Uw gasten proeven het verschil — en vragen ernaar.' }
+        { title: 'Op tafel', text: 'Zet de fles bij het brood op tafel en het verhaal vertelt zichzelf: één familie, één boomgaard, één herkomst. Uw gasten proeven het verschil — en vragen ernaar.' }
       ]
     },
     /* Productlijn / formaten — definitieve verpakkingen volgen. */
@@ -322,7 +322,7 @@ window.AJAR_CONTENT = {
     tasting: {
       kicker: 'Proeverij',
       title: 'Proeverij in uw zaak',
-      text: 'Geen vertegenwoordiger met een koffer folders — de importeur zelf komt langs, schenkt de olie en vertelt het verhaal van de familie in Taourirt. Voor uw team, of als proefmoment voor uw klanten. Kost u niets behalve een half uur.',
+      text: 'Geen vertegenwoordiger met een koffer folders — de importeur zelf komt langs, schenkt de olie en vertelt het verhaal achter de familie en de boomgaard. Voor uw team, of als proefmoment voor uw klanten. Kost u niets behalve een half uur.',
       button: 'Plan een proeverij',
       buttonHref: 'contact.html?aanvraag=proeverij'
     },
@@ -331,7 +331,7 @@ window.AJAR_CONTENT = {
       kicker: 'Voor de winkel',
       title: 'We helpen uw verkoop',
       items: [
-        { title: 'Schapkaart met het verhaal', text: 'Een kaart bij het schap met de familie, de boomgaard en Taourirt — herkomst verkoopt, zeker naast anonieme flessen.' },
+        { title: 'Schapkaart met het verhaal', text: 'Een kaart bij het schap met de familie, de boomgaard en de herkomst — een verhaal verkoopt, zeker naast anonieme flessen.' },
         { title: 'Proefmoment voor uw klanten', text: 'We komen een dagdeel proeven schenken in uw winkel. Klanten die geproefd hebben, komen terug voor de fles.' },
         { title: 'Bijbestellen via één appje', text: 'Geen bestelportaal, geen minimumdrempels vol kleine letters — één WhatsApp-bericht en de volgende doos komt eraan.' }
       ]
@@ -406,7 +406,7 @@ window.AJAR_CONTENT = {
     usps: [
       { title: 'Echt gratis', text: 'Geen kleine letters — het proefflesje kost u niets.' },
       { title: 'Persoonlijk', text: 'U krijgt de olie van de importeur zelf, niet van een verkoopafdeling.' },
-      { title: 'Traceerbaar', text: 'Eén familiebedrijf in Taourirt, ISO 22000-gecertificeerd.' }
+      { title: 'Traceerbaar', text: 'Eén familiebedrijf in Marokko, ISO 22000-gecertificeerd.' }
     ],
     form: {
       title: 'Vraag uw proefflesje aan',
@@ -515,7 +515,7 @@ window.AJAR_CONTENT = {
     rows: [
       { label: 'Product', value: 'Extra vierge olijfolie (eerste persing, koud geperst)' },
       { label: 'Inhoud', value: '500 ml per fles' },
-      { label: 'Herkomst', value: 'Taourirt, Marokko — eigen productie' },
+      { label: 'Herkomst', value: 'Noordoost-Marokko — eigen productie' },
       { label: 'Producent', value: 'ConservAjar SARL, Taourirt, Marokko' },
       { label: 'Certificering', value: 'ISO 22000 (uitgegeven door SGS)' },
       { label: 'HS-code', value: '1509 2000 10' },
@@ -529,7 +529,7 @@ window.AJAR_CONTENT = {
 
   /* ---------- Footer ---------- */
   footer: {
-    aboutLine: 'AJAR — extra vierge olijfolie uit Taourirt, Marokko. Rechtstreeks geïmporteerd voor de Nederlandse horeca, delicatessenzaak en retail.',
+    aboutLine: 'AJAR — extra vierge olijfolie uit Marokko. Rechtstreeks geïmporteerd voor de Nederlandse horeca, delicatessenzaak en retail.',
     privacyLabel: 'Privacyverklaring',
     socials: [
       /* Later invullen — leeg = niet getoond. Voorbeeld: { label:'Instagram', href:'https://instagram.com/…' } */
