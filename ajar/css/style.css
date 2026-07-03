@@ -1229,7 +1229,7 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
 .branch-scroll {
   position: fixed;
   top: 0; bottom: 0;
-  right: 20px;
+  left: 20px;               /* links: iOS zet z'n scrollbalk altijd rechts */
   width: 18px;
   z-index: 45;
   pointer-events: none;
@@ -1274,12 +1274,12 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
   75%  { opacity: 1; }
   100% { transform: translate(-50%, 64px) scale(1); opacity: 0; }
 }
-@media (max-width: 700px) { .branch-scroll { right: 7px; width: 14px; } }
+@media (max-width: 700px) { .branch-scroll { left: 6px; width: 14px; } }
 
 /* ── Terug-naar-boven-knop ── */
 .to-top {
   position: fixed;
-  left: 18px;
+  right: 18px;
   bottom: calc(18px + env(safe-area-inset-bottom, 0px));
   width: 46px; height: 46px;
   border-radius: 50%;
