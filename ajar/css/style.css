@@ -762,10 +762,177 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .process .reveal:nth-child(4) { transition-delay: .24s; }
 
 [data-parallax] { will-change: transform; }
+@media (min-width: 860px) and (pointer: fine) {
+  .split-media .img-slot { will-change: transform; }
+}
+
+/* ── Olie-glans: trage goudglans die over beeld-slots (en latere foto's) trekt ── */
+.img-slot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(115deg,
+    transparent 38%,
+    rgba(201,162,39,.10) 47%,
+    rgba(247,245,240,.14) 50%,
+    rgba(201,162,39,.10) 53%,
+    transparent 62%);
+  background-size: 300% 100%;
+  animation: oilSheen 14s var(--ease) infinite;
+}
+@keyframes oilSheen {
+  0%, 55% { background-position: 120% 0; }
+  85%, 100% { background-position: -60% 0; }
+}
+.img-slot.empty::after { z-index: 2; }
+.img-slot-note { z-index: 2; }
+
+/* ── Wiegende olijftak in het header-logo (inline SVG, hover op desktop) ── */
+.brand-logo-inline { display: flex; align-items: center; }
+.brand-logo-inline svg { height: 44px; width: auto; display: block; overflow: visible; }
+.hdr-twig {
+  transform-box: fill-box;
+  transform-origin: 50% 90%;
+}
+@media (hover: hover) {
+  .brand:hover .hdr-twig { animation: twigSway 1.8s var(--ease) 1; }
+}
+@keyframes twigSway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2.6deg); }
+  55% { transform: rotate(1.8deg); }
+  80% { transform: rotate(-.8deg); }
+}
+
+/* ── De oliedruppel leeft: zachte gloed-puls in de CTA-band ── */
+.cta-band-drop { animation: dropGlow 5.5s ease-in-out infinite; }
+@keyframes dropGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(201,162,39,0); }
+  50% { box-shadow: 0 0 18px rgba(201,162,39,.55), 0 0 4px rgba(201,162,39,.4); }
+}
+
+/* ── Tijdlijn tekent zichzelf bij scroll ── */
+.timeline::before {
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 1.4s var(--ease) .1s;
+}
+.timeline.in::before { transform: scaleY(1); }
+.timeline .timeline-dot {
+  border-color: #D9D3C2;
+  transition: border-color .5s var(--ease), background .5s var(--ease);
+}
+.timeline.in .timeline-item:nth-child(1) .timeline-dot { transition-delay: .15s; }
+.timeline.in .timeline-item:nth-child(2) .timeline-dot { transition-delay: .5s; }
+.timeline.in .timeline-item:nth-child(3) .timeline-dot { transition-delay: .85s; }
+.timeline.in .timeline-item:nth-child(4) .timeline-dot { transition-delay: 1.2s; }
+.timeline.in .timeline-dot { border-color: var(--gold); }
+
+/* ── Proceslijn "van boom tot fles" vult zich bij scroll ── */
+@media (min-width: 700px) {
+  .process::before {
+    content: '';
+    grid-column: 1 / -1;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--gold), rgba(184,147,74,.35));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 1.3s var(--ease) .15s;
+  }
+  .process.in::before { transform: scaleX(1); }
+}
+.process .process-num { transition: background .5s var(--ease), color .5s var(--ease); }
+.process.in .process-step:nth-child(2) .process-num { transition-delay: .35s; }
+.process.in .process-step:nth-child(3) .process-num { transition-delay: .6s; }
+.process.in .process-step:nth-child(4) .process-num { transition-delay: .85s; }
+.process.in .process-num { background: rgba(184,147,74,.1); }
+
+/* ── Nav-underline groeit vanuit het midden (desktop) ── */
+.site-nav a:not(.btn) { position: relative; }
+.site-nav a:not(.btn)::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .3s var(--ease);
+}
+.site-nav a:not(.btn):hover::after { transform: scaleX(1); }
+@media (max-width: 860px) {
+  .site-nav a:not(.btn)::after { display: none; }
+}
+
+/* ── Trage sheen-veeg over primaire knoppen en de spec-sheet-kaart ── */
+.btn-primary { position: relative; overflow: hidden; }
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.22) 50%, transparent 58%);
+  background-size: 320% 100%;
+  animation: btnSheen 8s var(--ease) infinite;
+}
+@keyframes btnSheen {
+  0%, 70% { background-position: 130% 0; }
+  92%, 100% { background-position: -60% 0; }
+}
+.sheen-card { position: relative; overflow: hidden; }
+.sheen-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 44%, rgba(184,147,74,.09) 50%, transparent 56%);
+  background-size: 340% 100%;
+  animation: btnSheen 11s var(--ease) infinite;
+}
+
+/* ── FAQ vloeiend open/dicht (hoogte via JS gezet) ── */
+.faq-body {
+  overflow: hidden;
+  transition: height .35s var(--ease), opacity .3s var(--ease);
+}
+
+/* ── Cookiebanner glijdt zacht binnen ── */
+.cookie-banner { animation: bannerIn .55s var(--ease) both; }
+@keyframes bannerIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── Gouden druppel valt bij succesvolle aanvraag ── */
+.form-success { position: relative; padding-left: 22px; }
+.drop-fall {
+  position: absolute;
+  left: 2px; top: -14px;
+  width: 11px; height: 11px;
+  background: var(--gold);
+  border-radius: 0 50% 50% 50%;
+  transform: rotate(45deg);
+  animation: dropFall 1s var(--ease) both;
+}
+@keyframes dropFall {
+  0% { opacity: 0; translate: 0 -10px; }
+  25% { opacity: 1; }
+  70% { translate: 0 14px; scale: 1; }
+  82% { scale: 1.25 .7; }
+  100% { opacity: 0; translate: 0 16px; scale: 1.5 .4; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
   .btn, .card, .text-link { transition: none; }
-  [data-parallax] { transform: none !important; }
+  [data-parallax], .split-media .img-slot { transform: none !important; }
+  .img-slot::before, .btn-primary::after, .sheen-card::after,
+  .cta-band-drop, .hdr-twig, .cookie-banner, .drop-fall { animation: none !important; }
+  .timeline::before, .process::before { transform: none; transition: none; }
+  .timeline .timeline-dot { border-color: var(--gold); transition: none; }
+  .faq-body { transition: none; }
 }

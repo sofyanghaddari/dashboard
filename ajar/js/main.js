@@ -90,6 +90,16 @@
     const onScroll = () => document.body.classList.toggle('scrolled', window.scrollY > 8);
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+
+    /* Logo inline laden zodat de olijftak (.hdr-twig) bij hover kan meewiegen.
+       Mislukt de fetch, dan blijft de gewone <img> gewoon staan. */
+    fetch('assets/logo/ajar-header.svg')
+      .then(r => r.ok ? r.text() : Promise.reject())
+      .then(svg => {
+        const brand = document.querySelector('.brand');
+        if (brand) brand.innerHTML = '<span class="brand-logo brand-logo-inline" aria-hidden="true">' + svg + '</span>';
+      })
+      .catch(() => {});
   }
 
   /* ---------- Footer ---------- */
@@ -220,7 +230,7 @@
       /* Familie-tijdlijn */
       '<section class="section section-tint"><div class="wrap wrap-narrow">' +
         '<div class="section-head reveal">' + kickerTitle(tl.kicker, tl.title) + '</div>' +
-        '<ol class="timeline">' + tl.items.map(t =>
+        '<ol class="timeline" data-anim>' + tl.items.map(t =>
           '<li class="timeline-item reveal' + (t.todo ? ' is-todo' : '') + '">' +
             '<span class="timeline-dot" aria-hidden="true"></span>' +
             '<span class="timeline-year">' + esc(t.year) + '</span>' +
@@ -250,11 +260,15 @@
       /* Meetbare kwaliteitscijfers */
       '<section class="section section-tint"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(p.quality.kicker, p.quality.title) + '</div>' +
-        '<div class="quality-row">' + p.quality.items.map(q =>
-          '<div class="quality-tile reveal' + (q.todo ? ' is-todo' : '') + '">' +
-            '<span class="quality-value">' + esc(q.value) + '</span>' +
+        '<div class="quality-row">' + p.quality.items.map(q => {
+          /* Numerieke waarden (bijv. "0,28" of "310") tellen op zodra ze in beeld scrollen */
+          const num = parseFloat(String(q.value).replace(',', '.'));
+          const countable = !q.todo && isFinite(num) && /^[\d.,<>\s]+$/.test(String(q.value));
+          return '<div class="quality-tile reveal' + (q.todo ? ' is-todo' : '') + '">' +
+            '<span class="quality-value"' + (countable ? ' data-countup="' + num + '" data-raw="' + esc(q.value) + '"' : '') + '>' + esc(q.value) + '</span>' +
             '<span class="quality-label">' + esc(q.label) + (q.unit ? ' · ' + esc(q.unit) : '') + '</span>' +
-          '</div>').join('') +
+          '</div>';
+        }).join('') +
         '</div>' +
         '<p class="form-note reveal">' + esc(p.quality.note) + '</p>' +
       '</div></section>' +
@@ -278,7 +292,7 @@
 
       '<section class="section section-tint"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(p.process.kicker, p.process.title) + '</div>' +
-        '<ol class="process">' + p.process.steps.map((s, i) =>
+        '<ol class="process" data-anim>' + p.process.steps.map((s, i) =>
           '<li class="process-step reveal">' +
             imgSlot(s.image, s.title, 'img-step') +
             '<span class="process-num">' + (i + 1) + '</span>' +
@@ -315,7 +329,7 @@
 
       '<section class="section section-tint"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(b.how.kicker, b.how.title) + '</div>' +
-        '<ol class="process process-3">' + b.how.steps.map((s, i) =>
+        '<ol class="process process-3" data-anim>' + b.how.steps.map((s, i) =>
           '<li class="process-step reveal">' +
             '<span class="process-num">' + (i + 1) + '</span>' +
             '<h3>' + esc(s.title) + '</h3><p>' + esc(s.text) + '</p>' +
@@ -335,7 +349,7 @@
       '<section class="section section-tint"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(d.kicker, d.title) + '</div>' +
         '<div class="grid-2">' +
-          '<article class="card reveal"><span class="card-rule" aria-hidden="true"></span>' +
+          '<article class="card sheen-card reveal"><span class="card-rule" aria-hidden="true"></span>' +
             '<h3>' + esc(d.specsheet.title) + '</h3><p>' + esc(d.specsheet.text) + '</p>' +
             '<a class="btn btn-primary dl-btn" href="' + esc(cfg.specsheetPdf) + '" download data-ga-event="specsheet_download">' + esc(d.specsheet.button) + '</a>' +
           '</article>' +
@@ -373,7 +387,7 @@
         '<div class="faq reveal">' + b.faq.items.map(f =>
           '<details class="faq-item' + (f.todo ? ' is-todo' : '') + '">' +
             '<summary>' + esc(f.q) + '</summary>' +
-            '<p>' + esc(f.a) + '</p>' +
+            '<div class="faq-body"><p>' + esc(f.a) + '</p></div>' +
           '</details>').join('') +
         '</div>' +
       '</div></section>' +
@@ -469,6 +483,18 @@
     if (el) { el.textContent = msg; el.hidden = false; }
   }
 
+  /* Eén gouden druppel valt bij een succesvolle aanvraag — klein merkmoment */
+  function dropCelebrate(form) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const s = form.querySelector('[data-role=success]');
+    if (!s) return;
+    const d = document.createElement('span');
+    d.className = 'drop-fall';
+    d.setAttribute('aria-hidden', 'true');
+    s.prepend(d);
+    d.addEventListener('animationend', () => d.remove());
+  }
+
   async function submitLead(form, v, waText, okMsg) {
     if (v._gotcha) { showMsg(form, 'success', okMsg); return true; } // honeypot: stil laten vallen
 
@@ -476,6 +502,7 @@
       // Geen Formspree ingesteld → nette degradatie naar WhatsApp met voorgevuld bericht
       window.open(waLink(waText), '_blank', 'noopener');
       showMsg(form, 'success', okMsg);
+      dropCelebrate(form);
       return true;
     }
 
@@ -490,6 +517,7 @@
       });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       showMsg(form, 'success', okMsg);
+      dropCelebrate(form);
       form.reset();
       return true;
     } catch (e) {
@@ -633,10 +661,10 @@
     });
   }
 
-  /* ---------- Scroll-reveals (subtiel, met reduced-motion-guard) ---------- */
+  /* ---------- Scroll-reveals & animatie-hooks (met reduced-motion-guard) ---------- */
 
   function initReveal() {
-    const els = document.querySelectorAll('.reveal');
+    const els = document.querySelectorAll('.reveal, [data-anim]');
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduce || !('IntersectionObserver' in window)) {
       els.forEach(el => el.classList.add('in'));
@@ -649,13 +677,98 @@
     }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
     els.forEach(el => io.observe(el));
 
-    const par = document.querySelector('[data-parallax]');
-    if (par) {
-      window.addEventListener('scroll', () => {
-        const y = Math.min(window.scrollY, 600);
-        par.style.transform = 'translateY(' + (y * 0.06) + 'px)';
-      }, { passive: true });
+    /* Hero-parallax + licht na-ijlen van split-foto's (alleen desktop, echte muis) */
+    const hero = document.querySelector('[data-parallax]');
+    const splits = window.matchMedia('(min-width: 860px) and (pointer: fine)').matches
+      ? Array.from(document.querySelectorAll('.split-media .img-slot'))
+      : [];
+    if (hero || splits.length) {
+      let ticking = false;
+      const update = () => {
+        ticking = false;
+        if (hero) hero.style.transform = 'translateY(' + (Math.min(window.scrollY, 600) * 0.06) + 'px)';
+        const vh = window.innerHeight;
+        splits.forEach(el => {
+          const r = el.getBoundingClientRect();
+          if (r.bottom < -80 || r.top > vh + 80) return;
+          const centerOffset = (r.top + r.height / 2 - vh / 2) / vh; // -0.5 … 0.5
+          el.style.transform = 'translateY(' + (centerOffset * -18).toFixed(1) + 'px)';
+        });
+      };
+      const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      update();
     }
+  }
+
+  /* ---------- Count-up op meetbare kwaliteitscijfers ---------- */
+
+  function initCountUp() {
+    const els = document.querySelectorAll('[data-countup]');
+    if (!els.length) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !('IntersectionObserver' in window)) return; // eindwaarde staat er al
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        const el = en.target;
+        const target = parseFloat(el.dataset.countup);
+        const raw = el.dataset.raw || String(target);
+        const decimals = (raw.split(/[.,]/)[1] || '').length;
+        const comma = raw.includes(',');
+        const t0 = performance.now(), dur = 1100;
+        const tick = (t) => {
+          const p = Math.min((t - t0) / dur, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          let out = (target * eased).toFixed(decimals);
+          if (comma) out = out.replace('.', ',');
+          el.textContent = p < 1 ? out : raw;
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+    }, { threshold: 0.6 });
+    els.forEach(el => io.observe(el));
+  }
+
+  /* ---------- FAQ: vloeiend open- en dichtklappen ---------- */
+
+  function initFaq() {
+    const items = document.querySelectorAll('.faq-item');
+    if (!items.length) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    items.forEach(d => {
+      const summary = d.querySelector('summary');
+      const body = d.querySelector('.faq-body');
+      if (!summary || !body) return;
+      summary.addEventListener('click', (e) => {
+        if (reduce) return; // standaard instant gedrag
+        e.preventDefault();
+        if (d.hasAttribute('data-busy')) return;
+        d.setAttribute('data-busy', '');
+        if (d.open) {
+          body.style.height = body.scrollHeight + 'px';
+          requestAnimationFrame(() => { body.style.height = '0px'; body.style.opacity = '0'; });
+          body.addEventListener('transitionend', function done() {
+            body.removeEventListener('transitionend', done);
+            d.open = false;
+            body.style.height = body.style.opacity = '';
+            d.removeAttribute('data-busy');
+          });
+        } else {
+          d.open = true;
+          const h = body.scrollHeight;
+          body.style.height = '0px'; body.style.opacity = '0';
+          requestAnimationFrame(() => { body.style.height = h + 'px'; body.style.opacity = '1'; });
+          body.addEventListener('transitionend', function done() {
+            body.removeEventListener('transitionend', done);
+            body.style.height = body.style.opacity = '';
+            d.removeAttribute('data-busy');
+          });
+        }
+      });
+    });
   }
 
   /* ---------- Boot ---------- */
@@ -673,4 +786,6 @@
   initConsent();
   injectJsonLd();
   initReveal();
+  initCountUp();
+  initFaq();
 })();
