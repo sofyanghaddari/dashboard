@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v163';
+const CACHE = 'dashboard-v164';
 
 
 
@@ -357,11 +357,14 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Cache-first voor eigen assets
+  // Cache-first voor eigen assets — alléén geslaagde responses cachen,
+  // anders blijft bijv. een tijdelijke 404 (Pages-storing) voor altijd hangen
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request).then(resp => {
-      const copy = resp.clone();
-      caches.open(CACHE).then(c => { try { c.put(e.request, copy); } catch (_) {} });
+      if (resp && resp.ok) {
+        const copy = resp.clone();
+        caches.open(CACHE).then(c => { try { c.put(e.request, copy); } catch (_) {} });
+      }
       return resp;
     }).catch(() => caches.match('./index.html')))
   );
