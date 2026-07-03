@@ -5,16 +5,27 @@ Zet hier je eigen foto's neer met exact deze bestandsnamen (JPG).
 De site pakt ze automatisch op; zolang een bestand ontbreekt zie je
 een nette olijfgroene placeholder met de bestandsnaam erin.
 
-hero-01.jpg      — Home hero (staand werkt het mooist, ± 4:5, min. 1200px breed)
-story-02.jpg     — Home "het verhaal" (familie / fabriek / Taourirt)
-product-03.jpg   — De fles 500 ml (ook gebruikt op Product-pagina, ± 3:4)
-proces-04.jpg    — Stap 1: oogst (olijfbomen / plukken)
-proces-05.jpg    — Stap 2: persing (de pers)
-proces-06.jpg    — Stap 3: botteling
-proces-07.jpg    — Stap 4: import / onderweg naar NL
-overons-08.jpg   — Over ons (familie / drie generaties)
-sfeer-09.jpg     — Sfeer-band op home (donker/moody: boomgaard bij avondlicht of de pers — liggend, min. 1600px breed; er komt tekst overheen)
+STAND VAN ZAKEN (juli 2026)
+---------------------------
+✓ hero-01.jpg    — GEPLAATST: het land met berg + bassin (jullie herkomst)
+✓ story-02.jpg   — GEPLAATST: olijfboom in bloei (mei)
+✓ product-03.jpg — GEPLAATST: olijftak met groene olijven  ⚠ LAGE RESOLUTIE (768px) — stuur de originele foto voor scherp op groot scherm
+✓ proces-04.jpg  — GEPLAATST: geoogste olijven (stap "Oogst")  ⚠ LAGERE RESOLUTIE (1200px) — origineel = scherper
+✓ overons-08.jpg — GEPLAATST: het land met berg + bassin
+✓ sfeer-09.jpg   — GEPLAATST: wijde boomgaard (sfeer-band op home)
 
-Tips:
-- JPG, max ± 300 KB per foto (voor snelheid), 1600px breed is genoeg.
+NOG TE VULLEN (nu nog groene placeholder)
+-----------------------------------------
+proces-05.jpg    — Stap 2: persing (de pers in werking)
+proces-06.jpg    — Stap 3: botteling (flessen vullen/sluiten)
+proces-07.jpg    — Stap 4: import / onderweg naar NL (dozen, vrachtwagen)
+product-03.jpg   — liever nog: een echte fles-foto (500 ml) zodra beschikbaar
+
+Tips
+----
 - Zelfde bestandsnaam = automatisch vervangen, niets anders nodig.
+- EXIF/locatie wordt niet meegepubliceerd; ik strip die er standaard uit.
+- Aangeleverde foto's worden geoptimaliseerd (max ~2400px, scherp maar snel).
+- Voor de 2 lage-resolutie foto's (olijftak + geoogste olijven): stuur de
+  originele versie rechtstreeks van de telefoon/camera (niet via WhatsApp,
+  dat comprimeert) voor extreem scherp resultaat.

@@ -26,10 +26,11 @@
 
   /* Vervangbare beeld-slot: toont de foto uit assets/images/ zodra die bestaat,
      anders een rustige olijfgroen/goud gradient-placeholder met de bestandsnaam. */
-  function imgSlot(file, alt, cls) {
+  function imgSlot(file, alt, cls, eager) {
     if (!file) return '';
+    const load = eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
     return '<figure class="img-slot ' + (cls || '') + '" data-file="' + esc(file) + '">' +
-      '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" loading="lazy" ' +
+      '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" ' + load + ' ' +
       'onerror="this.closest(\'.img-slot\').classList.add(\'empty\');this.remove()">' +
       '<span class="img-slot-note">Foto volgt · ' + esc(file) + '</span>' +
       '</figure>';
@@ -182,7 +183,7 @@
               '<a class="btn btn-ghost" href="' + esc(C.ctaHref) + '" data-ga-event="offerte_cta_click">' + esc(C.ctaLabel) + '</a>' +
             '</div>' +
           '</div>' +
-          '<div class="hero-media reveal" data-parallax>' + imgSlot(h.hero.image, 'AJAR extra vierge olijfolie', 'img-hero') + '</div>' +
+          '<div class="hero-media reveal" data-parallax>' + imgSlot(h.hero.image, 'Het land van AJAR in Taourirt, Marokko — olijfgaard met bergen', 'img-hero', true) + '</div>' +
         '</div>' +
       '</section>' +
 
