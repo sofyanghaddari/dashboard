@@ -16,9 +16,9 @@ window.AJAR_CONTENT = {
 
     gaId: '',                                 // TODO: GA4 measurement ID (bijv. 'G-XXXXXXXXXX') — leeg = GA uit, banner verborgen
     formspreeId: '',                          // TODO (FORMSPREE_PLACEHOLDER): Formspree form-ID (bijv. 'xqkrgwyz') — leeg = formulier valt terug op WhatsApp
-    email: '',                                // TODO (EMAIL_PLACEHOLDER): zakelijk e-mailadres — leeg = e-mail nergens getoond, WhatsApp is primair kanaal
+    email: 'sofyanghaddari@gmail.com',        // zakelijk e-mailadres (voorlopig); formulieren mailen hierheen + zichtbaar in footer/contact
     whatsappNumber: '31640293567',            // internationaal formaat zonder + of spaties
-    kvk: '',                                  // TODO: KvK-nummer zodra beschikbaar
+    kvk: '77755170',                          // KvK-nummer
     domain: 'https://sofyanghaddari.github.io/dashboard/ajar/',  // later: custom domain (zie README.md)
 
     showPartners: false,                      // true zodra er echte verkooppunten/logo's zijn ("Verkrijgbaar bij")
