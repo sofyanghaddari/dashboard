@@ -26,10 +26,11 @@ window.AJAR_CONTENT = {
     specsheetPdf: 'assets/ajar-specsheet.pdf' // vrij downloadbaar spec-sheet (gegenereerd uit deze content, zie README.md)
   },
 
-  /* ---------- Importeur (verplicht conform EU-regelgeving) ---------- */
+  /* ---------- Importeur (verplicht conform EU-regelgeving) ----------
+     Persoonsnaam bewust weggelaten — alleen merk + adres (wettelijk minimum). */
   importer: {
     label: 'Importeur',
-    name: 'S. Ghaddari',
+    name: 'AJAR',
     address: 'Jephtastraat 28H',
     postalCity: '1055 JV Amsterdam',
     country: 'Nederland'
@@ -59,7 +60,7 @@ window.AJAR_CONTENT = {
 
   /* ---------- Topbar (dunne belofte-balk boven de header) ---------- */
   topbar: {
-    text: '✓ Gratis sample voor zakelijke proevers — eerst proeven, dan praten',
+    text: 'Gratis sample — eerst proeven, dan praten',
     href: 'sample.html'
   },
 
@@ -128,7 +129,7 @@ window.AJAR_CONTENT = {
       title: 'Proeven zegt meer dan lezen',
       text: 'Vraag een gratis sample of offerte aan — we denken graag mee over volume en levering.',
       button: 'Gratis sample aanvragen',
-      buttonHref: 'contact.html?aanvraag=sample',
+      buttonHref: 'sample.html',
       secondary: 'Offerte aanvragen',
       secondaryHref: 'contact.html?aanvraag=offerte'
     }
@@ -166,7 +167,7 @@ window.AJAR_CONTENT = {
         { year: "Begin jaren '90", title: 'Oprichting als MOUSTAINE', text: 'Het familiebedrijf begint in Taourirt met het persen van olijven uit de eigen regio.', todo: false },
         { year: 'Jaartal volgt', title: 'Groei tot ConservAjar SARL', text: 'Het bedrijf groeit en gaat verder onder de naam ConservAjar SARL, met het eigen merk AJAR.', todo: true },
         { year: 'Jaartal volgt', title: 'ISO 22000-certificering (SGS)', text: 'De productie wordt gecertificeerd volgens ISO 22000 — voedselveiligheid en traceerbaarheid, extern getoetst door SGS.', todo: true },
-        { year: '2026', title: 'Eerste officiële import in Nederland', text: 'AJAR komt via S. Ghaddari (Amsterdam) voor het eerst officieel op de Nederlandse markt.', todo: false }
+        { year: '2026', title: 'Eerste officiële import in Nederland', text: 'AJAR komt vanuit Amsterdam voor het eerst officieel op de Nederlandse markt.', todo: false }
       ],
       note: 'Namen en jaartallen van de generaties worden aangevuld na overleg met de familie.'
     }
@@ -259,7 +260,7 @@ window.AJAR_CONTENT = {
       title: 'Zelf proeven?',
       text: 'Vraag een gratis sample aan en beoordeel de olie in uw eigen keuken of zaak.',
       button: 'Gratis sample aanvragen',
-      buttonHref: 'contact.html?aanvraag=sample',
+      buttonHref: 'sample.html',
       secondary: 'Offerte aanvragen',
       secondaryHref: 'contact.html?aanvraag=offerte'
     }
@@ -374,14 +375,14 @@ window.AJAR_CONTENT = {
         { q: 'Hoe werkt een sample aanvragen?', a: 'U vraagt via het formulier of WhatsApp een gratis sample aan. U proeft de olie rustig in uw eigen keuken of zaak, daarna bespreken we volume en prijs. Geen verplichtingen.' },
         { q: 'Wat zijn de betaalvoorwaarden?', a: 'De standaard betaalvoorwaarden worden binnenkort hier vermeld en staan altijd op de offerte.', todo: true },
         { q: 'Hoe bewaar ik de olie en hoe lang is die houdbaar?', a: 'Koel, donker en goed afgesloten bewaren — dan behoudt extra vierge olijfolie zijn smaak het langst. De exacte houdbaarheidsdatum staat op elke fles; de THT-informatie per partij volgt hier.', todo: true },
-        { q: 'Wie is de importeur en waarom maakt dat uit?', a: 'S. Ghaddari (Amsterdam) is de officiële importeur en staat als zodanig op de fles. Voor u betekent dat: één aanspreekpunt in Nederland, duidelijke aansprakelijkheid en traceerbaarheid per partij — precies wat uw HACCP-dossier vraagt.' }
+        { q: 'Wie is de importeur en waarom maakt dat uit?', a: 'AJAR is de officiële importeur in Nederland (gevestigd in Amsterdam) en staat als zodanig op de fles. Voor u betekent dat: één aanspreekpunt in Nederland, duidelijke aansprakelijkheid en traceerbaarheid per partij — precies wat uw HACCP-dossier vraagt.' }
       ]
     },
     cta: {
       title: 'Klaar om te proeven?',
       text: 'Vraag vandaag een gratis sample aan — of direct een offerte.',
       button: 'Gratis sample aanvragen',
-      buttonHref: 'contact.html?aanvraag=sample',
+      buttonHref: 'sample.html',
       secondary: 'Offerte aanvragen',
       secondaryHref: 'contact.html?aanvraag=offerte'
     }
@@ -471,7 +472,7 @@ window.AJAR_CONTENT = {
     sections: [
       {
         title: 'Wie is verantwoordelijk?',
-        body: 'Verwerkingsverantwoordelijke voor deze website is S. Ghaddari, Jephtastraat 28H, 1055 JV Amsterdam (importeur van AJAR olijfolie). Contact verloopt via WhatsApp (+31 6 40 29 35 67).'
+        body: 'Verwerkingsverantwoordelijke voor deze website is AJAR (importeur van AJAR olijfolie), gevestigd aan de Jephtastraat 28H, 1055 JV Amsterdam. Contact verloopt via WhatsApp (+31 6 40 29 35 67).'
       },
       {
         title: 'Welke gegevens verzamelen we?',
@@ -521,7 +522,7 @@ window.AJAR_CONTENT = {
       { label: 'Houdbaarheid', value: 'Volgt — THT per partij op de fles', todo: true },
       { label: 'Bewaaradvies', value: 'Koel, donker en goed afgesloten bewaren' },
       { label: 'Verpakking', value: 'Doos à 12 × 500 ml (definitief volgt)', todo: true },
-      { label: 'Importeur', value: 'S. Ghaddari, Jephtastraat 28H, 1055 JV Amsterdam' }
+      { label: 'Importeur', value: 'AJAR, Jephtastraat 28H, 1055 JV Amsterdam' }
     ],
     footer: 'Prijzen op aanvraag — volume-afhankelijk. Contact via WhatsApp: +31 6 40 29 35 67.'
   },
