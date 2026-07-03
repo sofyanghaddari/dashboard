@@ -223,7 +223,7 @@
 
       /* Full-bleed sfeer-band met quote */
       '<section class="mood-band reveal">' +
-        imgSlot(h.mood.image, '', 'img-mood') +
+        imgSlot(h.mood.image, 'Olijfgaard in noordoost-Marokko', 'img-mood') +
         '<div class="mood-quote"><p class="mood-text">' + esc(h.mood.quote) + '</p>' +
         '<p class="mood-sub">' + esc(h.mood.sub) + '</p></div>' +
       '</section>' +
