@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=8), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v163** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v165** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -130,7 +130,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v163)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v165)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -196,7 +196,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = 'v163'
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v165
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -307,6 +307,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++30. **🫒 AJAR B2B-olijfoliesite in `ajar/` + SW-fixes v164-v165 (2-3 juli 2026):** aparte statische marketingsite (eigen bouwprompt van user) op `/dashboard/ajar/` — vijf pagina's + privacy, alle content in `ajar/js/content.js`, Formspree/GA4/cookiebanner/spec-sheet-PDF, animatie-pakket; beheer-gids in `ajar/README.md`, foto-shotlist in `ajar/SHOTLIST.md`. **Twee SW-lessen:** (1) v164 — de cache-first-branch cachede élke response, óók 404's (tijdens een GitHub Pages-deploystoring bleef de 404 van ajar/ permanent hangen) → alleen `resp.ok` cachen; (2) v165 — **`/ajar/`-paden worden door de SW volledig genegeerd** (early return in fetch-handler): het is een vaak-updatende marketingsite, cache-first toonde bezoekers eindeloos oude versies. Ajar-wijzigingen vereisen dus GEEN cache-bump; dashboard-wijzigingen wél, zoals altijd. Let op: GitHub Pages-deploys haperden 2x op rij ("deployment_queued" timeout / "try again later") — bij een 404 na push eerst de Pages-run checken vóór in de code te zoeken; lege commit = nieuwe deploy.
 
 +29. **📖 Stof/grammatica-module v163 (2 juli 2026):** nieuwe, aparte module onder Geloof → Stof (bouwprompt v2; vocab-module ongemoeid).
    - **Architectuur:** onderwerpen in IndexedDB-store `grammar_topics` (DB_VERSION 7→8; bewuste afwijking van de bouwprompt-localStorage zodat gist-sync/backup/export automatisch meelopen via `STORE_NAMES`) + export/import-knop als extra vangnet. AI via **Cloudflare Worker** `proxy/grammatica-worker.js` (model `claude-sonnet-4-6`, API-key als Worker-secret, CORS-allowlist, daglimiet via KV-binding `RATE_KV`, default 100/dag). Deploy-gids: `proxy/README-grammatica-worker.md`; handmatige test: `proxy/test-grammatica-worker.mjs`.

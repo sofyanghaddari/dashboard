@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v164';
+const CACHE = 'dashboard-v165';
 
 
 
@@ -339,6 +339,11 @@ self.addEventListener('fetch', (e) => {
   // (auth-headers, tijdgebonden tokens, private gists)
   const isGitHub = url.hostname === 'api.github.com' || url.hostname.endsWith('.githubusercontent.com');
   if (isGitHub) return;
+
+  // AJAR-site (/dashboard/ajar/): NIET door deze SW beheren — het is een
+  // aparte marketingsite die vaak update; cache-first zou bezoekers (en Soef)
+  // eindeloos oude versies tonen. Browser haalt hem gewoon zelf op.
+  if (url.pathname.includes('/ajar/')) return;
 
   // Stale-while-revalidate voor overige externe API-calls (weer, etc.)
   const isExternal = url.origin !== self.location.origin;
