@@ -31,6 +31,7 @@
     const load = eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
     return '<figure class="img-slot ' + (cls || '') + '" data-file="' + esc(file) + '">' +
       '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" ' + load + ' ' +
+      'onload="this.classList.add(\'imgok\')" ' +
       'onerror="this.closest(\'.img-slot\').classList.add(\'empty\');this.remove()">' +
       '<span class="img-slot-note">Foto volgt · ' + esc(file) + '</span>' +
       '</figure>';
@@ -167,6 +168,7 @@
   function processMedia(file, icon, alt) {
     return '<figure class="img-slot img-step proc-media" data-file="' + esc(file) + '">' +
       (file ? '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" loading="lazy" ' +
+        'onload="this.classList.add(\'imgok\')" ' +
         'onerror="this.closest(\'.img-slot\').classList.add(\'noimg\');this.remove()">' : '') +
       '<span class="proc-icon">' + stepIcon(icon) + '</span>' +
       '</figure>';
@@ -944,6 +946,66 @@
     });
   }
 
+  /* ---------- Micro-interacties: scroll-voortgang, terug-naar-boven,
+       pagina-overgang, blur-up-fallback ---------- */
+
+  function initEnhancements() {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Blur-up: reeds-gecachte foto's meteen scherp tonen (onload vuurt dan soms niet) */
+    document.querySelectorAll('.img-slot img').forEach(im => {
+      if (im.complete && im.naturalWidth > 0) im.classList.add('imgok');
+    });
+
+    /* Scroll-voortgangslijn + terug-naar-boven */
+    let bar = null, toTop = null;
+    if (!reduce) {
+      bar = document.createElement('div');
+      bar.className = 'scroll-progress';
+      document.body.appendChild(bar);
+    }
+    toTop = document.createElement('button');
+    toTop.className = 'to-top';
+    toTop.setAttribute('aria-label', 'Terug naar boven');
+    toTop.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
+    document.body.appendChild(toTop);
+    toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }));
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const h = document.documentElement;
+        const y = window.scrollY || h.scrollTop || 0;
+        const max = h.scrollHeight - window.innerHeight;
+        const pct = max > 0 ? (y / max) * 100 : 0;
+        if (bar) bar.style.width = pct + '%';
+        toTop.classList.toggle('show', y > 700);
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    /* Zachte pagina-overgang: interne .html-links faden uit vóór navigatie */
+    if (!reduce) {
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (!a) return;
+        const href = a.getAttribute('href') || '';
+        if (a.target === '_blank' || a.hasAttribute('download') || e.metaKey || e.ctrlKey) return;
+        if (!/\.html($|\?|#)/.test(href) && href !== 'index.html') return;
+        if (/^https?:|^mailto:|^tel:|^#/.test(href)) return;
+        e.preventDefault();
+        document.body.classList.add('leaving');
+        setTimeout(() => { window.location.href = href; }, 260);
+      });
+      /* Terug-knop uit bfcache: leaving-class weghalen */
+      window.addEventListener('pageshow', () => document.body.classList.remove('leaving'));
+    }
+  }
+
   /* ---------- Boot ---------- */
 
   const renderers = {
@@ -963,4 +1025,5 @@
   initReveal();
   initCountUp();
   initFaq();
+  initEnhancements();
 })();
