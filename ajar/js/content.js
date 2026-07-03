@@ -55,7 +55,13 @@ window.AJAR_CONTENT = {
   ctaLabel: 'Offerte aanvragen',
   ctaHref: 'contact.html?aanvraag=offerte',
   sampleCtaLabel: 'Gratis sample aanvragen',
-  sampleCtaHref: 'contact.html?aanvraag=sample',
+  sampleCtaHref: 'sample.html',
+
+  /* ---------- Topbar (dunne belofte-balk boven de header) ---------- */
+  topbar: {
+    text: '✓ Gratis sample voor zakelijke proevers — eerst proeven, dan praten',
+    href: 'sample.html'
+  },
 
   /* ---------- Cookiebanner ---------- */
   cookies: {
@@ -92,6 +98,12 @@ window.AJAR_CONTENT = {
       linkLabel: 'Lees ons verhaal',
       linkHref: 'over-ons.html',
       image: 'story-02.jpg'
+    },
+    /* Full-bleed sfeer-band met quote — foto volgt uit Marokko (sfeer-09.jpg) */
+    mood: {
+      quote: 'Van de boomgaard in Taourirt naar de tafels van Nederland.',
+      sub: 'Drie generaties, één pers, één keten.',
+      image: 'sfeer-09.jpg'
     },
     product: {
       kicker: 'Het product',
@@ -281,9 +293,47 @@ window.AJAR_CONTENT = {
     pricing: {
       title: 'Prijs op aanvraag',
       text: 'We publiceren bewust geen prijslijst: B2B-prijzen hangen af van volume, frequentie en afspraken over levering. In één kort gesprek weet u waar u aan toe bent.',
+      fair: 'Eén uitgangspunt staat vast: eerlijke prijzen voor iedereen in de keten — de familie in Taourirt, u als ondernemer, en uw klant.',
       /* B2B rekent in dozen, niet in flessen. Definitieve doosinhoud volgt. */
       packaging: 'Levering per doos à 12 × 500 ml (definitieve doosinhoud volgt).',
       packagingTodo: true
+    },
+    /* Horeca-propositie: de fles werkt in de keuken én als verhaal op tafel. */
+    dualUse: {
+      kicker: 'In de keuken én op tafel',
+      title: 'Eén olie, twee rollen in uw zaak',
+      items: [
+        { title: 'In de keuken', text: 'Een constante, koudgeperste basis voor koude én warme gerechten — dezelfde kwaliteit in elke fles, rechtstreeks van één pers.' },
+        { title: 'Op tafel', text: 'Zet de fles bij het brood op tafel en het verhaal vertelt zichzelf: één familie, één boomgaard, Taourirt. Uw gasten proeven het verschil — en vragen ernaar.' }
+      ]
+    },
+    /* Productlijn / formaten — definitieve verpakkingen volgen. */
+    formats: {
+      kicker: 'De lijn',
+      title: 'Formaten',
+      items: [
+        { size: 'Proefflesje', name: 'De sample', text: 'Gratis kennismaking: genoeg om te proeven, te vergelijken en te beslissen.', shape: 'small', todo: true, todoNote: 'formaat volgt' },
+        { size: '500 ml', name: 'De fles', text: 'Het hart van de lijn — voor keuken en tafel, gebotteld aan de bron.', shape: 'bottle' },
+        { size: '12 × 500 ml', name: 'De doos', text: 'De B2B-eenheid waarin we leveren en rekenen.', shape: 'box', todo: true, todoNote: 'definitieve doosinhoud volgt' }
+      ]
+    },
+    /* Proeverij in uw zaak — de importeur zelf komt langs. */
+    tasting: {
+      kicker: 'Proeverij',
+      title: 'Proeverij in uw zaak',
+      text: 'Geen vertegenwoordiger met een koffer folders — de importeur zelf komt langs, schenkt de olie en vertelt het verhaal van de familie in Taourirt. Voor uw team, of als proefmoment voor uw klanten. Kost u niets behalve een half uur.',
+      button: 'Plan een proeverij',
+      buttonHref: 'contact.html?aanvraag=proeverij'
+    },
+    /* Sell-through-hulp voor delicatessenzaken en retail. */
+    support: {
+      kicker: 'Voor de winkel',
+      title: 'We helpen uw verkoop',
+      items: [
+        { title: 'Schapkaart met het verhaal', text: 'Een kaart bij het schap met de familie, de boomgaard en Taourirt — herkomst verkoopt, zeker naast anonieme flessen.' },
+        { title: 'Proefmoment voor uw klanten', text: 'We komen een dagdeel proeven schenken in uw winkel. Klanten die geproefd hebben, komen terug voor de fles.' },
+        { title: 'Bijbestellen via één appje', text: 'Geen bestelportaal, geen minimumdrempels vol kleine letters — één WhatsApp-bericht en de volgende doos komt eraan.' }
+      ]
     },
     /* Relatiegeschenken — tweede B2B-invalshoek. */
     gift: {
@@ -334,6 +384,43 @@ window.AJAR_CONTENT = {
       buttonHref: 'contact.html?aanvraag=sample',
       secondary: 'Offerte aanvragen',
       secondaryHref: 'contact.html?aanvraag=offerte'
+    }
+  },
+
+  /* ---------- Gratis sample (landingspagina — doel van QR-codes) ---------- */
+  sample: {
+    hero: {
+      kicker: 'Gratis sample',
+      title: 'Proef AJAR eerst — dan praten we verder',
+      sub: 'Vraag een gratis proefflesje aan voor uw zaak. U proeft rustig, vergelijkt met wat u nu gebruikt, en beslist daarna. Geen verplichtingen.'
+    },
+    how: {
+      kicker: 'Zo werkt het',
+      steps: [
+        { title: 'Aanvragen', text: 'Vul hieronder uw gegevens in — klaar in één minuut.' },
+        { title: 'Proeven', text: 'U ontvangt een proefflesje en proeft op uw eigen tempo, in uw eigen keuken.' },
+        { title: 'Beslissen', text: 'Bevalt de olie? Dan bespreken we volume en prijs. Zo niet, dan blijft het bij een goed proefmoment.' }
+      ]
+    },
+    usps: [
+      { title: 'Echt gratis', text: 'Geen kleine letters — het proefflesje kost u niets.' },
+      { title: 'Persoonlijk', text: 'U krijgt de olie van de importeur zelf, niet van een verkoopafdeling.' },
+      { title: 'Traceerbaar', text: 'Eén familiebedrijf in Taourirt, ISO 22000-gecertificeerd.' }
+    ],
+    form: {
+      title: 'Vraag uw proefflesje aan',
+      companyLabel: 'Bedrijfsnaam',
+      nameLabel: 'Contactpersoon',
+      emailLabel: 'E-mailadres',
+      phoneLabel: 'Telefoonnummer',
+      addressLabel: 'Bezorgadres (straat + nr, postcode, plaats)',
+      messageLabel: 'Opmerking (optioneel)',
+      /* "Deel de liefde"-draai, B2B: tip een collega-ondernemer */
+      tipLabel: 'Tip een collega-ondernemer (optioneel)',
+      tipPlaceholder: 'Naam zaak + plaats — dan verrassen we hen ook met een proefflesje',
+      submit: 'Gratis sample aanvragen',
+      success: 'Aanvraag ontvangen — het proefflesje komt eraan. Tot snel!',
+      emailSubject: 'Sample-aanvraag AJAR'
     }
   },
 

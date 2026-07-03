@@ -62,6 +62,12 @@
       '<a href="' + n.href + '"' + (n.id === page ? ' class="active" aria-current="page"' : '') + '>' + esc(n.label) + '</a>'
     ).join('');
 
+    /* Dunne belofte-topbar boven de (sticky) header — scrolt gewoon mee weg */
+    if (C.topbar && C.topbar.text && page !== 'sample') {
+      document.getElementById('site-header').insertAdjacentHTML('beforebegin',
+        '<a class="topbar" href="' + esc(C.topbar.href) + '" data-ga-event="sample_cta_click">' + esc(C.topbar.text) + '</a>');
+    }
+
     document.getElementById('site-header').innerHTML =
       '<div class="wrap header-inner">' +
         '<a class="brand" href="index.html" aria-label="' + esc(cfg.brandName) + ' — home">' +
@@ -79,10 +85,12 @@
     toggle.addEventListener('click', () => {
       const open = document.body.classList.toggle('nav-open');
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      document.documentElement.classList.toggle('nav-lock', open); // scroll-lock achter volscherm-menu
     });
     document.getElementById('site-nav').addEventListener('click', (e) => {
       if (e.target.tagName === 'A') {
         document.body.classList.remove('nav-open');
+        document.documentElement.classList.remove('nav-lock');
         toggle.setAttribute('aria-expanded', 'false');
       }
     });
@@ -189,6 +197,13 @@
           '<a class="text-link" href="' + esc(h.story.linkHref) + '">' + esc(h.story.linkLabel) + ' →</a>' +
         '</div>' +
       '</div></section>' +
+
+      /* Full-bleed sfeer-band met quote */
+      '<section class="mood-band reveal">' +
+        imgSlot(h.mood.image, '', 'img-mood') +
+        '<div class="mood-quote"><p class="mood-text">' + esc(h.mood.quote) + '</p>' +
+        '<p class="mood-sub">' + esc(h.mood.sub) + '</p></div>' +
+      '</section>' +
 
       '<section class="section split split-rev"><div class="wrap split-inner">' +
         '<div class="split-media reveal">' + imgSlot(h.product.image, 'AJAR fles 500 ml', '') + '</div>' +
@@ -337,12 +352,50 @@
         '</ol>' +
       '</div></section>' +
 
+      /* In de keuken én op tafel */
+      '<section class="section"><div class="wrap">' +
+        '<div class="section-head reveal">' + kickerTitle(b.dualUse.kicker, b.dualUse.title) + '</div>' +
+        '<div class="grid-2">' + b.dualUse.items.map(u =>
+          '<article class="card reveal"><span class="card-rule" aria-hidden="true"></span>' +
+          '<h3>' + esc(u.title) + '</h3><p>' + esc(u.text) + '</p></article>').join('') +
+        '</div>' +
+      '</div></section>' +
+
+      /* Formaten-lijn */
+      '<section class="section section-tint"><div class="wrap">' +
+        '<div class="section-head reveal">' + kickerTitle(b.formats.kicker, b.formats.title) + '</div>' +
+        '<div class="fmt-row">' + b.formats.items.map(f =>
+          '<div class="fmt-tile reveal' + (f.todo ? ' is-todo' : '') + '">' +
+            '<span class="fmt-shape fmt-' + esc(f.shape) + '" aria-hidden="true"></span>' +
+            '<span class="fmt-size">' + esc(f.size) + (f.todo ? ' <em>(' + esc(f.todoNote) + ')</em>' : '') + '</span>' +
+            '<h3>' + esc(f.name) + '</h3><p>' + esc(f.text) + '</p>' +
+          '</div>').join('') +
+        '</div>' +
+      '</div></section>' +
+
       '<section class="section"><div class="wrap wrap-narrow">' +
         '<div class="card pricing-card reveal">' +
           '<h2 class="section-title">' + esc(b.pricing.title) + '</h2>' +
           '<p>' + esc(b.pricing.text) + '</p>' +
+          '<p class="pricing-fair">' + esc(b.pricing.fair) + '</p>' +
           '<p class="pricing-packaging' + (b.pricing.packagingTodo ? ' is-todo' : '') + '">' + esc(b.pricing.packaging) + '</p>' +
         '</div>' +
+      '</div></section>' +
+
+      /* Proeverij in uw zaak */
+      '<section class="section section-tint"><div class="wrap wrap-narrow">' +
+        '<div class="card gift-card tasting-card reveal">' +
+          '<p class="kicker">' + esc(b.tasting.kicker) + '</p>' +
+          '<h2 class="section-title">' + esc(b.tasting.title) + '</h2>' +
+          '<p>' + esc(b.tasting.text) + '</p>' +
+          '<a class="btn btn-primary" href="' + esc(b.tasting.buttonHref) + '" data-ga-event="proeverij_cta_click">' + esc(b.tasting.button) + '</a>' +
+        '</div>' +
+      '</div></section>' +
+
+      /* Sell-through-hulp voor winkels */
+      '<section class="section"><div class="wrap">' +
+        '<div class="section-head reveal">' + kickerTitle(b.support.kicker, b.support.title) + '</div>' +
+        uspGrid(b.support.items) +
       '</div></section>' +
 
       /* Documentatie: spec-sheet (vrij) + bedrijfspresentatie (achter mini-formulier) */
@@ -445,6 +498,76 @@
     }
   }
 
+  function renderSample() {
+    const s = C.sample, f = s.form;
+    return pageHero(s.hero) +
+
+      '<section class="section"><div class="wrap">' +
+        '<ol class="process process-3" data-anim>' + s.how.steps.map((st, i) =>
+          '<li class="process-step reveal">' +
+            '<span class="process-num">' + (i + 1) + '</span>' +
+            '<h3>' + esc(st.title) + '</h3><p>' + esc(st.text) + '</p>' +
+          '</li>').join('') +
+        '</ol>' +
+      '</div></section>' +
+
+      '<section class="section section-tint"><div class="wrap contact-inner">' +
+        '<form class="card contact-form reveal" id="sample-form" novalidate>' +
+          '<h2 class="section-title">' + esc(f.title) + '</h2>' +
+          '<input type="text" name="_gotcha" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+          '<div class="form-grid">' +
+            '<label class="form-field"><span>' + esc(f.companyLabel) + ' *</span><input type="text" name="bedrijf" required></label>' +
+            '<label class="form-field"><span>' + esc(f.nameLabel) + ' *</span><input type="text" name="naam" required></label>' +
+            '<label class="form-field"><span>' + esc(f.emailLabel) + ' *</span><input type="email" name="email" required></label>' +
+            '<label class="form-field"><span>' + esc(f.phoneLabel) + '</span><input type="tel" name="telefoon" inputmode="tel"></label>' +
+          '</div>' +
+          '<label class="form-field"><span>' + esc(f.addressLabel) + ' *</span><input type="text" name="adres" required></label>' +
+          '<label class="form-field"><span>' + esc(f.messageLabel) + '</span><textarea name="bericht" rows="3"></textarea></label>' +
+          '<label class="form-field tip-field"><span>' + esc(f.tipLabel) + '</span>' +
+            '<input type="text" name="tip" placeholder="' + esc(f.tipPlaceholder) + '"></label>' +
+          '<div class="form-actions">' +
+            '<button type="submit" class="btn btn-primary" data-ga-event="sample_aanvraag">' + esc(f.submit) + '</button>' +
+          '</div>' +
+          '<p class="form-note">' + esc(C.contact.form.privacyNote) + ' <a href="privacy.html">Privacyverklaring</a></p>' +
+          '<p class="form-error" data-role="error" hidden></p>' +
+          '<p class="form-success" data-role="success" hidden></p>' +
+        '</form>' +
+
+        '<aside class="contact-aside">' +
+          '<div class="card reveal"><span class="card-rule" aria-hidden="true"></span>' +
+            s.usps.map(u => '<h3>' + esc(u.title) + '</h3><p class="sample-usp">' + esc(u.text) + '</p>').join('') +
+          '</div>' +
+          '<div class="card reveal">' +
+            '<h3>' + esc(C.contact.direct.title) + '</h3>' +
+            '<p>' + esc(C.contact.direct.text) + '</p>' +
+            '<a class="btn btn-primary btn-wa" href="' + waLink('Hallo, ik wil graag een gratis sample van AJAR olijfolie aanvragen voor mijn zaak.') + '" target="_blank" rel="noopener" data-ga-event="whatsapp_click">' + esc(C.contact.direct.whatsappLabel) + '</a>' +
+          '</div>' +
+        '</aside>' +
+      '</div></section>';
+  }
+
+  function initSampleForm() {
+    const form = document.getElementById('sample-form');
+    if (!form) return;
+    const f = C.sample.form;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v = formVals(form);
+      if (!v.naam || !v.bedrijf || !/.+@.+\..+/.test(v.email) || !v.adres) {
+        showMsg(form, 'error', 'Vul minimaal bedrijfsnaam, contactpersoon, e-mailadres en bezorgadres in.');
+        return;
+      }
+      v._subject = f.emailSubject + ' — ' + v.bedrijf;
+      const waText = 'Sample-aanvraag ' + cfg.brandName + '\n\nBedrijf: ' + v.bedrijf + '\nContactpersoon: ' + v.naam +
+        '\nE-mail: ' + v.email + (v.telefoon ? '\nTelefoon: ' + v.telefoon : '') +
+        '\nBezorgadres: ' + v.adres +
+        (v.bericht ? '\nOpmerking: ' + v.bericht : '') +
+        (v.tip ? '\nTip collega-ondernemer: ' + v.tip : '');
+      const ok = await submitLead(form, v, waText, f.success);
+      if (ok) gaEvent('sample_aanvraag', { tip: v.tip ? 'ja' : 'nee' });
+    });
+  }
+
   function renderPrivacy() {
     const p = C.privacy;
     return pageHero(p.hero) +
@@ -533,9 +656,13 @@
     if (!form) return;
     const f = C.contact.form;
 
-    // Voorselectie via ?aanvraag=sample|offerte (CTA's van andere pagina's)
+    // Voorselectie via ?aanvraag=sample|offerte|proeverij (CTA's van andere pagina's)
     const param = new URLSearchParams(location.search).get('aanvraag');
     if (param === 'sample') form.querySelector('select[name=volume]').value = 'sample';
+    if (param === 'proeverij') {
+      form.querySelector('select[name=volume]').value = 'sample';
+      form.querySelector('textarea[name=bericht]').value = 'Ik heb interesse in een proeverij in mijn zaak.';
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -775,13 +902,15 @@
 
   const renderers = {
     home: renderHome, 'over-ons': renderAbout, product: renderProduct,
-    zakelijk: renderB2b, contact: renderContact, privacy: renderPrivacy
+    zakelijk: renderB2b, contact: renderContact, privacy: renderPrivacy,
+    sample: renderSample
   };
 
   renderHeader();
   document.getElementById('site-main').innerHTML = (renderers[page] || renderHome)();
   renderFooter();
   initContactForm();
+  initSampleForm();
   initPresentationForm();
   initConsent();
   injectJsonLd();

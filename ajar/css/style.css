@@ -109,6 +109,21 @@ p { margin: 0 0 1em; }
 }
 .btn-ghost:hover { border-color: var(--olive); background: rgba(62,75,46,.05); }
 
+/* ---------- Topbar (belofte-balk, scrolt mee weg) ---------- */
+.topbar {
+  display: block;
+  padding: 8px 20px calc(8px + 0px);
+  padding-top: calc(8px + env(safe-area-inset-top, 0px));
+  background: var(--olive-deep);
+  color: rgba(247,245,240,.92);
+  font-size: .78rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-align: center;
+  transition: background .25s var(--ease);
+}
+.topbar:hover { background: var(--olive); color: #fff; }
+
 /* ---------- Header ---------- */
 .site-header {
   position: sticky;
@@ -170,29 +185,64 @@ body.scrolled .site-header {
 body.nav-open .nav-toggle span:first-child { transform: translateY(4px) rotate(45deg); }
 body.nav-open .nav-toggle span:last-child { transform: translateY(-4px) rotate(-45deg); }
 
+/* Volscherm mobiel menu — grote serif-items, rustig en high-end */
 @media (max-width: 860px) {
-  .nav-toggle { display: flex; }
+  .nav-toggle { display: flex; position: relative; z-index: 45; }
+  .brand { position: relative; z-index: 45; }
+  html.nav-lock, html.nav-lock body { overflow: hidden; }
   .site-nav {
-    position: absolute;
-    top: 100%;
-    left: 0; right: 0;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: -1;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    padding: 10px 20px 22px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--line);
-    box-shadow: 0 18px 30px rgba(30,30,28,.08);
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 110px 28px calc(28px + env(safe-area-inset-bottom, 0px));
+    background:
+      radial-gradient(120% 60% at 85% -10%, rgba(184,147,74,.08), transparent 60%),
+      var(--bg);
     display: none;
+    overflow-y: auto;
   }
-  body.nav-open .site-nav { display: flex; }
-  .site-nav a:not(.btn) { font-size: 1.05rem; padding: 10px 0; width: 100%; }
+  body.nav-open .site-nav { display: flex; z-index: 40; animation: menuIn .35s var(--ease) both; }
+  body.nav-open .topbar { visibility: hidden; }
+  /* backdrop-filter maakt de header het containing block voor fixed-kinderen —
+     uitzetten zolang het menu open is, anders zit het volscherm-menu gevangen in de headerbalk */
+  body.nav-open .site-header {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--bg);
+  }
+  .site-nav a:not(.btn) {
+    font-family: var(--serif);
+    font-size: 1.65rem;
+    color: var(--ink);
+    padding: 16px 2px;
+    width: 100%;
+    border-bottom: 1px solid var(--line);
+  }
+  .site-nav a:not(.btn):first-child { border-top: 1px solid var(--line); }
   .site-nav a.active {
-    border-bottom-color: transparent;
-    border-left: 2px solid var(--gold);
-    padding-left: 12px;
+    color: var(--olive);
+    border-left: none;
+    padding-left: 2px;
+    position: relative;
   }
-  .nav-cta { margin: 12px 0 0; }
+  .site-nav a.active::before {
+    content: '';
+    position: absolute;
+    right: 2px; top: 50%;
+    width: 8px; height: 8px;
+    transform: translateY(-50%) rotate(45deg);
+    background: var(--gold);
+    border-radius: 0 50% 50% 50%; /* oliedruppel-marker */
+  }
+  .nav-cta { margin: 26px 0 0; text-align: center; font-size: 1rem; padding: 1em 1.6em; }
+}
+@keyframes menuIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
 }
 
 /* ---------- Hero (home) ---------- */
@@ -311,6 +361,55 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .img-hero { aspect-ratio: 4 / 5; max-height: 560px; }
 .img-tall { aspect-ratio: 3 / 4; }
 .img-step { aspect-ratio: 16 / 10; margin-bottom: 18px; }
+
+/* ---------- Sfeer-band (full-bleed beeld + quote) ---------- */
+.mood-band {
+  position: relative;
+  min-height: clamp(300px, 46vw, 460px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: clamp(1rem, 3vw, 2.5rem) 0;
+}
+.mood-band .img-slot.img-mood {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  border-radius: 0;
+  box-shadow: none;
+}
+.mood-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(90% 90% at 50% 55%, rgba(30,36,20,.28), rgba(30,36,20,.62));
+}
+.mood-quote {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  padding: 40px 24px;
+  max-width: 720px;
+}
+.mood-text {
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 1.1rem + 2.4vw, 2.4rem);
+  line-height: 1.25;
+  color: #F7F5F0;
+  margin: 0 0 .5em;
+  text-wrap: balance;
+}
+.mood-sub {
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0;
+}
 
 /* ---------- Testimonials ---------- */
 .quote-card blockquote {
@@ -722,6 +821,92 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .pres-form .form-field { margin-bottom: 12px; }
 .form-success { color: var(--olive-soft); font-weight: 500; font-size: .92rem; margin: 12px 0 0; }
 .hp-field { position: absolute !important; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+/* ---------- Formaten-lijn ---------- */
+.fmt-row { display: grid; gap: 18px; }
+@media (min-width: 700px) { .fmt-row { grid-template-columns: repeat(3, 1fr); } }
+.fmt-tile {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px 24px 24px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.fmt-tile.is-todo { border-style: dashed; }
+.fmt-tile h3 { font-size: 1.15rem; margin: .3em 0 .35em; }
+.fmt-tile p { color: var(--ink-soft); font-size: .9rem; margin: 0; }
+.fmt-size {
+  display: block;
+  font-size: .74rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.fmt-size em { font-style: italic; text-transform: none; letter-spacing: 0; opacity: .8; }
+/* Flessilhouetten in CSS — klein proefflesje, fles, doos */
+.fmt-shape { display: block; margin: 0 auto 16px; position: relative; }
+.fmt-small, .fmt-bottle {
+  width: 16px;
+  background: linear-gradient(180deg, rgba(62,75,46,.85), var(--olive));
+  border-radius: 4px 4px 6px 6px;
+}
+.fmt-small { height: 34px; margin-top: 26px; }
+.fmt-bottle { height: 52px; width: 20px; margin-top: 8px; }
+.fmt-small::before, .fmt-bottle::before {
+  content: '';
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  top: -9px;
+  width: 7px; height: 10px;
+  background: var(--olive);
+  border-radius: 2px 2px 0 0;
+}
+.fmt-small::after, .fmt-bottle::after {
+  content: '';
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  top: -13px;
+  width: 9px; height: 5px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+.fmt-box {
+  width: 58px; height: 40px;
+  margin-top: 20px;
+  border: 2px solid var(--olive);
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, transparent 31%, rgba(62,75,46,.35) 31%, rgba(62,75,46,.35) 33%, transparent 33%,
+      transparent 64%, rgba(62,75,46,.35) 64%, rgba(62,75,46,.35) 66%, transparent 66%);
+}
+.fmt-box::before {
+  content: '';
+  position: absolute;
+  left: -2px; right: -2px; top: 12px;
+  height: 2px;
+  background: var(--gold);
+}
+
+/* ---------- B2B: eerlijke prijs + proeverij ---------- */
+.pricing-fair {
+  margin: 1.1em auto 0;
+  max-width: 48ch;
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  color: var(--olive);
+}
+.tasting-card .btn { margin-top: 6px; }
+
+/* ---------- Sample-pagina ---------- */
+.sample-usp { margin-bottom: 1.2em !important; }
+.tip-field input { border-style: dashed; }
+.tip-field input:focus { border-style: solid; }
+.tip-field span::after {
+  content: ' ♥';
+  color: var(--gold);
+}
 
 /* ---------- Privacyverklaring ---------- */
 .privacy-block { margin-bottom: 1.6rem; }

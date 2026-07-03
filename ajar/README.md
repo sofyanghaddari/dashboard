@@ -24,6 +24,12 @@ Overige TODO's zijn in `content.js` gemarkeerd met `todo: true` (FAQ-antwoorden,
 
 Zet JPG's met de juiste bestandsnaam in `assets/images/` — zie `assets/images/LEES-MIJ.txt` en `SHOTLIST.md`. Zolang een foto ontbreekt staat er een nette gradient-placeholder. Tip: max ± 300 KB per foto (1600px breed is genoeg); de site lazy-loadt alles automatisch.
 
+## Sample-landingspagina (QR-doel)
+
+`sample.html` is de landingspagina voor gratis samples — richt je QR-codes dáárop, met UTM per kanaal:
+`…/ajar/sample.html?utm_source=visitekaartje` of `?utm_source=taxi-sample`. Het formulier heeft een
+"tip een collega-ondernemer"-veld (gaat mee in de aanvraag) en werkt via Formspree of de WhatsApp-fallback.
+
 ## Formspree instellen (formulieren)
 
 1. Account op formspree.io → New form → e-mailadres kiezen waarop je aanvragen wilt ontvangen.
