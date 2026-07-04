@@ -149,15 +149,25 @@ AJAR's onderscheid blijft: Marokkaanse herkomst + directe-importeur-verhaal.
 Deze gaten kan alléén Soef vullen; **nooit invullen met verzonnen data.** Zodra hij ze levert,
 verdwijnen de "volgt"-placeholders vanzelf.
 
+**Status per 4 juli 2026 (laatste check-in met Soef):**
+- ✅ **Cultivar bevestigd: Picholine Marocaine** — toegevoegd aan `content.js` (`product.specs.rows`,
+  regel "Olijfvariëteit"), geen `todo` meer, staat nu gewoon op de site.
+- ⏳ **Certificering: in aanvraag** — nog niet definitief, dus placeholder blijft staan tot het
+  certificaat er is (bio/Fairtrade/ISO-achtig, exacte vorm nog onbekend).
+- ⏳ **Prijzen: komt nog** — bewust nog niet tonen; `assurance`-blok ("leverafspraken vooraf") vangt
+  dit gat voorlopig op.
+- ⏳ **Flessen: moeten nog komen** — verpakking/fles is nog niet klaar, dus nog geen productfoto
+  van de fles mogelijk; site gebruikt tot die tijd sfeer-/olijffoto's, geen mockup verzinnen.
+
 **Data / inhoud (kritisch voor vertrouwen):**
 - [ ] **Smaakprofiel** van de olie (bijv. fruitig/pittig/mild, nasmaak) — Olyfia heeft dit wél.
 - [ ] **Kwaliteitscijfers:** zuurgraad (%), evt. polyfenolen, oogstjaar.
-- [ ] **Cultivar** (waarschijnlijk Picholine Marocaine — te bevestigen).
-- [ ] **Certificering** (bio? Fairtrade? lab-/analysecertificaat?) of eerlijk "in aanvraag".
-- [ ] **Prijsindicatie / staffels** voor zakelijke afname (of "op aanvraag" bewust laten).
+- [x] ~~Cultivar~~ → **Picholine Marocaine, bevestigd en verwerkt.**
+- [ ] **Certificering** — in aanvraag, nog niet definitief.
+- [ ] **Prijsindicatie / staffels** voor zakelijke afname — komt nog, bewust "op aanvraag" gelaten.
 - [ ] **Minimale afname / verpakking / gebindes** (bijv. 5 L blik, doosinhoud).
 - [ ] **Houdbaarheid (THT)** en opslagadvies.
-- [ ] **Echte flesfoto / verpakkingsfoto** in productiekwaliteit.
+- [ ] **Echte flesfoto / verpakkingsfoto** — kan pas zodra de fles/verpakking klaar is.
 - [ ] **Eerste klant / referentie / testimonial** (zodra beschikbaar).
 - [ ] **Tijdlijn-jaartallen** (oprichting, mijlpalen) voor Over ons.
 

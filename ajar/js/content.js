@@ -201,6 +201,7 @@ window.AJAR_CONTENT = {
         { label: 'Inhoud', value: '500 ml' },
         { label: 'Persing', value: 'Koud geperst' },
         { label: 'Herkomst', value: 'Noordoost-Marokko — eigen productie' },
+        { label: 'Olijfvariëteit', value: 'Picholine Marocaine' },
         /* TODO: onderstaande vult Soef later aan (na de Marokko-trip / oogstinfo) */
         { label: 'Oogst', value: 'Volgt — informatie huidige oogst', todo: true },
         { label: 'Smaakprofiel', value: 'Volgt — proefnotities huidige oogst', todo: true }
