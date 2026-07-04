@@ -1419,10 +1419,16 @@ body::after {
 /* ── Magnetische knoppen: soepel terugveren na pointerleave ── */
 .btn-primary, .nav-cta { transition: transform .35s var(--ease), background .25s var(--ease), box-shadow .3s var(--ease); }
 
-/* ── Slimme header: weg bij omlaag scrollen, direct terug bij omhoog ── */
-.site-header { transform: translateY(0); }
+/* ── Slimme header: weg bij omlaag scrollen, direct terug bij omhoog ──
+   BUG (opgelost): een permanente `transform` op .site-header — zelfs translateY(0) — maakt de
+   header het containing block voor position:fixed kinderen. .site-nav (het volscherm-mobielmenu)
+   is fixed en werd daardoor opgesloten in de ~90px hoge headerbalk i.p.v. het hele scherm te
+   vullen: het menu "deed het niet". Fix: transform alléén zetten wanneer hdr-hide actief is,
+   nooit als permanente baseline-regel. */
 body.hdr-hide .site-header { transform: translateY(-105%); }
 .site-header { transition: transform .38s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease), background .3s var(--ease); }
+/* Zolang het volscherm-menu open is: nooit een transform op de header, wat er ook gebeurt */
+body.nav-open .site-header { transform: none !important; }
 
 /* ── Lightbox: fabrieks-/procesfoto's groot bekijken ── */
 .has-lightbox { cursor: zoom-in; }
