@@ -94,6 +94,31 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 - **Docs:** `README.md` (beheer), `SHOTLIST.md` (18-shot fotoplan), `LEES-MIJ.txt` (fotostatus),
   `CNAME.example` (custom-domein-route).
 
+### v3b — echte ajar.ma-fabrieksfoto's aangeleverd (4 juli 2026, zelfde dag)
+
+Direct na v3 leverde Soef 5 echte foto's van de moederfabriek in Taourirt aan (rechten in orde,
+géén olijfolie maar andere ConservAjar/AJAR-producten: tafelolijven, abrikozenconserven). Alle 5
+AI-opgeschaald naar UHD (zelfde stapsgewijze Lanczos+unsharp-methode als eerder — Higgsfield-
+upscaler weer geblokkeerd op een goedkeuringsstap).
+
+- **`fabriek-taourirt.jpg`** (de sterkste van de 5: medewerkers die olijven sorteren op de
+  fabrieksvloer) vult nu de placeholder die in v3 was klaargezet — op **Over ons** bij "Van
+  MOUSTAINE naar AJAR" én in de **home-beeldsectie**. Geen placeholder meer, dit is een echte foto.
+- **4 overige foto's** (magazijn met pallets, tafelolijven in emmers, verpakte conserven, verpakte
+  olijven) zijn **bewust niet** op de Product-pagina gezet (die gaat alleen over de olie) en
+  **bewust niet** als productgrid/aanbod gepresenteerd (harde regel uit de v3-brief: "geen
+  opsomming van jam en specerijen als aanbod"). In plaats daarvan: een nieuwe, stille fotostrip-
+  sectie op Over ons (`about.factoryGallery` in content.js, `factoryGallery()` in main.js) — alleen
+  een korte kicker + 1 zin + 4 rustige foto's zonder namen/prijzen/aanbod-taal, direct onder de
+  bestaande 3 tekstblokken en vóór de tijdlijn. Dit is de fotografische tegenhanger van de ene
+  toegestane assortiment-zin uit v3, niet een nieuwe verkoopsectie.
+- CSS: `.factory-gallery-row` (2×2 op mobiel, 4-op-een-rij vanaf 700px, vierkante crops).
+- Geverifieerd: alle 5 bestanden laden (200), geen gebroken images, geen overflow op zowel iPhone-
+  als desktopformaat, screenshots bevestigen correcte plaatsing op zowel Over ons als home.
+- **Nog openstaand:** `proces-05.jpg` (Persing-stap) is nog een stockfoto van een vorige ronde —
+  deze 5 nieuwe foto's tonen conserven-productie, niet specifiek de olieperserij, dus vervangen die
+  slot niet automatisch. Zie LEES-MIJ.txt voor de volledige, actuele foto-routekaart.
+
 ### v3 — verbeterronde: homepage naar max 4 secties + fabrieksverhaal ajar.ma (4 juli 2026)
 
 Grote, formeel gebriefde verbeterronde ("Verbeter de bestaande AJAR-website" — geen herbouw, gerichte

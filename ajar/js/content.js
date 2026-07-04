@@ -138,7 +138,9 @@ window.AJAR_CONTENT = {
         title: 'Van MOUSTAINE naar AJAR',
         /* v3 (verbeterronde): getrimd naar 2 zinnen (leesbaarheid) + 1 nieuwe zin over het bredere
            assortiment van de fabriek, als bewijs van schaal/ervaring — bewust geen productgrid of
-           opsomming als aanbod, alleen olijfolie wordt in Nederland verkocht. */
+           opsomming als aanbod, alleen olijfolie wordt in Nederland verkocht.
+           v4: fabriek-taourirt.jpg is nu een ECHTE ajar.ma-foto (productielijn, medewerkers sorteren
+           olijven) — geen placeholder meer, aangeleverd door Soef. */
         text: "ConservAjar SARL werd begin jaren '90 opgericht onder de naam MOUSTAINE, in het noordoosten van Marokko — een familiebedrijf waar de kennis van het persen en verwerken van olijven al drie generaties wordt doorgegeven. Naast olijfolie conserveert het bedrijf ook tafelolijven, abrikozenpulp en specerijen onder het eigen merk AJAR, in binnen- en buitenland.",
         image: 'fabriek-taourirt.jpg'
       },
@@ -150,11 +152,25 @@ window.AJAR_CONTENT = {
       {
         title: 'De eerste officiële importeur in Nederland',
         text: 'AJAR was tot nu toe niet officieel verkrijgbaar in Nederland. Als familie van de oprichters brengen wij de olie nu rechtstreeks naar de Nederlandse markt — met de importeursvermelding, documentatie en korte lijnen die daarbij horen. Geen tussenhandel, wél één aanspreekpunt in Amsterdam.',
-        /* overons-08.jpg (echte AJAR-foto) verhuisd hierheen — blocks[0] gebruikt nu de nieuwe
-           fabrieksgevel-foto (fabriek-taourirt.jpg, nog aan te leveren) als sterker bewijsstuk. */
+        /* overons-08.jpg (echte AJAR-foto) verhuisd hierheen — blocks[0] gebruikt de nieuwe
+           productielijn-foto (fabriek-taourirt.jpg) als sterker bewijsstuk. */
         image: 'overons-08.jpg'
       }
     ],
+    /* Bewijs van schaal: 4 echte ajar.ma-foto's van het bredere assortiment (magazijn, tafelolijven,
+       conserven) — bewust GEEN productgrid met namen/prijzen/aanbod-taal, alleen een korte kicker
+       + stille foto's. Zelfde principe als de ene assortiment-zin hierboven: laat zien dat de fabriek
+       op schaal werkt, zonder het als verkoopaanbod te presenteren (dat blijft olijfolie-only). */
+    factoryGallery: {
+      kicker: 'Ook bij ConservAjar SARL',
+      text: 'Dezelfde fabriek verwerkt en verpakt op schaal — hier voor het bredere assortiment onder het merk AJAR.',
+      images: [
+        { file: 'ajar-magazijn-pallets.jpg', alt: 'Magazijn met verpakte AJAR-producten op pallets' },
+        { file: 'ajar-tafelolijven-emmers.jpg', alt: 'Tafelolijven, verpakt bij ConservAjar SARL' },
+        { file: 'ajar-magazijn-conserven.jpg', alt: 'Verpakte conserven, klaar voor verzending' },
+        { file: 'ajar-olijven-verpakt.jpg', alt: 'Verpakte olijven met het AJAR-etiket' }
+      ]
+    },
     /* Familie-tijdlijn — namen/jaartallen van de generaties volgen na overleg met de familie (augustus). */
     timeline: {
       kicker: 'De tijdlijn',

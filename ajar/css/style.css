@@ -700,6 +700,22 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .partners-row img { height: 34px; width: auto; filter: grayscale(1); opacity: .75; }
 .partner-name { font-family: var(--serif); font-size: 1.05rem; color: var(--ink-soft); }
 
+/* ---------- Bewijs van schaal: stille fotostrip (geen productgrid) ---------- */
+.factory-gallery-text {
+  max-width: 56ch;
+  color: var(--ink-soft);
+  margin: .3em 0 1.6rem;
+}
+.factory-gallery-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (min-width: 700px) {
+  .factory-gallery-row { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+}
+.factory-gallery-item .img-slot { aspect-ratio: 1 / 1; }
+
 /* ---------- Familie-tijdlijn ---------- */
 .timeline { list-style: none; margin: 0; padding: 0 0 0 26px; position: relative; }
 .timeline::before {

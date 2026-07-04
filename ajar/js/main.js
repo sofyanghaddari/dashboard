@@ -237,6 +237,19 @@
       ctaBand(h.cta);
   }
 
+  /* Bewijs van schaal: stille fotostrip, GEEN productgrid — geen namen/prijzen/aanbod-taal,
+     alleen een korte kicker + zin + 4 rustige foto's van de fabriek. */
+  function factoryGallery(g) {
+    if (!g || !g.images || !g.images.length) return '';
+    return '<section class="section factory-gallery"><div class="wrap">' +
+      '<p class="kicker reveal">' + esc(g.kicker) + '</p>' +
+      '<p class="factory-gallery-text reveal">' + esc(g.text) + '</p>' +
+      '<div class="factory-gallery-row">' + g.images.map(im =>
+        '<div class="factory-gallery-item reveal">' + imgSlot(im.file, im.alt, '') + '</div>').join('') +
+      '</div>' +
+    '</div></section>';
+  }
+
   function renderAbout() {
     const a = C.about;
     const tl = a.timeline;
@@ -252,6 +265,8 @@
         return '<section class="section"><div class="wrap wrap-narrow prose reveal">' +
           '<h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div></section>';
       }).join('') +
+
+      factoryGallery(a.factoryGallery) +
 
       /* Familie-tijdlijn */
       '<section class="section section-tint"><div class="wrap wrap-narrow">' +
