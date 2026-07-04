@@ -682,36 +682,9 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   letter-spacing: .04em;
 }
 
-/* ---------- Vertrouwensrij (i.p.v. lege testimonials) ---------- */
-.trust-row { display: grid; gap: 16px; }
-@media (min-width: 640px) { .trust-row { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 940px) { .trust-row { grid-template-columns: repeat(4, 1fr); } }
-.trust-tile {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 26px 22px;
-  box-shadow: var(--shadow);
-}
-.trust-big {
-  display: block;
-  font-family: var(--serif);
-  font-size: 2.1rem;
-  line-height: 1;
-  color: var(--olive);
-  margin-bottom: .3em;
-}
-.trust-label {
-  display: block;
-  font-size: .72rem;
-  font-weight: 600;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: .7em;
-}
-.trust-tile p { color: var(--ink-soft); font-size: .9rem; margin: 0; }
-.trust-note { text-align: center; margin-top: 1.6rem; }
+/* ---------- Vertrouwensrij (i.p.v. lege testimonials) ----------
+   v2: geen tegel-grid meer (was 3/4 dubbelop met hero-badges + USP's) —
+   nu alleen een korte kicker/title/note via kickerTitle(), zie testimonialsOrTrust() in main.js. */
 
 /* ---------- Kwaliteit-uitleg ---------- */
 .quality-explain {
@@ -1332,17 +1305,6 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
   will-change: transform;
 }
 
-/* ── Vertrouwenscijfers klappen 3D open bij scroll ── */
-.trust-tile { perspective: 700px; }
-.trust-tile.in .trust-big { animation: bigFlip .9s var(--ease) both; }
-.trust-row .trust-tile:nth-child(2).in .trust-big { animation-delay: .1s; }
-.trust-row .trust-tile:nth-child(3).in .trust-big { animation-delay: .2s; }
-.trust-row .trust-tile:nth-child(4).in .trust-big { animation-delay: .3s; }
-@keyframes bigFlip {
-  from { transform: rotateX(-85deg); opacity: 0; }
-  to { transform: rotateX(0); opacity: 1; }
-}
-
 /* ── Procesnummers kantelen 3D binnen ── */
 .process-step.in .process-num { animation: numFlip .7s var(--ease) both .15s; }
 @keyframes numFlip {
@@ -1492,7 +1454,7 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
   .tilt-live { transform: none !important; transition: none; box-shadow: var(--shadow); }
   .tilt .tilt-glare { display: none; }
   .hero-3d { transform: none !important; transition: none; }
-  .trust-tile.in .trust-big, .process-step.in .process-num { animation: none !important; }
+  .process-step.in .process-num { animation: none !important; }
   .route-line { stroke-dashoffset: 0 !important; transition: none !important; }
   [data-route].go .route-ring { animation: none !important; }
   .route-drop-g { display: none; }

@@ -85,8 +85,11 @@ window.AJAR_CONTENT = {
       title: 'Extra vierge olijfolie, rechtstreeks uit Marokko',
       sub: 'AJAR levert koudgeperste extra vierge olijfolie van een familiebedrijf met drie generaties kennis — via één korte, directe keten naar de Nederlandse horeca en speciaalzaak.',
       image: 'hero-01.jpg',
-      /* Vertrouwenschips direct in de hero — alleen harde feiten */
-      badges: ['ISO 22000 · SGS', 'Picholine Marocaine', 'Rechtstreeks uit Taourirt']
+      /* Vertrouwenschips direct in de hero — alleen harde feiten.
+         Let op: "Taourirt" mag hier NOOIT aan de boomgaarden/grond gekoppeld worden —
+         Taourirt is uitsluitend de vestigingsplaats van de fabriek/pers (ConservAjar SARL).
+         De boomgaarden liggen in de Debdou-regio. Zie ook home.route en product.cultivar. */
+      badges: ['ISO 22000 · SGS', 'Picholine Marocaine', 'Eigen pers in Taourirt']
     },
     usps: [
       { title: 'Eerste officiële importeur', text: 'AJAR wordt als eerste officieel in Nederland geïmporteerd — rechtstreeks van de producent, zonder tussenschakels.' },
@@ -108,12 +111,14 @@ window.AJAR_CONTENT = {
       linkHref: 'over-ons.html',
       image: 'story-02.jpg'
     },
-    /* De route: geanimeerde kaart Taourirt → Amsterdam — de korte keten als beeld */
+    /* De route: geanimeerde kaart Debdou-regio → Amsterdam — de korte keten als beeld.
+       Boomgaarden = Debdou-regio; Taourirt = alleen de fabriek/pers (genoemd in de tekst,
+       bewust géén los kaartpunt — dat zou de kaart onnodig drukker maken). */
     route: {
       kicker: 'De route',
-      title: 'Van Taourirt naar uw zaak',
-      text: 'Geen verzamelpartijen, geen anonieme tussenhandel. De olie legt één route af: van de eigen boomgaard en pers in Taourirt, gebotteld aan de bron, rechtstreeks naar Nederland.',
-      from: 'Taourirt — boomgaard & eigen pers',
+      title: 'Van boomgaard naar uw zaak',
+      text: 'Geen verzamelpartijen, geen anonieme tussenhandel. De olijven komen van eigen boomgaarden in de Debdou-regio, worden geperst en gebotteld in de eigen fabriek in Taourirt, en gaan rechtstreeks naar Nederland.',
+      from: 'Debdou-regio — eigen boomgaarden',
       fromCountry: 'Marokko',
       to: 'Amsterdam — importeur',
       toCountry: 'Nederland',
@@ -145,17 +150,14 @@ window.AJAR_CONTENT = {
         { quote: '', author: '', company: '' }
       ]
     },
-    /* Echte vertrouwenssignalen (feiten, geen verzonnen quotes) — getoond zolang er geen testimonials zijn. */
+    /* Eerlijke geruststelling i.p.v. verzonnen quotes — getoond zolang er geen testimonials zijn.
+       BEWUST geen herhaling van ISO 22000 / eerste-importeur / geen-tussenschakels: die feiten
+       staan al in de hero-badges én de USP's hierboven. Drie keer dezelfde drie feiten op één
+       pagina overladen een zakelijke bezoeker eerder dan dat het overtuigt (feedback 4 juli 2026). */
     trust: {
-      kicker: 'Waarom AJAR',
-      title: 'Waarop u kunt bouwen',
-      note: 'Zodra de eerste zaken met AJAR werken, leest u hier hun ervaring. Tot dan: waar wij nu al voor staan.',
-      items: [
-        { big: 'ISO 22000', label: 'Gecertificeerd door SGS', text: 'Voedselveiligheid en traceerbaarheid per partij — extern getoetst.' },
-        { big: '1e', label: 'Officiële NL-importeur', text: 'AJAR wordt als eerste officieel in Nederland geïmporteerd.' },
-        { big: '3', label: 'Generaties vakkennis', text: 'Een familiebedrijf dat al sinds begin jaren ’90 olijven perst.' },
-        { big: '0', label: 'Tussenschakels', text: 'Van de eigen pers rechtstreeks naar uw zaak — geen anonieme bulk.' }
-      ]
+      kicker: 'Nog geen klantverhalen',
+      title: 'Eerlijk: wij zijn nieuw in Nederland',
+      note: 'AJAR wordt hier voor het eerst officieel geïmporteerd — er zijn dus nog geen quotes om te tonen, en die verzinnen we niet. Zodra de eerste zaken met ons werken, leest u hier hun ervaring.'
     },
     cta: {
       title: 'Proeven zegt meer dan lezen',
@@ -218,8 +220,8 @@ window.AJAR_CONTENT = {
       rows: [
         { label: 'Categorie', value: 'Extra vierge olijfolie (eerste persing)' },
         { label: 'Inhoud', value: '500 ml' },
-        { label: 'Persing', value: 'Koud geperst' },
-        { label: 'Herkomst', value: 'Noordoost-Marokko — eigen productie' },
+        { label: 'Herkomst olijven', value: 'Debdou-regio, noordoost-Marokko — eigen boomgaarden' },
+        { label: 'Persing & botteling', value: 'Koud geperst, eigen fabriek in Taourirt (ConservAjar SARL)' },
         { label: 'Olijfvariëteit', value: 'Picholine Marocaine' },
         /* TODO: onderstaande vult Soef later aan (na de Marokko-trip / oogstinfo) */
         { label: 'Oogst', value: 'Volgt — informatie huidige oogst', todo: true },
@@ -232,7 +234,7 @@ window.AJAR_CONTENT = {
       title: 'Picholine Marocaine',
       text: 'AJAR wordt geperst van één olijfvariëteit: de Picholine Marocaine, de meest aangeplante olijf van Marokko. Geen blend van wisselende rassen en herkomsten — één olijf, van eigen grond.',
       points: [
-        { title: 'Thuis in het oosten', text: 'De variëteit gedijt in het droge klimaat van oost-Marokko — precies de streek rond Taourirt waar de boomgaarden staan.' },
+        { title: 'Thuis in het oosten', text: 'De variëteit gedijt in het droge klimaat van oost-Marokko — precies de streek rond Debdou waar de boomgaarden staan.' },
         { title: 'Eén ras, geen blend', text: 'Waar veel olijfolie een mengsel is van rassen en landen van herkomst, komt AJAR van één cultivar en één producent.' },
         { title: 'Proefnotities volgen', text: 'Het smaakprofiel van de huidige oogst leggen we vast zodra de proefnotities en lab-analyse binnen zijn — die leest u hier als eerste.' }
       ]
@@ -569,8 +571,8 @@ window.AJAR_CONTENT = {
     rows: [
       { label: 'Product', value: 'Extra vierge olijfolie (eerste persing, koud geperst)' },
       { label: 'Inhoud', value: '500 ml per fles' },
-      { label: 'Herkomst', value: 'Noordoost-Marokko — eigen productie' },
-      { label: 'Producent', value: 'ConservAjar SARL, Taourirt, Marokko' },
+      { label: 'Herkomst olijven', value: 'Debdou-regio, noordoost-Marokko — eigen boomgaarden' },
+      { label: 'Producent (persing & botteling)', value: 'ConservAjar SARL, Taourirt, Marokko' },
       { label: 'Certificering', value: 'ISO 22000 (uitgegeven door SGS)' },
       { label: 'HS-code', value: '1509 2000 10' },
       { label: 'Houdbaarheid', value: 'Volgt — THT per partij op de fles', todo: true },

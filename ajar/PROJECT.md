@@ -94,6 +94,39 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 - **Docs:** `README.md` (beheer), `SHOTLIST.md` (18-shot fotoplan), `LEES-MIJ.txt` (fotostatus),
   `CNAME.example` (custom-domein-route).
 
+### v2b — feitcorrectie grond vs. fabriek + homepage-ontdubbeling (4 juli 2026, zelfde dag)
+
+Soef corrigeerde direct na de v2-ronde: **de boomgaarden liggen niet in Taourirt** — dat is
+uitsluitend de vestigingsplaats van de fabriek/pers (ConservAjar SARL). De grond/boomgaarden liggen
+in de **Debdou-regio** (bevestigd door Soef met een Google Maps-screenshot, gebied ten zuiden van
+Taourirt richting Debdou/Al-Mrija). Meerdere teksten uit de v2-ronde conflateerden dit ten onrechte
+("boomgaard en pers in Taourirt"). Regel voor toekomstige sessies: **Taourirt = fabriek/persing/
+botteling, Debdou-regio = boomgaarden/olijven.** Nooit meer samenvoegen.
+
+Gecorrigeerd (alleen content, geen nieuwe features):
+- Hero-badge "Rechtstreeks uit Taourirt" → **"Eigen pers in Taourirt"** (ondubbelzinnig fabrieksfeit).
+- Route-kaart: van-punt "Taourirt — boomgaard & eigen pers" → **"Debdou-regio — eigen boomgaarden"**;
+  titel/tekst herschreven ("Van boomgaard naar uw zaak"); Taourirt blijft genoemd in de lopende tekst
+  als perslocatie, bewust géén los kaartpunt (voorkomt een drukkere kaart).
+- Product-cultivar: "de streek rond Taourirt waar de boomgaarden staan" → **"rond Debdou"**.
+- Product-specs: "Herkomst: Noordoost-Marokko — eigen productie" gesplitst in twee precieze regels:
+  **"Herkomst olijven: Debdou-regio, noordoost-Marokko — eigen boomgaarden"** en
+  **"Persing & botteling: koud geperst, eigen fabriek in Taourirt (ConservAjar SARL)"**.
+- Spec-sheet-PDF (`specsheet.rows`) evenzo gesplitst + **PDF's opnieuw gegenereerd**
+  (`assets/ajar-specsheet.pdf`, `assets/ajar-presentatie.pdf`, via headless Chromium print-to-PDF).
+- **Bekende openstaande vondst (nog niet aangepast, met Soef besproken):** het `ajar-wordmark.svg`
+  (gebruikt op de twee PDF's, niet in de live site-header) heeft "TAOURIRT · MAROKKO" als vaste
+  ondertitel onder "Extra vierge olijfolie" — vector-tekst-als-paden, geen los tekstveld. Leest als
+  een herkomstvermelding. Aanpassen vereist het logo opnieuw te (laten) tekenen — bewust niet
+  stilzwijgend gedaan, ligt bij Soef.
+
+Homepage tegelijk kritischer gemaakt (Soefs zorg: een zakelijke bezoeker raakt in de war door
+herhaling): de **vertrouwensrij** (4 cijfertegels: ISO 22000 / 1e / 3 generaties / 0 tussenschakels)
+bleek voor 3 van de 4 feiten een letterlijke herhaling van de hero-badges + de USP's erboven, en de
+"3 generaties"-tegel dupliceerde de Story-sectie-titel verderop. Vervangen door één korte, eerlijke
+tekstregel ("Nog geen klantverhalen — eerlijk: wij zijn nieuw in Nederland…") zonder herhaalde cijfers.
+CSS voor de tegel-grid en de bijbehorende 3D-flip-animatie verwijderd (dode code na de vereenvoudiging).
+
 ### v2-ronde — concurrentie-gat + 3D-pakket (4 juli 2026)
 
 Volledige review-ronde n.a.v. Soefs Olyfia-screenshot ("kijk wat mist, spiek bij de concurrent, 3D-animaties"):

@@ -288,17 +288,11 @@
         '</div>' +
       '</div></section>';
     }
+    /* Géén tegel-grid meer: de ISO/eerste-importeur/geen-tussenschakels-feiten staan al in de
+       hero-badges en de USP's hierboven — een vierde herhaling overlaadt i.p.v. overtuigt. */
     const tr = h.trust;
-    return '<section class="section trust-sec"><div class="wrap">' +
-      '<div class="section-head reveal">' + kickerTitle(tr.kicker, tr.title) + '</div>' +
-      '<div class="trust-row">' + tr.items.map(t =>
-        '<div class="trust-tile reveal">' +
-          '<span class="trust-big">' + esc(t.big) + '</span>' +
-          '<span class="trust-label">' + esc(t.label) + '</span>' +
-          '<p>' + esc(t.text) + '</p>' +
-        '</div>').join('') +
-      '</div>' +
-      '<p class="form-note reveal trust-note">' + esc(tr.note) + '</p>' +
+    return '<section class="section trust-sec"><div class="wrap wrap-narrow">' +
+      '<div class="section-head reveal">' + kickerTitle(tr.kicker, tr.title, tr.note) + '</div>' +
     '</div></section>';
   }
 
@@ -1099,7 +1093,7 @@
     if (reduce || !window.matchMedia('(min-width: 860px) and (pointer: fine)').matches) return;
 
     /* 3D-tilt + meebewegende glans op kaarten en tegels (niet op formulieren) */
-    const targets = Array.from(document.querySelectorAll('.card, .trust-tile, .fmt-tile, .quality-tile, .specs-media .img-slot'))
+    const targets = Array.from(document.querySelectorAll('.card, .fmt-tile, .quality-tile, .specs-media .img-slot'))
       .filter(el => !el.querySelector('form') && !el.closest('form'));
     targets.forEach(el => {
       el.classList.add('tilt');
