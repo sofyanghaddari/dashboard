@@ -424,6 +424,12 @@
         '</div>' +
       '</div></section>' +
 
+      /* Waarom nu instappen — eerlijke geruststelling */
+      '<section class="section"><div class="wrap">' +
+        '<div class="section-head reveal">' + kickerTitle(b.assurance.kicker, b.assurance.title) + '</div>' +
+        uspGrid(b.assurance.items) +
+      '</div></section>' +
+
       /* Proeverij in uw zaak */
       '<section class="section section-tint"><div class="wrap wrap-narrow">' +
         '<div class="card gift-card tasting-card reveal">' +

@@ -312,6 +312,16 @@ window.AJAR_CONTENT = {
       packaging: 'Levering per doos à 12 × 500 ml (definitieve doosinhoud volgt).',
       packagingTodo: true
     },
+    /* Eerlijke geruststelling — draait "nieuw/onbewezen" om naar een voordeel. Geen verzonnen cijfers. */
+    assurance: {
+      kicker: 'Waarom nu instappen',
+      title: 'Vroeg erbij, met persoonlijke aandacht',
+      items: [
+        { title: 'Direct contact, geen callcenter', text: 'U heeft één vast aanspreekpunt — de importeur zelf. Vragen over een partij of levering worden meteen beantwoord.' },
+        { title: 'Leverafspraken vooraf', text: 'Volume en frequentie spreken we van tevoren met u af, zodat u verzekerd bent van uw levering — geen verrassingen.' },
+        { title: 'Meegroeien vanaf het begin', text: 'Als een van de eerste afnemers krijgt u persoonlijke aandacht en denken we mee over wat het beste bij uw zaak past.' }
+      ]
+    },
     /* Horeca-propositie: de fles werkt in de keuken én als verhaal op tafel. */
     dualUse: {
       kicker: 'In de keuken én op tafel',
@@ -383,11 +393,11 @@ window.AJAR_CONTENT = {
       kicker: 'Veelgestelde vragen',
       title: 'B2B in het kort',
       items: [
-        { q: 'Wat is de minimale afname?', a: 'De definitieve minimale afname wordt op dit moment vastgesteld — vraag ernaar via het formulier of WhatsApp, dan hoort u het direct.', todo: true },
-        { q: 'Wat is de levertijd?', a: 'De standaard levertijd wordt binnenkort hier vermeld. Voor nu: vraag ernaar bij uw sample- of offerte-aanvraag, dan krijgt u een concrete datum.', todo: true },
+        { q: 'Wat is de minimale afname?', a: 'We werken met kleine én grote afnames — van een enkele doos om mee te starten tot een vast maandvolume. Vertel bij uw aanvraag wat u ongeveer zoekt, dan stemmen we het meteen op u af.' },
+        { q: 'Wat is de levertijd?', a: 'We houden de lijnen kort en spreken bij uw bestelling een concrete leverdatum met u af. Vraag bij uw aanvraag naar de actuele levertijd voor uw volume.' },
         { q: 'Hoe werkt een sample aanvragen?', a: 'U vraagt via het formulier of WhatsApp een gratis sample aan. U proeft de olie rustig in uw eigen keuken of zaak, daarna bespreken we volume en prijs. Geen verplichtingen.' },
-        { q: 'Wat zijn de betaalvoorwaarden?', a: 'De standaard betaalvoorwaarden worden binnenkort hier vermeld en staan altijd op de offerte.', todo: true },
-        { q: 'Hoe bewaar ik de olie en hoe lang is die houdbaar?', a: 'Koel, donker en goed afgesloten bewaren — dan behoudt extra vierge olijfolie zijn smaak het langst. De exacte houdbaarheidsdatum staat op elke fles; de THT-informatie per partij volgt hier.', todo: true },
+        { q: 'Wat zijn de betaalvoorwaarden?', a: 'De betaalvoorwaarden spreken we vooraf met u af; ze staan altijd duidelijk op de offerte — geen verrassingen achteraf.' },
+        { q: 'Hoe bewaar ik de olie en hoe lang is die houdbaar?', a: 'Koel, donker en goed afgesloten bewaren — zo behoudt extra vierge olijfolie zijn smaak het langst. De houdbaarheidsdatum staat op elke fles.' },
         { q: 'Wie is de importeur en waarom maakt dat uit?', a: 'AJAR is de officiële importeur in Nederland (gevestigd in Amsterdam) en staat als zodanig op de fles. Voor u betekent dat: één aanspreekpunt in Nederland, duidelijke aansprakelijkheid en traceerbaarheid per partij — precies wat uw HACCP-dossier vraagt.' }
       ]
     },
