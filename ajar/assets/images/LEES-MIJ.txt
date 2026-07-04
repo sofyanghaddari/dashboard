@@ -8,19 +8,21 @@ een nette olijfgroene placeholder met de bestandsnaam erin.
 STAND VAN ZAKEN (juli 2026)
 ---------------------------
 ✗ hero-01.jpg    — NIET MEER IN GEBRUIK (op verzoek van Soef losgekoppeld, 4 juli 2026).
-                   Bestand blijft hier staan voor het geval hij 'm terug wil; de hero op home
-                   gebruikt nu stock-hero-orchard.jpg (zie hieronder).
+                   Bestand blijft hier staan voor het geval hij 'm terug wil.
 ✓ story-02.jpg   — GEPLAATST: olijfboom in bloei (mei)
 ✓ product-03.jpg — GEPLAATST: olijftak met groene olijven  ⚠ LAGE RESOLUTIE (768px) — stuur de originele foto voor scherp op groot scherm
 ✓ proces-04.jpg  — GEPLAATST: geoogste olijven (stap "Oogst")  ⚠ LAGERE RESOLUTIE (1200px) — origineel = scherper
 ✓ overons-08.jpg — GEPLAATST: het land met berg + bassin
-✓ sfeer-09.jpg   — GEPLAATST: wijde boomgaard (sfeer-band op home)
+✓ sfeer-09.jpg   — GEPLAATST: nu de HERO op home (was: sfeer-band) — zie v2e in PROJECT.md
 
 STOCKFOTO'S — TIJDELIJK, GEEN ECHT AJAR-BEELD (toegevoegd 4 juli 2026)
 -----------------------------------------------------------------------
 Soef leverde 4 sfeerfoto's aan die AI-opgeschaald zijn naar UHD en op de site gezet — dit zijn
 GEEN foto's van AJAR's eigen boomgaard/fabriek, dus vervang ze zodra er echte foto's zijn:
-⚠ stock-hero-orchard.jpg  — GEPLAATST: hero op home (olijfgaard-landschap)
+⚠ stock-hero-orchard.jpg  — GEPLAATST: sfeer-band op home (olijfgaard-landschap, breed 2,7:1 —
+                            stond eerst in de hero maar die is een smal 4:5-kader en sneed de
+                            panoramafoto tot bijna één boom af; nu in de brede sfeer-band waar
+                            hij ongecropt te zien is; sfeer-09.jpg nam de hero-plek over)
 ⚠ proces-05.jpg           — GEPLAATST: stap 2 "Persing" (olie die in een bak gegoten wordt)
 ⚠ stock-cultivar-olives.jpg — GEPLAATST: "De olijf"-sectie op Product (close-up olijven+blad)
 ⚠ stock-sample-tasting.jpg  — GEPLAATST: hero op de sample-landingspagina (brood + lepel olie)

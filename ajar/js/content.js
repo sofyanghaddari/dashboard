@@ -84,11 +84,15 @@ window.AJAR_CONTENT = {
       kicker: 'Voor de Nederlandse horeca & speciaalzaak',
       title: 'Extra vierge olijfolie, rechtstreeks uit Marokko',
       sub: 'AJAR levert koudgeperste extra vierge olijfolie van een familiebedrijf met drie generaties kennis — via één korte, directe keten naar de Nederlandse horeca en speciaalzaak.',
-      /* v2d (4 juli 2026): hero-01.jpg (berg+bassin, Soefs eigen foto) op verzoek van Soef vervangen
-         door een sfeerbeeld — bestand blijft in assets/images/ staan, alleen losgekoppeld. Nieuwe
-         foto is een AI-opgeschaalde stockfoto (geen AJAR-boomgaard) — vandaar generieke alt-tekst,
-         geen "eigen land"-claim. Vervang door een échte AJAR-foto zodra beschikbaar. */
-      image: 'stock-hero-orchard.jpg',
+      /* v2d (4 juli 2026): hero-01.jpg (berg+bassin, Soefs eigen foto) op verzoek van Soef
+         losgekoppeld — bestand blijft in assets/images/ staan. In eerste instantie stond hier de
+         nieuwe brede stockfoto (stock-hero-orchard.jpg), maar die is een panoramafoto (2,7:1) die
+         in de smalle 4:5-heldkader te sterk bijgesneden werd — nauwelijks meer dan één boom
+         zichtbaar. Op verzoek van Soef verplaatst naar de mood-band (home.mood.image), waar hij
+         wél in volle breedte te zien is. Hier staat nu i.p.v. daarvan sfeer-09.jpg (Soefs eigen,
+         al elders bevestigde foto) — een echte AJAR-foto past sowieso beter in de meest prominente
+         hero-plek dan een stockfoto. */
+      image: 'sfeer-09.jpg',
       /* Vertrouwenschips direct in de hero — alleen harde feiten.
          Let op: "Taourirt" mag hier NOOIT aan de boomgaarden/grond gekoppeld worden —
          Taourirt is uitsluitend de vestigingsplaats van de fabriek/pers (ConservAjar SARL).
@@ -128,11 +132,13 @@ window.AJAR_CONTENT = {
       toCountry: 'Nederland',
       stats: ['± 2.100 km hemelsbreed', 'één importeur', 'nul tussenschakels']
     },
-    /* Full-bleed sfeer-band met quote — foto volgt uit Marokko (sfeer-09.jpg) */
+    /* Full-bleed sfeer-band met quote — deze full-bleed strook (vaste hoogte, volle breedte,
+       aspect-ratio:auto) is precies waar een brede panoramafoto (2,7:1) ongecropt tot zijn recht
+       komt — vandaar stock-hero-orchard.jpg hier i.p.v. in het smalle 4:5-heldkader (zie hero). */
     mood: {
       quote: 'Van de Marokkaanse boomgaard naar de Nederlandse tafel.',
       sub: 'Drie generaties, één pers, één keten.',
-      image: 'sfeer-09.jpg'
+      image: 'stock-hero-orchard.jpg'
     },
     product: {
       kicker: 'Het product',

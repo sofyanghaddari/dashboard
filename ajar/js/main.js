@@ -214,7 +214,7 @@
               ? '<ul class="hero-badges" aria-label="Kernfeiten">' + h.hero.badges.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>'
               : '') +
           '</div>' +
-          '<div class="hero-media reveal" data-parallax>' + imgSlot(h.hero.image, 'Olijfboomgaard, sfeerbeeld', 'img-hero', true) + '</div>' +
+          '<div class="hero-media reveal" data-parallax>' + imgSlot(h.hero.image, 'Olijfgaard in noordoost-Marokko', 'img-hero', true) + '</div>' +
         '</div>' +
       '</section>' +
 
@@ -232,7 +232,7 @@
 
       /* Full-bleed sfeer-band met quote */
       '<section class="mood-band reveal">' +
-        imgSlot(h.mood.image, 'Olijfgaard in noordoost-Marokko', 'img-mood') +
+        imgSlot(h.mood.image, 'Olijfboomgaard, sfeerbeeld', 'img-mood') +
         '<div class="mood-quote"><p class="mood-text">' + esc(h.mood.quote) + '</p>' +
         '<p class="mood-sub">' + esc(h.mood.sub) + '</p></div>' +
       '</section>' +

@@ -94,6 +94,26 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 - **Docs:** `README.md` (beheer), `SHOTLIST.md` (18-shot fotoplan), `LEES-MIJ.txt` (fotostatus),
   `CNAME.example` (custom-domein-route).
 
+### v2e — hero/mood-band omgewisseld: brede foto hoort niet in een smal kader (4 juli 2026, zelfde dag)
+
+Direct na v2d gaf Soef terecht feedback: de nieuwe olijfgaard-foto is een panorama (2,7:1) en stond
+in de hero, die een smal `.img-hero`-kader gebruikt (aspect-ratio 4:5, portret!) — daardoor was in de
+praktijk nog maar zo'n 35% van de breedte zichtbaar (in feite bijna maar één boom). Opgelost door de
+foto's van rol te laten wisselen i.p.v. het kader te verbouwen:
+- **Hero** toont nu **sfeer-09.jpg** (Soefs eigen, al bevestigde foto) — een echte AJAR-foto hoort
+  toch al liever op de meest prominente plek dan een stockfoto, dus dit is ook inhoudelijk een
+  verbetering, niet alleen een compositie-fix.
+- **Mood-band** (de full-bleed sfeerstrook, vaste hoogte/volle breedte, `aspect-ratio:auto`) toont nu
+  **stock-hero-orchard.jpg** — precies het kader waar een brede panoramafoto ongecropt tot zijn recht
+  komt, in plaats van in een smal portret-kader.
+- Alt-teksten meegedraaid: hero heeft nu de eerlijke, specifieke tekst ("Olijfgaard in noordoost-
+  Marokko", want een echte AJAR-foto), mood-band de generieke ("Olijfboomgaard, sfeerbeeld", want
+  stockfoto — zie ook de opmerking bij v2d over géén "eigen land"-claims op stockfoto's).
+- Les voor volgende sessies: **check altijd het aspect-ratio van de doelplek** (`.img-hero`=4:5,
+  mood-band=vrij/breed, `.img-tall`=3:4, standaard `.img-slot`=4:3) tegen de daadwerkelijke
+  pixelverhouding van de foto, vóórdat je 'm ergens neerzet — een brede foto in een smal kader
+  verliest het grootste deel van de compositie.
+
 ### v2d — 4 nieuwe sfeerfoto's (UHD) + hero-bergfoto verwijderd (4 juli 2026, zelfde dag)
 
 Soef leverde 4 nieuwe foto's aan (olijfgaard-landschap, olie die in een bak wordt gegoten/persing,
