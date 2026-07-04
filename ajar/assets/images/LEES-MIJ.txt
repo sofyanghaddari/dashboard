@@ -7,16 +7,26 @@ een nette olijfgroene placeholder met de bestandsnaam erin.
 
 STAND VAN ZAKEN (juli 2026)
 ---------------------------
-✓ hero-01.jpg    — GEPLAATST: het land met berg + bassin (jullie herkomst)
+✗ hero-01.jpg    — NIET MEER IN GEBRUIK (op verzoek van Soef losgekoppeld, 4 juli 2026).
+                   Bestand blijft hier staan voor het geval hij 'm terug wil; de hero op home
+                   gebruikt nu stock-hero-orchard.jpg (zie hieronder).
 ✓ story-02.jpg   — GEPLAATST: olijfboom in bloei (mei)
 ✓ product-03.jpg — GEPLAATST: olijftak met groene olijven  ⚠ LAGE RESOLUTIE (768px) — stuur de originele foto voor scherp op groot scherm
 ✓ proces-04.jpg  — GEPLAATST: geoogste olijven (stap "Oogst")  ⚠ LAGERE RESOLUTIE (1200px) — origineel = scherper
 ✓ overons-08.jpg — GEPLAATST: het land met berg + bassin
 ✓ sfeer-09.jpg   — GEPLAATST: wijde boomgaard (sfeer-band op home)
 
-NOG TE VULLEN (nu nog groene placeholder)
------------------------------------------
-proces-05.jpg    — Stap 2: persing (de pers in werking)
+STOCKFOTO'S — TIJDELIJK, GEEN ECHT AJAR-BEELD (toegevoegd 4 juli 2026)
+-----------------------------------------------------------------------
+Soef leverde 4 sfeerfoto's aan die AI-opgeschaald zijn naar UHD en op de site gezet — dit zijn
+GEEN foto's van AJAR's eigen boomgaard/fabriek, dus vervang ze zodra er echte foto's zijn:
+⚠ stock-hero-orchard.jpg  — GEPLAATST: hero op home (olijfgaard-landschap)
+⚠ proces-05.jpg           — GEPLAATST: stap 2 "Persing" (olie die in een bak gegoten wordt)
+⚠ stock-cultivar-olives.jpg — GEPLAATST: "De olijf"-sectie op Product (close-up olijven+blad)
+⚠ stock-sample-tasting.jpg  — GEPLAATST: hero op de sample-landingspagina (brood + lepel olie)
+
+NOG TE VULLEN (nu nog groene placeholder of icoon)
+-----------------------------------------------------------------------
 proces-06.jpg    — Stap 3: botteling (flessen vullen/sluiten)
 proces-07.jpg    — Stap 4: import / onderweg naar NL (dozen, vrachtwagen)
 product-03.jpg   — liever nog: een echte fles-foto (500 ml) zodra beschikbaar

@@ -214,7 +214,7 @@
               ? '<ul class="hero-badges" aria-label="Kernfeiten">' + h.hero.badges.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>'
               : '') +
           '</div>' +
-          '<div class="hero-media reveal" data-parallax>' + imgSlot(h.hero.image, 'Het land van AJAR in Taourirt, Marokko — olijfgaard met bergen', 'img-hero', true) + '</div>' +
+          '<div class="hero-media reveal" data-parallax>' + imgSlot(h.hero.image, 'Olijfboomgaard, sfeerbeeld', 'img-hero', true) + '</div>' +
         '</div>' +
       '</section>' +
 
@@ -348,10 +348,13 @@
         '</div>' +
       '</div></section>' +
 
-      /* De olijf: Picholine Marocaine (2 kaarten — grid-2, geen leeg 3e vak) */
+      /* De olijf: Picholine Marocaine — beeld + tekst naast elkaar, 2 kaarten eronder (grid-2, geen leeg 3e vak) */
       (p.cultivar
         ? '<section class="section"><div class="wrap">' +
-          '<div class="section-head reveal">' + kickerTitle(p.cultivar.kicker, p.cultivar.title, p.cultivar.text) + '</div>' +
+          '<div class="split-inner cultivar-head">' +
+            (p.cultivar.image ? '<div class="split-media reveal">' + imgSlot(p.cultivar.image, 'Verse olijven, Picholine Marocaine', '') + '</div>' : '') +
+            '<div class="split-text reveal">' + kickerTitle(p.cultivar.kicker, p.cultivar.title, p.cultivar.text) + '</div>' +
+          '</div>' +
           uspGrid(p.cultivar.points, 'grid-2') +
           '</div></section>'
         : '') +
@@ -560,6 +563,12 @@
   function renderSample() {
     const s = C.sample, f = s.form;
     return pageHero(s.hero) +
+
+      (s.hero.image
+        ? '<section class="section sample-media-sec"><div class="wrap wrap-narrow">' +
+          '<div class="reveal">' + imgSlot(s.hero.image, 'Olijfolie proeven bij vers brood, sfeerbeeld', '') + '</div>' +
+          '</div></section>'
+        : '') +
 
       '<section class="section"><div class="wrap">' +
         '<ol class="process process-3" data-anim>' + s.how.steps.map((st, i) =>

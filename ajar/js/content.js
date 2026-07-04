@@ -84,7 +84,11 @@ window.AJAR_CONTENT = {
       kicker: 'Voor de Nederlandse horeca & speciaalzaak',
       title: 'Extra vierge olijfolie, rechtstreeks uit Marokko',
       sub: 'AJAR levert koudgeperste extra vierge olijfolie van een familiebedrijf met drie generaties kennis — via één korte, directe keten naar de Nederlandse horeca en speciaalzaak.',
-      image: 'hero-01.jpg',
+      /* v2d (4 juli 2026): hero-01.jpg (berg+bassin, Soefs eigen foto) op verzoek van Soef vervangen
+         door een sfeerbeeld — bestand blijft in assets/images/ staan, alleen losgekoppeld. Nieuwe
+         foto is een AI-opgeschaalde stockfoto (geen AJAR-boomgaard) — vandaar generieke alt-tekst,
+         geen "eigen land"-claim. Vervang door een échte AJAR-foto zodra beschikbaar. */
+      image: 'stock-hero-orchard.jpg',
       /* Vertrouwenschips direct in de hero — alleen harde feiten.
          Let op: "Taourirt" mag hier NOOIT aan de boomgaarden/grond gekoppeld worden —
          Taourirt is uitsluitend de vestigingsplaats van de fabriek/pers (ConservAjar SARL).
@@ -228,10 +232,13 @@ window.AJAR_CONTENT = {
         { label: 'Olijfvariëteit', value: 'Picholine Marocaine' }
       ]
     },
-    /* De olijf: Picholine Marocaine — cultivar bevestigd door Soef (4 juli 2026) */
+    /* De olijf: Picholine Marocaine — cultivar bevestigd door Soef (4 juli 2026).
+       image = AI-opgeschaalde stockfoto (geverse Picholine-achtige olijven), geen AJAR-oogst —
+       vervang zodra een echte foto van de eigen boomgaarden in Debdou beschikbaar is. */
     cultivar: {
       kicker: 'De olijf',
       title: 'Picholine Marocaine',
+      image: 'stock-cultivar-olives.jpg',
       text: 'AJAR wordt geperst van één olijfvariëteit: de Picholine Marocaine, de meest aangeplante olijf van Marokko. Geen blend van wisselende rassen en herkomsten — één olijf, van eigen grond.',
       points: [
         { title: 'Thuis in het oosten', text: 'De variëteit gedijt in het droge klimaat van oost-Marokko — precies de streek rond Debdou waar de boomgaarden staan.' },
@@ -431,7 +438,9 @@ window.AJAR_CONTENT = {
     hero: {
       kicker: 'Gratis sample',
       title: 'Proef AJAR eerst — dan praten we verder',
-      sub: 'Vraag een gratis proefflesje aan voor uw zaak. U proeft rustig, vergelijkt met wat u nu gebruikt, en beslist daarna. Geen verplichtingen.'
+      sub: 'Vraag een gratis proefflesje aan voor uw zaak. U proeft rustig, vergelijkt met wat u nu gebruikt, en beslist daarna. Geen verplichtingen.',
+      /* AI-opgeschaalde stockfoto (brood + olie), sfeerbeeld bij "proeven" — geen AJAR-fles. */
+      image: 'stock-sample-tasting.jpg'
     },
     how: {
       kicker: 'Zo werkt het',

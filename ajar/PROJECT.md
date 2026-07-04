@@ -94,6 +94,44 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 - **Docs:** `README.md` (beheer), `SHOTLIST.md` (18-shot fotoplan), `LEES-MIJ.txt` (fotostatus),
   `CNAME.example` (custom-domein-route).
 
+### v2d — 4 nieuwe sfeerfoto's (UHD) + hero-bergfoto verwijderd (4 juli 2026, zelfde dag)
+
+Soef leverde 4 nieuwe foto's aan (olijfgaard-landschap, olie die in een bak wordt gegoten/persing,
+close-up olijven met blad, brood met een lepel olie) en vroeg ze "in ultra HD" te zetten en op de
+juiste plek te plaatsen, plus de oorspronkelijke hero-foto (berg + bassin, `hero-01.jpg`, Soefs eigen
+foto) van de site te halen.
+
+- **Belangrijk voor volgende sessies: dit zijn AI-opgeschaalde stockfoto's, geen eigen AJAR-beeld.**
+  Bronbestanden waren klein (steilste opschaling 768×768 → 3840×3840, 5×); opgeschaald met stapsgewijze
+  Lanczos-resampling + UnsharpMask tussen de stappen (de eerdere Higgsfield-upscale-tool bleek in deze
+  sessie geblokkeerd op een goedkeuringsstap die niet doorkwam — vandaar de lokale methode). Op
+  weergaveformaat (~800–1600px, zoals ze nu op de site staan) ogen ze scherp; alleen de olijven-close-up
+  had al zachte bokeh in het origineel en blijft op 100%-inzoom iets zachter.
+- **Alt-teksten bewust generiek gehouden** — geen "eigen boomgaard"/"eigen pers in Taourirt"-claims op
+  déze specifieke foto's, want dat zou een verzonnen feitelijke claim zijn (zie het kernprincipe
+  bovenaan dit dossier). In content.js staat bij elk veld een `/* ... */`-notitie dat het een stockfoto
+  is, zodat een volgende sessie ze niet per ongeluk aanziet voor Soefs eigen shotlist-foto's.
+- **Plaatsing:**
+  1. `home.hero.image`: `hero-01.jpg` (berg+bassin) → **losgekoppeld** (niet meer gerefereerd in
+     content.js) en vervangen door `stock-hero-orchard.jpg` (olijfgaard-landschap, brede compositie
+     past goed als hero). **Het oude bestand is niet verwijderd** — blijft staan in
+     `assets/images/hero-01.jpg` voor het geval Soef 'm terug wil, alleen niet meer in gebruik.
+  2. `stock-persing` → opgeslagen als **`proces-05.jpg`** (de bestandsnaam die de Persing-stap in
+     `product.process.steps` al verwachtte maar die tot nu toe ontbrak/als icoon toonde). Geen
+     content.js-wijziging nodig, vult automatisch de al-bestaande lege plek.
+  3. Olijven-close-up → `stock-cultivar-olives.jpg`, nieuw toegevoegd aan `product.cultivar.image`.
+     De cultivar-sectie op Product had nog geen enkele foto; nu een beeld+tekst-layout (nieuwe
+     `.cultivar-head`-CSS, hergebruikt het bestaande `.split-inner`-patroon) met de kaartenrij eronder.
+  4. Brood+olie (proeven) → `stock-sample-tasting.jpg`, nieuw toegevoegd aan `sample.hero.image`.
+     De sample-landingspagina had nog geen enkel beeld; nu een foto direct onder de hero-tekst
+     (nieuwe `renderSample()`-blok, alleen gerenderd `if (s.hero.image)`).
+- **Niet aangepast:** de tekst bij de Persing-processtap ("Koude persing in de eigen perserij...")
+  bleef ongewijzigd — dat is een generieke procesbeschrijving die niet specifiek naar déze foto wijst,
+  vergelijkbaar met hoe veel B2B-sites illustratieve (niet-documentaire) procesbeelden gebruiken. Mocht
+  dit ooit gevoelig liggen: vervang gewoon `proces-05.jpg` zodra een echte foto van de perserij er is.
+- Geverifieerd: alle 4 nieuwe bestanden laden (200), geen gebroken images, geen horizontale overflow,
+  headless-browser-screenshots van hero/cultivar/sample/proces-stappen bevestigen correcte plaatsing.
+
 ### v2c — volledige klantaudit + zakelijk-pagina van 13 naar 9 secties (4 juli 2026, zelfde dag)
 
 Op verzoek van Soef: hele site doorlopen "als een klant die komt bezoeken" — alles wat niet klopt,
