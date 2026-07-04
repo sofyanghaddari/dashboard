@@ -94,6 +94,32 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 - **Docs:** `README.md` (beheer), `SHOTLIST.md` (18-shot fotoplan), `LEES-MIJ.txt` (fotostatus),
   `CNAME.example` (custom-domein-route).
 
+### v4b — bugfix mobielmenu + concept-flesmockup (4 juli 2026, zelfde dag)
+
+**Bug (gemeld door Soef: "het menu balkje doet het niet") — gevonden en gefixt:** de v4-toevoeging
+"slimme header" zette een permanente `transform: translateY(0)` op `.site-header` als baseline-
+regel. Een `transform` op een ouder-element maakt dat element het containing block voor
+`position:fixed`-kinderen — `.site-nav` (het volscherm-mobielmenu) werd daardoor opgesloten in de
+~90px hoge headerbalk i.p.v. het hele scherm te vullen (rect ging van 390×844 naar 390×138). Het
+menu "opende" dus technisch (nav-open werd gezet), maar was onbruikbaar. **Fix:** transform alleen
+zetten wanneer `hdr-hide` daadwerkelijk actief is, nooit als permanente baseline, plus een
+`body.nav-open .site-header { transform: none !important }`-vangnet. Geverifieerd met een echte
+touch-tap-test (iPhone 13-emulatie): menu opent volledig scherm, tik op een link navigeert
+succesvol. Volledige audit op alle 7 pagina's (mobiel+desktop): geen gebroken beelden/overflow/
+JS-fouten. **Les voor volgende sessies:** een `transform`-eigenschap NOOIT als permanente
+CSS-regel op een voorouder van een `position:fixed`-element zetten, ook niet als "no-op"-waarde
+zoals translateY(0) — altijd conditioneel via een class.
+
+**Concept-flesmockup toegevoegd** (Soef: "pak een voorbeeldfoto en zet ons logo erop"): geen echte
+productfoto gemaakt (fles/etiket bestaan nog niet) — in plaats daarvan een CSS-getekende fles
+(zelfde stijl als de bestaande kleine `.fmt-bottle`-silhouetten, nu uitvergroot) met het echte
+wordmark-logo als etiket erop, een gouden "CONCEPT"-lint in de hoek, en een cursieve onderschrift-
+tekst: "Ontwerprichting — geen productfoto. De definitieve fles en het etiket volgen zodra de
+verpakking klaar is." Geplaatst op Zakelijke klanten, direct onder de Formaten-rij (`b.formats.
+mockup` in content.js, `bottleMockup()` in main.js, CSS-sectie ".bottle-mockup-*"). Bewust NIET als
+gewone foto getoond — dat zou tegen kernprincipe #1 ingaan (nooit iets tonen dat als feit kan
+worden aangezien). Geverifieerd op 390px en 1280px: geen overflow, rendert netjes gecentreerd.
+
 ### v4 — LUXE-LAAG: agency-niveau animatie-mega-update (4 juli 2026, zelfde dag)
 
 Soef: "Geef alles van heel de site een mega update, animaties alles erop en eraan, groots aanpakken,

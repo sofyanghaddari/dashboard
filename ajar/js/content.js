@@ -336,7 +336,14 @@ window.AJAR_CONTENT = {
         { size: 'Proefflesje', name: 'De sample', text: 'Gratis kennismaking: genoeg om te proeven, te vergelijken en te beslissen.', shape: 'small', todo: true, todoNote: 'formaat volgt' },
         { size: '500 ml', name: 'De fles', text: 'Het hart van de lijn — voor keuken en tafel, gebotteld aan de bron.', shape: 'bottle' },
         { size: '12 × 500 ml', name: 'De doos', text: 'De B2B-eenheid waarin we leveren en rekenen.', shape: 'box', todo: true, todoNote: 'definitieve doosinhoud volgt' }
-      ]
+      ],
+      /* Concept-mockup van de fles met ons logo — GEEN productfoto (fles/etiket bestaan nog niet).
+         Bewust duidelijk gelabeld als ontwerprichting, i.p.v. verzwegen als "gewoon een foto".
+         Zie ook harde regel #1 in PROJECT.md: nooit iets tonen dat als feit kan worden aangezien. */
+      mockup: {
+        badge: 'Concept',
+        caption: 'Ontwerprichting — geen productfoto. De definitieve fles en het etiket volgen zodra de verpakking klaar is.'
+      }
     },
     pricing: {
       title: 'Prijs op aanvraag',

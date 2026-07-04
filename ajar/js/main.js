@@ -405,6 +405,25 @@
       ctaBand(p.cta);
   }
 
+  /* Concept-mockup van de fles met het echte logo — nadrukkelijk GEEN productfoto.
+     CSS-getekende fles (zelfde stijl als de kleine .fmt-bottle-silhouetten), met het bestaande
+     wordmark-logo als etiket + een duidelijk "Concept"-lint zodat niemand 'm voor de definitieve
+     fles aanziet (harde regel: nooit iets tonen dat als feit kan worden aangezien). */
+  function bottleMockup(m) {
+    if (!m) return '';
+    return '<div class="bottle-mockup-wrap reveal">' +
+      '<div class="bottle-mockup">' +
+        '<span class="bm-badge">' + esc(m.badge) + '</span>' +
+        '<span class="bm-cap" aria-hidden="true"></span>' +
+        '<span class="bm-neck" aria-hidden="true"></span>' +
+        '<span class="bm-body" aria-hidden="true">' +
+          '<span class="bm-label"><img src="assets/logo/ajar-wordmark.svg" alt="AJAR (concept-etiket)" loading="lazy"></span>' +
+        '</span>' +
+      '</div>' +
+      '<p class="bottle-mockup-cap">' + esc(m.caption) + '</p>' +
+    '</div>';
+  }
+
   function renderB2b() {
     const b = C.b2b, d = b.downloads;
     return pageHero(b.hero, [
@@ -437,6 +456,9 @@
             '<h3>' + esc(f.name) + '</h3><p>' + esc(f.text) + '</p>' +
           '</div>').join('') +
         '</div>' +
+
+        bottleMockup(b.formats.mockup) +
+
         '<div class="pricing-inline reveal">' +
           '<h3>' + esc(b.pricing.title) + '</h3>' +
           '<p>' + esc(b.pricing.text) + '</p>' +

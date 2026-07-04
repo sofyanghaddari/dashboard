@@ -932,6 +932,82 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   background: var(--gold);
 }
 
+/* ---------- Concept-mockup fles (GEEN productfoto — zie bottleMockup() in main.js) ---------- */
+.bottle-mockup-wrap {
+  max-width: 300px;
+  margin: 2.4rem auto 0;
+  text-align: center;
+}
+.bottle-mockup {
+  position: relative;
+  width: 120px;
+  height: 268px;
+  margin: 0 auto;
+}
+.bm-badge {
+  position: absolute;
+  top: -4px; right: -34px;
+  z-index: 2;
+  background: var(--gold);
+  color: #2C351E;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: .35em .7em;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  transform: rotate(6deg);
+}
+.bm-cap {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 34px; height: 20px;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  border-radius: 4px 4px 2px 2px;
+}
+.bm-neck {
+  position: absolute;
+  top: 16px; left: 50%;
+  transform: translateX(-50%);
+  width: 22px; height: 34px;
+  background: linear-gradient(180deg, rgba(85,107,47,.7), rgba(62,75,46,.85));
+  border-radius: 3px 3px 0 0;
+}
+.bm-body {
+  position: absolute;
+  top: 44px; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 224px;
+  border-radius: 14px 14px 20px 20px;
+  background:
+    radial-gradient(60% 50% at 30% 12%, rgba(255,255,255,.35), transparent 60%),
+    linear-gradient(180deg, rgba(85,107,47,.82) 0%, var(--olive) 45%, var(--olive-deep) 100%);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bm-label {
+  width: 84px;
+  padding: 14px 10px;
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+.bm-label img { width: 100%; height: auto; display: block; }
+.bottle-mockup-cap {
+  margin: 1.1rem 0 0;
+  font-size: .8rem;
+  font-style: italic;
+  color: var(--gold);
+  max-width: 42ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* ---------- B2B: eerlijke prijs + proeverij ---------- */
 .pricing-fair {
   margin: 1.1em auto 0;
