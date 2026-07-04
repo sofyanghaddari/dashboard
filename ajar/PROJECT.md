@@ -114,11 +114,11 @@ Gecorrigeerd (alleen content, geen nieuwe features):
   **"Persing & botteling: koud geperst, eigen fabriek in Taourirt (ConservAjar SARL)"**.
 - Spec-sheet-PDF (`specsheet.rows`) evenzo gesplitst + **PDF's opnieuw gegenereerd**
   (`assets/ajar-specsheet.pdf`, `assets/ajar-presentatie.pdf`, via headless Chromium print-to-PDF).
-- **Bekende openstaande vondst (nog niet aangepast, met Soef besproken):** het `ajar-wordmark.svg`
-  (gebruikt op de twee PDF's, niet in de live site-header) heeft "TAOURIRT · MAROKKO" als vaste
-  ondertitel onder "Extra vierge olijfolie" — vector-tekst-als-paden, geen los tekstveld. Leest als
-  een herkomstvermelding. Aanpassen vereist het logo opnieuw te (laten) tekenen — bewust niet
-  stilzwijgend gedaan, ligt bij Soef.
+- **Vondst besproken en opgelost:** het `ajar-wordmark.svg` (gebruikt op de twee PDF's, niet in de
+  live site-header) heeft "TAOURIRT · MAROKKO" als vaste ondertitel onder "Extra vierge olijfolie" —
+  vector-tekst-als-paden, geen los tekstveld. Voorgelegd aan Soef: **bewust zo laten staan** — hij
+  vindt het acceptabel omdat het feitelijk de vestigingsplaats van de fabriek is. Niet aankomen
+  zonder nieuw verzoek van Soef.
 
 Homepage tegelijk kritischer gemaakt (Soefs zorg: een zakelijke bezoeker raakt in de war door
 herhaling): de **vertrouwensrij** (4 cijfertegels: ISO 22000 / 1e / 3 generaties / 0 tussenschakels)
