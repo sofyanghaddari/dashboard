@@ -70,6 +70,11 @@ window.AJAR_CONTENT = {
     whatsapp: 'WhatsApp'
   },
 
+  /* ---------- Fluister-marquee (trage lopende band, alléén bevestigde feiten) ----------
+     Getoond op home (onder de beeldsectie) en op Product (boven het proces). Reduced-motion:
+     staat stil. Niet uitbreiden met niet-bevestigde claims (smaak/cijfers/prijzen). */
+  marquee: ['Extra vierge', 'Koudgeperst', 'Picholine Marocaine', "Familiebedrijf sinds jaren '90", 'ISO 22000 · SGS', 'Rechtstreeks geïmporteerd'],
+
   /* ---------- Cookiebanner ---------- */
   cookies: {
     text: 'We gebruiken anonieme bezoekersstatistieken (Google Analytics) om te zien hoe de site wordt gebruikt. U kiest zelf of u dat goed vindt.',

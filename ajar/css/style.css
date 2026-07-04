@@ -1259,6 +1259,238 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
   50% { transform: rotate(45deg) rotate3d(1, -1, 0, 30deg); }
 }
 
+/* ============================================================
+   LUXE-LAAG — agency-niveau afwerking (mega-update juli 2026):
+   view-transitions, film-grain, hero-woordonthulling, titel-
+   maskers, marquee, olijftak-tekening, footer-wordmark, custom
+   cursor, magnetische knoppen, slimme header, lightbox,
+   scroll-gedreven beeld-drift. Alles gedekt in reduced-motion.
+   ============================================================ */
+
+/* ── Native cross-fade tussen pagina's (MPA View Transitions, prog. enhancement) ── */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .32s; }
+
+/* ── Film-grain: statische korrel over alles — maakt vlakke crème-vlakken "materiaal" ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 74; /* boven content/header, onder mob-cta (70 is eronder gelaten: balk blijft strak), cookie (90), lightbox */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: .026;
+}
+
+/* ── Hero-titel: woorden schuiven één voor één uit hun masker omhoog ── */
+.hw { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-bottom: -.08em; }
+.hw-in { display: inline-block; transform: translateY(112%); transition: transform .75s var(--ease); }
+.hero-text.in .hw-in { transform: none; }
+
+/* ── Sectietitels: masker-onthulling zodra de sectiekop in beeld komt ── */
+.section-head .section-title, .page-hero h1 {
+  clip-path: inset(0 0 102% 0);
+  transform: translateY(.35em);
+  transition: clip-path .8s var(--ease) .1s, transform .8s var(--ease) .1s;
+}
+.section-head.in .section-title, .page-hero .reveal.in h1 {
+  clip-path: inset(-5% 0 -12% 0);
+  transform: none;
+}
+
+/* ── Kernpunten: gestaggerde entree + scheidingslijnen groeien ── */
+.kernpunten-row li { opacity: 0; transform: translateY(10px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+.kernpunten-row.in li { opacity: 1; transform: none; }
+.kernpunten-row.in li:nth-child(2) { transition-delay: .12s; }
+.kernpunten-row.in li:nth-child(3) { transition-delay: .24s; }
+@media (min-width: 700px) {
+  .kernpunten-row li { border-left-color: transparent; transition: opacity .6s var(--ease), transform .6s var(--ease), border-color .6s var(--ease) .35s; }
+  .kernpunten-row.in li { border-left-color: var(--line); }
+  .kernpunten-row.in li:first-child { border-left-color: transparent; }
+}
+
+/* ── Fluister-marquee: trage band met bevestigde feiten ── */
+.marquee {
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 15px 0;
+  margin: clamp(1.5rem, 4vw, 3rem) 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee-track { display: flex; width: max-content; animation: mqScroll 48s linear infinite; }
+.marquee-half { display: flex; align-items: center; gap: 2.4rem; padding-right: 2.4rem; }
+.mq-item {
+  font-family: var(--serif);
+  font-size: .98rem;
+  letter-spacing: .06em;
+  color: var(--olive);
+  white-space: nowrap;
+}
+.mq-dot { color: var(--gold); font-weight: 700; }
+@keyframes mqScroll { to { transform: translateX(-50%); } }
+
+/* ── Olijftak tekent zichzelf in de CTA-band ── */
+.cta-branch { width: 168px; height: auto; display: block; margin: 0 auto 10px; overflow: visible; }
+.cta-branch path, .cta-branch circle { stroke: var(--gold); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.cta-branch path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.cta-branch circle { opacity: 0; transition: opacity .6s var(--ease) 1.4s, fill 1s var(--ease) 1.4s; }
+.cta-band.in .cta-branch path { transition: stroke-dashoffset 1.5s var(--ease) .3s; stroke-dashoffset: 0; }
+.cta-band.in .cta-branch .cb-leaf { transition-delay: .7s; }
+.cta-band.in .cta-branch circle { opacity: 1; fill: rgba(201,162,39,.55); }
+.cta-band .cta-band-drop { display: none; } /* de tak vervangt de losse druppel als merkmoment */
+
+/* ── CTA-band: traag ademende gouden gloed ── */
+.cta-band { position: relative; overflow: hidden; }
+.cta-band::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  pointer-events: none;
+  background: radial-gradient(34% 42% at 30% 60%, rgba(201,162,39,.14), transparent 70%);
+  animation: ctaGlow 11s ease-in-out infinite alternate;
+}
+@keyframes ctaGlow {
+  from { transform: translate3d(-6%, 4%, 0) scale(1); }
+  to { transform: translate3d(10%, -6%, 0) scale(1.15); }
+}
+.cta-band-inner { position: relative; }
+
+/* ── Footer: reusachtig fluister-wordmark als achtergrondlaag ── */
+.site-footer { position: relative; overflow: hidden; }
+.footer-wordmark {
+  position: absolute;
+  left: 50%;
+  bottom: -.14em;
+  transform: translateX(-50%);
+  font-family: var(--serif);
+  font-size: clamp(7rem, 26vw, 22rem);
+  font-weight: 600;
+  letter-spacing: .08em;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(247,245,240,.06);
+  pointer-events: none;
+  user-select: none;
+}
+.footer-inner, .footer-bottom { position: relative; }
+
+/* ── Custom cursor: gouden stip + zachte volg-ring (desktop; native cursor blijft) ── */
+.cursor-dot, .cursor-ring { display: none; }
+@media (min-width: 860px) and (pointer: fine) {
+  .cursor-dot {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+    width: 7px; height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    background: var(--gold-bright);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity .3s var(--ease);
+  }
+  .cursor-ring {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+    width: 34px; height: 34px;
+    margin: -17px 0 0 -17px;
+    border: 1.5px solid rgba(184,147,74,.45);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1999;
+    opacity: 0;
+    transition: opacity .3s var(--ease), width .28s var(--ease), height .28s var(--ease), margin .28s var(--ease), border-color .28s var(--ease);
+  }
+  body.cursor-on .cursor-dot { opacity: .95; }
+  body.cursor-on .cursor-ring { opacity: 1; }
+  .cursor-ring.is-link {
+    width: 54px; height: 54px;
+    margin: -27px 0 0 -27px;
+    border-color: rgba(184,147,74,.85);
+  }
+}
+
+/* ── Magnetische knoppen: soepel terugveren na pointerleave ── */
+.btn-primary, .nav-cta { transition: transform .35s var(--ease), background .25s var(--ease), box-shadow .3s var(--ease); }
+
+/* ── Slimme header: weg bij omlaag scrollen, direct terug bij omhoog ── */
+.site-header { transform: translateY(0); }
+body.hdr-hide .site-header { transform: translateY(-105%); }
+.site-header { transition: transform .38s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease), background .3s var(--ease); }
+
+/* ── Lightbox: fabrieks-/procesfoto's groot bekijken ── */
+.has-lightbox { cursor: zoom-in; }
+.has-lightbox img.imgok { transition: transform .6s var(--ease), opacity .7s var(--ease), filter .7s var(--ease); }
+.has-lightbox:hover img.imgok { transform: scale(1.045); }
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 4vh 4vw;
+  background: rgba(26, 32, 16, .88);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity .28s var(--ease);
+  cursor: zoom-out;
+}
+.lightbox.open { opacity: 1; }
+.lightbox img {
+  max-width: min(92vw, 1100px);
+  max-height: 78vh;
+  border-radius: var(--radius);
+  box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  transform: scale(.94);
+  transition: transform .32s var(--ease);
+}
+.lightbox.open img { transform: scale(1); }
+.lightbox-cap { color: rgba(247,245,240,.85); font-size: .85rem; margin: 0; text-align: center; }
+.lightbox-close {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: 16px;
+  width: 42px; height: 42px;
+  border: 1px solid rgba(247,245,240,.3);
+  border-radius: 50%;
+  background: transparent;
+  color: #F7F5F0;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* ── Scroll-gedreven beeld-drift (CSS-only, moderne browsers) ── */
+@media not (prefers-reduced-motion: reduce) {
+  @supports (animation-timeline: view()) {
+    .split-media .img-slot img.imgok {
+      animation: imgDrift linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+    @keyframes imgDrift {
+      from { transform: scale(1.12) translateY(2.5%); }
+      to { transform: scale(1.04) translateY(-2.5%); }
+    }
+  }
+}
+
+/* ── FAQ: plus-marker draait vloeiend naar een kruis ── */
+.faq-item summary::after { transition: transform .3s var(--ease), color .3s var(--ease); }
+.faq-item[open] summary::after { transform: translateY(-50%) rotate(45deg); color: var(--gold); }
+
+/* ── Toegankelijkheid: goud focus-ring bij toetsenbordnavigatie ── */
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
 /* ── Sticky mobiele CTA-balk ── */
 .mob-cta {
   position: fixed;
@@ -1305,4 +1537,20 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
   .hero-3d { transform: none !important; transition: none; }
   .process-step.in .process-num { animation: none !important; }
   .mob-cta { transition: none; }
+  /* Luxe-laag volledig uit */
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
+  .hw-in { transition: none; transform: none; }
+  .section-head .section-title, .page-hero h1 { clip-path: none; transform: none; transition: none; }
+  .kernpunten-row li { opacity: 1; transform: none; transition: none; border-left-color: var(--line); }
+  .marquee-track { animation: none; }
+  .cta-branch path { stroke-dashoffset: 0; transition: none; }
+  .cta-branch circle { opacity: 1; fill: rgba(201,162,39,.55); transition: none; }
+  .cta-band::before { animation: none; }
+  .cursor-dot, .cursor-ring { display: none !important; }
+  .btn-primary, .nav-cta { transition: none; transform: none !important; }
+  body.hdr-hide .site-header { transform: none; }
+  .site-header { transition: none; }
+  .has-lightbox:hover img.imgok { transform: none; }
+  .lightbox, .lightbox img { transition: none; }
+  .faq-item summary::after { transition: none; }
 }

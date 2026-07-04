@@ -44,9 +44,22 @@
   }
 
   /* CTA-band met primaire (sample) en optionele secundaire (offerte) knop */
+  /* Olijftak die zichzelf tekent zodra de CTA-band in beeld komt (stroke-draw via pathLength) */
+  function branchSvg() {
+    return '<svg class="cta-branch" viewBox="0 0 220 56" fill="none" aria-hidden="true">' +
+      '<path class="cb-stem" pathLength="1" d="M8 44 C 58 34 116 22 212 12"/>' +
+      '<path class="cb-leaf" pathLength="1" d="M52 36 C 50 26 56 18 66 16 C 66 26 61 33 52 36 Z"/>' +
+      '<path class="cb-leaf" pathLength="1" d="M96 29 C 102 20 112 17 121 19 C 117 28 108 33 96 29 Z"/>' +
+      '<path class="cb-leaf" pathLength="1" d="M142 22 C 140 13 146 5 156 3 C 156 13 151 20 142 22 Z"/>' +
+      '<circle class="cb-olive" cx="78" cy="35" r="4.5"/>' +
+      '<circle class="cb-olive" cx="170" cy="17" r="4.5"/>' +
+    '</svg>';
+  }
+
   function ctaBand(cta) {
     return '<section class="cta-band reveal">' +
       '<div class="wrap cta-band-inner">' +
+      branchSvg() +
       '<div class="cta-band-drop" aria-hidden="true"></div>' +
       '<h2>' + esc(cta.title) + '</h2>' +
       '<p>' + esc(cta.text) + '</p>' +
@@ -124,6 +137,8 @@
     const socials = (f.socials || []).filter(s => s && s.href);
 
     document.getElementById('site-footer').innerHTML =
+      /* Fluister-wordmark: reusachtige outline-"AJAR" als stille achtergrondlaag */
+      '<span class="footer-wordmark" aria-hidden="true">AJAR</span>' +
       '<div class="wrap footer-inner">' +
         '<div class="footer-col footer-brand">' +
           '<img src="assets/logo/ajar-header.svg" alt="' + esc(cfg.brandName) + '" class="footer-logo">' +
@@ -202,11 +217,12 @@
       : '';
 
     return '' +
-      /* 1. Hero — merknaam/positionering + één zin + één CTA (sample) */
+      /* 1. Hero — merknaam/positionering + één zin + één CTA (sample).
+         Titel per woord gemaskeerd onthuld (heroWords) — cinematische entree. */
       '<section class="hero">' +
         '<div class="wrap hero-inner">' +
           '<div class="hero-text reveal">' +
-            '<h1>' + esc(h.hero.title) + '</h1>' +
+            '<h1 class="hero-title-anim">' + heroWords(h.hero.title) + '</h1>' +
             '<p class="hero-sub">' + esc(h.hero.sub) + '</p>' +
             '<div class="hero-actions">' +
               '<a class="btn btn-primary" href="' + esc(C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(C.sampleCtaLabel) + '</a>' +
@@ -233,8 +249,27 @@
         '</div>' +
       '</div></section>' +
 
+      marqueeBand() +
+
       /* 4. Slot-CTA — andere formulering dan de hero, zelfde doel */
       ctaBand(h.cta);
+  }
+
+  /* Hero-titel: elk woord in een mask-wrapper voor de gestaggerde onthulling */
+  function heroWords(title) {
+    return String(title).split(' ').map((w, i) =>
+      '<span class="hw"><span class="hw-in" style="transition-delay:' + (0.08 + i * 0.055).toFixed(3) + 's">' + esc(w) + '</span></span>'
+    ).join(' ');
+  }
+
+  /* Fluister-marquee: trage lopende band met alléén bevestigde feiten (content.js `marquee`).
+     Twee identieke helften voor een naadloze loop; reduced-motion → staat stil. */
+  function marqueeBand() {
+    if (!C.marquee || !C.marquee.length) return '';
+    const half = C.marquee.map(t => '<span class="mq-item">' + esc(t) + '</span><span class="mq-dot" aria-hidden="true">·</span>').join('');
+    return '<div class="marquee" aria-hidden="true"><div class="marquee-track">' +
+      '<div class="marquee-half">' + half + '</div><div class="marquee-half">' + half + '</div>' +
+    '</div></div>';
   }
 
   /* Bewijs van schaal: stille fotostrip, GEEN productgrid — geen namen/prijzen/aanbod-taal,
@@ -342,6 +377,8 @@
             '<span class="compare-b">' + esc(r.b) + '</span></div>').join('') +
         '</div>' +
       '</div></section>' +
+
+      marqueeBand() +
 
       '<section class="section section-tint"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(p.process.kicker, p.process.title) + '</div>' +
@@ -982,8 +1019,11 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
-    /* Zachte pagina-overgang: interne .html-links faden uit vóór navigatie */
-    if (!reduce) {
+    /* Zachte pagina-overgang: interne .html-links faden uit vóór navigatie.
+       Browsers met MPA View Transitions (CSS @view-transition) doen de cross-fade
+       native — dan slaan we de JS-fade over (anders dubbel effect + extra 260ms). */
+    const hasViewTransitions = CSS.supports && CSS.supports('view-transition-name: none');
+    if (!reduce && !hasViewTransitions) {
       document.addEventListener('click', (e) => {
         const a = e.target.closest('a');
         if (!a) return;
@@ -998,6 +1038,119 @@
       /* Terug-knop uit bfcache: leaving-class weghalen */
       window.addEventListener('pageshow', () => document.body.classList.remove('leaving'));
     }
+  }
+
+  /* ---------- Luxe-laag: custom cursor, magnetische knoppen, slimme header ----------
+     Allemaal desktop-only (pointer: fine) en volledig uit bij reduced-motion. */
+
+  function initLuxe() {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Slimme header: verbergt zich bij omlaag scrollen, verschijnt direct bij omhoog.
+       Werkt óók op mobiel — daar wint een bezoeker het meeste schermruimte. */
+    const header = document.getElementById('site-header');
+    if (header && !reduce) {
+      let lastY = window.scrollY, ticking = false;
+      window.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          ticking = false;
+          const y = window.scrollY;
+          if (document.body.classList.contains('nav-open')) { lastY = y; return; }
+          if (y > lastY + 6 && y > 240) document.body.classList.add('hdr-hide');
+          else if (y < lastY - 4 || y < 240) document.body.classList.remove('hdr-hide');
+          lastY = y;
+        });
+      }, { passive: true });
+    }
+
+    if (reduce || !window.matchMedia('(min-width: 860px) and (pointer: fine)').matches) return;
+
+    /* Custom cursor: gouden stip + zachte ring die meegroeit op interactieve elementen */
+    const dot = document.createElement('div');
+    dot.className = 'cursor-dot';
+    const ring = document.createElement('div');
+    ring.className = 'cursor-ring';
+    document.body.append(dot, ring);
+    let mx = -100, my = -100, rx = -100, ry = -100, visible = false;
+    document.addEventListener('pointermove', (e) => {
+      mx = e.clientX; my = e.clientY;
+      if (!visible) { visible = true; document.body.classList.add('cursor-on'); rx = mx; ry = my; }
+      dot.style.transform = 'translate(' + mx + 'px,' + my + 'px)';
+      const t = e.target.closest('a, button, summary, .faq-item, input, textarea, select, label');
+      ring.classList.toggle('is-link', !!t && !!t.closest('a, button, summary'));
+    }, { passive: true });
+    document.addEventListener('pointerleave', () => { visible = false; document.body.classList.remove('cursor-on'); });
+    (function follow() {
+      rx += (mx - rx) * 0.16;
+      ry += (my - ry) * 0.16;
+      ring.style.transform = 'translate(' + rx + 'px,' + ry + 'px)';
+      requestAnimationFrame(follow);
+    })();
+
+    /* Magnetische knoppen: primaire CTA's trekken subtiel naar de cursor */
+    document.querySelectorAll('.btn-primary, .nav-cta').forEach(btn => {
+      let raf = 0;
+      btn.addEventListener('pointermove', (e) => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          const r = btn.getBoundingClientRect();
+          const dx = (e.clientX - r.left - r.width / 2) / r.width;
+          const dy = (e.clientY - r.top - r.height / 2) / r.height;
+          btn.style.transform = 'translate(' + (dx * 7).toFixed(1) + 'px,' + (dy * 5).toFixed(1) + 'px)';
+        });
+      });
+      btn.addEventListener('pointerleave', () => { btn.style.transform = ''; });
+    });
+  }
+
+  /* ---------- Lightbox voor fabrieks- en procesfoto's (klik = groot bekijken) ---------- */
+
+  function initLightbox() {
+    const targets = document.querySelectorAll('.factory-gallery-item .img-slot, .proc-media');
+    if (!targets.length) return;
+    let box = null;
+    function close() {
+      if (!box) return;
+      box.classList.remove('open');
+      const b = box;
+      setTimeout(() => { b.remove(); }, 280);
+      box = null;
+      document.documentElement.classList.remove('nav-lock');
+    }
+    function open(src, alt) {
+      close();
+      box = document.createElement('div');
+      box.className = 'lightbox';
+      box.innerHTML =
+        '<button class="lightbox-close" aria-label="Sluiten">✕</button>' +
+        '<img src="' + src + '" alt="' + esc(alt || '') + '">' +
+        (alt ? '<p class="lightbox-cap">' + esc(alt) + '</p>' : '');
+      document.body.appendChild(box);
+      document.documentElement.classList.add('nav-lock');
+      requestAnimationFrame(() => requestAnimationFrame(() => box && box.classList.add('open')));
+      box.addEventListener('click', close);
+    }
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    targets.forEach(slot => {
+      const img = slot.querySelector('img');
+      if (!img) return;
+      /* Pas activeren als de foto echt geladen is — icoon-tegels (404 by design) blijven gewoon tegels */
+      const enable = () => {
+        if (slot.classList.contains('has-lightbox')) return;
+        slot.classList.add('has-lightbox');
+        slot.setAttribute('role', 'button');
+        slot.setAttribute('tabindex', '0');
+        slot.addEventListener('click', () => open(img.src, img.alt));
+        slot.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(img.src, img.alt); }
+        });
+      };
+      if (img.complete && img.naturalWidth > 0) enable();
+      else img.addEventListener('load', enable, { once: true });
+    });
   }
 
   /* ---------- 3D & diepte: kaart-tilt met glans, hero-diepte ---------- */
@@ -1115,4 +1268,6 @@
   initEnhancements();
   init3d();
   initMobileCta();
+  initLuxe();
+  initLightbox();
 })();

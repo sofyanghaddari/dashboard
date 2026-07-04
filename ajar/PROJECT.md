@@ -94,6 +94,54 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 - **Docs:** `README.md` (beheer), `SHOTLIST.md` (18-shot fotoplan), `LEES-MIJ.txt` (fotostatus),
   `CNAME.example` (custom-domein-route).
 
+### v4 — LUXE-LAAG: agency-niveau animatie-mega-update (4 juli 2026, zelfde dag)
+
+Soef: "Geef alles van heel de site een mega update, animaties alles erop en eraan, groots aanpakken,
+je mag toevoegen/veranderen zonder toestemming." Volledige premium-polish over de hele site, allemaal
+vanilla (geen libraries), mobile-first, en 100% gedekt in het reduced-motion-blok. CSS-sectie
+"LUXE-LAAG" onderaan style.css + `initLuxe()`/`initLightbox()`/`heroWords()`/`marqueeBand()`/
+`branchSvg()` in main.js. Wat er nieuw is:
+
+- **MPA View Transitions** (`@view-transition { navigation: auto }`): native cross-fade tussen
+  pagina's in moderne browsers; de oude JS-fade (.leaving) draait alleen nog als fallback wanneer
+  de browser het niet ondersteunt (anders dubbel effect + onnodige 260ms vertraging).
+- **Film-grain** (body::after, SVG-feTurbulence data-URI, opacity .026): maakt de crème-vlakken
+  "papier" i.p.v. flat — zelfde stille-luxe-truc als het dashboard.
+- **Hero-titel woord-voor-woord masker-onthulling** (`heroWords()` wrapt elk woord in .hw/.hw-in
+  met oplopende transition-delay; getriggerd door de bestaande .reveal.in op .hero-text).
+- **Sectietitel-maskers**: `.section-head .section-title` en `.page-hero h1` schuiven uit een
+  clip-path-masker omhoog zodra hun sectiekop in beeld komt.
+- **Fluister-marquee** (home onder de beeldsectie + Product boven het proces): trage lopende band
+  (48s) met ALLEEN bevestigde feiten (content.js `marquee`), edge-fade via mask-image, twee
+  identieke helften voor naadloze loop; reduced-motion → staat stil.
+- **Olijftak die zichzelf tekent** in élke CTA-band (branchSvg(): steel + 3 blaadjes + 2 olijfjes,
+  stroke-draw via pathLength=1 bij .cta-band.in) — vervangt de losse druppel (.cta-band-drop nu
+  display:none, markup blijft voor evt. terugdraaien). Plus traag ademende gouden gloed
+  (.cta-band::before, 11s alternate).
+- **Footer-wordmark**: reusachtige outline-"AJAR" (transparent + -webkit-text-stroke, opacity-arm)
+  als stille achtergrondlaag onderin de footer.
+- **Custom cursor** (desktop/pointer:fine): gouden stip + zachte volg-ring (lerp-follow 0.16), ring
+  groeit op links/knoppen. Bewust GEEN `cursor:none` — de native cursor blijft, de ring is een aura
+  (veiliger + minder agressief dan de agency-standaard).
+- **Magnetische knoppen**: .btn-primary/.nav-cta trekken max ~7px naar de cursor, veren terug.
+- **Slimme header**: verbergt zich bij omlaag scrollen (>240px), verschijnt direct bij omhoog —
+  werkt óók op mobiel (daar de meeste winst), pauzeert wanneer het volscherm-menu open is.
+- **Lightbox** voor fabrieks- en procesfoto's: klik/Enter → fullscreen met blur-backdrop + caption
+  (uit alt-tekst), sluit op klik/Escape. Bindt pas ná succesvolle image-load, zodat de icon-tegels
+  (proces-06/07, 404-by-design) géén zoom-cursor krijgen.
+- **Scroll-gedreven beeld-drift** (CSS `animation-timeline: view()`, @supports-guard): split-media-
+  foto's driften subtiel mee met de scroll — 0 JS. Bewust NIET op de factory-gallery (zou daar de
+  hover-zoom van de lightbox overschrijven; animation wint van transition op transform).
+- **Kernpunten-rij**: gestaggerde entree + scheidingslijnen die vertraagd "aangroeien" (desktop).
+- **FAQ**: de bestaande +-marker draait nu vloeiend naar een goud kruis bij openen.
+- **Focus-visible**: gouden outline bij toetsenbordnavigatie (toegankelijkheids-luxe).
+- E2E-geverifieerd (headless Chromium): 6 hero-woorden onthullen, marquee loopt (en staat stil bij
+  reduced-motion), smart header verbergt/toont correct, tak tekent, wordmark aanwezig, lightbox
+  opent+sluit (Escape), cursor+magnetic actief op desktop, geen overflow, geen JS-fouten.
+- **Let op bij volgende sessies:** de .leaving-JS-fade wordt geskipt als
+  `CSS.supports('view-transition-name: none')` — test pagina-overgangen dus in een moderne browser
+  vóór je concludeert dat de fade "kapot" is.
+
 ### v3b — echte ajar.ma-fabrieksfoto's aangeleverd (4 juli 2026, zelfde dag)
 
 Direct na v3 leverde Soef 5 echte foto's van de moederfabriek in Taourirt aan (rechten in orde,
