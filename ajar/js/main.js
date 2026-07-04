@@ -204,6 +204,9 @@
               '<a class="btn btn-primary" href="' + esc(C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(C.sampleCtaLabel) + '</a>' +
               '<a class="btn btn-ghost" href="' + esc(C.ctaHref) + '" data-ga-event="offerte_cta_click">' + esc(C.ctaLabel) + '</a>' +
             '</div>' +
+            (h.hero.badges && h.hero.badges.length
+              ? '<ul class="hero-badges" aria-label="Kernfeiten">' + h.hero.badges.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>'
+              : '') +
           '</div>' +
           '<div class="hero-media reveal" data-parallax>' + imgSlot(h.hero.image, 'Het land van AJAR in Taourirt, Marokko — olijfgaard met bergen', 'img-hero', true) + '</div>' +
         '</div>' +
@@ -228,6 +231,8 @@
         '<p class="mood-sub">' + esc(h.mood.sub) + '</p></div>' +
       '</section>' +
 
+      routeSection(h.route) +
+
       '<section class="section split split-rev"><div class="wrap split-inner">' +
         '<div class="split-media reveal">' + imgSlot(h.product.image, 'AJAR fles 500 ml', '') + '</div>' +
         '<div class="split-text reveal">' + kickerTitle(h.product.kicker, h.product.title) +
@@ -239,6 +244,36 @@
       testimonialsOrTrust(h) +
 
       ctaBand(h.cta);
+  }
+
+  /* De route Taourirt → Amsterdam: lijn tekent zichzelf bij scroll, druppel reist mee.
+     Abstract-elegant (geen landkaart-details die fout kunnen zijn) — alleen feiten. */
+  const ROUTE_PATH = 'M100 348 C 240 308 330 272 410 222 C 490 172 570 124 690 88';
+  function routeSection(r) {
+    if (!r) return '';
+    return '<section class="section route-sec"><div class="wrap">' +
+      '<div class="section-head reveal">' + kickerTitle(r.kicker, r.title, r.text) + '</div>' +
+      '<div class="route-card card reveal">' +
+        '<div class="route-map" data-route>' +
+          '<svg class="route-svg" viewBox="0 0 800 460" role="img" aria-label="Route van Taourirt (Marokko) naar Amsterdam (Nederland)">' +
+            '<text class="route-country" x="60" y="52">' + esc(r.toCountry.toUpperCase()) + '</text>' +
+            '<text class="route-country" x="740" y="432" text-anchor="end">' + esc(r.fromCountry.toUpperCase()) + '</text>' +
+            '<path class="route-base" d="' + ROUTE_PATH + '" pathLength="1"/>' +
+            '<path class="route-line" d="' + ROUTE_PATH + '" pathLength="1"/>' +
+            '<circle class="route-ring route-ring-a" cx="100" cy="348" r="7"/>' +
+            '<circle class="route-ring route-ring-b" cx="690" cy="88" r="7"/>' +
+            '<circle class="route-dot route-dot-a" cx="100" cy="348" r="7"/>' +
+            '<circle class="route-dot route-dot-b" cx="690" cy="88" r="7"/>' +
+            '<g class="route-drop-g"><path class="route-drop" d="M0 -7 C 4 -2 5 .5 5 2.5 A 5 5 0 1 1 -5 2.5 C -5 .5 -4 -2 0 -7 Z">' +
+              '<animateMotion dur="6s" repeatCount="indefinite" begin="indefinite" path="' + ROUTE_PATH + '"/>' +
+            '</path></g>' +
+          '</svg>' +
+          '<span class="route-lab route-lab-a"><strong>' + esc(r.from) + '</strong><em>' + esc(r.fromCountry) + '</em></span>' +
+          '<span class="route-lab route-lab-b"><strong>' + esc(r.to) + '</strong><em>' + esc(r.toCountry) + '</em></span>' +
+        '</div>' +
+        '<ul class="route-stats">' + r.stats.map(s => '<li>' + esc(s) + '</li>').join('') + '</ul>' +
+      '</div>' +
+    '</div></section>';
   }
 
   /* Echte quotes zodra ze er zijn; anders een eerlijke vertrouwensrij (feiten, geen nep-quotes) */
@@ -312,6 +347,14 @@
           '</dl>' +
         '</div>' +
       '</div></section>' +
+
+      /* De olijf: Picholine Marocaine */
+      (p.cultivar
+        ? '<section class="section"><div class="wrap">' +
+          '<div class="section-head reveal">' + kickerTitle(p.cultivar.kicker, p.cultivar.title, p.cultivar.text) + '</div>' +
+          uspGrid(p.cultivar.points) +
+          '</div></section>'
+        : '') +
 
       /* Meetbare kwaliteitscijfers */
       '<section class="section section-tint"><div class="wrap">' +
@@ -834,7 +877,18 @@
       manufacturer: { '@type': 'Organization', name: C.producer.name, address: { '@type': 'PostalAddress', addressLocality: C.producer.city, addressCountry: 'MA' } },
       offers: { '@type': 'Offer', availability: 'https://schema.org/InStock', businessFunction: 'http://purl.org/goodrelations/v1#Sell', priceSpecification: { '@type': 'PriceSpecification', description: 'Prijs op aanvraag (B2B)' } }
     };
-    [org, product].forEach(obj => {
+    const objs = [org, product];
+    /* FAQ-rich-result op de zakelijk-pagina */
+    if (page === 'zakelijk' && C.b2b && C.b2b.faq && C.b2b.faq.items.length) {
+      objs.push({
+        '@context': 'https://schema.org', '@type': 'FAQPage',
+        mainEntity: C.b2b.faq.items.map(f => ({
+          '@type': 'Question', name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a }
+        }))
+      });
+    }
+    objs.forEach(obj => {
       const s = document.createElement('script');
       s.type = 'application/ld+json';
       s.textContent = JSON.stringify(obj);
@@ -1014,6 +1068,122 @@
     }
   }
 
+  /* ---------- 3D & diepte: route-animatie, kaart-tilt met glans, hero-diepte ---------- */
+
+  function init3d() {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Route: lijn tekent zichzelf zodra de kaart in beeld komt; daarna reist de druppel */
+    const route = document.querySelector('[data-route]');
+    if (route) {
+      const start = () => {
+        route.classList.add('go');
+        if (reduce) return;
+        const motion = route.querySelector('animateMotion');
+        const dropG = route.querySelector('.route-drop-g');
+        if (motion && dropG && motion.beginElement) {
+          setTimeout(() => {
+            dropG.classList.add('vis');
+            try { motion.beginElement(); } catch (e) { /* oude browser: alleen de lijn */ }
+          }, 1500);
+        }
+      };
+      if ('IntersectionObserver' in window && !reduce) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(en => { if (en.isIntersecting) { io.disconnect(); start(); } });
+        }, { threshold: 0.35 });
+        io.observe(route);
+      } else start();
+    }
+
+    if (reduce || !window.matchMedia('(min-width: 860px) and (pointer: fine)').matches) return;
+
+    /* 3D-tilt + meebewegende glans op kaarten en tegels (niet op formulieren) */
+    const targets = Array.from(document.querySelectorAll('.card, .trust-tile, .fmt-tile, .quality-tile, .specs-media .img-slot'))
+      .filter(el => !el.querySelector('form') && !el.closest('form'));
+    targets.forEach(el => {
+      el.classList.add('tilt');
+      const glare = document.createElement('span');
+      glare.className = 'tilt-glare';
+      glare.setAttribute('aria-hidden', 'true');
+      el.appendChild(glare);
+      let raf = 0;
+      el.addEventListener('pointerenter', () => {
+        if (el.classList.contains('reveal') && !el.classList.contains('in')) return; // entrance eerst afmaken
+        el.classList.add('tilt-live');
+      });
+      el.addEventListener('pointermove', (e) => {
+        if (!el.classList.contains('tilt-live') || raf) return;
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          const r = el.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width;
+          const py = (e.clientY - r.top) / r.height;
+          el.style.setProperty('--ry', ((px - .5) * 7).toFixed(2) + 'deg');
+          el.style.setProperty('--rx', ((.5 - py) * 7).toFixed(2) + 'deg');
+          el.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
+          el.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+        });
+      });
+      el.addEventListener('pointerleave', () => {
+        el.style.setProperty('--rx', '0deg');
+        el.style.setProperty('--ry', '0deg');
+        setTimeout(() => el.classList.remove('tilt-live'), 350);
+      });
+    });
+
+    /* Hero-foto: lichte 3D-diepte die de muis over de hele hero volgt */
+    const heroSec = document.querySelector('.hero');
+    const heroImg = document.querySelector('.hero-media .img-slot');
+    if (heroSec && heroImg) {
+      heroImg.classList.add('hero-3d');
+      heroSec.addEventListener('pointermove', (e) => {
+        const r = heroSec.getBoundingClientRect();
+        heroImg.style.setProperty('--hry', (((e.clientX - r.left) / r.width - .5) * 4).toFixed(2) + 'deg');
+        heroImg.style.setProperty('--hrx', ((.5 - (e.clientY - r.top) / r.height) * 3).toFixed(2) + 'deg');
+      });
+      heroSec.addEventListener('pointerleave', () => {
+        heroImg.style.setProperty('--hrx', '0deg');
+        heroImg.style.setProperty('--hry', '0deg');
+      });
+    }
+  }
+
+  /* ---------- Sticky mobiele CTA-balk (lead-site: sample altijd binnen duimbereik) ---------- */
+
+  function initMobileCta() {
+    if (page === 'sample' || page === 'contact' || page === 'privacy') return; // daar staat het formulier al
+    const m = C.mobileCta;
+    if (!m) return;
+    const bar = document.createElement('div');
+    bar.className = 'mob-cta';
+    bar.innerHTML =
+      '<a class="btn btn-primary" href="' + esc(C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(m.sample) + '</a>' +
+      '<a class="btn btn-ghost mob-cta-wa" href="' + waLink(C.contact.direct.whatsappPrefill) + '" target="_blank" rel="noopener" data-ga-event="whatsapp_click">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-12.4 7.5L4 21l1.5-4.4A8.5 8.5 0 1 1 21 12z"/></svg>' +
+        esc(m.whatsapp) +
+      '</a>';
+    document.body.appendChild(bar);
+
+    /* Verbergen zodra de CTA-band of footer in beeld is (anders dubbel op elkaar) */
+    let nearEnd = false;
+    function update() {
+      bar.classList.toggle('show', window.scrollY > 520 && !nearEnd);
+    }
+    const ends = document.querySelectorAll('.cta-band, .site-footer');
+    if ('IntersectionObserver' in window && ends.length) {
+      const seen = new Set();
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(en => { en.isIntersecting ? seen.add(en.target) : seen.delete(en.target); });
+        nearEnd = seen.size > 0;
+        update();
+      }, { rootMargin: '0px 0px -10% 0px' });
+      ends.forEach(el => io.observe(el));
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  }
+
   /* ---------- Boot ---------- */
 
   const renderers = {
@@ -1034,4 +1204,6 @@
   initCountUp();
   initFaq();
   initEnhancements();
+  init3d();
+  initMobileCta();
 })();

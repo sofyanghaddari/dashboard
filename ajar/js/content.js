@@ -64,6 +64,12 @@ window.AJAR_CONTENT = {
     href: 'sample.html'
   },
 
+  /* ---------- Sticky mobiele CTA-balk (verschijnt na scrollen, niet op formulier-pagina's) ---------- */
+  mobileCta: {
+    sample: 'Gratis sample',
+    whatsapp: 'WhatsApp'
+  },
+
   /* ---------- Cookiebanner ---------- */
   cookies: {
     text: 'We gebruiken anonieme bezoekersstatistieken (Google Analytics) om te zien hoe de site wordt gebruikt. U kiest zelf of u dat goed vindt.',
@@ -78,7 +84,9 @@ window.AJAR_CONTENT = {
       kicker: 'Voor de Nederlandse horeca & speciaalzaak',
       title: 'Extra vierge olijfolie, rechtstreeks uit Marokko',
       sub: 'AJAR levert koudgeperste extra vierge olijfolie van een familiebedrijf met drie generaties kennis — via één korte, directe keten naar de Nederlandse horeca en speciaalzaak.',
-      image: 'hero-01.jpg'
+      image: 'hero-01.jpg',
+      /* Vertrouwenschips direct in de hero — alleen harde feiten */
+      badges: ['ISO 22000 · SGS', 'Picholine Marocaine', 'Rechtstreeks uit Taourirt']
     },
     usps: [
       { title: 'Eerste officiële importeur', text: 'AJAR wordt als eerste officieel in Nederland geïmporteerd — rechtstreeks van de producent, zonder tussenschakels.' },
@@ -99,6 +107,17 @@ window.AJAR_CONTENT = {
       linkLabel: 'Lees ons verhaal',
       linkHref: 'over-ons.html',
       image: 'story-02.jpg'
+    },
+    /* De route: geanimeerde kaart Taourirt → Amsterdam — de korte keten als beeld */
+    route: {
+      kicker: 'De route',
+      title: 'Van Taourirt naar uw zaak',
+      text: 'Geen verzamelpartijen, geen anonieme tussenhandel. De olie legt één route af: van de eigen boomgaard en pers in Taourirt, gebotteld aan de bron, rechtstreeks naar Nederland.',
+      from: 'Taourirt — boomgaard & eigen pers',
+      fromCountry: 'Marokko',
+      to: 'Amsterdam — importeur',
+      toCountry: 'Nederland',
+      stats: ['± 2.100 km hemelsbreed', 'één importeur', 'nul tussenschakels']
     },
     /* Full-bleed sfeer-band met quote — foto volgt uit Marokko (sfeer-09.jpg) */
     mood: {
@@ -205,6 +224,17 @@ window.AJAR_CONTENT = {
         /* TODO: onderstaande vult Soef later aan (na de Marokko-trip / oogstinfo) */
         { label: 'Oogst', value: 'Volgt — informatie huidige oogst', todo: true },
         { label: 'Smaakprofiel', value: 'Volgt — proefnotities huidige oogst', todo: true }
+      ]
+    },
+    /* De olijf: Picholine Marocaine — cultivar bevestigd door Soef (4 juli 2026) */
+    cultivar: {
+      kicker: 'De olijf',
+      title: 'Picholine Marocaine',
+      text: 'AJAR wordt geperst van één olijfvariëteit: de Picholine Marocaine, de meest aangeplante olijf van Marokko. Geen blend van wisselende rassen en herkomsten — één olijf, van eigen grond.',
+      points: [
+        { title: 'Thuis in het oosten', text: 'De variëteit gedijt in het droge klimaat van oost-Marokko — precies de streek rond Taourirt waar de boomgaarden staan.' },
+        { title: 'Eén ras, geen blend', text: 'Waar veel olijfolie een mengsel is van rassen en landen van herkomst, komt AJAR van één cultivar en één producent.' },
+        { title: 'Proefnotities volgen', text: 'Het smaakprofiel van de huidige oogst leggen we vast zodra de proefnotities en lab-analyse binnen zijn — die leest u hier als eerste.' }
       ]
     },
     /* Meetbare kwaliteitscijfers — lab-analyse wordt in Marokko geregeld (actie Soef). */

@@ -94,6 +94,39 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 - **Docs:** `README.md` (beheer), `SHOTLIST.md` (18-shot fotoplan), `LEES-MIJ.txt` (fotostatus),
   `CNAME.example` (custom-domein-route).
 
+### v2-ronde — concurrentie-gat + 3D-pakket (4 juli 2026)
+
+Volledige review-ronde n.a.v. Soefs Olyfia-screenshot ("kijk wat mist, spiek bij de concurrent, 3D-animaties"):
+
+- **Hero-badges** (`home.hero.badges`): drie feitchips direct in de hero — "ISO 22000 · SGS",
+  "Picholine Marocaine", "Rechtstreeks uit Taourirt". Antwoord op Olyfia's zichtbare
+  vertrouwenssignalen direct onder de header (Fairtrade-badge). Alleen harde feiten.
+- **Route-kaart Taourirt → Amsterdam** (home, `home.route`, sectie `.route-sec`): abstract-elegante
+  SVG-route (bewust géén landkaart-details die fout kunnen zijn) — gouden lijn tekent zichzelf bij
+  scroll (pathLength=1 + dashoffset), gouden druppel reist over het pad (SMIL `animateMotion`,
+  gestart via JS ná de lijn-animatie), pulserende ringen op de eindpunten, labels + statsregel
+  "± 2.100 km hemelsbreed · één importeur · nul tussenschakels" (afstand = haversine, gecheckt).
+  De korte keten — hét differentiatiepunt t.o.v. Olyfia — nu als beeld i.p.v. alleen tekst.
+- **Picholine Marocaine-sectie** op Product (`product.cultivar`, na de specs): cultivar-verhaal in
+  drie kaarten (thuis in het oosten / één ras geen blend / proefnotities volgen). Alleen algemene
+  cultivar-feiten, géén smaakclaims over AJAR's olie — die volgen met de proefnotities.
+- **3D-pakket** (CSS-sectie "3D & DIEPTE" + `init3d()` in main.js, alles reduced-motion-safe):
+  - 3D-tilt + meebewegende goudglans op kaarten/tegels (desktop + echte muis; formulieren
+    uitgesloten; wacht tot de reveal-entrance klaar is via de `in`-class-guard);
+  - hero-foto krijgt lichte 3D-diepte die de muis volgt (`--hrx/--hry`);
+  - vertrouwenscijfers klappen 3D open bij scroll (`bigFlip`, gestaffeld);
+  - procesnummers kantelen 3D binnen (`numFlip`);
+  - de CTA-druppel wiegt traag in 3D (dropSway naast de bestaande dropGlow).
+- **Sticky mobiele CTA-balk** (`initMobileCta()`, `mobileCta` in content.js): "Gratis sample" +
+  WhatsApp altijd binnen duimbereik op mobiel; verschijnt na ~520px scroll, verbergt zichzelf
+  zodra CTA-band of footer in beeld is; niet op sample/contact/privacy (daar staat het formulier al).
+  Olyfia-les: de conversieroute is daar altijd één tik weg (winkelwagen) — B2B-equivalent.
+- **FAQPage JSON-LD** op zakelijk.html (rich results voor de zes B2B-vragen).
+- E2E getest (headless Chromium, 375px + 1280px + reduced-motion): badges/route/cultivar/JSON-LD/
+  mob-cta aanwezig, tilt actief op desktop en uit op mobiel, route direct zichtbaar + druppel
+  verborgen bij reduced-motion, geen horizontale overflow, geen JS-fouten (enige console-fout in
+  de sandbox is de geblokkeerde Google Fonts-CDN — live niet aan de orde).
+
 ---
 
 ## 5. Concurrentie-analyse
@@ -135,6 +168,10 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 **Strategisch advies n.a.v. Olyfia:** niet concurreren op "Marokkaans" (dat claimt Olyfia al), maar op
 **zakelijke betrouwbaarheid, directheid en horeca-fit**. Vermijd Olyfia's consumenten-/kortingstoon.
+
+**Verwerkt in de v2-ronde (4 juli 2026):** hero-feitchips (antwoord op Olyfia's badge-onder-header),
+route-kaart als beeld van de korte keten, Picholine-sectie, sticky mobiele CTA (B2B-equivalent van
+Olyfia's altijd-zichtbare winkelwagen). Zie §4 → v2-ronde.
 
 ### 5B. Gkazas — gkazas.com (eerder besproken concurrent)
 
