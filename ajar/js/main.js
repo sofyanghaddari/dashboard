@@ -76,7 +76,11 @@
           '<img src="assets/logo/ajar-header.svg" alt="' + esc(cfg.brandName) + '" class="brand-logo">' +
         '</a>' +
         '<nav class="site-nav" id="site-nav" aria-label="Hoofdnavigatie">' + links +
-          '<a class="btn btn-primary nav-cta" href="' + esc(C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(C.sampleCtaLabel) + '</a>' +
+          /* Op sample.html zelf is "Gratis sample aanvragen" een dode link naar de eigen pagina —
+             toon daar in plaats daarvan de logische vervolgstap "Offerte aanvragen". */
+          (page === 'sample'
+            ? '<a class="btn btn-primary nav-cta" href="' + esc(C.ctaHref) + '" data-ga-event="offerte_cta_click">' + esc(C.ctaLabel) + '</a>'
+            : '<a class="btn btn-primary nav-cta" href="' + esc(C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(C.sampleCtaLabel) + '</a>') +
         '</nav>' +
         '<button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">' +
           '<span></span><span></span>' +
@@ -174,10 +178,12 @@
       '</figure>';
   }
 
-  function uspGrid(items) {
-    return '<div class="grid-3">' + items.map(u =>
+  function uspGrid(items, gridClass) {
+    return '<div class="' + (gridClass || 'grid-3') + '">' + items.map(u =>
       '<article class="card reveal"><span class="card-rule" aria-hidden="true"></span>' +
-      '<h3>' + esc(u.title) + '</h3><p>' + esc(u.text) + '</p></article>').join('') + '</div>';
+      '<h3>' + esc(u.title) + '</h3><p>' + esc(u.text) + '</p>' +
+      (u.button ? '<a class="btn btn-ghost card-btn" href="' + esc(u.buttonHref) + '" data-ga-event="' + esc(u.ga || '') + '">' + esc(u.button) + '</a>' : '') +
+      '</article>').join('') + '</div>';
   }
 
   /* ---------- Pagina's ---------- */
@@ -342,11 +348,11 @@
         '</div>' +
       '</div></section>' +
 
-      /* De olijf: Picholine Marocaine */
+      /* De olijf: Picholine Marocaine (2 kaarten — grid-2, geen leeg 3e vak) */
       (p.cultivar
         ? '<section class="section"><div class="wrap">' +
           '<div class="section-head reveal">' + kickerTitle(p.cultivar.kicker, p.cultivar.title, p.cultivar.text) + '</div>' +
-          uspGrid(p.cultivar.points) +
+          uspGrid(p.cultivar.points, 'grid-2') +
           '</div></section>'
         : '') +
 
@@ -431,17 +437,8 @@
         '</ol>' +
       '</div></section>' +
 
-      /* In de keuken én op tafel */
+      /* Wat u krijgt & wat het kost — Formaten + Prijs samengevoegd (was 2 secties) */
       '<section class="section"><div class="wrap">' +
-        '<div class="section-head reveal">' + kickerTitle(b.dualUse.kicker, b.dualUse.title) + '</div>' +
-        '<div class="grid-2">' + b.dualUse.items.map(u =>
-          '<article class="card reveal"><span class="card-rule" aria-hidden="true"></span>' +
-          '<h3>' + esc(u.title) + '</h3><p>' + esc(u.text) + '</p></article>').join('') +
-        '</div>' +
-      '</div></section>' +
-
-      /* Formaten-lijn */
-      '<section class="section section-tint"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(b.formats.kicker, b.formats.title) + '</div>' +
         '<div class="fmt-row">' + b.formats.items.map(f =>
           '<div class="fmt-tile reveal' + (f.todo ? ' is-todo' : '') + '">' +
@@ -450,11 +447,8 @@
             '<h3>' + esc(f.name) + '</h3><p>' + esc(f.text) + '</p>' +
           '</div>').join('') +
         '</div>' +
-      '</div></section>' +
-
-      '<section class="section"><div class="wrap wrap-narrow">' +
-        '<div class="card pricing-card reveal">' +
-          '<h2 class="section-title">' + esc(b.pricing.title) + '</h2>' +
+        '<div class="pricing-inline reveal">' +
+          '<h3>' + esc(b.pricing.title) + '</h3>' +
           '<p>' + esc(b.pricing.text) + '</p>' +
           '<p class="pricing-fair">' + esc(b.pricing.fair) + '</p>' +
           '<p class="pricing-packaging' + (b.pricing.packagingTodo ? ' is-todo' : '') + '">' + esc(b.pricing.packaging) + '</p>' +
@@ -462,25 +456,15 @@
       '</div></section>' +
 
       /* Waarom nu instappen — eerlijke geruststelling */
-      '<section class="section"><div class="wrap">' +
+      '<section class="section section-tint"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(b.assurance.kicker, b.assurance.title) + '</div>' +
         uspGrid(b.assurance.items) +
       '</div></section>' +
 
-      /* Proeverij in uw zaak */
-      '<section class="section section-tint"><div class="wrap wrap-narrow">' +
-        '<div class="card gift-card tasting-card reveal">' +
-          '<p class="kicker">' + esc(b.tasting.kicker) + '</p>' +
-          '<h2 class="section-title">' + esc(b.tasting.title) + '</h2>' +
-          '<p>' + esc(b.tasting.text) + '</p>' +
-          '<a class="btn btn-primary" href="' + esc(b.tasting.buttonHref) + '" data-ga-event="proeverij_cta_click">' + esc(b.tasting.button) + '</a>' +
-        '</div>' +
-      '</div></section>' +
-
-      /* Sell-through-hulp voor winkels */
+      /* Voor de winkel — sell-through-hulp + proeverij + relatiegeschenk (was 3 secties) */
       '<section class="section"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(b.support.kicker, b.support.title) + '</div>' +
-        uspGrid(b.support.items) +
+        uspGrid(b.support.items, 'grid-2') +
       '</div></section>' +
 
       /* Documentatie: spec-sheet (vrij) + bedrijfspresentatie (achter mini-formulier) */
@@ -509,18 +493,8 @@
         '</div>' +
       '</div></section>' +
 
-      /* Relatiegeschenken */
-      '<section class="section"><div class="wrap wrap-narrow">' +
-        '<div class="card gift-card reveal">' +
-          '<p class="kicker">' + esc(b.gift.kicker) + '</p>' +
-          '<h2 class="section-title">' + esc(b.gift.title) + '</h2>' +
-          '<p>' + esc(b.gift.text) + '</p>' +
-          '<a class="btn btn-ghost" href="' + esc(b.gift.buttonHref) + '" data-ga-event="offerte_cta_click">' + esc(b.gift.button) + '</a>' +
-        '</div>' +
-      '</div></section>' +
-
       /* FAQ */
-      '<section class="section section-tint"><div class="wrap wrap-narrow">' +
+      '<section class="section"><div class="wrap wrap-narrow">' +
         '<div class="section-head reveal">' + kickerTitle(b.faq.kicker, b.faq.title) + '</div>' +
         '<div class="faq reveal">' + b.faq.items.map(f =>
           '<details class="faq-item' + (f.todo ? ' is-todo' : '') + '">' +
@@ -747,9 +721,14 @@
     if (!form) return;
     const f = C.contact.form;
 
-    // Voorselectie via ?aanvraag=sample|offerte|proeverij (CTA's van andere pagina's)
+    // Voorselectie via ?aanvraag=sample|offerte|proeverij|relatiegeschenk (CTA's van andere pagina's)
     const param = new URLSearchParams(location.search).get('aanvraag');
     if (param === 'sample') form.querySelector('select[name=volume]').value = 'sample';
+    if (param === 'offerte') form.querySelector('select[name=volume]').value = 'maandelijks-vast';
+    if (param === 'relatiegeschenk') {
+      form.querySelector('select[name=volume]').value = 'relatiegeschenk';
+      form.querySelector('textarea[name=bericht]').value = 'Ik heb interesse in AJAR als relatiegeschenk.';
+    }
     if (param === 'proeverij') {
       form.querySelector('select[name=volume]').value = 'sample';
       form.querySelector('textarea[name=bericht]').value = 'Ik heb interesse in een proeverij in mijn zaak.';

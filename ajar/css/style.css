@@ -570,6 +570,21 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .pricing-card { text-align: center; padding: 40px 28px; }
 .pricing-card p { max-width: 52ch; margin: 0 auto; }
 
+/* Prijs nu inline onder de Formaten-tegels (zelfde sectie, geen aparte kaart/sectie meer) */
+.pricing-inline {
+  text-align: center;
+  max-width: 56ch;
+  margin: 34px auto 0;
+  padding-top: 30px;
+  border-top: 1px solid var(--line);
+}
+.pricing-inline h3 { font-size: 1.2rem; margin: 0 0 .5em; }
+.pricing-inline p { margin: 0 auto .8em; }
+.pricing-inline p:last-child { margin-bottom: 0; }
+
+/* Knop binnen een USP/support-kaart (proeverij, relatiegeschenk) */
+.card-btn { margin-top: 14px; }
+
 /* ---------- Contact ---------- */
 .contact-inner { display: grid; gap: 22px; align-items: start; }
 @media (min-width: 900px) { .contact-inner { grid-template-columns: 1.4fr .8fr; gap: 32px; } }
@@ -883,8 +898,6 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   color: var(--ink-soft);
 }
 .pricing-packaging.is-todo { color: var(--gold); font-style: italic; }
-.gift-card { text-align: center; padding: 38px 28px; }
-.gift-card p { max-width: 56ch; margin: 0 auto 1.5em; }
 .dl-btn { margin-top: 8px; }
 .pres-form { margin-top: 16px; }
 .pres-form .form-field { margin-bottom: 12px; }
@@ -966,8 +979,6 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   font-size: 1.02rem;
   color: var(--olive);
 }
-.tasting-card .btn { margin-top: 6px; }
-
 /* ---------- Sample-pagina ---------- */
 .sample-usp { margin-bottom: 1.2em !important; }
 .tip-field input { border-style: dashed; }

@@ -94,6 +94,53 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 - **Docs:** `README.md` (beheer), `SHOTLIST.md` (18-shot fotoplan), `LEES-MIJ.txt` (fotostatus),
   `CNAME.example` (custom-domein-route).
 
+### v2c — volledige klantaudit + zakelijk-pagina van 13 naar 9 secties (4 juli 2026, zelfde dag)
+
+Op verzoek van Soef: hele site doorlopen "als een klant die komt bezoeken" — alles wat niet klopt,
+dubbel is of ontbreekt. Methode: elke pagina in een echte headless browser bekeken (mobiel + desktop,
+console-errors, broken images, overflow), plus content.js kruislings vergeleken op herhaling. Twee
+eerste bevindingen bleken achteraf schermafbeeldingsartefacten (te weinig wachttijd voor de
+`.reveal`-CSS-transitie in mijn eigen testscript) — geen echte bugs; goed om te weten voor een
+volgende sessie: **wacht ≥1.2s ná scrollen voordat je een full-page screenshot gebruikt als bewijs.**
+
+**Geverifieerde bevindingen en wat ermee gedaan is:**
+- **Zakelijk-pagina was 13 secties, waarvan 6 bijna-identieke kaartenrijen na elkaar** — precies het
+  "bezoeker raakt in de war"-risico. Herstructureerd naar 9 secties:
+  - `dualUse` ("In de keuken én op tafel") geschrapt — dekte exact hetzelfde als de Horeca-kaart in
+    `b2b.audiences`.
+  - `formats` (Formaten) + `pricing` (Prijs) samengevoegd tot één sectie "Wat u krijgt & wat het
+    kost" (`.pricing-inline`-stijl i.p.v. eigen kaart/sectie).
+  - `tasting` (Proeverij) + `support` (sell-through-hulp) + `gift` (Relatiegeschenk) samengevoegd tot
+    één "Voor de winkel"-sectie (`b2b.support.items`, nu 4 items i.p.v. 3, grid-2); de losse
+    "Proefmoment voor uw klanten"-bullet in `support` is verwijderd omdat die letterlijk hetzelfde
+    was als de proeverij-tegel. Proeverij en Relatiegeschenk houden hun eigen knop (`uspGrid()` kreeg
+    een optioneel `button`/`buttonHref`/`ga`-veld + optionele grid-class-parameter).
+- **Product-pagina herhaalde "smaak/cijfers komen nog" drie keer** (specs-rij "Smaakprofiel", cultivar-
+  kaartje "Proefnotities volgen", kwaliteitscijfers-sectie) — geconsolideerd tot één plek:
+  `product.quality.note` is nu de enige "volgt"-melding op de pagina (noemt zowel smaakprofiel als
+  labcijfers); de `Oogst`/`Smaakprofiel`-rijen zijn uit `specs.rows` gehaald (nu 5 schone, bevestigde
+  rijen, geen `todo`'s meer) en cultivar heeft nog 2 punten i.p.v. 3 (grid-2 i.p.v. grid-3, geen leeg
+  derde vak).
+- **Drie kleine technische dingen gefixt:**
+  1. Op `sample.html` zelf toonde de header nog een "Gratis sample aanvragen"-knop die naar
+     `sample.html` zelf linkte. Nu toont de header op die pagina i.p.v. daarvan "Offerte aanvragen"
+     (`page === 'sample'`-check in `renderHeader()`).
+  2. De query-parameter `?aanvraag=offerte` (gebruikt door bijna elke secundaire CTA op de site) deed
+     niets in `initContactForm()` — nu selecteert die "Maandelijks vast volume".
+  3. Contactformulier had geen "Relatiegeschenk"-optie in de volume-dropdown, terwijl de Zakelijk-
+     pagina relatiegeschenken als apart verkoopargument voert. Toegevoegd + nieuwe param
+     `?aanvraag=relatiegeschenk` (gebruikt door de nieuwe "AJAR als relatiegeschenk"-kaart) selecteert
+     'm en vult een passend berichtje voor.
+- **Nog niet aangepast (bewust, buiten scope van deze ronde):** de FAQ op Zakelijk heeft 3 van de 6
+  antwoorden die ontwijkend zijn ("dat bespreken we bij uw aanvraag" — minimale afname/levertijd/
+  betaalvoorwaarden). Niet herschreven omdat dat een feitelijke-claims-afweging is (geen cijfers
+  verzinnen) die apart met Soef besproken moet worden.
+- E2E-geverifieerd: zakelijk.html telt nu 9 `<section>`'s (was 13), support-sectie toont 2 knoppen
+  (proeverij + relatiegeschenk), product-specs-tabel heeft 0 `todo`-rijen, sample.html header-CTA
+  linkt naar offerte i.p.v. zichzelf, beide nieuwe query-parameters selecteren correct — geen
+  horizontale overflow, geen JS-fouten (afgezien van de bekende geblokkeerde Google Fonts-CDN in de
+  sandbox).
+
 ### v2b — feitcorrectie grond vs. fabriek + homepage-ontdubbeling (4 juli 2026, zelfde dag)
 
 Soef corrigeerde direct na de v2-ronde: **de boomgaarden liggen niet in Taourirt** — dat is

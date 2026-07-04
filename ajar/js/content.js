@@ -217,15 +217,15 @@ window.AJAR_CONTENT = {
     specs: {
       title: 'AJAR Extra Vierge',
       image: 'product-03.jpg',
+      /* Alléén bevestigde feiten hier — "volgt"-items staan voortaan uitsluitend in
+         product.quality.note, op één plek i.p.v. verspreid over specs/cultivar/quality
+         (feedback 4 juli 2026: dezelfde "komt nog"-boodschap drie keer verwarde meer dan het geruststelde). */
       rows: [
         { label: 'Categorie', value: 'Extra vierge olijfolie (eerste persing)' },
         { label: 'Inhoud', value: '500 ml' },
         { label: 'Herkomst olijven', value: 'Debdou-regio, noordoost-Marokko — eigen boomgaarden' },
         { label: 'Persing & botteling', value: 'Koud geperst, eigen fabriek in Taourirt (ConservAjar SARL)' },
-        { label: 'Olijfvariëteit', value: 'Picholine Marocaine' },
-        /* TODO: onderstaande vult Soef later aan (na de Marokko-trip / oogstinfo) */
-        { label: 'Oogst', value: 'Volgt — informatie huidige oogst', todo: true },
-        { label: 'Smaakprofiel', value: 'Volgt — proefnotities huidige oogst', todo: true }
+        { label: 'Olijfvariëteit', value: 'Picholine Marocaine' }
       ]
     },
     /* De olijf: Picholine Marocaine — cultivar bevestigd door Soef (4 juli 2026) */
@@ -235,15 +235,15 @@ window.AJAR_CONTENT = {
       text: 'AJAR wordt geperst van één olijfvariëteit: de Picholine Marocaine, de meest aangeplante olijf van Marokko. Geen blend van wisselende rassen en herkomsten — één olijf, van eigen grond.',
       points: [
         { title: 'Thuis in het oosten', text: 'De variëteit gedijt in het droge klimaat van oost-Marokko — precies de streek rond Debdou waar de boomgaarden staan.' },
-        { title: 'Eén ras, geen blend', text: 'Waar veel olijfolie een mengsel is van rassen en landen van herkomst, komt AJAR van één cultivar en één producent.' },
-        { title: 'Proefnotities volgen', text: 'Het smaakprofiel van de huidige oogst leggen we vast zodra de proefnotities en lab-analyse binnen zijn — die leest u hier als eerste.' }
+        { title: 'Eén ras, geen blend', text: 'Waar veel olijfolie een mengsel is van rassen en landen van herkomst, komt AJAR van één cultivar en één producent.' }
       ]
     },
-    /* Meetbare kwaliteitscijfers — lab-analyse wordt in Marokko geregeld (actie Soef). */
+    /* Meetbare kwaliteitscijfers — lab-analyse wordt in Marokko geregeld (actie Soef).
+       Dit is nu de ENIGE plek op de productpagina die "volgt" meldt — smaakprofiel + labcijfers samen. */
     quality: {
       kicker: 'De cijfers',
       title: 'Meetbare kwaliteit',
-      note: 'Lab-analyse van de huidige oogst volgt — deze waarden worden ingevuld zodra het rapport binnen is.',
+      note: 'Proefnotities en lab-analyse van de huidige oogst volgen — smaakprofiel en onderstaande cijfers vullen we aan zodra ze binnen zijn.',
       items: [
         { label: 'Zuurgraad', value: 'Volgt', unit: '% vrije vetzuren', todo: true, explain: 'Hoe lager, hoe verser en zuiverder de olie. Extra vierge zit per definitie onder 0,8%.' },
         { label: 'Polyfenolen', value: 'Volgt', unit: 'mg/kg', todo: true, explain: 'Natuurlijke antioxidanten uit de olijf. Hoger betekent een vollere, pittigere smaak en langere houdbaarheid.' },
@@ -337,6 +337,21 @@ window.AJAR_CONTENT = {
         { title: 'Offerte', text: 'U ontvangt een offerte op maat. Prijzen zijn volume-afhankelijk en altijd op aanvraag.' }
       ]
     },
+    /* v2c (4 juli 2026) — pagina ontdubbeld op verzoek van user: was 13 secties, waarvan 6 bijna-
+       identieke kaartenrijen na elkaar. "In de keuken én op tafel" (dualUse) is geschrapt: de
+       Horeca-kaart in b2b.audiences dekt "op tafel en in de keuken" al. Formaten+Prijs samengevoegd
+       tot één "Wat u krijgt & wat het kost"-sectie. Proeverij+Sell-through-hulp+Relatiegeschenk
+       samengevoegd tot één "Voor de winkel"-sectie (support.items) — "Proefmoment voor uw klanten"
+       verwijderd omdat het exact hetzelfde was als de proeverij-tegel. 13 secties → 9. */
+    formats: {
+      kicker: 'De lijn',
+      title: 'Wat u krijgt & wat het kost',
+      items: [
+        { size: 'Proefflesje', name: 'De sample', text: 'Gratis kennismaking: genoeg om te proeven, te vergelijken en te beslissen.', shape: 'small', todo: true, todoNote: 'formaat volgt' },
+        { size: '500 ml', name: 'De fles', text: 'Het hart van de lijn — voor keuken en tafel, gebotteld aan de bron.', shape: 'bottle' },
+        { size: '12 × 500 ml', name: 'De doos', text: 'De B2B-eenheid waarin we leveren en rekenen.', shape: 'box', todo: true, todoNote: 'definitieve doosinhoud volgt' }
+      ]
+    },
     pricing: {
       title: 'Prijs op aanvraag',
       text: 'We publiceren bewust geen prijslijst: B2B-prijzen hangen af van volume, frequentie en afspraken over levering. In één kort gesprek weet u waar u aan toe bent.',
@@ -355,50 +370,17 @@ window.AJAR_CONTENT = {
         { title: 'Meegroeien vanaf het begin', text: 'Als een van de eerste afnemers krijgt u persoonlijke aandacht en denken we mee over wat het beste bij uw zaak past.' }
       ]
     },
-    /* Horeca-propositie: de fles werkt in de keuken én als verhaal op tafel. */
-    dualUse: {
-      kicker: 'In de keuken én op tafel',
-      title: 'Eén olie, twee rollen in uw zaak',
-      items: [
-        { title: 'In de keuken', text: 'Een constante, koudgeperste basis voor koude én warme gerechten — dezelfde kwaliteit in elke fles, rechtstreeks van één pers.' },
-        { title: 'Op tafel', text: 'Zet de fles bij het brood op tafel en het verhaal vertelt zichzelf: één familie, één boomgaard, één herkomst. Uw gasten proeven het verschil — en vragen ernaar.' }
-      ]
-    },
-    /* Productlijn / formaten — definitieve verpakkingen volgen. */
-    formats: {
-      kicker: 'De lijn',
-      title: 'Formaten',
-      items: [
-        { size: 'Proefflesje', name: 'De sample', text: 'Gratis kennismaking: genoeg om te proeven, te vergelijken en te beslissen.', shape: 'small', todo: true, todoNote: 'formaat volgt' },
-        { size: '500 ml', name: 'De fles', text: 'Het hart van de lijn — voor keuken en tafel, gebotteld aan de bron.', shape: 'bottle' },
-        { size: '12 × 500 ml', name: 'De doos', text: 'De B2B-eenheid waarin we leveren en rekenen.', shape: 'box', todo: true, todoNote: 'definitieve doosinhoud volgt' }
-      ]
-    },
-    /* Proeverij in uw zaak — de importeur zelf komt langs. */
-    tasting: {
-      kicker: 'Proeverij',
-      title: 'Proeverij in uw zaak',
-      text: 'Geen vertegenwoordiger met een koffer folders — de importeur zelf komt langs, schenkt de olie en vertelt het verhaal achter de familie en de boomgaard. Voor uw team, of als proefmoment voor uw klanten. Kost u niets behalve een half uur.',
-      button: 'Plan een proeverij',
-      buttonHref: 'contact.html?aanvraag=proeverij'
-    },
-    /* Sell-through-hulp voor delicatessenzaken en retail. */
+    /* Voor de winkel: sell-through-hulp + proeverij + relatiegeschenk in één sectie
+       (was 3 losse secties/kaarten — proeverij en gift houden hun eigen knop). */
     support: {
       kicker: 'Voor de winkel',
-      title: 'We helpen uw verkoop',
+      title: 'We helpen uw verkoop — en meer',
       items: [
         { title: 'Schapkaart met het verhaal', text: 'Een kaart bij het schap met de familie, de boomgaard en de herkomst — een verhaal verkoopt, zeker naast anonieme flessen.' },
-        { title: 'Proefmoment voor uw klanten', text: 'We komen een dagdeel proeven schenken in uw winkel. Klanten die geproefd hebben, komen terug voor de fles.' },
-        { title: 'Bijbestellen via één appje', text: 'Geen bestelportaal, geen minimumdrempels vol kleine letters — één WhatsApp-bericht en de volgende doos komt eraan.' }
+        { title: 'Proeverij in uw zaak', text: 'Geen vertegenwoordiger met een koffer folders — de importeur zelf komt langs, schenkt de olie en vertelt het verhaal. Voor uw team, of als proefmoment voor uw klanten. Kost u niets dan een half uur.', button: 'Plan een proeverij', buttonHref: 'contact.html?aanvraag=proeverij', ga: 'proeverij_cta_click' },
+        { title: 'Bijbestellen via één appje', text: 'Geen bestelportaal, geen minimumdrempels vol kleine letters — één WhatsApp-bericht en de volgende doos komt eraan.' },
+        { title: 'AJAR als relatiegeschenk', text: 'Een fles met een echt verhaal, voor eindejaarspakketten, jubilea of een bedankje aan vaste relaties. We denken graag mee over aantallen en presentatie.', button: 'Vraag naar de mogelijkheden', buttonHref: 'contact.html?aanvraag=relatiegeschenk', ga: 'gift_cta_click' }
       ]
-    },
-    /* Relatiegeschenken — tweede B2B-invalshoek. */
-    gift: {
-      kicker: 'Relatiegeschenk',
-      title: 'AJAR als relatiegeschenk voor uw klanten of team',
-      text: 'Een fles goede olijfolie met een echt verhaal is een geschenk dat blijft hangen — voor eindejaarspakketten, jubilea of als bedankje aan vaste relaties. We denken graag mee over aantallen en presentatie.',
-      button: 'Vraag naar de mogelijkheden',
-      buttonHref: 'contact.html?aanvraag=offerte'
     },
     /* Spec-sheet (vrij downloadbaar) + bedrijfspresentatie (achter mini-formulier). */
     downloads: {
@@ -497,7 +479,8 @@ window.AJAR_CONTENT = {
       volumeOptions: [
         { value: 'sample', label: 'Gratis sample / proefbestelling' },
         { value: 'maandelijks-vast', label: 'Maandelijks vast volume' },
-        { value: 'horeca-bulk', label: 'Horeca bulk' }
+        { value: 'horeca-bulk', label: 'Horeca bulk' },
+        { value: 'relatiegeschenk', label: 'Relatiegeschenk' }
       ],
       messageLabel: 'Bericht',
       messagePlaceholder: 'Vertel kort iets over uw zaak en waar u de olie voor wilt gebruiken…',
