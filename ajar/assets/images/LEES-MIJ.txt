@@ -12,24 +12,40 @@ STAND VAN ZAKEN (juli 2026)
 ✓ story-02.jpg   — GEPLAATST: olijfboom in bloei (mei)
 ✓ product-03.jpg — GEPLAATST: olijftak met groene olijven  ⚠ LAGE RESOLUTIE (768px) — stuur de originele foto voor scherp op groot scherm
 ✓ proces-04.jpg  — GEPLAATST: geoogste olijven (stap "Oogst")  ⚠ LAGERE RESOLUTIE (1200px) — origineel = scherper
-✓ overons-08.jpg — GEPLAATST: het land met berg + bassin
-✓ sfeer-09.jpg   — GEPLAATST: nu de HERO op home (was: sfeer-band) — zie v2e in PROJECT.md
+✓ overons-08.jpg — GEPLAATST: nu bij "De eerste officiële importeur in Nederland" op Over ons
+                   (was bij "Van MOUSTAINE naar AJAR" — die plek is nu voor fabriek-taourirt.jpg, zie onder)
+✓ sfeer-09.jpg   — GEPLAATST: de HERO op home (was: sfeer-band, die sectie bestaat niet meer — zie
+                   "VERBETERRONDE juli 2026" hieronder)
+
+NIEUW: FABRIEKSVERHAAL AJAR.MA (verbeterronde, juli 2026) — NOG AAN TE LEVEREN
+-----------------------------------------------------------------------
+Soef gaat foto's van ajar.ma (de moederfabriek, rechten in orde) aanleveren. Zet ze neer als:
+⧗ fabriek-taourirt.jpg — fabrieksgevel met CONSERVAJAR-logo. Wordt gebruikt op TWEE plekken
+                         (dezelfde foto, hetzelfde verhaal): de beeldsectie op home ÉN
+                         "Van MOUSTAINE naar AJAR" op Over ons. Toont nu een placeholder.
+Voor productiebeelden/olijfbeelden: gebruik de AL BESTAANDE processtap-bestandsnamen hieronder
+(niet een nieuwe naam verzinnen — de site verwacht exact deze namen):
+⧗ proces-05.jpg  — vervang de huidige stockfoto (zie hieronder) door een echte persing/productiefoto
+⧗ proces-06.jpg  — stap 3 "Botteling" — nu nog een icoon, een productiefoto hier is pure winst
+⧗ proces-07.jpg  — stap 4 "Import naar Nederland" — waarschijnlijk geen ajar.ma-foto voor deze
+                   stap (dat is het NL-importtraject, niet de fabriek) — icoon blijft prima staan
+Olijfbeelden van ajar.ma mogen `stock-cultivar-olives.jpg` vervangen (zelfde bestandsnaam
+overschrijven = automatisch bijgewerkt, zie Tips).
 
 STOCKFOTO'S — TIJDELIJK, GEEN ECHT AJAR-BEELD (toegevoegd 4 juli 2026)
 -----------------------------------------------------------------------
-Soef leverde 4 sfeerfoto's aan die AI-opgeschaald zijn naar UHD en op de site gezet — dit zijn
-GEEN foto's van AJAR's eigen boomgaard/fabriek, dus vervang ze zodra er echte foto's zijn:
-⚠ stock-hero-orchard.jpg  — GEPLAATST: sfeer-band op home (olijfgaard-landschap, breed 2,7:1 —
-                            stond eerst in de hero maar die is een smal 4:5-kader en sneed de
-                            panoramafoto tot bijna één boom af; nu in de brede sfeer-band waar
-                            hij ongecropt te zien is; sfeer-09.jpg nam de hero-plek over)
-⚠ proces-05.jpg           — GEPLAATST: stap 2 "Persing" (olie die in een bak gegoten wordt)
+Vervang zodra er echte foto's zijn (zie hierboven — dat moment is nu, met de ajar.ma-foto's):
+⚠ stock-hero-orchard.jpg    — NIET MEER IN GEBRUIK sinds de verbeterronde (de sfeer-band/mood-band
+                              waar hij in stond is verwijderd, homepage is teruggebracht naar 4
+                              secties). Bestand blijft staan, mag weg of hergebruikt worden.
+⚠ proces-05.jpg              — GEPLAATST: stap 2 "Persing" (olie die in een bak gegoten wordt) —
+                              vervang met een échte ajar.ma-productiefoto zodra beschikbaar
 ⚠ stock-cultivar-olives.jpg — GEPLAATST: "De olijf"-sectie op Product (close-up olijven+blad)
 ⚠ stock-sample-tasting.jpg  — GEPLAATST: hero op de sample-landingspagina (brood + lepel olie)
 
 NOG TE VULLEN (nu nog groene placeholder of icoon)
 -----------------------------------------------------------------------
-proces-06.jpg    — Stap 3: botteling (flessen vullen/sluiten)
+proces-06.jpg    — Stap 3: botteling (flessen vullen/sluiten) — zie ajar.ma-foto's hierboven
 proces-07.jpg    — Stap 4: import / onderweg naar NL (dozen, vrachtwagen)
 product-03.jpg   — liever nog: een echte fles-foto (500 ml) zodra beschikbaar
 

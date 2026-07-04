@@ -78,32 +78,29 @@ window.AJAR_CONTENT = {
     moreLabel: 'Privacyverklaring'
   },
 
-  /* ---------- Home ---------- */
+  /* ---------- Home ----------
+     Verbeterronde (juli 2026): homepage teruggebracht naar MAX 4 secties — hero, 3 kernpunten,
+     1 beeldsectie, slot-CTA. Alle verdieping (familieverhaal, ISO 22000, cultivar, werkwijze, FAQ)
+     stond al op de subpagina's (Over ons / Product / Zakelijke klanten) en is daar blijven staan;
+     de homepage introduceert alleen en verwijst door. Verwijderd t.o.v. de vorige versie: hero-
+     badges, de losse USP-kaartenrij, de Taourirt→Amsterdam route-kaart-animatie, de mood-band en
+     de product-splitsectie — stuk voor stuk dekten die al bestaande content op een subpagina in
+     net iets andere woorden (bijv. de route-kaart herhaalde exact wat Product's 4-stappen-proces
+     al toont). Geen enkel feit is verloren gegaan; alleen de plek waar het staat is opgeschoond. */
   home: {
     hero: {
-      kicker: 'Voor de Nederlandse horeca & speciaalzaak',
-      title: 'Extra vierge olijfolie, rechtstreeks uit Marokko',
-      sub: 'AJAR levert koudgeperste extra vierge olijfolie van een familiebedrijf met drie generaties kennis — via één korte, directe keten naar de Nederlandse horeca en speciaalzaak.',
-      /* v2d (4 juli 2026): hero-01.jpg (berg+bassin, Soefs eigen foto) op verzoek van Soef
-         losgekoppeld — bestand blijft in assets/images/ staan. In eerste instantie stond hier de
-         nieuwe brede stockfoto (stock-hero-orchard.jpg), maar die is een panoramafoto (2,7:1) die
-         in de smalle 4:5-heldkader te sterk bijgesneden werd — nauwelijks meer dan één boom
-         zichtbaar. Op verzoek van Soef verplaatst naar de mood-band (home.mood.image), waar hij
-         wél in volle breedte te zien is. Hier staat nu i.p.v. daarvan sfeer-09.jpg (Soefs eigen,
-         al elders bevestigde foto) — een echte AJAR-foto past sowieso beter in de meest prominente
-         hero-plek dan een stockfoto. */
-      image: 'sfeer-09.jpg',
-      /* Vertrouwenschips direct in de hero — alleen harde feiten.
-         Let op: "Taourirt" mag hier NOOIT aan de boomgaarden/grond gekoppeld worden —
-         Taourirt is uitsluitend de vestigingsplaats van de fabriek/pers (ConservAjar SARL).
-         De boomgaarden liggen in de Debdou-regio. Zie ook home.route en product.cultivar. */
-      badges: ['ISO 22000 · SGS', 'Picholine Marocaine', 'Eigen pers in Taourirt']
+      title: 'Extra vierge olijfolie, rechtstreeks uit Marokko.',
+      sub: 'Koudgeperste olijfolie van een familiebedrijf in Marokko, rechtstreeks naar de Nederlandse horeca en speciaalzaak.',
+      image: 'sfeer-09.jpg'
     },
-    usps: [
-      { title: 'Eerste officiële importeur', text: 'AJAR wordt als eerste officieel in Nederland geïmporteerd — rechtstreeks van de producent, zonder tussenschakels.' },
-      { title: 'ISO 22000-gecertificeerd', text: 'De productie is ISO 22000-gecertificeerd (uitgegeven door SGS): voedselveiligheid en traceerbaarheid, gedocumenteerd.' },
-      { title: 'Korte, directe keten', text: 'Van de eigen pers rechtstreeks naar uw zaak in Nederland — vers, traceerbaar en zonder anonieme tussenhandel.' }
-    ],
+    /* Drie kernpunten, elk max 6 woorden — geen kaarten met uitleg, dat staat al op de subpagina's. */
+    kernpunten: {
+      items: [
+        "Familiefabriek sinds jaren '90",
+        'Koudgeperst, single-origin Marokko',
+        'Direct contact met de importeur'
+      ]
+    },
     /* Verkooppuntenwall — verborgen zolang config.showPartners = false. Alleen échte afnemers tonen. */
     partners: {
       kicker: 'Verkrijgbaar bij',
@@ -111,71 +108,21 @@ window.AJAR_CONTENT = {
         /* { name: 'Naam zaak', logo: 'partner-01.png' } */
       ]
     },
-    story: {
+    /* De ene beeldsectie: fabriek/bomen + één zin + link naar Over ons. Foto volgt zodra
+       fabriek-taourirt.jpg is aangeleverd (zie ook about.blocks[0], zelfde foto/verhaal). */
+    intro: {
       kicker: 'Het verhaal',
-      title: 'Drie generaties, één ambacht',
-      text: "ConservAjar SARL is een familiebedrijf uit het noordoosten van Marokko, opgericht begin jaren '90. Wat begon als een lokale perserij groeide uit tot een producent van high-end olijfolie onder het eigen merk AJAR — nationaal en internationaal.",
+      text: "Een familiebedrijf in noordoost-Marokko perst deze olie al sinds de jaren '90 — drie generaties op dezelfde grond.",
       linkLabel: 'Lees ons verhaal',
       linkHref: 'over-ons.html',
-      image: 'story-02.jpg'
+      image: 'fabriek-taourirt.jpg'
     },
-    /* De route: geanimeerde kaart Debdou-regio → Amsterdam — de korte keten als beeld.
-       Boomgaarden = Debdou-regio; Taourirt = alleen de fabriek/pers (genoemd in de tekst,
-       bewust géén los kaartpunt — dat zou de kaart onnodig drukker maken). */
-    route: {
-      kicker: 'De route',
-      title: 'Van boomgaard naar uw zaak',
-      text: 'Geen verzamelpartijen, geen anonieme tussenhandel. De olijven komen van eigen boomgaarden in de Debdou-regio, worden geperst en gebotteld in de eigen fabriek in Taourirt, en gaan rechtstreeks naar Nederland.',
-      from: 'Debdou-regio — eigen boomgaarden',
-      fromCountry: 'Marokko',
-      to: 'Amsterdam — importeur',
-      toCountry: 'Nederland',
-      stats: ['± 2.100 km hemelsbreed', 'één importeur', 'nul tussenschakels']
-    },
-    /* Full-bleed sfeer-band met quote — deze full-bleed strook (vaste hoogte, volle breedte,
-       aspect-ratio:auto) is precies waar een brede panoramafoto (2,7:1) ongecropt tot zijn recht
-       komt — vandaar stock-hero-orchard.jpg hier i.p.v. in het smalle 4:5-heldkader (zie hero). */
-    mood: {
-      quote: 'Van de Marokkaanse boomgaard naar de Nederlandse tafel.',
-      sub: 'Drie generaties, één pers, één keten.',
-      image: 'stock-hero-orchard.jpg'
-    },
-    product: {
-      kicker: 'Het product',
-      title: 'Eén olie, compromisloos',
-      text: 'Extra vierge, koud geperst en gebotteld aan de bron. Geen assortiment van tientallen varianten — één olijfolie waar we volledig achter staan, in een fles van 500 ml.',
-      linkLabel: 'Bekijk het product',
-      linkHref: 'product.html',
-      image: 'product-03.jpg'
-    },
-    /* Testimonials: bewust leeg — invullen zodra er echte klanten/quotes zijn. Niet verzinnen.
-       Zolang leeg tonen we i.p.v. nep-quotes een eerlijke "waarom AJAR"-vertrouwensrij (home.trust). */
-    testimonials: {
-      kicker: 'Vertrouwd door',
-      title: 'Onze eerste partners',
-      note: 'Deze plek is gereserveerd voor de zaken die met AJAR werken.',
-      items: [
-        { quote: '', author: '', company: '' },
-        { quote: '', author: '', company: '' },
-        { quote: '', author: '', company: '' }
-      ]
-    },
-    /* Eerlijke geruststelling i.p.v. verzonnen quotes — getoond zolang er geen testimonials zijn.
-       BEWUST geen herhaling van ISO 22000 / eerste-importeur / geen-tussenschakels: die feiten
-       staan al in de hero-badges én de USP's hierboven. Drie keer dezelfde drie feiten op één
-       pagina overladen een zakelijke bezoeker eerder dan dat het overtuigt (feedback 4 juli 2026). */
-    trust: {
-      kicker: 'Nog geen klantverhalen',
-      title: 'Eerlijk: wij zijn nieuw in Nederland',
-      note: 'AJAR wordt hier voor het eerst officieel geïmporteerd — er zijn dus nog geen quotes om te tonen, en die verzinnen we niet. Zodra de eerste zaken met ons werken, leest u hier hun ervaring.'
-    },
+    /* Slot-CTA — andere formulering dan de hero, zelfde doel (sample aanvragen). */
     cta: {
-      title: 'Proeven zegt meer dan lezen',
-      text: 'Vraag een gratis sample of offerte aan — we denken graag mee over volume en levering.',
+      title: 'Eerst proeven, dan beslissen',
+      text: 'Vraag een gratis proefflesje aan voor uw zaak — zonder verplichtingen.',
       button: 'Gratis sample aanvragen',
-      buttonHref: 'sample.html',
-      secondary: 'Offerte aanvragen',
-      secondaryHref: 'contact.html?aanvraag=offerte'
+      buttonHref: 'sample.html'
     }
   },
 
@@ -189,8 +136,11 @@ window.AJAR_CONTENT = {
     blocks: [
       {
         title: 'Van MOUSTAINE naar AJAR',
-        text: "ConservAjar SARL werd begin jaren '90 opgericht onder de naam MOUSTAINE, in het noordoosten van Marokko. Het bedrijf is en blijft een familiebedrijf: de kennis van het persen en verwerken van olijven is er over drie generaties opgebouwd en doorgegeven. Onder het eigen merk AJAR maakt het bedrijf high-end producten die nationaal en internationaal hun weg vinden.",
-        image: 'overons-08.jpg'
+        /* v3 (verbeterronde): getrimd naar 2 zinnen (leesbaarheid) + 1 nieuwe zin over het bredere
+           assortiment van de fabriek, als bewijs van schaal/ervaring — bewust geen productgrid of
+           opsomming als aanbod, alleen olijfolie wordt in Nederland verkocht. */
+        text: "ConservAjar SARL werd begin jaren '90 opgericht onder de naam MOUSTAINE, in het noordoosten van Marokko — een familiebedrijf waar de kennis van het persen en verwerken van olijven al drie generaties wordt doorgegeven. Naast olijfolie conserveert het bedrijf ook tafelolijven, abrikozenpulp en specerijen onder het eigen merk AJAR, in binnen- en buitenland.",
+        image: 'fabriek-taourirt.jpg'
       },
       {
         title: 'Kwaliteit die je kunt controleren',
@@ -200,7 +150,9 @@ window.AJAR_CONTENT = {
       {
         title: 'De eerste officiële importeur in Nederland',
         text: 'AJAR was tot nu toe niet officieel verkrijgbaar in Nederland. Als familie van de oprichters brengen wij de olie nu rechtstreeks naar de Nederlandse markt — met de importeursvermelding, documentatie en korte lijnen die daarbij horen. Geen tussenhandel, wél één aanspreekpunt in Amsterdam.',
-        image: ''
+        /* overons-08.jpg (echte AJAR-foto) verhuisd hierheen — blocks[0] gebruikt nu de nieuwe
+           fabrieksgevel-foto (fabriek-taourirt.jpg, nog aan te leveren) als sterker bewijsstuk. */
+        image: 'overons-08.jpg'
       }
     ],
     /* Familie-tijdlijn — namen/jaartallen van de generaties volgen na overleg met de familie (augustus). */

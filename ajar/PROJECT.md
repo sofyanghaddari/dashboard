@@ -94,6 +94,65 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 - **Docs:** `README.md` (beheer), `SHOTLIST.md` (18-shot fotoplan), `LEES-MIJ.txt` (fotostatus),
   `CNAME.example` (custom-domein-route).
 
+### v3 — verbeterronde: homepage naar max 4 secties + fabrieksverhaal ajar.ma (4 juli 2026)
+
+Grote, formeel gebriefde verbeterronde ("Verbeter de bestaande AJAR-website" — geen herbouw, gerichte
+verandering op specifieke punten). Kernopdracht: **homepage radicaal inkorten** + het fabrieksverhaal
+van de moederfabriek ajar.ma verwerken. Geen foto's bijgevoegd in deze ronde ("worden aangeleverd") —
+alleen tekst/structuur; foto-slots wel al klaargezet met de juiste bestandsnamen.
+
+**Homepage: van ~7-8 secties naar strikt 4.**
+Hero (merk/positionering + 1 zin + 1 CTA — sample) → drie kernpunten (max 6 woorden elk: "Familie­
+fabriek sinds jaren '90" · "Koudgeperst, single-origin Marokko" · "Direct contact met de importeur",
+géén kaarten/uitleg) → één beeldsectie (fabriek/bomen + 1 zin + link naar Over ons) → slot-CTA
+(andere formulering dan de hero, zelfde doel). **Volledig verwijderd:** hero-badges, de losse USP-
+kaartenrij, de Taourirt→Amsterdam route-kaart-animatie (SVG+JS, hele feature), de mood-band/sfeer-
+band, en de product-splitsectie. Geen van die stukken bevatte een uniek feit — de route-kaart
+herhaalde bijvoorbeeld exact wat Product's 4-stappen-proces al toont, de USP's (eerste importeur/
+ISO 22000/korte keten) staan al op Over ons en Product. Alleen de plek is opgeschoond, niets aan
+informatie is verloren gegaan. Dode CSS/JS opgeruimd (`.route-*`, `.mood-*`, `.hero-badges`,
+`testimonialsOrTrust()`, `.quote-card`/`.quote-empty`, het `init3d()`-route-blok).
+**Bug gevonden tijdens het opruimen:** `injectJsonLd()` in main.js verwees nog naar het inmiddels
+verwijderde `C.home.product.text` (had een runtime-crash gegeven op elke paginaload) — gefixt naar
+`C.product.hero.sub`. Les: bij het verwijderen van content.js-velden altijd site-breed grepen op
+`home.<veld>`, niet alleen de renderfunctie zelf nakijken.
+
+**Fabrieksverhaal ajar.ma verwerkt (Over ons):**
+- Nieuwe zin over het bredere assortiment van de fabriek (tafelolijven, abrikozenpulp, specerijen)
+  toegevoegd aan "Van MOUSTAINE naar AJAR" als bewijs van schaal/ervaring — bewust geen productgrid
+  of opsomming-als-aanbod, de NL-site verkoopt uitsluitend olijfolie. Paragraaf tegelijk ingekort
+  naar 2 zinnen (leesbaarheidsregel: max 2-3 zinnen per alinea).
+  De feiten ConservAjar SARL/Taourirt, MOUSTAINE/jaren '90, eigen merk AJAR binnen-en-buitenland en
+  ISO 22000/SGS stonden al op de site van een vorige ronde — dit keer alleen de assortiment-zin
+  nieuw, en de ISO 22000-formulering nogmaals gecontroleerd: consequent "de productie/fabriek is
+  gecertificeerd", nooit gekoppeld aan de NL-import. Geen wijziging nodig, was al eerlijk.
+- **Nieuwe fabrieksgevel-foto-slot:** `fabriek-taourirt.jpg` (nog aan te leveren) krijgt de
+  prominente plek bij "Van MOUSTAINE naar AJAR" én in de nieuwe home-beeldsectie (zelfde foto/
+  verhaal op beide plekken). Het echte, al aanwezige `overons-08.jpg` (berg+bassin) is niet
+  weggegooid maar verhuisd naar het blok "De eerste officiële importeur in Nederland".
+- Spec-sheet- en presentatie-PDF opnieuw gegenereerd (presentatie.html trekt `about.blocks`
+  rechtstreeks uit content.js, dus de nieuwe assortiment-zin staat er nu automatisch in; ISO 22000
+  stond al in beide PDF's).
+
+**Nog open (foto's ontbreken nog):** `fabriek-taourirt.jpg` toont een nette placeholder tot Soef 'm
+aanlevert. `proces-05.jpg`/`stock-cultivar-olives.jpg` zijn nu nog stockfoto's van een vorige ronde —
+zodra de ajar.ma-productie-/olijfbeelden er zijn, die filenames overschrijven (zie LEES-MIJ.txt voor
+het volledige overzicht van welke foto waar moet komen). `stock-hero-orchard.jpg` is wees geworden
+door het verwijderen van de mood-band — mag weg of ergens anders hergebruikt worden, ligt bij Soef.
+
+**Oplevercheck (uit de opdracht) — status:**
+1. Elke boodschap één keer, juiste pagina — ✅ homepage introduceert alleen, subpagina's houden de
+   diepgang die er al was.
+2. Homepage in 10 seconden te begrijpen zonder alinea's te lezen — ✅ geverifieerd, 4 korte secties.
+3. Feiten buiten de tabel — ✅ geen nieuwe feiten toegevoegd behalve de expliciet goedgekeurde
+   (ConservAjar/Taourirt, MOUSTAINE/jaren '90, AJAR binnen-buitenland, ISO 22000/SGS, assortiment-
+   zin als bewijs van schaal).
+4. ISO 22000/MOUSTAINE op Over ons én in de PDF's — ✅.
+5. Fabrieksfoto's + niet-olijfolie-beeld weg — ⏳ foto's nog niet aangeleverd; geen niet-olijfolie-
+   productbeeld ergens toegevoegd (assortiment blijft tekst, geen grid).
+6. iPhone-eerst, elke knop werkt — ✅ mobile-first geverifieerd (headless Chromium 390px, daarna
+   1280px), WhatsApp-fallback op formulieren ongewijzigd/intact.
+
 ### v2e — hero/mood-band omgewisseld: brede foto hoort niet in een smal kader (4 juli 2026, zelfde dag)
 
 Direct na v2d gaf Soef terecht feedback: de nieuwe olijfgaard-foto is een panorama (2,7:1) en stond

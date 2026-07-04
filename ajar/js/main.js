@@ -188,6 +188,8 @@
 
   /* ---------- Pagina's ---------- */
 
+  /* Homepage: max 4 secties (hero / kernpunten / 1 beeldsectie / slot-CTA) — verbeterronde juli 2026.
+     Introduceert alleen en verwijst door; alle verdieping staat op de subpagina's. */
   function renderHome() {
     const h = C.home;
     const partnersRow = (cfg.showPartners && h.partners.items.length)
@@ -200,19 +202,15 @@
       : '';
 
     return '' +
+      /* 1. Hero — merknaam/positionering + één zin + één CTA (sample) */
       '<section class="hero">' +
         '<div class="wrap hero-inner">' +
           '<div class="hero-text reveal">' +
-            '<p class="kicker">' + esc(h.hero.kicker) + '</p>' +
             '<h1>' + esc(h.hero.title) + '</h1>' +
             '<p class="hero-sub">' + esc(h.hero.sub) + '</p>' +
             '<div class="hero-actions">' +
               '<a class="btn btn-primary" href="' + esc(C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(C.sampleCtaLabel) + '</a>' +
-              '<a class="btn btn-ghost" href="' + esc(C.ctaHref) + '" data-ga-event="offerte_cta_click">' + esc(C.ctaLabel) + '</a>' +
             '</div>' +
-            (h.hero.badges && h.hero.badges.length
-              ? '<ul class="hero-badges" aria-label="Kernfeiten">' + h.hero.badges.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>'
-              : '') +
           '</div>' +
           '<div class="hero-media reveal" data-parallax>' + imgSlot(h.hero.image, 'Olijfgaard in noordoost-Marokko', 'img-hero', true) + '</div>' +
         '</div>' +
@@ -220,86 +218,23 @@
 
       partnersRow +
 
-      '<section class="section usps"><div class="wrap">' + uspGrid(h.usps) + '</div></section>' +
+      /* 2. Drie kernpunten — max 6 woorden elk, geen kaarten/uitleg */
+      '<section class="section kernpunten"><div class="wrap">' +
+        '<ul class="kernpunten-row reveal">' + h.kernpunten.items.map(k => '<li>' + esc(k) + '</li>').join('') + '</ul>' +
+      '</div></section>' +
 
+      /* 3. Eén beeldsectie: fabriek/bomen + één zin + link naar Over ons */
       '<section class="section split"><div class="wrap split-inner">' +
-        '<div class="split-media reveal">' + imgSlot(h.story.image, 'Familiebedrijf in Taourirt', '') + '</div>' +
-        '<div class="split-text reveal">' + kickerTitle(h.story.kicker, h.story.title) +
-          '<p>' + esc(h.story.text) + '</p>' +
-          '<a class="text-link" href="' + esc(h.story.linkHref) + '">' + esc(h.story.linkLabel) + ' →</a>' +
+        '<div class="split-media reveal">' + imgSlot(h.intro.image, 'ConservAjar SARL, de fabriek in Taourirt', '') + '</div>' +
+        '<div class="split-text reveal">' +
+          '<p class="kicker">' + esc(h.intro.kicker) + '</p>' +
+          '<p>' + esc(h.intro.text) + '</p>' +
+          '<a class="text-link" href="' + esc(h.intro.linkHref) + '">' + esc(h.intro.linkLabel) + ' →</a>' +
         '</div>' +
       '</div></section>' +
 
-      /* Full-bleed sfeer-band met quote */
-      '<section class="mood-band reveal">' +
-        imgSlot(h.mood.image, 'Olijfboomgaard, sfeerbeeld', 'img-mood') +
-        '<div class="mood-quote"><p class="mood-text">' + esc(h.mood.quote) + '</p>' +
-        '<p class="mood-sub">' + esc(h.mood.sub) + '</p></div>' +
-      '</section>' +
-
-      routeSection(h.route) +
-
-      '<section class="section split split-rev"><div class="wrap split-inner">' +
-        '<div class="split-media reveal">' + imgSlot(h.product.image, 'AJAR fles 500 ml', '') + '</div>' +
-        '<div class="split-text reveal">' + kickerTitle(h.product.kicker, h.product.title) +
-          '<p>' + esc(h.product.text) + '</p>' +
-          '<a class="text-link" href="' + esc(h.product.linkHref) + '">' + esc(h.product.linkLabel) + ' →</a>' +
-        '</div>' +
-      '</div></section>' +
-
-      testimonialsOrTrust(h) +
-
+      /* 4. Slot-CTA — andere formulering dan de hero, zelfde doel */
       ctaBand(h.cta);
-  }
-
-  /* De route Taourirt → Amsterdam: lijn tekent zichzelf bij scroll, druppel reist mee.
-     Abstract-elegant (geen landkaart-details die fout kunnen zijn) — alleen feiten. */
-  const ROUTE_PATH = 'M100 348 C 240 308 330 272 410 222 C 490 172 570 124 690 88';
-  function routeSection(r) {
-    if (!r) return '';
-    return '<section class="section route-sec"><div class="wrap">' +
-      '<div class="section-head reveal">' + kickerTitle(r.kicker, r.title, r.text) + '</div>' +
-      '<div class="route-card card reveal">' +
-        '<div class="route-map" data-route>' +
-          '<svg class="route-svg" viewBox="0 0 800 460" role="img" aria-label="Route van Taourirt (Marokko) naar Amsterdam (Nederland)">' +
-            '<text class="route-country" x="60" y="52">' + esc(r.toCountry.toUpperCase()) + '</text>' +
-            '<text class="route-country" x="740" y="432" text-anchor="end">' + esc(r.fromCountry.toUpperCase()) + '</text>' +
-            '<path class="route-base" d="' + ROUTE_PATH + '" pathLength="1"/>' +
-            '<path class="route-line" d="' + ROUTE_PATH + '" pathLength="1"/>' +
-            '<circle class="route-ring route-ring-a" cx="100" cy="348" r="7"/>' +
-            '<circle class="route-ring route-ring-b" cx="690" cy="88" r="7"/>' +
-            '<circle class="route-dot route-dot-a" cx="100" cy="348" r="7"/>' +
-            '<circle class="route-dot route-dot-b" cx="690" cy="88" r="7"/>' +
-            '<g class="route-drop-g"><path class="route-drop" d="M0 -7 C 4 -2 5 .5 5 2.5 A 5 5 0 1 1 -5 2.5 C -5 .5 -4 -2 0 -7 Z">' +
-              '<animateMotion dur="6s" repeatCount="indefinite" begin="indefinite" path="' + ROUTE_PATH + '"/>' +
-            '</path></g>' +
-          '</svg>' +
-          '<span class="route-lab route-lab-a"><strong>' + esc(r.from) + '</strong><em>' + esc(r.fromCountry) + '</em></span>' +
-          '<span class="route-lab route-lab-b"><strong>' + esc(r.to) + '</strong><em>' + esc(r.toCountry) + '</em></span>' +
-        '</div>' +
-        '<ul class="route-stats">' + r.stats.map(s => '<li>' + esc(s) + '</li>').join('') + '</ul>' +
-      '</div>' +
-    '</div></section>';
-  }
-
-  /* Echte quotes zodra ze er zijn; anders een eerlijke vertrouwensrij (feiten, geen nep-quotes) */
-  function testimonialsOrTrust(h) {
-    const real = h.testimonials.items.filter(t => t.quote);
-    if (real.length) {
-      return '<section class="section testimonials"><div class="wrap">' +
-        '<div class="section-head reveal">' + kickerTitle(h.testimonials.kicker, h.testimonials.title) + '</div>' +
-        '<div class="grid-3">' + real.map(t =>
-          '<figure class="card quote-card reveal"><blockquote>“' + esc(t.quote) + '”</blockquote>' +
-          '<figcaption>' + esc(t.author) + (t.company ? ' · ' + esc(t.company) : '') + '</figcaption></figure>').join('') +
-        '</div>' +
-      '</div></section>';
-    }
-    /* Géén tegel-grid meer: de ISO/eerste-importeur/geen-tussenschakels-feiten staan al in de
-       hero-badges en de USP's hierboven — een vierde herhaling overlaadt i.p.v. overtuigt. */
-    const tr = h.trust;
-    return '<section class="section trust-sec"><div class="wrap wrap-narrow">' +
-      '<div class="section-head reveal">' + kickerTitle(tr.kicker, tr.title, tr.note) + '</div>' +
-    '</div></section>';
   }
 
   function renderAbout() {
@@ -854,7 +789,7 @@
       '@context': 'https://schema.org', '@type': 'Product',
       name: cfg.brandName + ' Extra Vierge Olijfolie',
       brand: { '@type': 'Brand', name: cfg.brandName },
-      description: C.home.product.text,
+      description: C.product.hero.sub,
       countryOfOrigin: 'MA',
       manufacturer: { '@type': 'Organization', name: C.producer.name, address: { '@type': 'PostalAddress', addressLocality: C.producer.city, addressCountry: 'MA' } },
       offers: { '@type': 'Offer', availability: 'https://schema.org/InStock', businessFunction: 'http://purl.org/goodrelations/v1#Sell', priceSpecification: { '@type': 'PriceSpecification', description: 'Prijs op aanvraag (B2B)' } }
@@ -1050,33 +985,10 @@
     }
   }
 
-  /* ---------- 3D & diepte: route-animatie, kaart-tilt met glans, hero-diepte ---------- */
+  /* ---------- 3D & diepte: kaart-tilt met glans, hero-diepte ---------- */
 
   function init3d() {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    /* Route: lijn tekent zichzelf zodra de kaart in beeld komt; daarna reist de druppel */
-    const route = document.querySelector('[data-route]');
-    if (route) {
-      const start = () => {
-        route.classList.add('go');
-        if (reduce) return;
-        const motion = route.querySelector('animateMotion');
-        const dropG = route.querySelector('.route-drop-g');
-        if (motion && dropG && motion.beginElement) {
-          setTimeout(() => {
-            dropG.classList.add('vis');
-            try { motion.beginElement(); } catch (e) { /* oude browser: alleen de lijn */ }
-          }, 1500);
-        }
-      };
-      if ('IntersectionObserver' in window && !reduce) {
-        const io = new IntersectionObserver((entries) => {
-          entries.forEach(en => { if (en.isIntersecting) { io.disconnect(); start(); } });
-        }, { threshold: 0.35 });
-        io.observe(route);
-      } else start();
-    }
 
     if (reduce || !window.matchMedia('(min-width: 860px) and (pointer: fine)').matches) return;
 
