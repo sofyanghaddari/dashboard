@@ -1232,24 +1232,75 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   to { opacity: 1; transform: none; }
 }
 
-/* ── Gouden druppel valt bij succesvolle aanvraag ── */
-.form-success { position: relative; padding-left: 22px; }
-.drop-fall {
+/* ── Succes-vinkje: tekent zichzelf bij een gelukte aanvraag (verving de gouden druppel) ── */
+.form-success { position: relative; padding-left: 26px; }
+.ok-check { position: absolute; left: 0; top: .02em; width: 18px; height: 18px; }
+.ok-check circle, .ok-check path {
+  fill: none;
+  stroke: var(--olive-soft);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: okDraw .5s var(--ease) forwards;
+}
+.ok-check path { stroke: var(--gold); animation-delay: .4s; animation-duration: .35s; }
+@keyframes okDraw { to { stroke-dashoffset: 0; } }
+
+/* ── Validatiefout: het ontbrekende veld schudt kort (en krijgt focus via JS) ── */
+@keyframes fieldShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  45% { transform: translateX(5px); }
+  70% { transform: translateX(-3px); }
+  85% { transform: translateX(2px); }
+}
+.field-shake { animation: fieldShake .4s var(--ease); }
+
+/* ── Groen vinkje in een geldig ingevuld veld (klasse gezet door initFieldChecks) ── */
+.form-field { position: relative; }
+.form-field.field-ok::after {
+  content: '✓';
   position: absolute;
-  left: 2px; top: -14px;
-  width: 11px; height: 11px;
-  background: var(--gold);
-  border-radius: 0 50% 50% 50%;
-  transform: rotate(45deg);
-  animation: dropFall 1s var(--ease) both;
+  right: 13px; bottom: 9px;
+  color: var(--olive-soft);
+  font-size: .95rem;
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+  animation: okFade .3s var(--ease) both;
 }
-@keyframes dropFall {
-  0% { opacity: 0; translate: 0 -10px; }
-  25% { opacity: 1; }
-  70% { translate: 0 14px; scale: 1; }
-  82% { scale: 1.25 .7; }
-  100% { opacity: 0; translate: 0 16px; scale: 1.5 .4; }
+@keyframes okFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Spinner in de verstuurknop tijdens het versturen (kleur volgt de knop) ── */
+.btn-loading::after {
+  content: '';
+  display: inline-block;
+  width: .8em; height: .8em;
+  margin-left: .5em;
+  border: .14em solid;
+  border-color: currentColor currentColor currentColor transparent;
+  border-radius: 50%;
+  vertical-align: -.1em;
+  opacity: .8;
+  animation: btnSpin .7s linear infinite;
 }
+@keyframes btnSpin { to { transform: rotate(360deg); } }
+
+/* ── Sticky mobiele CTA: éénmalige zachte puls bij de allereerste verschijning ── */
+@keyframes ctaHello {
+  0%, 100% { transform: none; }
+  40% { transform: scale(1.045); }
+}
+.mob-cta-hello { animation: ctaHello .9s var(--ease) 1 both; }
+
+/* ── Anker-highlight: doelsectie licht even zacht op bij binnenkomst via een #deel-link ── */
+@keyframes anchorFlash {
+  0% { background-color: rgba(184,147,74,.16); }
+  100% { background-color: transparent; }
+}
+.anchor-flash { animation: anchorFlash 1.6s var(--ease) 1; }
 
 /* ── Blur-up: foto's verschijnen zacht uit een waas terwijl ze laden ── */
 .img-slot img { opacity: 0; filter: blur(14px); transition: opacity .7s var(--ease), filter .7s var(--ease); }
@@ -1612,7 +1663,14 @@ body.nav-open .site-header { transform: none !important; }
   .btn, .card, .text-link { transition: none; }
   [data-parallax], .split-media .img-slot { transform: none !important; }
   .img-slot::before, .btn-primary::after, .sheen-card::after,
-  .cta-band-drop, .hdr-twig, .cookie-banner, .drop-fall { animation: none !important; }
+  .cta-band-drop, .hdr-twig, .cookie-banner { animation: none !important; }
+  /* micro-interacties: eindstand direct tonen, geen beweging */
+  .ok-check circle, .ok-check path { animation: none; stroke-dashoffset: 0; }
+  .field-shake { animation: none; }
+  .form-field.field-ok::after { animation: none; opacity: 1; }
+  .btn-loading::after { animation: none; }
+  .mob-cta-hello { animation: none; }
+  .anchor-flash { animation: none; }
   .timeline::before, .process::before { transform: none; transition: none; }
   .timeline .timeline-dot { border-color: var(--gold); transition: none; }
   .faq-body { transition: none; }

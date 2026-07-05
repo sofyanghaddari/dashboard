@@ -78,6 +78,45 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v6d — Nuttige micro-animaties in formulieren + navigatie (5 juli 2026)
+
+Op verzoek van Soef: alleen animaties toevoegen die iets functioneels doen (feedback/oriëntatie),
+niet nog meer sfeer — dezelfde lat als bij het verwijderen van de film-grain en de hero-word-reveal.
+Gekozen uit een lijst van 7 voorstellen: 1, 2, 3, 4, 6, 7 (niet: groen vinkje per veld tijdens
+typen als los puntje — bleek achteraf juist heel nuttig dus toch meegenomen als #4).
+
+- **Zelf-tekenend succes-vinkje** (`.ok-check`, stroke-draw via `pathLength`, zelfde techniek als de
+  olijftak in de CTA-band) vervangt de oude "gouden druppel" (`dropCelebrate()`/`.drop-fall`
+  volledig verwijderd) bij een gelukte form-submit. Cirkel + vinkje tekenen zich na elkaar met een
+  korte delay — leesbaarder én duidelijker "gelukt"-signaal dan een druppel die wegvalt.
+- **Schud + focus bij een onvolledige aanvraag** (`shakeFirstMissing()`): zodra de bestaande
+  foutmelding verschijnt, schudt het eerste ontbrekende/ongeldige veld kort en krijgt het focus —
+  op de langere formulieren (sample, 6+ velden) was het anders niet meteen duidelijk wélk veld mist.
+- **Spinner in de verstuurknop** (`.btn-loading::after`, CSS-only conic-achtige ring via
+  `border-color`-truc) naast de bestaande tekstwissel naar "Versturen…" — voorkomt dubbel klikken
+  op trage verbindingen.
+- **Groen vinkje per geldig ingevuld veld** (`initFieldChecks()`, luistert op `input`/`blur`):
+  e-mailvelden via regex, telefoon op cijferaantal, overige verplichte tekstvelden op lengte.
+  Optionele lege velden krijgen bewust geen vinkje (zou onterecht "compleet" ogen).
+  Verlaagt de drempel op het langste formulier (sample-pagina, 8 velden).
+- **Eénmalige puls op de sticky mobiele "Gratis sample"-knop** (`.mob-cta-hello`) bij de allereerste
+  verschijning na scrollen — niet-herhalend (`greeted`-vlag in `initMobileCta()`), trekt de aandacht
+  precies één keer zonder irritant te worden.
+- **Anker-highlight** (`initAnchorFlash()` + `.anchor-flash`): kom je binnen via een link met
+  `#faq` of `#documentatie` (bijv. een WhatsApp-link die Soef zelf doorstuurt naar een specifieke
+  vraag), dan licht die sectie 1,6s zacht goud op zodat meteen duidelijk is waar je moet kijken.
+  IDs toegevoegd aan de FAQ- en documentatie-secties op de Zakelijke-klanten-pagina (enige plekken
+  waar dit nu zinvol is).
+- Alles met reduced-motion-guard (eindstand direct tonen, geen beweging).
+- Bewust NIET gedaan (met opzet buiten scope, zelfde categorie als de verwijderde film-grain):
+  extra sfeer-/loop-animaties, hover-effecten uitbreiden (doelgroep zit vrijwel uitsluitend op
+  mobiel, hover bestaat daar niet).
+- Geverifieerd (headless Chromium, 390px): leeg formulier → foutmelding + schudden + focus op eerste
+  ontbrekende veld; geldige invoer → groene vinkjes per veld (optionele velden blijven leeg); submit
+  → succes-vinkje tekent zich, tekst klopt; `#faq`-anker → `.anchor-flash`-class direct aanwezig;
+  sticky mobiele CTA → `.mob-cta-hello`-class na eerste verschijning. Geen JS-fouten, geen overflow
+  op alle 7 pagina's.
+
 ### v6c — Correctie: "MOUSTAINE" is een persoonsnaam, geen bedrijfsnaam (5 juli 2026)
 
 Soef corrigeerde direct na v6b: **"MOUSTAINE" is de achternaam van zijn opa** (een persoonsnaam),

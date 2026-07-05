@@ -496,7 +496,7 @@
       '</div></section>' +
 
       /* Documentatie: spec-sheet (vrij) + bedrijfspresentatie (achter mini-formulier) */
-      '<section class="section section-tint"><div class="wrap">' +
+      '<section class="section section-tint" id="documentatie"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(d.kicker, d.title) + '</div>' +
         '<div class="grid-2">' +
           '<article class="card sheen-card reveal"><span class="card-rule" aria-hidden="true"></span>' +
@@ -522,7 +522,7 @@
       '</div></section>' +
 
       /* FAQ */
-      '<section class="section"><div class="wrap wrap-narrow">' +
+      '<section class="section" id="faq"><div class="wrap wrap-narrow">' +
         '<div class="section-head reveal">' + kickerTitle(b.faq.kicker, b.faq.title) + '</div>' +
         '<div class="faq reveal">' + b.faq.items.map(f =>
           '<details class="faq-item' + (f.todo ? ' is-todo' : '') + '">' +
@@ -693,22 +693,73 @@
     return o;
   }
 
+  /* Zelf-tekenend succes-vinkje (stroke-draw via pathLength, zelfde stijl als de olijftak) */
+  const OK_CHECK = '<svg class="ok-check" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<circle cx="12" cy="12" r="10.5" pathLength="1"/>' +
+    '<path d="M7 12.4l3.4 3.4L17.2 9" pathLength="1"/></svg>';
+
   function showMsg(form, role, msg) {
     form.querySelectorAll('[data-role]').forEach(el => { el.hidden = true; });
     const el = form.querySelector('[data-role=' + role + ']');
-    if (el) { el.textContent = msg; el.hidden = false; }
+    if (!el) return;
+    el.textContent = msg;
+    el.hidden = false;
+    if (role === 'success') el.insertAdjacentHTML('afterbegin', OK_CHECK);
+    if (role === 'error') shakeFirstMissing(form);
   }
 
-  /* Eén gouden druppel valt bij een succesvolle aanvraag — klein merkmoment */
-  function dropCelebrate(form) {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const s = form.querySelector('[data-role=success]');
-    if (!s) return;
-    const d = document.createElement('span');
-    d.className = 'drop-fall';
-    d.setAttribute('aria-hidden', 'true');
-    s.prepend(d);
-    d.addEventListener('animationend', () => d.remove());
+  /* Bij een validatiefout: het eerste ontbrekende/ongeldige veld kort schudden + focussen,
+     zodat meteen duidelijk is wát er mist (de foutmelding staat onderaan het formulier). */
+  function shakeFirstMissing(form) {
+    const bad = Array.from(form.querySelectorAll('input, textarea')).find(el => {
+      if (el.type === 'hidden' || el.name === '_gotcha') return false;
+      const val = el.value.trim();
+      if (el.hasAttribute('required') && !val) return true;
+      if (el.type === 'email' && el.hasAttribute('required') && !/.+@.+\..+/.test(val)) return true;
+      return false;
+    });
+    if (!bad) return;
+    const wrap = bad.closest('.form-field') || bad;
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      wrap.classList.remove('field-shake');
+      void wrap.offsetWidth; /* herstart de animatie bij herhaald indienen */
+      wrap.classList.add('field-shake');
+      wrap.addEventListener('animationend', () => wrap.classList.remove('field-shake'), { once: true });
+    }
+    bad.focus();
+  }
+
+  /* Groen vinkje per veld zodra het geldig is ingevuld (verlaagt de drempel bij lange formulieren).
+     E-mail: regex; telefoon: alleen als er iets staat én het minstens 8 cijfers heeft; overige
+     verplichte velden: niet leeg. Optionele lege velden krijgen géén vinkje. */
+  function initFieldChecks() {
+    document.querySelectorAll('form .form-field input').forEach(inp => {
+      if (inp.type === 'hidden' || inp.name === '_gotcha') return;
+      const wrap = inp.closest('.form-field');
+      if (!wrap) return;
+      const check = () => {
+        const val = inp.value.trim();
+        let ok = false;
+        if (inp.type === 'email') ok = /.+@.+\..+/.test(val);
+        else if (inp.type === 'tel') ok = val.length > 0 && (val.replace(/\D/g, '').length >= 8);
+        else if (inp.hasAttribute('required')) ok = val.length > 1;
+        wrap.classList.toggle('field-ok', ok);
+      };
+      inp.addEventListener('input', check);
+      inp.addEventListener('blur', check);
+    });
+  }
+
+  /* Kom je binnen via een deel-link met #anker, dan licht de doelsectie even zacht op. */
+  function initAnchorFlash() {
+    if (!location.hash || location.hash.length < 2) return;
+    let el = null;
+    try { el = document.querySelector(location.hash); } catch (e) { return; }
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    setTimeout(() => {
+      el.classList.add('anchor-flash');
+      el.addEventListener('animationend', () => el.classList.remove('anchor-flash'), { once: true });
+    }, 400);
   }
 
   async function submitLead(form, v, waText, okMsg) {
@@ -724,13 +775,13 @@
         window.open(waLink(waText), '_blank', 'noopener');
       }
       showMsg(form, 'success', okMsg);
-      dropCelebrate(form);
       return true;
     }
 
     const btn = form.querySelector('[type=submit]');
     const oldLabel = btn.textContent;
     btn.disabled = true; btn.textContent = C.contact.form.sending;
+    btn.classList.add('btn-loading'); /* spinner in de knop — duidelijk dat er iets gebeurt */
     try {
       const resp = await fetch('https://formspree.io/f/' + encodeURIComponent(cfg.formspreeId), {
         method: 'POST',
@@ -739,7 +790,6 @@
       });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       showMsg(form, 'success', okMsg);
-      dropCelebrate(form);
       form.reset();
       return true;
     } catch (e) {
@@ -747,6 +797,7 @@
       return false;
     } finally {
       btn.disabled = false; btn.textContent = oldLabel;
+      btn.classList.remove('btn-loading');
     }
   }
 
@@ -806,7 +857,7 @@
         gaEvent('presentatie_aanvraag', {});
         if (cfg.presentationPdf) {
           const s = form.querySelector('[data-role=success]');
-          s.innerHTML = esc(okMsg) + ' <a class="text-link" href="' + esc(cfg.presentationPdf) + '" download data-ga-event="presentatie_download">' + esc(d.downloadLabel) + '</a>';
+          s.innerHTML = OK_CHECK + esc(okMsg) + ' <a class="text-link" href="' + esc(cfg.presentationPdf) + '" download data-ga-event="presentatie_download">' + esc(d.downloadLabel) + '</a>';
         }
       }
     });
@@ -1267,8 +1318,15 @@
 
     /* Verbergen zodra de CTA-band of footer in beeld is (anders dubbel op elkaar) */
     let nearEnd = false;
+    let greeted = false;
     function update() {
-      bar.classList.toggle('show', window.scrollY > 520 && !nearEnd);
+      const show = window.scrollY > 520 && !nearEnd;
+      bar.classList.toggle('show', show);
+      /* éénmalige zachte puls op de sample-knop bij de allereerste verschijning — nooit herhalend */
+      if (show && !greeted) {
+        greeted = true;
+        setTimeout(() => bar.querySelector('.btn-primary').classList.add('mob-cta-hello'), 350);
+      }
     }
     const ends = document.querySelectorAll('.cta-band, .site-footer');
     if ('IntersectionObserver' in window && ends.length) {
@@ -1308,4 +1366,6 @@
   initMobileCta();
   initLuxe();
   initLightbox();
+  initFieldChecks();
+  initAnchorFlash();
 })();
