@@ -73,6 +73,48 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v6b — Kopteksten, minder zelfprijzing, familieverhaal fors ingekort, hero-bugfix (5 juli 2026)
+
+Vervolgronde na het nieuwe logo, op basis van directe feedback van Soef:
+
+- **"Van MOUSTAINE naar AJAR" herschreven** naar **"Een familiebedrijf met diepe wortels"** —
+  Soef noemde de oude titel terecht "lelijk, slaat nergens op" (een bezoeker kent de naam
+  MOUSTAINE nog niet op dat punt in de tekst). Nieuwe titel is meteen begrijpelijk + een lichte
+  woordspeling (wortels = familie én olijfbomen), zonder een boodschap te herhalen die al elders
+  op de pagina staat (vgl. "Drie generaties in jaartallen" verderop).
+- **Zelfprijzing eruit:** het uitgelichte citaat "Hij verkocht nooit iets waar hij zelf niet
+  achter stond — diezelfde eerlijkheid zit vandaag in elke fles AJAR" is volledig verwijderd
+  (content + CSS `.family-quote`) — te veel zelfprijzing volgens Soef. Ook het "reputatie"-blok
+  van het familieverhaal (dat dezelfde soort claim maakte: "nooit knoeien, altijd zuiver... die
+  reputatie is de brug naar de olie van vandaag") is vervallen bij het inkorten hieronder.
+- **Familieverhaal drastisch ingekort:** van 6 uitgebreide blokken (Vertrek/Arbeidersjaren/
+  Terugkeer/Reputatie/Voortzetting/Vandaag) naar **2 korte alinea's** ("Een nieuw begin" en "Van
+  winkeltje tot AJAR") — Soef: "niemand heeft daar tijd voor". Mag nu expliciet **"opa"/
+  "kleinzoon"** gebruiken i.p.v. de omslachtige "de oprichter"/"zijn oudste kleinzoon" — voelt
+  warmer en menselijker. Nog steeds geen namen, geen onbevestigde jaartallen, geen ziektenaam/
+  oorzaak-gevolg-claim bij de gezondheid.
+- **"Waarom AJAR" op de homepage** — in plaats van een 5e sectie toe te voegen (zou de bewust
+  ingestelde "max 4 secties, geen enkele herhaling"-regel doorbreken), heeft de bestaande
+  kernpunten-rij nu een kicker "Waarom AJAR" gekregen (`home.kernpunten.kicker` in content.js,
+  nieuwe CSS `.kernpunten-kicker`). Zelfde 3 korte, feitelijke punten als voorheen (familiefabriek
+  sinds jaren '90 / koudgeperst single-origin / direct contact met de importeur) — bewust geen
+  superlatieven toegevoegd, dat zijn dingen die zichzelf al bewijzen.
+- **Bugfix — hero-titel "sprong" na het laden:** de homepage-hero gebruikte `heroWords()`, een
+  woord-voor-woord masker-onthulling (elk woord schuift apart omhoog met eigen delay, bovenop de
+  al bestaande fade+translateY van de hele hero-tekst-wrapper). Die twee animaties tegelijk gaven
+  precies het effect dat Soef meldde: de titel "verandert/verplaatst kort na het laden". Volledig
+  verwijderd (`heroWords()`-functie, `.hw`/`.hw-in`-CSS, reduced-motion-regel) — de hero-titel
+  gebruikt nu dezelfde simpele, enkele fade+up-reveal als de rest van de site. Dit is ook weer in
+  lijn met de oorspronkelijke animatie-regel uit de masterprompt ("geen typewriter-effecten").
+- **"Ribbelige letters" verwijderd:** het pagina-brede film-grain-overlay (`body::after`,
+  feTurbulence-SVG, opacity .026) liet tekst — vooral grote serif-koppen — ruw/geribbeld aanogen.
+  Volledig verwijderd uit `style.css` (was onderdeel van de LUXE-laag-ronde); geen vervanging,
+  gewoon weg.
+- Geverifieerd (headless Chromium, 390px): hero-titel blijft nu stabiel op dezelfde positie na
+  laden (alleen nog de standaard site-brede fade+up-reveal, geen aparte woord-cascade meer), 0
+  gebroken beelden/JS-fouten/overflow op alle 7 pagina's, "Waarom AJAR"-kicker en het ingekorte
+  familieverhaal renderen correct.
+
 ### v6 — Nieuw logo: Cardo-kapitalen + verpakkings-olijfje op de J (5 juli 2026)
 
 Soef wilde het logo opnieuw: een mix van het huidige wordmark en het ajar.ma-bliketiket — "het

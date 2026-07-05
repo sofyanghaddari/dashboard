@@ -98,8 +98,10 @@ window.AJAR_CONTENT = {
       sub: 'Koudgeperste olijfolie van een familiebedrijf in Marokko, rechtstreeks naar de Nederlandse horeca en speciaalzaak.',
       image: 'sfeer-09.jpg'
     },
-    /* Drie kernpunten, elk max 6 woorden — geen kaarten met uitleg, dat staat al op de subpagina's. */
+    /* Drie kernpunten, elk max 6 woorden — geen kaarten met uitleg, dat staat al op de subpagina's.
+       Kicker "Waarom AJAR" erboven: korte, zelf-evidente feiten (geen zelfprijzing/superlatieven). */
     kernpunten: {
+      kicker: 'Waarom AJAR',
       items: [
         "Familiefabriek sinds jaren '90",
         'Koudgeperst, single-origin Marokko',
@@ -140,12 +142,14 @@ window.AJAR_CONTENT = {
     },
     blocks: [
       {
-        title: 'Van MOUSTAINE naar AJAR',
+        title: 'Een familiebedrijf met diepe wortels',
         /* v3 (verbeterronde): getrimd naar 2 zinnen (leesbaarheid) + 1 nieuwe zin over het bredere
            assortiment van de fabriek, als bewijs van schaal/ervaring — bewust geen productgrid of
            opsomming als aanbod, alleen olijfolie wordt in Nederland verkocht.
            v4: fabriek-taourirt.jpg is nu een ECHTE ajar.ma-foto (productielijn, medewerkers sorteren
-           olijven) — geen placeholder meer, aangeleverd door Soef. */
+           olijven) — geen placeholder meer, aangeleverd door Soef.
+           v6: titel herschreven (was 'Van MOUSTAINE naar AJAR' — sloeg nergens op voor een bezoeker
+           die de naam MOUSTAINE nog niet kent; nu pakkend + meteen begrijpelijk zonder voorkennis). */
         text: "ConservAjar SARL werd begin jaren '90 opgericht onder de naam MOUSTAINE, in het noordoosten van Marokko — een familiebedrijf waar de kennis van het persen en verwerken van olijven al drie generaties wordt doorgegeven. Naast olijfolie conserveert het bedrijf ook tafelolijven, abrikozenpulp en specerijen onder het eigen merk AJAR, in binnen- en buitenland.",
         image: 'fabriek-taourirt.jpg'
       },
@@ -164,36 +168,22 @@ window.AJAR_CONTENT = {
     ],
     /* "Onze familie" — persoonlijk verhaal, ná het vertrouwensblok (ISO 22000) en vóór "De eerste
        officiële importeur" (vertrouwen eerst, emotie als verdieping — masterprompt-volgorde).
-       Géén namen, géén jaartallen die niet vaststaan, géén ziektenaam/oorzaak-gevolg-claim bij
-       "Vandaag" — alleen de bouwstenen die Soef expliciet heeft aangeleverd. */
+       v6: fors ingekort (Soef: "niemand heeft daar tijd voor") — van 6 uitgebreide blokken + een
+       zelfprijzend citaat naar 2 korte alinea's. Quote verwijderd (te veel zelfprijzing). "Opa"/
+       "kleinzoon" mag nu expliciet gebruikt worden i.p.v. de omslachtige "de oprichter"/"zijn oudste
+       kleinzoon". Nog steeds: géén namen, géén jaartallen die niet vaststaan, géén ziektenaam/
+       oorzaak-gevolg-claim. */
     familyStory: {
       kicker: 'Onze familie',
       title: 'Het verhaal achter de olie',
-      quote: 'Hij verkocht nooit iets waar hij zelf niet achter stond — diezelfde eerlijkheid zit vandaag in elke fles AJAR.',
       blocks: [
         {
-          title: 'Vertrek',
-          text: "Ergens tussen zijn vijfentwintigste en dertigste verliet de oprichter zijn geboortestreek in Marokko. Armoede liet weinig keuze: hij liet zijn gezin achter om elders werk te vinden, in de hoop hen later een beter bestaan te geven. Geen avontuur — een offer."
+          title: 'Een nieuw begin',
+          text: 'Onze opa vertrok als jongvolwassene naar Nederland om te werken — uit noodzaak, niet uit avontuur. Na een paar jaar keerde hij terug naar Marokko en begon een klein winkeltje in olijven.'
         },
         {
-          title: 'Arbeidersjaren',
-          text: 'In Nederland werkte hij twee, drie jaar in de fabriek: lange dagen, zwaar werk, ver van huis. Niets om te romantiseren — het was overleven en sparen, met terugkeer als enige doel.'
-        },
-        {
-          title: 'Terugkeer & eerste stap',
-          text: 'Na een paar jaar keerde hij terug naar Marokko en begon, samen met een familielid, een klein winkeltje. Er werden olijven verkocht — de eerste, bescheiden stap richting wat later ConservAjar zou worden.'
-        },
-        {
-          title: 'De reputatie',
-          text: 'Hij bouwde een naam op als eerlijke handelaar, in een sector waar mengen en sjoemelen met olijven en olie geen uitzondering was. Nooit knoeien, altijd zuiver — die reputatie is de brug naar de olie die vandaag onder de naam AJAR wordt verkocht.'
-        },
-        {
-          title: 'De familie zet voort',
-          text: 'Het winkeltje groeide uit tot een familiebedrijf waarin vijf zonen elk hun rol kregen: boekhouding, logistiek, fabrieksleiding en landbouw, met de oudste die de grote lijnen bewaakt.'
-        },
-        {
-          title: 'Vandaag',
-          text: 'Jaren van opbouwen vroegen hun tol; zijn gezondheid liet het niet meer toe om zelf aan het roer te blijven staan. Zijn oudste kleinzoon, opgegroeid in Nederland, brengt het product nu naar het land waar het verhaal begon.'
+          title: 'Van winkeltje tot AJAR',
+          text: 'Wat klein begon, groeide uit tot ConservAjar, geleid door zijn vijf zonen. Zijn gezondheid liet het uiteindelijk niet meer toe zelf door te gaan — zijn kleinzoon brengt de olie nu naar Nederland.'
         }
       ]
     },

@@ -217,12 +217,13 @@
       : '';
 
     return '' +
-      /* 1. Hero — merknaam/positionering + één zin + één CTA (sample).
-         Titel per woord gemaskeerd onthuld (heroWords) — cinematische entree. */
+      /* 1. Hero — merknaam/positionering + één zin + één CTA (sample). Simpele fade+up-reveal
+         (zoals de rest van de site) — géén per-woord masker-animatie meer: die veroorzaakte een
+         zichtbare "sprong"/herschikking van de titel vlak na het laden (v6-bugfix). */
       '<section class="hero">' +
         '<div class="wrap hero-inner">' +
           '<div class="hero-text reveal">' +
-            '<h1 class="hero-title-anim">' + heroWords(h.hero.title) + '</h1>' +
+            '<h1 class="hero-title-anim">' + esc(h.hero.title) + '</h1>' +
             '<p class="hero-sub">' + esc(h.hero.sub) + '</p>' +
             '<div class="hero-actions">' +
               '<a class="btn btn-primary" href="' + esc(C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(C.sampleCtaLabel) + '</a>' +
@@ -234,8 +235,9 @@
 
       partnersRow +
 
-      /* 2. Drie kernpunten — max 6 woorden elk, geen kaarten/uitleg */
+      /* 2. Drie kernpunten — max 6 woorden elk, geen kaarten/uitleg — onder de kicker "Waarom AJAR" */
       '<section class="section kernpunten"><div class="wrap">' +
+        (h.kernpunten.kicker ? '<p class="kicker kernpunten-kicker reveal">' + esc(h.kernpunten.kicker) + '</p>' : '') +
         '<ul class="kernpunten-row reveal">' + h.kernpunten.items.map(k => '<li>' + esc(k) + '</li>').join('') + '</ul>' +
       '</div></section>' +
 
@@ -253,13 +255,6 @@
 
       /* 4. Slot-CTA — andere formulering dan de hero, zelfde doel */
       ctaBand(h.cta);
-  }
-
-  /* Hero-titel: elk woord in een mask-wrapper voor de gestaggerde onthulling */
-  function heroWords(title) {
-    return String(title).split(' ').map((w, i) =>
-      '<span class="hw"><span class="hw-in" style="transition-delay:' + (0.08 + i * 0.055).toFixed(3) + 's">' + esc(w) + '</span></span>'
-    ).join(' ');
   }
 
   /* Fluister-marquee: trage lopende band met alléén bevestigde feiten (content.js `marquee`).
@@ -297,13 +292,12 @@
       '<h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div></section>';
   }
 
-  /* "Onze familie" — persoonlijk verhaal, ná het vertrouwensblok (ISO). Zes korte bouwstenen +
-     één uitgelicht citaat; géén jaartallen (dat blijft voorbehouden aan de tijdlijn verderop). */
+  /* "Onze familie" — kort persoonlijk verhaal, ná het vertrouwensblok (ISO). Géén jaartallen
+     (dat blijft voorbehouden aan de tijdlijn verderop) en géén uitgelicht citaat (zelfprijzing). */
   function familyStorySection(fs) {
     if (!fs) return '';
     return '<section class="section family-story"><div class="wrap wrap-narrow">' +
       '<div class="section-head reveal">' + kickerTitle(fs.kicker, fs.title) + '</div>' +
-      '<blockquote class="family-quote reveal">' + esc(fs.quote) + '</blockquote>' +
       '<ol class="story">' + fs.blocks.map((b, i) =>
         '<li class="story-item reveal" style="transition-delay:' + (i * .1).toFixed(1) + 's">' +
           '<span class="story-dot" aria-hidden="true"></span>' +
