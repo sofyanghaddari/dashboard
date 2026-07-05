@@ -73,6 +73,37 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v6 — Nieuw logo: Cardo-kapitalen + verpakkings-olijfje op de J (5 juli 2026)
+
+Soef wilde het logo opnieuw: een mix van het huidige wordmark en het ajar.ma-bliketiket — "het
+olijfje als punt op de J", maar netter/professioneler, en zonder de rood/gele kleuren van de fabriek.
+Na een lange iteratieronde (kleine-j-varianten → blokletters → 6 fonts vergeleken → olijfje meermaals
+verfijnd op basis van een close-upfoto van het blik) is dit het goedgekeurde eindresultaat:
+
+- **Woordmerk:** AJAR in **Cardo** (klassieke renaissance-boekletter, Google Fonts) — alle letters
+  even groot (kapitalen), ruime spatiëring (.055em). Letters als vectorpaden (fontTools+harfbuzz
+  shaping, script `gen_final_assets.py` in de sessie-scratchpad — niet in de repo), dus geen
+  font-afhankelijkheid in de SVG's.
+- **Olijfje** (gecentreerd bóven de J, met wat lucht): zwarte olijf met radiale diepte + glans-sikkel
+  die linksboven de ronding volgt, tak die **dun aan de zijkant van de olijf begint** en heel
+  geleidelijk aandikt naar een zachte punt rechts-onder (3D naar de kijker), twee slanke blaadjes
+  naast elkaar (smalle V, licht schuin) met fijne nerf en groene gradiënten. Expliciete keuzes van
+  Soef tijdens de ronde: GEEN witte keyline/streep in de olijf (te druk), blaadjes NIET los van
+  elkaar (vlieg-effect), tak niet te dik en niet door het midden van de vrucht.
+- **Vervangen bestanden** (zelfde namen, dus geen HTML/JS-wijzigingen): `assets/logo/ajar-header.svg`
+  (header + footer; hele mark in `<g class="hdr-twig">` zodat de bestaande hover-sway blijft werken;
+  footer kleurt 'm wit via de bestaande `brightness(0) invert(1)`-filter), `ajar-wordmark.svg`
+  (nu mét gepade subtitels "EXTRA VIERGE OLIJFOLIE" goud / "TAOURIRT · MAROKKO" grijs — geen
+  <text>, dus rendert ook goed in PDF/img), `favicon.svg` (crème tegel + olijfje), `favicon-32.png`,
+  `apple-touch-icon.png`, `favicon.ico`, `og-image.png` (1200×630, wordmark op crème).
+- **PDF's hergenereerd** (specsheet + presentatie) met het nieuwe wordmark erin.
+- Geverifieerd: alle 7 pagina's 0 gebroken beelden, geen JS-fouten, geen overflow (390px);
+  header/footer/flesmockup-etiket screenshots gecontroleerd; PDF-headers gecontroleerd.
+- **Let op bij volgende sessies:** het logo bestaat alleen als gegenereerde SVG's in
+  `assets/logo/` — wijzigingen aan het olijfje = SVG's opnieuw genereren (de bron-scripts staan in
+  de scratchpad van deze sessie; bij een nieuwe sessie: het olijfje is gewoon met de hand aan te
+  passen in de SVG, de vormen zijn kleine losse paden met commentaarloze maar leesbare structuur).
+
 ### v5 — "Onze familie": persoonlijk verhaal op Over ons (5 juli 2026)
 
 Nieuwe formele masterprompt-ronde gaf voor het eerst het volledige, gedetailleerde familieverhaal
