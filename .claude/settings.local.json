@@ -37,7 +37,8 @@
       "Bash(node --check js/data/arabic-words.js)",
       "Bash(node --check js/modules/arabic.js)",
       "Bash(node --check js/animate.js)",
-      "Bash(node --check js/components/celebrate.js)"
+      "Bash(node --check js/components/celebrate.js)",
+      "Bash(rm -f /root/.claude/projects/-home-user-dashboard/91eb9c62-38f8-5e83-b143-eb4e07b1486d/tool-results/mcp-github-actions_list-1783257196416.txt)"
     ]
   }
 }
