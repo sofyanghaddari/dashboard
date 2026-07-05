@@ -37,6 +37,11 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
    Dit is de belangrijkste regel. Liever een gat dan een leugen op een vertrouwens-site.
 2. **Persoonsnaam blijft van de site af.** Alleen het merk "AJAR" + het wettelijk verplichte
    importeursadres (Jephtastraat 28H, 1055 JV Amsterdam) staan er. Geen "S. Ghaddari" als gezicht.
+   **Let op (correctie 5 juli 2026, v6b):** "MOUSTAINE" is géén oude bedrijfs-/merknaam — het is de
+   achternaam van Soefs opa. Eerdere sessies (t/m v6) namen abusievelijk aan dat de fabriek ooit
+   onder die naam handelde en zetten 'm meermaals op de site (producer.note, het "Van MOUSTAINE
+   naar AJAR"-blok, de tijdlijn). Dat was dus een schending van déze regel en is in v6b overal
+   verwijderd/herschreven. Kom hier niet op terug — noem nooit meer "MOUSTAINE" op de site.
 3. **Nooit automatisch mailen.** Formulieren gaan via Formspree of vallen terug op WhatsApp/mailto —
    altijd na expliciete klik van de bezoeker.
 4. **Eén bron van waarheid:** alle teksten/config in `js/content.js`. Pagina's renderen zichzelf
@@ -72,6 +77,34 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
   een lege commit forceert een nieuwe deploy.
 
 ---
+
+### v6c — Correctie: "MOUSTAINE" is een persoonsnaam, geen bedrijfsnaam (5 juli 2026)
+
+Soef corrigeerde direct na v6b: **"MOUSTAINE" is de achternaam van zijn opa** (een persoonsnaam),
+géén voormalige handels-/bedrijfsnaam zoals eerdere sessies hadden aangenomen en herhaaldelijk op
+de site hadden gezet. Dat is dus al die tijd een schending geweest van de eigen kernregel #2 ("geen
+persoonsnamen"). Overal verwijderd/herschreven, zonder nieuwe feiten te verzinnen:
+- `producer.note`: "opgericht begin jaren '90 onder de naam MOUSTAINE" → "opgericht begin jaren '90"
+  (jaartal-feit blijft, naamsvermelding weg).
+- `about.blocks[0].text`: dezelfde clausule verwijderd uit de lopende tekst op Over ons.
+- `about.timeline`: item 1 "Oprichting als MOUSTAINE" → "Oprichting van het familiebedrijf"; item 2
+  "Groei tot ConservAjar SARL" (impliceerde een naamswijziging vanaf iets dat nooit een naam bleek
+  te zijn) → "Formeel geregistreerd als ConservAjar SARL" — een neutrale, niet-verzonnen aanname
+  (klein begonnen, later formeel geregistreerd) die geen persoonsnaam nodig heeft.
+- Uitgebreide waarschuwing toegevoegd bij kernprincipe #2 hierboven zodat dit niet terugkomt.
+- Beide PDF's (spec-sheet + presentatie) opnieuw gegenereerd — de presentatie trekt de tijdlijn
+  direct uit `about.timeline`, dus de correctie liep automatisch door.
+- Geverifieerd: hele site (7 pagina's) doorzocht op de rendered DOM-tekst — "moustaine" komt nergens
+  meer voor (case-insensitive), 0 gebroken beelden/JS-fouten/overflow.
+
+**Bredere tekst-audit (zelfde ronde, op verzoek "bekijk alle teksten, wat kan beter/wat ontbreekt"):**
+Volledige `content.js` doorgenomen op clichés, dingen die niet op een serieuze B2B-site horen, en
+ontbrekende vertrouwenselementen. Bevindingen: geen bruikbare clichés aangetroffen (gecheckt op
+"passie/beleving/toonaangevend/innovatief/dromen/reis/avontuur"-type marketingtaal — komt niet voor
+behalve een bewuste, contrasterende ontkenning "niet uit avontuur" in het familieverhaal). Geen
+resterende persoonsnaam-lekken buiten dev-comments en het eigen e-mailadres/domein (bewust, al
+goedgekeurd). KvK staat al zichtbaar in de footer. Geen wijzigingen nodig gebleken buiten de
+MOUSTAINE-correctie hierboven.
 
 ### v6b — Kopteksten, minder zelfprijzing, familieverhaal fors ingekort, hero-bugfix (5 juli 2026)
 

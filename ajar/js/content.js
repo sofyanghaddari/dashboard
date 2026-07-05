@@ -42,7 +42,7 @@ window.AJAR_CONTENT = {
     name: 'ConservAjar SARL',
     city: 'Taourirt',
     country: 'Marokko',
-    note: "Familiebedrijf, opgericht begin jaren '90 onder de naam MOUSTAINE."
+    note: "Familiebedrijf, opgericht begin jaren '90."
   },
 
   /* ---------- Navigatie ---------- */
@@ -148,9 +148,12 @@ window.AJAR_CONTENT = {
            opsomming als aanbod, alleen olijfolie wordt in Nederland verkocht.
            v4: fabriek-taourirt.jpg is nu een ECHTE ajar.ma-foto (productielijn, medewerkers sorteren
            olijven) — geen placeholder meer, aangeleverd door Soef.
-           v6: titel herschreven (was 'Van MOUSTAINE naar AJAR' — sloeg nergens op voor een bezoeker
-           die de naam MOUSTAINE nog niet kent; nu pakkend + meteen begrijpelijk zonder voorkennis). */
-        text: "ConservAjar SARL werd begin jaren '90 opgericht onder de naam MOUSTAINE, in het noordoosten van Marokko — een familiebedrijf waar de kennis van het persen en verwerken van olijven al drie generaties wordt doorgegeven. Naast olijfolie conserveert het bedrijf ook tafelolijven, abrikozenpulp en specerijen onder het eigen merk AJAR, in binnen- en buitenland.",
+           v6: titel herschreven (was 'Van MOUSTAINE naar AJAR' — onbegrijpelijk zonder voorkennis).
+           v6b: BELANGRIJK — "MOUSTAINE" is géén (voormalige) bedrijfs-/merknaam, het is de
+           achternaam van Soefs opa (persoonsnaam). Eerdere sessies namen ten onrechte aan dat het
+           een oude handelsnaam was en zetten 'm meermaals op de site — dat is in deze ronde overal
+           verwijderd, conform de eigen harde regel #2 (geen persoonsnamen). NIET opnieuw invoeren. */
+        text: "ConservAjar SARL werd begin jaren '90 opgericht in het noordoosten van Marokko — een familiebedrijf waar de kennis van het persen en verwerken van olijven al drie generaties wordt doorgegeven. Naast olijfolie conserveert het bedrijf ook tafelolijven, abrikozenpulp en specerijen onder het eigen merk AJAR, in binnen- en buitenland.",
         image: 'fabriek-taourirt.jpg'
       },
       {
@@ -206,8 +209,8 @@ window.AJAR_CONTENT = {
       kicker: 'De tijdlijn',
       title: 'Drie generaties in jaartallen',
       items: [
-        { year: "Begin jaren '90", title: 'Oprichting als MOUSTAINE', text: 'Het familiebedrijf begint met het persen van olijven uit de eigen boomgaarden.', todo: false },
-        { year: 'Jaartal volgt', title: 'Groei tot ConservAjar SARL', text: 'Het bedrijf groeit en gaat verder onder de naam ConservAjar SARL, met het eigen merk AJAR.', todo: true },
+        { year: "Begin jaren '90", title: 'Oprichting van het familiebedrijf', text: 'Het familiebedrijf begint met het persen van olijven uit de eigen boomgaarden.', todo: false },
+        { year: 'Jaartal volgt', title: 'Formeel geregistreerd als ConservAjar SARL', text: 'Het bedrijf groeit en wordt formeel geregistreerd onder de naam ConservAjar SARL, met het eigen merk AJAR.', todo: true },
         { year: 'Jaartal volgt', title: 'ISO 22000-certificering (SGS)', text: 'De productie wordt gecertificeerd volgens ISO 22000 — voedselveiligheid en traceerbaarheid, extern getoetst door SGS.', todo: true },
         { year: '2026', title: 'Eerste officiële import in Nederland', text: 'AJAR komt vanuit Amsterdam voor het eerst officieel op de Nederlandse markt.', todo: false }
       ],
