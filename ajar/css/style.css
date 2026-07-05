@@ -716,6 +716,42 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 }
 .factory-gallery-item .img-slot { aspect-ratio: 1 / 1; }
 
+/* ---------- Onze familie (persoonlijk verhaal) ---------- */
+.family-quote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(1.25rem, 1rem + 1.6vw, 1.7rem);
+  line-height: 1.4;
+  color: var(--gold-bright);
+  text-align: center;
+  max-width: 42ch;
+  margin: 0 auto 2.6rem;
+  padding: 0;
+}
+.family-quote::before { content: '\201C'; }
+.family-quote::after { content: '\201D'; }
+.story { list-style: none; margin: 0; padding: 0 0 0 26px; position: relative; }
+.story::before {
+  content: '';
+  position: absolute;
+  left: 7px; top: 8px; bottom: 8px;
+  width: 1.5px;
+  background: linear-gradient(180deg, var(--olive-soft), rgba(62,75,46,.15));
+}
+.story-item { position: relative; padding: 0 0 26px; }
+.story-item:last-child { padding-bottom: 4px; }
+.story-dot {
+  position: absolute;
+  left: -26px; top: 7px;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--olive-soft);
+}
+.story-item:last-child .story-dot { background: var(--olive-soft); }
+.story-item h3 { font-size: 1.1rem; margin-bottom: .3em; }
+.story-item p { color: var(--ink-soft); font-size: .93rem; margin: 0; }
+
 /* ---------- Familie-tijdlijn ---------- */
 .timeline { list-style: none; margin: 0; padding: 0 0 0 26px; position: relative; }
 .timeline::before {

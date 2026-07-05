@@ -285,21 +285,43 @@
     '</div></section>';
   }
 
+  function aboutBlock(b, i) {
+    const media = b.image ? '<div class="split-media reveal">' + imgSlot(b.image, b.title, '') + '</div>' : '';
+    if (media) {
+      return '<section class="section split' + (i % 2 ? ' split-rev' : '') + '"><div class="wrap split-inner">' +
+        media +
+        '<div class="split-text reveal"><h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div>' +
+        '</div></section>';
+    }
+    return '<section class="section"><div class="wrap wrap-narrow prose reveal">' +
+      '<h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div></section>';
+  }
+
+  /* "Onze familie" — persoonlijk verhaal, ná het vertrouwensblok (ISO). Zes korte bouwstenen +
+     één uitgelicht citaat; géén jaartallen (dat blijft voorbehouden aan de tijdlijn verderop). */
+  function familyStorySection(fs) {
+    if (!fs) return '';
+    return '<section class="section family-story"><div class="wrap wrap-narrow">' +
+      '<div class="section-head reveal">' + kickerTitle(fs.kicker, fs.title) + '</div>' +
+      '<blockquote class="family-quote reveal">' + esc(fs.quote) + '</blockquote>' +
+      '<ol class="story">' + fs.blocks.map((b, i) =>
+        '<li class="story-item reveal" style="transition-delay:' + (i * .1).toFixed(1) + 's">' +
+          '<span class="story-dot" aria-hidden="true"></span>' +
+          '<h3>' + esc(b.title) + '</h3><p>' + esc(b.text) + '</p>' +
+        '</li>').join('') +
+      '</ol>' +
+    '</div></section>';
+  }
+
   function renderAbout() {
     const a = C.about;
     const tl = a.timeline;
     return pageHero(a.hero) +
-      a.blocks.map((b, i) => {
-        const media = b.image ? '<div class="split-media reveal">' + imgSlot(b.image, b.title, '') + '</div>' : '';
-        if (media) {
-          return '<section class="section split' + (i % 2 ? ' split-rev' : '') + '"><div class="wrap split-inner">' +
-            media +
-            '<div class="split-text reveal"><h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div>' +
-            '</div></section>';
-        }
-        return '<section class="section"><div class="wrap wrap-narrow prose reveal">' +
-          '<h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div></section>';
-      }).join('') +
+      a.blocks.slice(0, 2).map(aboutBlock).join('') +
+
+      familyStorySection(a.familyStory) +
+
+      a.blocks.slice(2).map((b, i) => aboutBlock(b, i + 2)).join('') +
 
       factoryGallery(a.factoryGallery) +
 

@@ -162,6 +162,41 @@ window.AJAR_CONTENT = {
         image: 'overons-08.jpg'
       }
     ],
+    /* "Onze familie" — persoonlijk verhaal, ná het vertrouwensblok (ISO 22000) en vóór "De eerste
+       officiële importeur" (vertrouwen eerst, emotie als verdieping — masterprompt-volgorde).
+       Géén namen, géén jaartallen die niet vaststaan, géén ziektenaam/oorzaak-gevolg-claim bij
+       "Vandaag" — alleen de bouwstenen die Soef expliciet heeft aangeleverd. */
+    familyStory: {
+      kicker: 'Onze familie',
+      title: 'Het verhaal achter de olie',
+      quote: 'Hij verkocht nooit iets waar hij zelf niet achter stond — diezelfde eerlijkheid zit vandaag in elke fles AJAR.',
+      blocks: [
+        {
+          title: 'Vertrek',
+          text: "Ergens tussen zijn vijfentwintigste en dertigste verliet de oprichter zijn geboortestreek in Marokko. Armoede liet weinig keuze: hij liet zijn gezin achter om elders werk te vinden, in de hoop hen later een beter bestaan te geven. Geen avontuur — een offer."
+        },
+        {
+          title: 'Arbeidersjaren',
+          text: 'In Nederland werkte hij twee, drie jaar in de fabriek: lange dagen, zwaar werk, ver van huis. Niets om te romantiseren — het was overleven en sparen, met terugkeer als enige doel.'
+        },
+        {
+          title: 'Terugkeer & eerste stap',
+          text: 'Na een paar jaar keerde hij terug naar Marokko en begon, samen met een familielid, een klein winkeltje. Er werden olijven verkocht — de eerste, bescheiden stap richting wat later ConservAjar zou worden.'
+        },
+        {
+          title: 'De reputatie',
+          text: 'Hij bouwde een naam op als eerlijke handelaar, in een sector waar mengen en sjoemelen met olijven en olie geen uitzondering was. Nooit knoeien, altijd zuiver — die reputatie is de brug naar de olie die vandaag onder de naam AJAR wordt verkocht.'
+        },
+        {
+          title: 'De familie zet voort',
+          text: 'Het winkeltje groeide uit tot een familiebedrijf waarin vijf zonen elk hun rol kregen: boekhouding, logistiek, fabrieksleiding en landbouw, met de oudste die de grote lijnen bewaakt.'
+        },
+        {
+          title: 'Vandaag',
+          text: 'Jaren van opbouwen vroegen hun tol; zijn gezondheid liet het niet meer toe om zelf aan het roer te blijven staan. Zijn oudste kleinzoon, opgegroeid in Nederland, brengt het product nu naar het land waar het verhaal begon.'
+        }
+      ]
+    },
     /* Bewijs van schaal: 4 echte ajar.ma-foto's van het bredere assortiment (magazijn, tafelolijven,
        conserven) — bewust GEEN productgrid met namen/prijzen/aanbod-taal, alleen een korte kicker
        + stille foto's. Zelfde principe als de ene assortiment-zin hierboven: laat zien dat de fabriek

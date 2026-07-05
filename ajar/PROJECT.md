@@ -73,6 +73,42 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v5 — "Onze familie": persoonlijk verhaal op Over ons (5 juli 2026)
+
+Nieuwe formele masterprompt-ronde gaf voor het eerst het volledige, gedetailleerde familieverhaal
+aan (eerder ontbrak dit — de tijdlijn had alleen "namen/jaartallen volgen na overleg"). Toegevoegd
+op **Over ons**, precies zoals de opdracht voorschrijft: **ná** het vertrouwensblok (ISO 22000) en
+**vóór** "De eerste officiële importeur in Nederland" (vertrouwen eerst, emotie als verdieping).
+
+- **Nieuw content.js-veld `about.familyStory`** (kicker/title/quote + 6 blokken), los van het
+  bestaande `about.blocks`-array zodat de PDF-generatie (`tools/presentatie.html`, trekt alleen uit
+  `about.blocks`) ongewijzigd blijft — dit persoonlijke verhaal hoort op de site, niet in een
+  zakelijk factsheet.
+- **Zes bouwstenen, exact de opgegeven structuur:** Vertrek (offer, armoede, gezin achtergelaten,
+  rond zijn 25e-30e) → Arbeidersjaren (2-3 jaar fabriekswerk NL, niet geromantiseerd) → Terugkeer &
+  eerste stap (winkeltje met familielid, olijven) → De reputatie (eerlijke handelaar, nooit
+  gesjoemeld — brug naar de olie van nu) → De familie zet voort (vijf zonen: boekhouding, logistiek,
+  fabrieksleiding, landbouw, oudste bewaakt de grote lijnen) → Vandaag (gezondheid liet het niet meer
+  toe — géén ziektenaam/oorzaak-gevolg-claim; sluit af met de oudste kleinzoon die het product naar
+  Nederland brengt). **Geen namen, geen niet-vaststaande jaartallen**, conform kernprincipe #1/#2.
+- **Uitgelicht citaat** (eigen formulering, niet letterlijk uit de opdracht overgenomen): "Hij
+  verkocht nooit iets waar hij zelf niet achter stond — diezelfde eerlijkheid zit vandaag in elke
+  fles AJAR." Groot, goud, Fraunces-cursief, gecentreerd.
+- **Nieuwe render-functie `familyStorySection()`** in main.js + helper `aboutBlock()` (bestaande
+  block-render-logica ontdubbeld uit `renderAbout()` zodat de blocks-array vóór/ná het verhaal kan
+  worden gesplitst zonder duplicatie). CSS-sectie "Onze familie (persoonlijk verhaal)": genummerde
+  lijst met dunne olijfgroene lijn + open bolletjes (`.story`/`.story-item`/`.story-dot`) — bewust
+  een andere kleur dan de gouden `.timeline` verderop (die staat voor de bevestigde jaartallen-
+  tijdlijn) zodat de twee lijst-stijlen niet als herhaling aanvoelen.
+- **Animaties strikt volgens sectie 4 van de opdracht** ("niets meer"): elk blok krijgt alleen de
+  standaard `.reveal`-fade+translateY met 100ms-stagger per item (inline `transition-delay`, geen
+  zelf-tekenende lijn of andere extra toegevoegd — bewust anders dan de bestaande LUXE-laag op de
+  rest van de site, omdat déze opdracht expliciet "niets meer" voorschrijft voor animaties).
+- Geverifieerd (headless Chromium, 390px en 1280px): sectie rendert tussen ISO-blok en
+  importeur-blok, 6 items met juiste titels, geen horizontale overflow, `prefers-reduced-motion`
+  toont alles direct (opacity 1), geen nieuwe JS-fouten. `about.blocks` ongewijzigd dus PDF's
+  hoeven niet opnieuw gegenereerd te worden.
+
 ## 4. Wat is er gebouwd (v1, af)
 
 - **7 pagina's:** Home, Over ons, Product, Zakelijke klanten, Contact, Sample-landingspagina, Privacy.
