@@ -78,6 +78,22 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v6f — Pending-claims (Fairtrade/Duurzaam/100% natuurlijk) alsnog toegevoegd (5 juli 2026)
+
+Na v6e wees ik Soef erop dat "Fairtrade"/"Duurzaam"/"100% natuurlijk" ongefundeerde claims zijn
+zonder certificering. Soef koos er bewust voor ze tóch alvast in de topbar-rotatie te zetten: de
+site wordt pas echt gelanceerd/gepromoot als de certificaten binnen zijn, dus tot die tijd is het
+risico beperkt. Dat is zijn beslissing te maken — verwerkt met een vangnet:
+
+- `content.js`: `topbar.pendingItems` (Fairtrade/Duurzaam/100% natuurlijk) + `topbar.showPending`
+  (default `true`). Nieuwe helper `topbarItems()` in main.js voegt `items` + (als `showPending`
+  niet expliciet `false` is) `pendingItems` samen — gebruikt door zowel de eerste render als
+  `initTopbarRotate()`.
+- **Vóór de echte lancering: zet `topbar.showPending = false`** als de certificaten er dan nog
+  niet zijn — dat is de enige plek die moet veranderen, de rest van de topbar-logica blijft gelijk.
+- Geverifieerd: alle 8 teksten (5 bevestigd + 3 pending) rouleren na elkaar, geen JS-fouten, geen
+  overflow op alle 7 pagina's.
+
 ### v6e — Fotostapel-galerij + roulerende topbar (5 juli 2026)
 
 Twee verzoeken van Soef in één ronde:
@@ -695,6 +711,10 @@ verdwijnen de "volgt"-placeholders vanzelf.
   regel "Olijfvariëteit"), geen `todo` meer, staat nu gewoon op de site.
 - ⏳ **Certificering: in aanvraag** — nog niet definitief, dus placeholder blijft staan tot het
   certificaat er is (bio/Fairtrade/ISO-achtig, exacte vorm nog onbekend).
+  **LET OP vóór lancering (v6f):** de topbar rouleert alvast door "Fairtrade"/"Duurzaam"/
+  "100% natuurlijk" (`topbar.pendingItems` in `content.js`) — Soefs eigen keuze, omdat de site nog
+  niet actief gepromoot wordt. **Zijn de certificaten er bij lancering nog niet: zet
+  `topbar.showPending = false`.**
 - ⏳ **Prijzen: komt nog** — bewust nog niet tonen; `assurance`-blok ("leverafspraken vooraf") vangt
   dit gat voorlopig op.
 - ⏳ **Flessen: moeten nog komen** — verpakking/fles is nog niet klaar, dus nog geen productfoto

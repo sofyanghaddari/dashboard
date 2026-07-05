@@ -59,13 +59,14 @@ window.AJAR_CONTENT = {
   sampleCtaHref: 'sample.html',
 
   /* ---------- Topbar (dunne belofte-balk boven de header) ----------
-     v6e: rouleert nu door meerdere korte teksten (elke ~3,8s, zachte fade).
-     ALLEEN bevestigde feiten — bewust NIET overgenomen uit Soefs voorbeeldlijstje:
-     "Fairtrade" (beschermd keurmerk, AJAR is niet gecertificeerd — certificering is nog
-     "in aanvraag", claimen zonder certificaat is misleidend én juridisch riskant),
-     "Duurzaam" (ongefundeerde duurzaamheidsclaim, daar handhaaft de ACM actief op) en
-     "100% natuurlijk" (lege marketingkreet — precies de categorie clichés die Soef zelf
-     van de site wilde houden). Zodra een echt certificaat binnen is, kan het erbij. */
+     v6e: rouleert door meerdere korte teksten (elke ~3,8s, zachte fade).
+     `items` = bevestigde feiten. `pendingItems` = claims in afwachting van certificering
+     ("Fairtrade"/"Duurzaam"/"100% natuurlijk") — staan er op uitdrukkelijk verzoek van Soef
+     alvast bij (v6f), omdat de site pas echt gelanceerd/gepromoot wordt als de certificaten
+     binnen zijn. LET OP VÓÓR DE LANCERING: zijn de certificaten er dan nog niet, zet dan
+     `showPending: false` — één schakelaar en alle onbevestigde claims zijn van de site
+     (zonder certificaat zijn het misleidende claims; Fairtrade is een beschermd keurmerk
+     en op duurzaamheidsclaims handhaaft de ACM). */
   topbar: {
     items: [
       'Gratis sample — eerst proeven, dan praten',
@@ -74,6 +75,12 @@ window.AJAR_CONTENT = {
       'Koudgeperst in de eigen perserij',
       'ISO 22000-gecertificeerd (SGS)'
     ],
+    pendingItems: [
+      'Fairtrade',
+      'Duurzaam',
+      '100% natuurlijk'
+    ],
+    showPending: true,
     href: 'sample.html'
   },
 

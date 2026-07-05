@@ -24,6 +24,17 @@
     return 'https://wa.me/' + cfg.whatsappNumber + '?text=' + encodeURIComponent(text || '');
   }
 
+  /* Topbar-teksten: bevestigde feiten (topbar.items) + optioneel topbar.pendingItems
+     (claims in afwachting van certificering, alleen zichtbaar zolang topbar.showPending
+     niet expliciet op false staat — zie de toelichting bij topbar in content.js). */
+  function topbarItems() {
+    const t = C.topbar;
+    if (!t) return [];
+    const base = t.items || (t.text ? [t.text] : []);
+    const pending = (t.showPending !== false && t.pendingItems) ? t.pendingItems : [];
+    return base.concat(pending);
+  }
+
   /* Vervangbare beeld-slot: toont de foto uit assets/images/ zodra die bestaat,
      anders een rustige olijfgroen/goud gradient-placeholder met de bestandsnaam. */
   function imgSlot(file, alt, cls, eager) {
@@ -78,9 +89,9 @@
     ).join('');
 
     /* Dunne belofte-topbar boven de (sticky) header — scrolt gewoon mee weg.
-       Rouleert door topbar.items (alleen bevestigde feiten); eerste item = de sample-CTA. */
-    const tbItems = C.topbar && (C.topbar.items || (C.topbar.text ? [C.topbar.text] : []));
-    if (tbItems && tbItems.length && page !== 'sample') {
+       Rouleert door topbarItems(); eerste item = de sample-CTA. */
+    const tbItems = topbarItems();
+    if (tbItems.length && page !== 'sample') {
       document.getElementById('site-header').insertAdjacentHTML('beforebegin',
         '<a class="topbar" href="' + esc(C.topbar.href) + '" data-ga-event="sample_cta_click">' +
           '<span class="tb-text">' + esc(tbItems[0]) + '</span>' +
@@ -349,8 +360,8 @@
      en in een verborgen tabblad. */
   function initTopbarRotate() {
     const el = document.querySelector('.topbar .tb-text');
-    const items = C.topbar && C.topbar.items;
-    if (!el || !items || items.length < 2) return;
+    const items = topbarItems();
+    if (!el || items.length < 2) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     let i = 0;
     setInterval(() => {
