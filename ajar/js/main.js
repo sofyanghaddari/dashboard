@@ -77,10 +77,14 @@
       '<a href="' + n.href + '"' + (n.id === page ? ' class="active" aria-current="page"' : '') + '>' + esc(n.label) + '</a>'
     ).join('');
 
-    /* Dunne belofte-topbar boven de (sticky) header — scrolt gewoon mee weg */
-    if (C.topbar && C.topbar.text && page !== 'sample') {
+    /* Dunne belofte-topbar boven de (sticky) header — scrolt gewoon mee weg.
+       Rouleert door topbar.items (alleen bevestigde feiten); eerste item = de sample-CTA. */
+    const tbItems = C.topbar && (C.topbar.items || (C.topbar.text ? [C.topbar.text] : []));
+    if (tbItems && tbItems.length && page !== 'sample') {
       document.getElementById('site-header').insertAdjacentHTML('beforebegin',
-        '<a class="topbar" href="' + esc(C.topbar.href) + '" data-ga-event="sample_cta_click">' + esc(C.topbar.text) + '</a>');
+        '<a class="topbar" href="' + esc(C.topbar.href) + '" data-ga-event="sample_cta_click">' +
+          '<span class="tb-text">' + esc(tbItems[0]) + '</span>' +
+        '</a>');
     }
 
     document.getElementById('site-header').innerHTML =
@@ -267,17 +271,102 @@
     '</div></div>';
   }
 
-  /* Bewijs van schaal: stille fotostrip, GEEN productgrid — geen namen/prijzen/aanbod-taal,
-     alleen een korte kicker + zin + 4 rustige foto's van de fabriek. */
+  /* Bewijs van schaal: fotostapel — de 4 fabrieksfoto's liggen overlappend op elkaar (als losse
+     foto's op tafel) en komen om de beurt bovenop: vanzelf elke ~4s, of direct bij een tik.
+     Verving de vlakke 2×2-grid (v6e, op verzoek van Soef). GEEN productgrid — geen namen/
+     prijzen/aanbod-taal. Let op: tik = volgende foto, dus déze foto's zitten bewust niet
+     meer in de lightbox. */
   function factoryGallery(g) {
     if (!g || !g.images || !g.images.length) return '';
     return '<section class="section factory-gallery"><div class="wrap">' +
       '<p class="kicker reveal">' + esc(g.kicker) + '</p>' +
       '<p class="factory-gallery-text reveal">' + esc(g.text) + '</p>' +
-      '<div class="factory-gallery-row">' + g.images.map(im =>
-        '<div class="factory-gallery-item reveal">' + imgSlot(im.file, im.alt, '') + '</div>').join('') +
+      '<div class="stack-gallery reveal" id="stack-gallery" role="group" aria-label="Foto’s uit de fabriek — tik voor de volgende">' +
+        g.images.map((im, i) =>
+          '<div class="stack-card" data-pos="' + i + '">' + imgSlot(im.file, im.alt, '') + '</div>').join('') +
+      '</div>' +
+      '<div class="stack-dots">' + g.images.map((_, i) =>
+        '<button type="button" class="stack-dot' + (i === 0 ? ' on' : '') + '" data-i="' + i + '" aria-label="Foto ' + (i + 1) + '"></button>').join('') +
       '</div>' +
     '</div></section>';
+  }
+
+  /* Fotostapel-gedrag: bovenste kaart glijdt opzij en schuift achteraan; pauzeert buiten
+     beeld en in een verborgen tabblad; tik op de stapel = meteen de volgende. */
+  function initStackGallery() {
+    const g = document.getElementById('stack-gallery');
+    if (!g) return;
+    const cards = Array.from(g.querySelectorAll('.stack-card'));
+    const dots = Array.from(document.querySelectorAll('.stack-dot'));
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let order = cards.map((_, i) => i);   // order[0] = index van de bovenste kaart
+    let busy = false, timer = null;
+
+    function apply() {
+      order.forEach((cardIdx, pos) => cards[cardIdx].setAttribute('data-pos', pos));
+      dots.forEach((d, i) => d.classList.toggle('on', i === order[0]));
+    }
+    function advance() {
+      if (busy) return;
+      if (reduce) { order.push(order.shift()); apply(); return; }
+      busy = true;
+      const top = cards[order[0]];
+      top.classList.add('stack-leaving');
+      setTimeout(() => {
+        top.classList.remove('stack-leaving');
+        order.push(order.shift());
+        apply();
+        busy = false;
+      }, 480);
+    }
+    function start() { if (!timer && !reduce && !document.hidden) timer = setInterval(advance, 4200); }
+    function stop() { clearInterval(timer); timer = null; }
+
+    g.addEventListener('click', () => { advance(); stop(); start(); });
+    g.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advance(); }
+    });
+    g.setAttribute('tabindex', '0');
+    dots.forEach(d => d.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const i = Number(d.dataset.i);
+      if (i === order[0] || busy) return;
+      order = [i].concat(order.filter(x => x !== i));
+      apply();
+      stop(); start();
+    }));
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((es) => {
+        es.forEach(en => en.isIntersecting ? start() : stop());
+      }, { threshold: .25 }).observe(g);
+    } else start();
+    document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+    apply();
+  }
+
+  /* Topbar-rotatie: teksten wisselen met een zachte fade-omhoog; staat stil bij reduced-motion
+     en in een verborgen tabblad. */
+  function initTopbarRotate() {
+    const el = document.querySelector('.topbar .tb-text');
+    const items = C.topbar && C.topbar.items;
+    if (!el || !items || items.length < 2) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let i = 0;
+    setInterval(() => {
+      if (document.hidden) return;
+      i = (i + 1) % items.length;
+      el.classList.add('tb-swap');
+      setTimeout(() => {
+        el.style.transition = 'none';           /* sprong naar de instap-stand zonder animatie */
+        el.textContent = items[i];
+        el.classList.remove('tb-swap');
+        el.classList.add('tb-enter');
+        void el.offsetWidth;
+        el.style.transition = '';
+        el.classList.remove('tb-enter');        /* en zacht omhoog het beeld in */
+      }, 300);
+    }, 3800);
   }
 
   function aboutBlock(b, i) {
@@ -1368,4 +1457,6 @@
   initLightbox();
   initFieldChecks();
   initAnchorFlash();
+  initStackGallery();
+  initTopbarRotate();
 })();

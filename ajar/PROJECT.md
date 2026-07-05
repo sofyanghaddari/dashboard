@@ -78,6 +78,33 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v6e — Fotostapel-galerij + roulerende topbar (5 juli 2026)
+
+Twee verzoeken van Soef in één ronde:
+
+- **Fotostapel op Over ons** (`.stack-gallery`, verving de vlakke 2×2-grid van de factory-gallery):
+  de 4 ajar.ma-fabrieksfoto's liggen nu overlappend op elkaar als losse foto's op tafel (subtiele
+  rotaties/offsets, kaart onderop steekt eronderuit) en komen **om de beurt bovenop** — vanzelf
+  elke 4,2s (bovenste kaart glijdt opzij en schuift achteraan), of direct bij een tik op de stapel.
+  Dots eronder tonen welke foto bovenligt en zijn klikbaar om direct te springen. Pauzeert buiten
+  beeld (IntersectionObserver) en in een verborgen tabblad; toetsenbord: Enter/spatie = volgende.
+  **Let op:** tik = volgende foto, dus deze 4 foto's zitten bewust niet meer in de lightbox
+  (de selector `.factory-gallery-item .img-slot` matcht niet meer; procesfoto's houden de lightbox).
+- **Roulerende topbar** (`topbar.items` in content.js + `initTopbarRotate()`): de dunne balk
+  bovenaan wisselt nu elke 3,8s van tekst met een zachte fade-omhoog. **Belangrijk — teksten
+  bewust aangepast t.o.v. Soefs voorbeeldlijstje** (dat lijstje was 1-op-1 Olyfia's merkpijlers):
+  "Fairtrade" NIET overgenomen (beschermd keurmerk, AJAR heeft het niet — claimen zonder
+  certificaat is misleidend), "Duurzaam" NIET (ongefundeerde milieuclaim, ACM handhaaft daarop),
+  "100% natuurlijk" NIET (lege kreet, categorie die Soef zelf bant). Wel: gratis-sample-CTA,
+  "Eigen boomgaarden in Marokko", "100% Marokkaanse extra vierge olijfolie", "Koudgeperst in de
+  eigen perserij", "ISO 22000-gecertificeerd (SGS)" — allemaal bevestigde feiten. Zodra echte
+  certificering binnen is, kan die als extra regel worden toegevoegd.
+- Beide met reduced-motion-gedrag: stapel wisselt direct zonder glijden en zonder auto-rotatie
+  (alleen op tik), topbar staat stil op de eerste tekst.
+- Geverifieerd (headless, 390px): topbar wisselt na ~4s naar de volgende tekst, stapel roteert bij
+  tik (posities 0,1,2,3 → 3,0,1,2) én automatisch daarna, actieve dot volgt, geen overflow, geen
+  JS-fouten.
+
 ### v6d — Nuttige micro-animaties in formulieren + navigatie (5 juli 2026)
 
 Op verzoek van Soef: alleen animaties toevoegen die iets functioneels doen (feedback/oriëntatie),

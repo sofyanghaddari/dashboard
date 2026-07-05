@@ -58,9 +58,22 @@ window.AJAR_CONTENT = {
   sampleCtaLabel: 'Gratis sample aanvragen',
   sampleCtaHref: 'sample.html',
 
-  /* ---------- Topbar (dunne belofte-balk boven de header) ---------- */
+  /* ---------- Topbar (dunne belofte-balk boven de header) ----------
+     v6e: rouleert nu door meerdere korte teksten (elke ~3,8s, zachte fade).
+     ALLEEN bevestigde feiten — bewust NIET overgenomen uit Soefs voorbeeldlijstje:
+     "Fairtrade" (beschermd keurmerk, AJAR is niet gecertificeerd — certificering is nog
+     "in aanvraag", claimen zonder certificaat is misleidend én juridisch riskant),
+     "Duurzaam" (ongefundeerde duurzaamheidsclaim, daar handhaaft de ACM actief op) en
+     "100% natuurlijk" (lege marketingkreet — precies de categorie clichés die Soef zelf
+     van de site wilde houden). Zodra een echt certificaat binnen is, kan het erbij. */
   topbar: {
-    text: 'Gratis sample — eerst proeven, dan praten',
+    items: [
+      'Gratis sample — eerst proeven, dan praten',
+      'Eigen boomgaarden in Marokko',
+      '100% Marokkaanse extra vierge olijfolie',
+      'Koudgeperst in de eigen perserij',
+      'ISO 22000-gecertificeerd (SGS)'
+    ],
     href: 'sample.html'
   },
 
