@@ -18,6 +18,10 @@ Alle teksten, contactgegevens en instellingen staan in `js/content.js`. De pagin
 | `showPartners` | `true` zodra er echte verkooppunten zijn ("Verkrijgbaar bij" op home) | false |
 | `presentationPdf` | Pad naar bedrijfspresentatie-PDF zodra gemaakt — het aanvraagformulier toont dan een downloadlink na verzenden | **TODO** |
 
+### Menu met uitklap-submenu's
+
+De lange pagina's (Over ons, Product, Zakelijke klanten) hebben een dropdown in het menu waarmee een klant direct naar een sectie springt. Dit staat in `content.js` onder `nav`: een menu-item met een `children`-array krijgt automatisch een submenu. Elke sub-link verwijst naar een sectie-`#id` op de pagina (bv. `product.html#proces`). **Let op:** die `#id`'s worden door `main.js` op de secties gezet (in de renderfuncties). Pas je een anchor aan in `content.js`, pas dan óók de bijbehorende `id=""` in `main.js` aan — anders landt de sprong nergens. Klik op de pagina zelf = soepel scrollen + de sectie licht kort op (geen herlaad); vanaf een andere pagina = navigeren en op de juiste sectie landen.
+
 Overige TODO's zijn in `content.js` gemarkeerd met `todo: true` (FAQ-antwoorden, doosinhoud, THT, kwaliteitscijfers, tijdlijn-jaartallen) — op de site verschijnen ze cursief goud als "volgt".
 
 ## Foto's vervangen

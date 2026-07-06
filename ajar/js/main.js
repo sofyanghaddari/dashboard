@@ -83,10 +83,28 @@
 
   /* ---------- Header ---------- */
 
+  /* Caret-pijltje voor menu-items met een uitklap-submenu */
+  const NAV_CARET = '<svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+
   function renderHeader() {
-    const links = C.nav.map(n =>
-      '<a href="' + n.href + '"' + (n.id === page ? ' class="active" aria-current="page"' : '') + '>' + esc(n.label) + '</a>'
-    ).join('');
+    const links = C.nav.map(n => {
+      const activeAttr = n.id === page ? ' class="active" aria-current="page"' : '';
+      /* Menu-item met submenu → dropdown (desktop: hover/klik; mobiel: inklapbaar) */
+      if (n.children && n.children.length) {
+        const subId = 'nav-sub-' + n.id;
+        const subLinks = n.children.map(c =>
+          '<a href="' + esc(c.href) + '" role="menuitem">' + esc(c.label) + '</a>'
+        ).join('');
+        return '<div class="nav-item has-sub">' +
+          '<a href="' + esc(n.href) + '"' + activeAttr + '>' + esc(n.label) + '</a>' +
+          '<button type="button" class="nav-sub-toggle" aria-expanded="false" aria-controls="' + subId + '" ' +
+            'aria-label="' + esc(n.label) + ' — onderwerpen">' + NAV_CARET + '</button>' +
+          '<div class="nav-sub" id="' + subId + '" role="menu">' + subLinks + '</div>' +
+        '</div>';
+      }
+      return '<a href="' + esc(n.href) + '"' + activeAttr + '>' + esc(n.label) + '</a>';
+    }).join('');
 
     /* Dunne belofte-topbar boven de (sticky) header — scrolt gewoon mee weg.
        Rouleert door topbarItems(); eerste item = de sample-CTA. */
@@ -122,18 +140,51 @@
       '</div>';
 
     const toggle = document.getElementById('nav-toggle');
+
+    /* Alle open dropdowns sluiten */
+    function closeSubs(except) {
+      document.querySelectorAll('.nav-item.sub-open').forEach(o => {
+        if (o === except) return;
+        o.classList.remove('sub-open');
+        const b = o.querySelector('.nav-sub-toggle');
+        if (b) b.setAttribute('aria-expanded', 'false');
+      });
+    }
+
     toggle.addEventListener('click', () => {
       const open = document.body.classList.toggle('nav-open');
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
       document.documentElement.classList.toggle('nav-lock', open); // scroll-lock achter volscherm-menu
+      if (!open) closeSubs(); // submenu's dichtklappen bij sluiten van het hoofdmenu
     });
+
+    /* Caret-knop: submenu open/dicht (desktop klik/touch + mobiel accordeon) */
+    document.querySelectorAll('.nav-sub-toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const item = btn.closest('.nav-item');
+        const open = item.classList.toggle('sub-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) closeSubs(item);
+      });
+    });
+
     document.getElementById('site-nav').addEventListener('click', (e) => {
       if (e.target.tagName === 'A') {
         document.body.classList.remove('nav-open');
         document.documentElement.classList.remove('nav-lock');
         toggle.setAttribute('aria-expanded', 'false');
+        closeSubs();
       }
     });
+
+    /* Klik buiten een menu-item → open dropdowns sluiten (desktop) */
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.nav-item')) closeSubs();
+    });
+    /* Escape sluit een open dropdown */
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSubs(); });
 
     const onScroll = () => document.body.classList.toggle('scrolled', window.scrollY > 8);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -436,14 +487,15 @@
   }
 
   function aboutBlock(b, i) {
+    const idAttr = b.anchor ? ' id="' + esc(b.anchor) + '"' : '';
     const media = b.image ? '<div class="split-media reveal">' + imgSlot(b.image, b.title, '') + '</div>' : '';
     if (media) {
-      return '<section class="section split' + (i % 2 ? ' split-rev' : '') + '"><div class="wrap split-inner">' +
+      return '<section class="section split' + (i % 2 ? ' split-rev' : '') + '"' + idAttr + '><div class="wrap split-inner">' +
         media +
         '<div class="split-text reveal"><h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div>' +
         '</div></section>';
     }
-    return '<section class="section"><div class="wrap wrap-narrow prose reveal">' +
+    return '<section class="section"' + idAttr + '><div class="wrap wrap-narrow prose reveal">' +
       '<h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div></section>';
   }
 
@@ -451,7 +503,7 @@
      (dat blijft voorbehouden aan de tijdlijn verderop) en géén uitgelicht citaat (zelfprijzing). */
   function familyStorySection(fs) {
     if (!fs) return '';
-    return '<section class="section family-story"><div class="wrap wrap-narrow">' +
+    return '<section class="section family-story" id="familie"><div class="wrap wrap-narrow">' +
       '<div class="section-head reveal">' + kickerTitle(fs.kicker, fs.title) + '</div>' +
       '<ol class="story">' + fs.blocks.map((b, i) =>
         '<li class="story-item reveal" style="transition-delay:' + (i * .1).toFixed(1) + 's">' +
@@ -475,7 +527,7 @@
       factoryGallery(a.factoryGallery) +
 
       /* Familie-tijdlijn */
-      '<section class="section section-tint"><div class="wrap wrap-narrow">' +
+      '<section class="section section-tint" id="tijdlijn"><div class="wrap wrap-narrow">' +
         '<div class="section-head reveal">' + kickerTitle(tl.kicker, tl.title) + '</div>' +
         '<ol class="timeline" data-anim>' + tl.items.map(t =>
           '<li class="timeline-item reveal' + (t.todo ? ' is-todo' : '') + '">' +
@@ -494,7 +546,7 @@
     const p = C.product;
     return pageHero(p.hero) +
 
-      '<section class="section"><div class="wrap specs-inner">' +
+      '<section class="section" id="specs"><div class="wrap specs-inner">' +
         '<div class="specs-media reveal">' + imgSlot(p.specs.image, p.specs.title, 'img-tall') + '</div>' +
         '<div class="specs-card card reveal">' +
           '<h2 class="section-title">' + esc(p.specs.title) + '</h2>' +
@@ -506,7 +558,7 @@
 
       /* De olijf: Picholine Marocaine — beeld + tekst naast elkaar, 2 kaarten eronder (grid-2, geen leeg 3e vak) */
       (p.cultivar
-        ? '<section class="section"><div class="wrap">' +
+        ? '<section class="section" id="de-olijf"><div class="wrap">' +
           '<div class="split-inner cultivar-head">' +
             (p.cultivar.image ? '<div class="split-media reveal">' + imgSlot(p.cultivar.image, 'Verse olijven, Picholine Marocaine', '') + '</div>' : '') +
             '<div class="split-text reveal">' + kickerTitle(p.cultivar.kicker, p.cultivar.title, p.cultivar.text) + '</div>' +
@@ -516,7 +568,7 @@
         : '') +
 
       /* Meetbare kwaliteitscijfers */
-      '<section class="section section-tint"><div class="wrap">' +
+      '<section class="section section-tint" id="kwaliteit"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(p.quality.kicker, p.quality.title) + '</div>' +
         '<div class="quality-row">' + p.quality.items.map(q => {
           /* Numerieke waarden (bijv. "0,28" of "310") tellen op zodra ze in beeld scrollen */
@@ -551,7 +603,7 @@
 
       marqueeBand() +
 
-      '<section class="section section-tint"><div class="wrap">' +
+      '<section class="section section-tint" id="proces"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(p.process.kicker, p.process.title) + '</div>' +
         '<ol class="process" data-anim>' + p.process.steps.map((s, i) =>
           '<li class="process-step reveal">' +
@@ -562,7 +614,7 @@
         '</ol>' +
       '</div></section>' +
 
-      '<section class="section"><div class="wrap">' +
+      '<section class="section" id="certificering"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(p.certification.kicker, p.certification.title, p.certification.intro) + '</div>' +
         '<div class="grid-2">' + p.certification.items.map(c =>
           '<article class="card cert-card' + (c.available ? '' : ' cert-pending') + ' reveal">' +
@@ -602,12 +654,12 @@
         { label: C.ctaLabel, href: C.ctaHref, primary: false, ga: 'offerte_cta_click' }
       ]) +
 
-      '<section class="section"><div class="wrap">' +
+      '<section class="section" id="voor-wie"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(b.audiences.kicker, b.audiences.title) + '</div>' +
         uspGrid(b.audiences.items) +
       '</div></section>' +
 
-      '<section class="section section-tint"><div class="wrap">' +
+      '<section class="section section-tint" id="hoe-het-werkt"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(b.how.kicker, b.how.title) + '</div>' +
         '<ol class="process process-3" data-anim>' + b.how.steps.map((s, i) =>
           '<li class="process-step reveal">' +
@@ -618,7 +670,7 @@
       '</div></section>' +
 
       /* Wat u krijgt & wat het kost — Formaten + Prijs samengevoegd (was 2 secties) */
-      '<section class="section"><div class="wrap">' +
+      '<section class="section" id="aanbod"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(b.formats.kicker, b.formats.title) + '</div>' +
         '<div class="fmt-row">' + b.formats.items.map(f =>
           '<div class="fmt-tile reveal' + (f.todo ? ' is-todo' : '') + '">' +
@@ -934,16 +986,42 @@
     });
   }
 
-  /* Kom je binnen via een deel-link met #anker, dan licht de doelsectie even zacht op. */
+  /* Ankernavigatie: (1) binnenkomst via deel-link met #anker licht de doelsectie op;
+     (2) klik op een menu-/paginalink naar een sectie op DEZELFDE pagina scrollt er soepel
+     heen (geen volledige herlaad) en licht 'm op. scroll-margin-top in de CSS houdt de
+     sectie vrij van de sticky header. */
   function initAnchorFlash() {
-    if (!location.hash || location.hash.length < 2) return;
-    let el = null;
-    try { el = document.querySelector(location.hash); } catch (e) { return; }
-    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    setTimeout(() => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function flash(el) {
+      if (!el || reduce) return;
+      el.classList.remove('anchor-flash');
+      void el.offsetWidth; /* herstart de animatie bij herhaald klikken */
       el.classList.add('anchor-flash');
       el.addEventListener('animationend', () => el.classList.remove('anchor-flash'), { once: true });
-    }, 400);
+    }
+
+    if (location.hash && location.hash.length > 1) {
+      let el = null;
+      try { el = document.querySelector(location.hash); } catch (e) { el = null; }
+      if (el) setTimeout(() => flash(el), 400);
+    }
+
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href*="#"]');
+      if (!a) return;
+      if (a.target === '_blank' || a.hasAttribute('download') || e.metaKey || e.ctrlKey) return;
+      let url;
+      try { url = new URL(a.getAttribute('href'), location.href); } catch (_) { return; }
+      if (url.pathname !== location.pathname || url.hash.length < 2) return; // andere pagina → normaal navigeren
+      let target = null;
+      try { target = document.querySelector(url.hash); } catch (_) { return; }
+      if (!target) return;
+      e.preventDefault();
+      if (history.pushState) history.pushState(null, '', url.hash);
+      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      flash(target);
+    });
   }
 
   async function submitLead(form, v, waText, okMsg) {
@@ -1319,6 +1397,10 @@
         if (a.target === '_blank' || a.hasAttribute('download') || e.metaKey || e.ctrlKey) return;
         if (!/\.html($|\?|#)/.test(href) && href !== 'index.html') return;
         if (/^https?:|^mailto:|^tel:|^#/.test(href)) return;
+        /* Anker naar een sectie op DEZELFDE pagina → geen herlaad-fade; de
+           ankernavigatie (initAnchorFlash) scrollt er soepel heen. */
+        let u; try { u = new URL(href, location.href); } catch (_) { u = null; }
+        if (u && u.pathname === location.pathname && u.hash) return;
         e.preventDefault();
         document.body.classList.add('leaving');
         setTimeout(() => { window.location.href = href; }, 260);

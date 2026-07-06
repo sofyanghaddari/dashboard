@@ -223,6 +223,70 @@ body.scrolled .site-header {
 .site-nav a.active { color: var(--olive); border-bottom-color: var(--gold); }
 .nav-cta { margin-left: 6px; }
 
+/* ---------- Uitklap-submenu in de hoofdnav ----------
+   Menu-items met onderwerpen (Product/Zakelijk/Over ons) tonen een dropdown zodat een
+   klant direct naar de juiste sectie klikt. Desktop: zwevend paneel op hover/klik;
+   mobiel: inklapbaar accordeon in het volscherm-menu. */
+.nav-item { position: relative; display: flex; align-items: center; gap: 2px; }
+.nav-item > a { white-space: nowrap; }
+.nav-sub-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; padding: 0;
+  background: none; border: 0; cursor: pointer;
+  color: var(--ink-faint);
+  transition: color .25s var(--ease);
+}
+.nav-sub-toggle:hover { color: var(--ink); }
+.nav-item > a.active ~ .nav-sub-toggle { color: var(--olive); }
+.nav-caret { width: 16px; height: 16px; transition: transform .25s var(--ease); }
+.nav-item.sub-open .nav-caret { transform: rotate(180deg); }
+.nav-sub { display: flex; flex-direction: column; }
+.nav-sub a { border-bottom: 0 !important; white-space: nowrap; }
+.nav-sub a::after { display: none !important; } /* geen onderstreep-animatie in het paneel */
+
+/* Sectie-ankers vrijhouden van de sticky header bij een sprong */
+section[id] { scroll-margin-top: 96px; }
+
+/* Doelsectie licht kort op na een klik/deel-link */
+.anchor-flash { animation: anchorFlash 1.5s var(--ease); }
+@keyframes anchorFlash {
+  0%, 100% { background-color: transparent; }
+  18%, 42% { background-color: rgba(201,162,39,.10); }
+}
+
+@media (min-width: 861px) {
+  .nav-sub {
+    position: absolute; top: calc(100% + 14px); left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    min-width: 216px; padding: 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 0 20px 44px rgba(30,30,28,.16);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .22s var(--ease), transform .22s var(--ease), visibility .22s;
+    z-index: 60;
+  }
+  /* onzichtbare hover-brug tussen link en paneel (muis mag ertussen bewegen) */
+  .nav-item.has-sub::after {
+    content: ''; position: absolute; top: 100%; left: -10px; right: -10px; height: 16px;
+  }
+  .nav-item.has-sub:hover .nav-sub,
+  .nav-item.has-sub:focus-within .nav-sub,
+  .nav-item.sub-open .nav-sub {
+    opacity: 1; visibility: visible; pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+  .nav-item.has-sub:hover .nav-caret,
+  .nav-item.has-sub:focus-within .nav-caret { transform: rotate(180deg); }
+  .nav-sub a {
+    display: block; padding: 9px 12px; border-radius: 9px;
+    font-size: .88rem; font-weight: 500; color: var(--ink-soft);
+    transition: background .2s var(--ease), color .2s var(--ease);
+  }
+  .nav-sub a:hover { background: var(--bg-tint); color: var(--olive); }
+}
+
 .nav-toggle {
   display: none;
   flex-direction: column;
@@ -300,6 +364,32 @@ body.nav-open .nav-toggle span:last-child { transform: translateY(-4px) rotate(-
     border-radius: 0 50% 50% 50%; /* oliedruppel-marker */
   }
   .nav-cta { margin: 26px 0 0; text-align: center; font-size: 1rem; padding: 1em 1.6em; }
+
+  /* Uitklap-submenu als accordeon in het volscherm-menu */
+  .nav-item { flex-wrap: wrap; width: 100%; border-bottom: 1px solid var(--line); }
+  .site-nav .nav-item > a { flex: 1 1 auto; width: auto !important; border-bottom: 0 !important; }
+  .nav-sub-toggle { width: 52px; align-self: stretch; color: var(--ink); }
+  .nav-caret { width: 24px; height: 24px; }
+  .nav-sub {
+    flex-basis: 100%; width: 100%;
+    max-height: 0; overflow: hidden;
+    transition: max-height .32s var(--ease);
+  }
+  .nav-item.sub-open .nav-sub { max-height: 420px; }
+  .site-nav .nav-sub a {
+    font-family: var(--serif);
+    font-size: 1.14rem !important;
+    color: var(--ink-soft) !important;
+    padding: 12px 2px 12px 22px !important;
+    width: 100%;
+    position: relative;
+  }
+  .nav-sub a + a { border-top: 1px solid var(--line); }
+  .nav-sub a::before {
+    content: ''; position: absolute; left: 4px; top: 50%;
+    width: 5px; height: 5px; transform: translateY(-50%) rotate(45deg);
+    background: var(--gold); border-radius: 0 50% 50% 50%; /* oliedruppel-marker */
+  }
 }
 @keyframes menuIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -1830,4 +1920,7 @@ body.nav-open .site-header { transform: none !important; }
   .has-lightbox:hover img.imgok { transform: none; }
   .lightbox, .lightbox img { transition: none; }
   .faq-item summary::after { transition: none; }
+  /* Uitklap-submenu: open/dicht zonder animatie, ankersprong zonder oplichten */
+  .nav-sub, .nav-caret { transition: none; }
+  .anchor-flash { animation: none; }
 }

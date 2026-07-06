@@ -45,13 +45,36 @@ window.AJAR_CONTENT = {
     note: "Familiebedrijf, opgericht begin jaren '90."
   },
 
-  /* ---------- Navigatie ---------- */
+  /* ---------- Navigatie ----------
+     `children` = uitklap-submenu onder een menu-item. Elke sub-link springt naar een
+     sectie op de bijbehorende pagina (het `#id` moet overeenkomen met de `id=""` die
+     main.js op die sectie zet — zie de renderfuncties). Zo kan een zakelijke klant
+     meteen naar het juiste onderwerp klikken i.p.v. de hele pagina door te lezen.
+     LET OP bij wijzigen: pas je een anchor hier aan, pas dan óók de sectie-id in main.js aan. */
   nav: [
     { id: 'home',     label: 'Home',              href: 'index.html' },
-    { id: 'over-ons', label: 'Over ons',          href: 'over-ons.html' },
-    { id: 'product',  label: 'Product',           href: 'product.html' },
+    { id: 'over-ons', label: 'Over ons',          href: 'over-ons.html', children: [
+      { label: 'Ons verhaal',          href: 'over-ons.html#verhaal' },
+      { label: 'Kwaliteit & ISO',      href: 'over-ons.html#kwaliteit-iso' },
+      { label: 'Onze familie',         href: 'over-ons.html#familie' },
+      { label: 'Importeur in Nederland', href: 'over-ons.html#importeur' },
+      { label: 'Tijdlijn',             href: 'over-ons.html#tijdlijn' }
+    ] },
+    { id: 'product',  label: 'Product',           href: 'product.html', children: [
+      { label: 'Specificaties',        href: 'product.html#specs' },
+      { label: 'De olijf',             href: 'product.html#de-olijf' },
+      { label: 'Kwaliteit & cijfers',  href: 'product.html#kwaliteit' },
+      { label: 'Van boom tot fles',    href: 'product.html#proces' },
+      { label: 'Certificering',        href: 'product.html#certificering' }
+    ] },
     { id: 'kennis',   label: 'Kennis',            href: 'kennis.html' },
-    { id: 'zakelijk', label: 'Zakelijke klanten', href: 'zakelijk.html' },
+    { id: 'zakelijk', label: 'Zakelijke klanten', href: 'zakelijk.html', children: [
+      { label: 'Voor wie',             href: 'zakelijk.html#voor-wie' },
+      { label: 'Hoe het werkt',        href: 'zakelijk.html#hoe-het-werkt' },
+      { label: 'Aanbod & prijs',       href: 'zakelijk.html#aanbod' },
+      { label: 'Documentatie',         href: 'zakelijk.html#documentatie' },
+      { label: 'Veelgestelde vragen',  href: 'zakelijk.html#faq' }
+    ] },
     { id: 'contact',  label: 'Contact',           href: 'contact.html' }
   ],
   ctaLabel: 'Offerte aanvragen',
@@ -163,6 +186,7 @@ window.AJAR_CONTENT = {
     },
     blocks: [
       {
+        anchor: 'verhaal',
         title: 'Een familiebedrijf met diepe wortels',
         /* v3 (verbeterronde): getrimd naar 2 zinnen (leesbaarheid) + 1 nieuwe zin over het bredere
            assortiment van de fabriek, als bewijs van schaal/ervaring — bewust geen productgrid of
@@ -178,11 +202,13 @@ window.AJAR_CONTENT = {
         image: 'fabriek-taourirt.jpg'
       },
       {
+        anchor: 'kwaliteit-iso',
         title: 'Kwaliteit die je kunt controleren',
         text: 'De productie is gecertificeerd volgens ISO 22000, uitgegeven door SGS — een internationale norm voor voedselveiligheidsmanagement. Voor u als inkoper betekent dat: gedocumenteerde processen, traceerbaarheid per partij en een producent die audits gewend is.',
         image: ''
       },
       {
+        anchor: 'importeur',
         title: 'De eerste officiële importeur in Nederland',
         text: 'AJAR was tot nu toe niet officieel verkrijgbaar in Nederland. Als familie van de oprichters brengen wij de olie nu rechtstreeks naar de Nederlandse markt — met de importeursvermelding, documentatie en korte lijnen die daarbij horen. Geen tussenhandel, wél één aanspreekpunt in Amsterdam.',
         /* overons-08.jpg (echte AJAR-foto) verhuisd hierheen — blocks[0] gebruikt de nieuwe
