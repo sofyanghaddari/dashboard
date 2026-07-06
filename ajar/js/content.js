@@ -65,13 +65,16 @@ window.AJAR_CONTENT = {
       { label: 'De olijf',             href: 'product.html#de-olijf' },
       { label: 'Kwaliteit & cijfers',  href: 'product.html#kwaliteit' },
       { label: 'Van boom tot fles',    href: 'product.html#proces' },
-      { label: 'Certificering',        href: 'product.html#certificering' }
+      { label: 'Certificering',        href: 'product.html#certificering' },
+      { label: 'Herkomst',             href: 'product.html#herkomst' }
     ] },
     { id: 'kennis',   label: 'Kennis',            href: 'kennis.html' },
     { id: 'zakelijk', label: 'Zakelijke klanten', href: 'zakelijk.html', children: [
       { label: 'Voor wie',             href: 'zakelijk.html#voor-wie' },
       { label: 'Hoe het werkt',        href: 'zakelijk.html#hoe-het-werkt' },
       { label: 'Aanbod & prijs',       href: 'zakelijk.html#aanbod' },
+      { label: 'Zo bestelt u',         href: 'zakelijk.html#bestellen' },
+      { label: 'Inkoopdossier',        href: 'zakelijk.html#dossier' },
       { label: 'Documentatie',         href: 'zakelijk.html#documentatie' },
       { label: 'Veelgestelde vragen',  href: 'zakelijk.html#faq' }
     ] },
@@ -363,6 +366,21 @@ window.AJAR_CONTENT = {
         }
       ]
     },
+    /* Herkomst-/traceerkaart — "van déze boomgaard naar uw zaak". Geanimeerde route
+       Debdou/Taourirt (MA) → Amsterdam (NL). Abstracte kaart, geen exacte cartografie. */
+    origin: {
+      kicker: 'Herkomst',
+      title: 'Van Debdou naar uw zaak',
+      text: 'Eén korte, controleerbare keten: geoogst en koud geperst in de eigen fabriek in Taourirt, gebotteld aan de bron, en rechtstreeks geïmporteerd naar Amsterdam.',
+      from: { label: 'Taourirt · Debdou', sub: 'Noordoost-Marokko' },
+      to: { label: 'Amsterdam', sub: 'Nederland' },
+      steps: [
+        { title: 'Oogst & persing', text: 'Debdou-regio — eigen boomgaarden, koud geperst in Taourirt.' },
+        { title: 'Botteling', text: 'Aan de bron gebotteld onder ISO 22000-condities.' },
+        { title: 'Import', text: 'Rechtstreeks naar Amsterdam, met importdocumentatie.' },
+        { title: 'Levering', text: 'Vanuit Amsterdam bij u in de zaak.' }
+      ]
+    },
     cta: {
       title: 'Zelf proeven?',
       text: 'Vraag een gratis sample aan en beoordeel de olie in uw eigen keuken of zaak.',
@@ -449,6 +467,40 @@ window.AJAR_CONTENT = {
         { title: 'Bijbestellen via één appje', text: 'Geen bestelportaal, geen minimumdrempels vol kleine letters — één WhatsApp-bericht en de volgende doos komt eraan.' },
         { title: 'AJAR als relatiegeschenk', text: 'Een fles met een echt verhaal, voor eindejaarspakketten, jubilea of een bedankje aan vaste relaties. We denken graag mee over aantallen en presentatie.', button: 'Vraag naar de mogelijkheden', buttonHref: 'contact.html?aanvraag=relatiegeschenk', ga: 'gift_cta_click' }
       ]
+    },
+    /* Zo bestelt u — concrete voorwaarden op een rij (levertijd, minimale afname,
+       betaling), zodat een inkoper niet door de FAQ hoeft te spitten. */
+    ordering: {
+      kicker: 'Zo bestelt u',
+      title: 'Van bestelling tot levering',
+      rows: [
+        { label: 'Minimale afname', value: 'Vanaf één doos — ideaal om mee te starten', todo: false },
+        { label: 'Bestellen', value: 'Per e-mail of één WhatsApp-bericht; geen bestelportaal', todo: false },
+        { label: 'Levertijd', value: 'Concrete leverdatum bij bestelling afgesproken', todo: false },
+        { label: 'Levering', value: 'Per doos à 12 × 500 ml (definitieve doosinhoud volgt)', todo: true },
+        { label: 'Betaling', value: 'Op factuur; voorwaarden vooraf afgesproken, altijd op de offerte', todo: false },
+        { label: 'Prijs', value: 'Op aanvraag — volume-afhankelijk, in één kort gesprek helder', todo: false }
+      ],
+      note: 'Vragen over een specifiek volume of leverritme? Zet het bij uw aanvraag, dan stemmen we het meteen op u af.'
+    },
+    /* Inkoopdossier — checklist met documenten/certificaten en hun status. Toont wat er is
+       (ISO 22000) en wat volgt (EUR.1, allergenen/HACCP-blad). "available:false" = nog niet
+       beschikbaar → nette "op aanvraag"-status i.p.v. een verzonnen document. */
+    dossier: {
+      kicker: 'Voor uw inkoopdossier',
+      title: 'Documenten & certificaten',
+      intro: 'Alles wat uw inkoop of HACCP-dossier nodig heeft, op één plek. Wat nu beschikbaar is, kunt u direct opvragen; de rest wordt aangevuld zodra het binnen is.',
+      items: [
+        { label: 'ISO 22000-certificaat (SGS)', note: 'Voedselveiligheidsmanagement, extern getoetst', available: true },
+        { label: 'Product spec-sheet (PDF)', note: 'Alle technische productinformatie op één A4', available: true },
+        { label: 'EUR.1 / oorsprongsdocument', note: 'Preferentiële oorsprong EU–Marokko', available: false },
+        { label: 'Allergenen- & HACCP-blad', note: 'Wordt aangevuld', available: false },
+        { label: 'Houdbaarheid & THT per partij', note: 'Volgt per partij op de fles', available: false }
+      ],
+      requestLabel: 'Certificaat opvragen',
+      requestPrefill: 'Hallo, kunt u mij het ISO 22000-certificaat en het spec-sheet van AJAR toesturen voor mijn inkoopdossier?',
+      availableTag: 'Beschikbaar',
+      pendingTag: 'Op aanvraag / volgt'
     },
     /* Spec-sheet (vrij downloadbaar) + bedrijfspresentatie (achter mini-formulier). */
     downloads: {
@@ -547,6 +599,18 @@ window.AJAR_CONTENT = {
       companyLabel: 'Bedrijfsnaam',
       emailLabel: 'E-mailadres',
       phoneLabel: 'Telefoonnummer',
+      /* Type zaak — helpt de aanvraag meteen te kwalificeren (feature: slimmer offerteformulier) */
+      typeLabel: 'Type zaak',
+      typeOptions: [
+        { value: '', label: 'Kies…' },
+        { value: 'restaurant', label: 'Restaurant' },
+        { value: 'cafe-bar', label: 'Café / bar' },
+        { value: 'cateraar', label: 'Cateraar' },
+        { value: 'delicatessen', label: 'Delicatessenzaak' },
+        { value: 'speciaalzaak', label: 'Speciaal-/verszaak' },
+        { value: 'retail', label: 'Retail / winkel' },
+        { value: 'anders', label: 'Anders' }
+      ],
       volumeLabel: 'Gewenst volume',
       volumeOptions: [
         { value: 'sample', label: 'Gratis sample / proefbestelling' },
@@ -554,6 +618,24 @@ window.AJAR_CONTENT = {
         { value: 'horeca-bulk', label: 'Horeca bulk' },
         { value: 'relatiegeschenk', label: 'Relatiegeschenk' }
       ],
+      /* Gewenste leverfrequentie */
+      frequencyLabel: 'Gewenste leverfrequentie',
+      frequencyOptions: [
+        { value: '', label: 'Kies…' },
+        { value: 'eenmalig', label: 'Eenmalig / uitproberen' },
+        { value: 'wekelijks', label: 'Wekelijks' },
+        { value: 'maandelijks', label: 'Maandelijks' },
+        { value: 'op-afroep', label: 'Op afroep' }
+      ],
+      /* Voorkeur voor contactkanaal + gewenst belmoment (feature: belafspraak/terugbeloptie) */
+      channelLabel: 'Hoe kunnen we u het best bereiken?',
+      channelOptions: [
+        { value: 'email', label: 'E-mail' },
+        { value: 'whatsapp', label: 'WhatsApp' },
+        { value: 'bellen', label: 'Bel me terug' }
+      ],
+      callTimeLabel: 'Schikt een moment? (optioneel)',
+      callTimePlaceholder: 'Bijv. doordeweeks na 15:00',
       messageLabel: 'Bericht',
       messagePlaceholder: 'Vertel kort iets over uw zaak en waar u de olie voor wilt gebruiken…',
       submit: 'Verstuur aanvraag',
@@ -571,7 +653,26 @@ window.AJAR_CONTENT = {
       whatsappPrefill: 'Hallo, ik heb interesse in AJAR olijfolie voor mijn zaak.',
       /* v7: nummer óók leesbaar tonen (niet iedere inkoper gebruikt WhatsApp) */
       phoneDisplay: '+31 6 40 29 35 67',
-      phoneNote: 'Bellen kan ook:'
+      phoneNote: 'Bellen kan ook:',
+      /* WhatsApp per onderwerp — voorgevulde berichten zodat de klant meteen ter zake komt */
+      topicsTitle: 'Direct appen over…',
+      topics: [
+        { label: 'Offerte horeca',   prefill: 'Hallo, ik wil graag een offerte voor AJAR olijfolie voor mijn horecazaak.', ga: 'wa_topic_offerte' },
+        { label: 'Gratis sample',    prefill: 'Hallo, ik wil graag een gratis sample van AJAR olijfolie aanvragen voor mijn zaak.', ga: 'wa_topic_sample' },
+        { label: 'Proeverij plannen', prefill: 'Hallo, ik wil graag een proeverij van AJAR olijfolie plannen in mijn zaak.', ga: 'wa_topic_proeverij' },
+        { label: 'Relatiegeschenk',  prefill: 'Hallo, ik heb interesse in AJAR olijfolie als relatiegeschenk. Kunt u me meer vertellen?', ga: 'wa_topic_gift' }
+      ]
+    },
+    /* Bewaar/deel — vCard (gaat in Contacten op iPhone/Android), Web Share en QR-code.
+       (Een echte Apple Wallet-pass vereist Apple-certificaten + ondertekening — niet mogelijk
+       op een statische site; de vCard is het praktische equivalent dat overal werkt.) */
+    save: {
+      title: 'Bewaar onze gegevens',
+      text: 'Voeg AJAR toe aan uw contacten of deel de pagina met een collega-inkoper.',
+      vcardLabel: 'Bewaar contact',
+      shareLabel: 'Deel',
+      shareText: 'AJAR — extra vierge olijfolie uit Marokko, rechtstreeks voor de Nederlandse horeca en speciaalzaak.',
+      qrLabel: 'Scan om deze pagina te openen'
     }
   },
 
