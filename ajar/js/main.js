@@ -87,6 +87,24 @@
   const NAV_CARET = '<svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
     'stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 
+  /* Taalkeuze (NL/EN/FR) — leest de globals uit i18n.js; niets tonen bij < 2 talen */
+  function langSwitch() {
+    const langs = window.AJAR_LANGS || [];
+    const cur = window.AJAR_LANG || 'nl';
+    if (langs.length < 2) return '';
+    const curL = langs.find(l => l.code === cur) || langs[0];
+    const globe = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.7 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.7-3.8-9S9.5 5.5 12 3z"/></svg>';
+    return '<div class="lang-switch">' +
+      '<button type="button" class="lang-cur" aria-expanded="false" aria-haspopup="true" aria-label="Taal / language / langue">' +
+        globe + '<span class="lang-code">' + esc(curL.short) + '</span>' + NAV_CARET +
+      '</button>' +
+      '<div class="lang-menu" role="menu">' + langs.map(l =>
+        '<button type="button" role="menuitemradio" aria-checked="' + (l.code === cur ? 'true' : 'false') + '"' +
+        (l.code === cur ? ' class="on"' : '') + ' data-lang="' + esc(l.code) + '">' + esc(l.label) + '</button>').join('') +
+      '</div>' +
+    '</div>';
+  }
+
   function renderHeader() {
     const links = C.nav.map(n => {
       const activeAttr = n.id === page ? ' class="active" aria-current="page"' : '';
@@ -133,6 +151,7 @@
           (page === 'sample'
             ? '<a class="btn btn-primary nav-cta" href="' + esc(C.ctaHref) + '" data-ga-event="offerte_cta_click">' + esc(C.ctaLabel) + '</a>'
             : '<a class="btn btn-primary nav-cta" href="' + esc(C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(C.sampleCtaLabel) + '</a>') +
+          langSwitch() +
         '</nav>' +
         '<button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">' +
           '<span></span><span></span>' +
@@ -185,6 +204,26 @@
     });
     /* Escape sluit een open dropdown */
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSubs(); });
+
+    /* Taalkeuze: menu open/dicht + taal wisselen (herlaadt de pagina in de gekozen taal) */
+    const langWrap = document.querySelector('.lang-switch');
+    if (langWrap) {
+      const langCur = langWrap.querySelector('.lang-cur');
+      langCur.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = langWrap.classList.toggle('open');
+        langCur.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      langWrap.querySelectorAll('[data-lang]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const code = btn.dataset.lang;
+          if (window.AJAR_SET_LANG && code !== (window.AJAR_LANG || 'nl')) window.AJAR_SET_LANG(code);
+          else langWrap.classList.remove('open');
+        });
+      });
+      document.addEventListener('click', (e) => { if (!e.target.closest('.lang-switch')) langWrap.classList.remove('open'); });
+    }
 
     const onScroll = () => document.body.classList.toggle('scrolled', window.scrollY > 8);
     window.addEventListener('scroll', onScroll, { passive: true });

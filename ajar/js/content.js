@@ -874,3 +874,7 @@ window.AJAR_CONTENT = {
     ]
   }
 };
+
+/* NL is de basistaal. js/content.en.js en js/content.fr.js overschrijven de teksten;
+   js/i18n.js kiest de taal en valt terug op NL voor ontbrekende sleutels. */
+window.AJAR_CONTENT_NL = window.AJAR_CONTENT;

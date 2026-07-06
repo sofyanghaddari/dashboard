@@ -24,6 +24,18 @@ De lange pagina's (Over ons, Product, Zakelijke klanten) hebben een dropdown in 
 
 Overige TODO's zijn in `content.js` gemarkeerd met `todo: true` (FAQ-antwoorden, doosinhoud, THT, kwaliteitscijfers, tijdlijn-jaartallen) — op de site verschijnen ze cursief goud als "volgt".
 
+## Meertalig (NL / EN / FR)
+
+De site heeft een taalschakelaar (globe rechtsboven, en onderin het mobiele menu). **Nederlands is de basistaal** in `js/content.js`; de vertalingen staan in **`js/content.en.js`** en **`js/content.fr.js`**, die dezelfde structuur/sleutels hebben en de teksten overschrijven. `js/i18n.js` kiest de taal (opgeslagen keuze in `localStorage`, standaard NL) en **valt per ontbrekende sleutel terug op NL**.
+
+- **Nieuwe of gewijzigde tekst?** Pas 'm aan in `content.js` (NL) en werk dezelfde sleutel bij in `content.en.js` + `content.fr.js`. Vergeet je een vertaling, dan toont de site voor dat stukje gewoon het Nederlands (geen kapotte pagina).
+- **Standaard NL** — er is bewust geen automatische browsertaal-detectie (een NL-klant met een Engelse browser blijft zo op Nederlands). Bezoekers kiezen zelf EN/FR.
+- **Let op (SEO):** dit is een client-side taalwissel op dezelfde URL. Voor volledige meertalige SEO (aparte URL's per taal + `hreflang`) is een grotere ingreep nodig; de vertalingen zijn nu vooral voor menselijke bezoekers (Engels-/Franstalige inkopers).
+
+## Bewaar/deel + QR-code
+
+De contactpagina heeft "Bewaar contact" (vCard `.vcf` → gaat in Contacten op iPhone/Android), "Deel" (Web Share, valt terug op link-kopiëren) en een **QR-code** (`assets/qr-site.svg`). De QR wijst naar de site-URL; bij een custom domein opnieuw genereren (zie de domein-sectie hieronder). Een echte **Apple Wallet-pass** kan niet op een statische site (vereist Apple-certificaten + ondertekening) — de vCard is het praktische equivalent.
+
 ## Foto's vervangen
 
 Zet JPG's met de juiste bestandsnaam in `assets/images/` — zie `assets/images/LEES-MIJ.txt` en `SHOTLIST.md`. Zolang een foto ontbreekt staat er een nette gradient-placeholder. Tip: max ± 300 KB per foto (1600px breed is genoeg); de site lazy-loadt alles automatisch.
@@ -71,7 +83,7 @@ Claude Code-sessie ("hergenereer de bedrijfspresentatie").
 2. Zet in die repo een `CNAME`-bestand met alléén het domein (bijv. `ajar-olijfolie.nl`).
 3. Bij de domein-registrar: A-records voor het apex-domein naar GitHub Pages: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`, en een CNAME-record voor `www` naar `sofyanghaddari.github.io`.
 4. In GitHub Settings → Pages: custom domain invullen + **Enforce HTTPS** aanvinken (kan pas na DNS-propagatie).
-5. Daarna bijwerken: `domain` in `content.js`, en per HTML-pagina de `og:url`/`og:image`-tags én de `<link rel="canonical">` in de head (alle pagina's), plus `sitemap.xml` en `robots.txt`.
+5. Daarna bijwerken: `domain` in `content.js`, en per HTML-pagina de `og:url`/`og:image`-tags én de `<link rel="canonical">` in de head (alle pagina's), plus `sitemap.xml` en `robots.txt`. Genereer ook de **QR-code opnieuw** (`assets/qr-site.svg`) zodat die naar het nieuwe domein wijst (bijv. met een `qrcode`-tool of vraag het in een Claude Code-sessie).
 
 Alle interne links zijn relatief, dus de site werkt ongewijzigd op beide domeinen.
 
