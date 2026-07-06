@@ -67,7 +67,7 @@ Claude Code-sessie ("hergenereer de bedrijfspresentatie").
 2. Zet in die repo een `CNAME`-bestand met alléén het domein (bijv. `ajar-olijfolie.nl`).
 3. Bij de domein-registrar: A-records voor het apex-domein naar GitHub Pages: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`, en een CNAME-record voor `www` naar `sofyanghaddari.github.io`.
 4. In GitHub Settings → Pages: custom domain invullen + **Enforce HTTPS** aanvinken (kan pas na DNS-propagatie).
-5. Daarna bijwerken: `domain` in `content.js`, de `og:url`/`og:image`-tags in de vijf HTML-heads, `sitemap.xml` en `robots.txt`.
+5. Daarna bijwerken: `domain` in `content.js`, en per HTML-pagina de `og:url`/`og:image`-tags én de `<link rel="canonical">` in de head (alle pagina's), plus `sitemap.xml` en `robots.txt`.
 
 Alle interne links zijn relatief, dus de site werkt ongewijzigd op beide domeinen.
 
