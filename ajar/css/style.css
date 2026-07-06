@@ -641,6 +641,31 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .footer-legal .todo-mark { color: var(--gold); }
 .footer-socials { margin-top: 10px; display: flex; gap: 14px; }
 .footer-socials a { display: inline; }
+/* Nieuwsbrief-inschrijving in de footer */
+.newsletter { margin-top: 22px; max-width: 34ch; }
+.newsletter-title { color: #fff; font-weight: 600; margin: 0 0 4px; }
+.newsletter-text { color: rgba(247,245,240,.7); font-size: .86rem; margin: 0 0 12px; }
+.newsletter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.newsletter-row input[type=email] {
+  flex: 1 1 150px;
+  min-width: 0;
+  font: inherit;
+  font-size: .9rem;
+  color: var(--ink);
+  background: rgba(247,245,240,.95);
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: .6em .8em;
+}
+.newsletter-row input[type=email]:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(184,147,74,.25);
+}
+.newsletter-row .btn { flex: 0 0 auto; padding: .6em 1.1em; }
+.newsletter .form-error { color: #F3C9A0; }
+.newsletter .form-success { color: rgba(247,245,240,.92); }
+.newsletter .ok-check circle, .newsletter .ok-check path { stroke: var(--gold); }
 .footer-bottom {
   display: flex;
   flex-wrap: wrap;

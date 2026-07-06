@@ -50,6 +50,7 @@ window.AJAR_CONTENT = {
     { id: 'home',     label: 'Home',              href: 'index.html' },
     { id: 'over-ons', label: 'Over ons',          href: 'over-ons.html' },
     { id: 'product',  label: 'Product',           href: 'product.html' },
+    { id: 'kennis',   label: 'Kennis',            href: 'kennis.html' },
     { id: 'zakelijk', label: 'Zakelijke klanten', href: 'zakelijk.html' },
     { id: 'contact',  label: 'Contact',           href: 'contact.html' }
   ],
@@ -543,6 +544,40 @@ window.AJAR_CONTENT = {
     }
   },
 
+  /* ---------- Kennis (kennisbank olijfolie) ----------
+     v6g: nieuwe pagina. Doel = autoriteit + SEO + koper-vertrouwen, ZONDER productclaims over
+     AJAR zelf. Alles hier is algemene, verifieerbare vakkennis over olijfolie (extra vierge,
+     zuurgraad, polyfenolen, bewaren, proeven, houdbaarheid, single-origin) — geen cijfers of
+     smaakclaims over de eigen olie (die staan/komen op Product). Vraag-vormige titels zodat ze
+     ook als FAQPage-JSON-LD kunnen dienen (rich results). Bewust compact gehouden (Soef houdt de
+     site graag strak): korte, scanbare antwoorden van 2-4 zinnen. */
+  knowledge: {
+    hero: {
+      kicker: 'Goed om te weten',
+      title: 'Olijfolie, in het kort uitgelegd',
+      sub: 'Wat maakt een olijfolie goed, en hoe herkent u dat als inkoper? De belangrijkste begrippen op een rij — algemene kennis, geen verkooppraat.'
+    },
+    intro: 'Extra vierge olijfolie is een natuurproduct met grote verschillen in kwaliteit. Deze begrippen helpen u te beoordelen wat u inkoopt — bij ons of bij een ander.',
+    items: [
+      { q: 'Wat betekent “extra vierge” precies?', a: 'Extra vierge is de hoogste kwaliteitsklasse: de olie is puur mechanisch uit de olijf gewonnen (geperst, niet met warmte of chemie geraffineerd) en voldoet aan strenge eisen voor geur, smaak en zuurgraad. Er mag geen enkel gebrek in de smaak zitten. Lagere klassen — “vierge”, “raffinaat” of simpelweg “olijfolie” — zijn bewerkt of van mindere kwaliteit.' },
+      { q: 'Wat zegt de zuurgraad?', a: 'De zuurgraad meet het percentage vrije vetzuren en is een graadmeter voor versheid en zorgvuldige verwerking. Hoe lager, hoe beter. Extra vierge zit per definitie onder 0,8%; goede oliën zitten daar vaak ruim onder. Een hoge zuurgraad wijst op overrijpe of beschadigde olijven, of op te lang wachten tussen oogst en persing.' },
+      { q: 'Wat zijn polyfenolen?', a: 'Polyfenolen zijn natuurlijke antioxidanten uit de olijf. Ze geven een olie de karakteristieke lichte bitterheid en peperige afdronk, dragen bij aan de houdbaarheid en worden in verband gebracht met gezondheidsvoordelen. Meer polyfenolen betekent doorgaans een vollere, robuustere olie.' },
+      { q: 'Wat betekent “koud geperst” en “eerste persing”?', a: 'Koud geperst betekent dat de olijven onder een lage temperatuur (onder 27 °C) worden verwerkt, zodat smaak, geur en inhoudsstoffen behouden blijven. “Eerste persing” houdt in dat de olie in één keer uit de vrucht wordt gewonnen, zonder de pulp opnieuw te bewerken. Beide zijn kwaliteitskenmerken die u op een goed etiket terugvindt.' },
+      { q: 'Waarom maakt single-origin uit?', a: 'Single-origin betekent dat de olie van één herkomst en bij voorkeur één olijfras komt, in plaats van een mengsel (blend) van oliën uit verschillende landen. Dat maakt de smaak constanter en de herkomst traceerbaar — u weet precies wat u schenkt. Veel supermarktolie is juist een anonieme blend uit wisselende bronnen.' },
+      { q: 'Hoe bewaart u olijfolie het best?', a: 'Koel, donker en goed afgesloten. Olijfolie is gevoelig voor licht, warmte en zuurstof: die versnellen de veroudering en tasten de smaak aan. Zet de fles niet naast het fornuis of in de zon, en sluit hem na gebruik goed. Zo behoudt de olie zijn smaak en gezonde stoffen het langst.' },
+      { q: 'Hoe lang is olijfolie houdbaar?', a: 'Extra vierge olijfolie is op zijn best in het jaar na de oogst en blijft daarna nog geruime tijd goed, mits juist bewaard. Anders dan wijn wordt olijfolie niet beter met de jaren — vers is beter. Kijk daarom naar het oogstjaar of de houdbaarheidsdatum op de fles, niet alleen naar “ten minste houdbaar tot”.' },
+      { q: 'Hoe proeft u olijfolie?', a: 'Professionele proevers letten op drie dingen: fruitigheid (de geur van verse olijven of gras), bitterheid en een peperige afdronk. Die laatste twee zijn geen gebrek maar juist een teken van verse, polyfenolrijke olie. Schenk een klein beetje in een glaasje, warm het met uw hand, ruik, en neem dan een slokje.' }
+    ],
+    cta: {
+      title: 'Zelf proeven zegt het meest',
+      text: 'Theorie is mooi, maar smaak beslist. Vraag een gratis sample aan en beoordeel de olie in uw eigen keuken.',
+      button: 'Gratis sample aanvragen',
+      buttonHref: 'sample.html',
+      secondary: 'Bekijk het product',
+      secondaryHref: 'product.html'
+    }
+  },
+
   /* ---------- Privacyverklaring ---------- */
   privacy: {
     hero: {
@@ -607,6 +642,20 @@ window.AJAR_CONTENT = {
       { label: 'Importeur', value: 'AJAR, Jephtastraat 28H, 1055 JV Amsterdam' }
     ],
     footer: 'Prijzen op aanvraag — volume-afhankelijk. Contact via WhatsApp: +31 6 40 29 35 67.'
+  },
+
+  /* ---------- Nieuwsbrief (footer-inschrijving) ----------
+     v6g: verzamelt e-mailadressen van geïnteresseerde zaken vóór de lancering. Gebruikt dezelfde
+     Formspree→mailto-fallback als de andere formulieren (submitLead) — zonder formspreeId opent
+     het een voorgevulde mail. `enabled: false` verbergt het blok volledig. */
+  newsletter: {
+    enabled: true,
+    title: 'Op de hoogte blijven?',
+    text: 'Laat uw e-mailadres achter — dan laten we het weten zodra AJAR leverbaar is.',
+    placeholder: 'Uw e-mailadres',
+    button: 'Inschrijven',
+    success: 'Bedankt — u hoort van ons zodra we van start gaan.',
+    emailSubject: 'Nieuwsbrief-inschrijving AJAR'
   },
 
   /* ---------- Footer ---------- */

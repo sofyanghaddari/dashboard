@@ -158,6 +158,7 @@
         '<div class="footer-col footer-brand">' +
           '<img src="assets/logo/ajar-header.svg" alt="' + esc(cfg.brandName) + '" class="footer-logo">' +
           '<p>' + esc(f.aboutLine) + '</p>' +
+          newsletterBlock() +
         '</div>' +
         '<div class="footer-col">' +
           '<h3>Navigatie</h3><nav class="footer-nav">' + navLinks +
@@ -183,6 +184,41 @@
         '<a href="privacy.html">' + esc(f.privacyLabel) + '</a>' +
         '<span>' + esc(cfg.origin) + '</span>' +
       '</div>';
+  }
+
+  /* Nieuwsbrief-inschrijving in de footer (zelfde Formspree→mailto-fallback als de formulieren). */
+  function newsletterBlock() {
+    const n = C.newsletter;
+    if (!n || !n.enabled) return '';
+    return '<form class="newsletter" id="newsletter-form" novalidate>' +
+      '<p class="newsletter-title">' + esc(n.title) + '</p>' +
+      '<p class="newsletter-text">' + esc(n.text) + '</p>' +
+      '<input type="text" name="_gotcha" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+      '<div class="newsletter-row">' +
+        '<input type="email" name="email" required aria-label="' + esc(n.placeholder) + '" placeholder="' + esc(n.placeholder) + '">' +
+        '<button type="submit" class="btn btn-primary" data-ga-event="newsletter_signup">' + esc(n.button) + '</button>' +
+      '</div>' +
+      '<p class="form-error" data-role="error" hidden></p>' +
+      '<p class="form-success" data-role="success" hidden></p>' +
+    '</form>';
+  }
+
+  function initNewsletter() {
+    const form = document.getElementById('newsletter-form');
+    if (!form) return;
+    const n = C.newsletter;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v = formVals(form);
+      if (!/.+@.+\..+/.test(v.email)) {
+        showMsg(form, 'error', 'Vul een geldig e-mailadres in.');
+        return;
+      }
+      v._subject = n.emailSubject;
+      const waText = n.emailSubject + '\n\nE-mail: ' + v.email;
+      const ok = await submitLead(form, v, waText, n.success);
+      if (ok) gaEvent('newsletter_signup', {});
+    });
   }
 
   /* ---------- Herbruikbare blokken ---------- */
@@ -772,6 +808,24 @@
       '</div></section>';
   }
 
+  /* Kennisbank: intro + accordion met algemene olijfolie-kennis (geen productclaims) + CTA. */
+  function renderKnowledge() {
+    const k = C.knowledge;
+    return pageHero(k.hero) +
+      (k.intro
+        ? '<section class="section"><div class="wrap wrap-narrow prose reveal"><p>' + esc(k.intro) + '</p></div></section>'
+        : '') +
+      '<section class="section section-tint" id="kennis"><div class="wrap wrap-narrow">' +
+        '<div class="faq reveal">' + k.items.map(it =>
+          '<details class="faq-item">' +
+            '<summary>' + esc(it.q) + '</summary>' +
+            '<div class="faq-body"><p>' + esc(it.a) + '</p></div>' +
+          '</details>').join('') +
+        '</div>' +
+      '</div></section>' +
+      ctaBand(k.cta);
+  }
+
   function pageHero(hero, actions) {
     return '<section class="page-hero"><div class="wrap reveal">' +
       '<p class="kicker">' + esc(hero.kicker) + '</p>' +
@@ -1041,6 +1095,16 @@
       objs.push({
         '@context': 'https://schema.org', '@type': 'FAQPage',
         mainEntity: C.b2b.faq.items.map(f => ({
+          '@type': 'Question', name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a }
+        }))
+      });
+    }
+    /* FAQ-rich-result op de kennispagina (algemene olijfolie-kennis, vraag-vormig) */
+    if (page === 'kennis' && C.knowledge && C.knowledge.items && C.knowledge.items.length) {
+      objs.push({
+        '@context': 'https://schema.org', '@type': 'FAQPage',
+        mainEntity: C.knowledge.items.map(f => ({
           '@type': 'Question', name: f.q,
           acceptedAnswer: { '@type': 'Answer', text: f.a }
         }))
@@ -1447,7 +1511,7 @@
   const renderers = {
     home: renderHome, 'over-ons': renderAbout, product: renderProduct,
     zakelijk: renderB2b, contact: renderContact, privacy: renderPrivacy,
-    sample: renderSample
+    sample: renderSample, kennis: renderKnowledge
   };
 
   renderHeader();
@@ -1470,4 +1534,5 @@
   initAnchorFlash();
   initStackGallery();
   initTopbarRotate();
+  initNewsletter();
 })();

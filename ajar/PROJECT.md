@@ -78,6 +78,33 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v6g — Kennisbank-pagina + nieuwsbrief-inschrijving (5 juli 2026)
+
+Uit een verbeter-menu koos Soef "verder gaan" met de items die ik volledig zonder aangeleverde
+assets kon bouwen. Twee opgeleverd (het derde, per-pagina OG-afbeeldingen, bewust NIET gedaan —
+de OG-teksten zijn al per pagina uniek, alleen de deel-afbeelding is gedeeld, wat prima standaard-
+praktijk is; 7 bijna-identieke share-images maken was lage-waarde-werk).
+
+- **Nieuwe pagina Kennis** (`kennis.html`, `data-page="kennis"`, `renderKnowledge()` +
+  `C.knowledge` in content.js). Doel: autoriteit + SEO + koper-vertrouwen. 8 accordion-entries met
+  **algemene, verifieerbare olijfolie-vakkennis** (extra vierge, zuurgraad, polyfenolen, koud
+  geperst/eerste persing, single-origin, bewaren, houdbaarheid, proeven) — **GEEN productclaims
+  over AJAR zelf** (geen eigen cijfers/smaak; die horen op Product). Vraag-vormige titels →
+  hergebruikt de bestaande `.faq`-accordion + krijgt **FAQPage-JSON-LD** (rich results, zelfde
+  patroon als de zakelijk-FAQ). Compact gehouden (Soefs strak-houden-voorkeur): antwoorden 2-4
+  zinnen. Toegevoegd aan de hoofd-nav (nu 6 items — "Kennis" tussen Product en Zakelijke klanten),
+  aan de sitemap (prio 0.7) en met eigen OG-tags/`<title>`/description. Sluit af met een CTA
+  ("zelf proeven zegt het meest") naar sample + product.
+- **Nieuwsbrief-inschrijving** in de footer (`C.newsletter` + `newsletterBlock()`/`initNewsletter()`):
+  e-mailadres-veld onder de merkkolom, in élke footer. Gebruikt dezelfde `submitLead()`-fallback
+  als de formulieren (Formspree indien `formspreeId` gezet, anders voorgevulde mailto). Succes toont
+  hetzelfde getekende ✓. **Kanttekening voor Soef:** zonder `formspreeId` opent het een mailtje
+  i.p.v. de adressen ergens te verzamelen — de echte waarde komt zodra Formspree (of iets anders)
+  is ingesteld. `newsletter.enabled: false` verbergt het blok volledig.
+- Geverifieerd (headless, 390px + 1100px desktop): kennispagina rendert 8 entries, "Kennis" in top-
+  én footer-nav, FAQPage-JSON-LD aanwezig, nieuwsbrief verstuurt met ✓, alle 7 pagina's zonder
+  overflow/JS-fouten, desktop-nav met 6 items past netjes.
+
 ### v6f — Pending-claims (Fairtrade/Duurzaam/100% natuurlijk) alsnog toegevoegd (5 juli 2026)
 
 Na v6e wees ik Soef erop dat "Fairtrade"/"Duurzaam"/"100% natuurlijk" ongefundeerde claims zijn
@@ -299,7 +326,7 @@ op **Over ons**, precies zoals de opdracht voorschrijft: **ná** het vertrouwens
 
 ## 4. Wat is er gebouwd (v1, af)
 
-- **7 pagina's:** Home, Over ons, Product, Zakelijke klanten, Contact, Sample-landingspagina, Privacy.
+- **8 pagina's:** Home, Over ons, Product, Kennis (v6g), Zakelijke klanten, Contact, Sample-landingspagina, Privacy.
 - **Sample-landing (`sample.html`)** als QR-doel met UTM-per-kanaal + "tip een collega"-veld.
 - **Formulieren** (offerte/sample + presentatie-aanvraag) met honeypot, Formspree- of WhatsApp-fallback.
 - **B2B-inhoud:** hoe-werkt-het-stappen, FAQ (eerlijke antwoorden, geen dode "volgt"-placeholders meer),
