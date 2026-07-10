@@ -134,7 +134,10 @@ window.AJAR_CONTENT_FR = {
         { file: "ajar-magazijn-pallets.jpg", alt: "Entrepôt avec des produits AJAR emballés sur palettes" },
         { file: "ajar-tafelolijven-emmers.jpg", alt: "Olives de table, conditionnées chez ConservAjar SARL" },
         { file: "ajar-magazijn-conserven.jpg", alt: "Conserves emballées, prêtes à l’expédition" },
-        { file: "ajar-olijven-verpakt.jpg", alt: "Olives emballées avec l’étiquette AJAR" }
+        { file: "ajar-olijven-verpakt.jpg", alt: "Olives emballées avec l’étiquette AJAR" },
+        { file: "ajar-voorraad-blikken.jpg", alt: "Tours de palettes de boîtes AJAR sous le quai de chargement, avec chariot élévateur" },
+        { file: "ajar-olijven-voorraad.jpg", alt: "Seaux d’olives de table empilés en hauteur dans l’entrepôt" },
+        { file: "ajar-magazijn-tractor.jpg", alt: "Entrepôt extérieur avec des palettes de conserves et un tracteur" }
       ]
     },
     timeline: {

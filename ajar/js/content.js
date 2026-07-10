@@ -241,7 +241,7 @@ window.AJAR_CONTENT = {
         }
       ]
     },
-    /* Bewijs van schaal: 4 echte ajar.ma-foto's van het bredere assortiment (magazijn, tafelolijven,
+    /* Bewijs van schaal: 7 echte ajar.ma-foto's van het bredere assortiment (magazijn, tafelolijven,
        conserven) — bewust GEEN productgrid met namen/prijzen/aanbod-taal, alleen een korte kicker
        + stille foto's. Zelfde principe als de ene assortiment-zin hierboven: laat zien dat de fabriek
        op schaal werkt, zonder het als verkoopaanbod te presenteren (dat blijft olijfolie-only). */
@@ -252,7 +252,10 @@ window.AJAR_CONTENT = {
         { file: 'ajar-magazijn-pallets.jpg', alt: 'Magazijn met verpakte AJAR-producten op pallets' },
         { file: 'ajar-tafelolijven-emmers.jpg', alt: 'Tafelolijven, verpakt bij ConservAjar SARL' },
         { file: 'ajar-magazijn-conserven.jpg', alt: 'Verpakte conserven, klaar voor verzending' },
-        { file: 'ajar-olijven-verpakt.jpg', alt: 'Verpakte olijven met het AJAR-etiket' }
+        { file: 'ajar-olijven-verpakt.jpg', alt: 'Verpakte olijven met het AJAR-etiket' },
+        { file: 'ajar-voorraad-blikken.jpg', alt: 'Torens pallets met AJAR-blikken onder het laadperron, met heftruck' },
+        { file: 'ajar-olijven-voorraad.jpg', alt: 'Emmers tafelolijven, hoog opgestapeld in het magazijn' },
+        { file: 'ajar-magazijn-tractor.jpg', alt: 'Buitenmagazijn met pallets vol conserven en een tractor' }
       ]
     },
     /* Familie-tijdlijn — namen/jaartallen van de generaties volgen na overleg met de familie (augustus). */

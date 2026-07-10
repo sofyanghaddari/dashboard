@@ -134,7 +134,10 @@ window.AJAR_CONTENT_EN = {
         { file: 'ajar-magazijn-pallets.jpg', alt: 'Warehouse with packed AJAR products on pallets' },
         { file: 'ajar-tafelolijven-emmers.jpg', alt: 'Table olives, packed at ConservAjar SARL' },
         { file: 'ajar-magazijn-conserven.jpg', alt: 'Packed preserves, ready for shipping' },
-        { file: 'ajar-olijven-verpakt.jpg', alt: 'Packed olives with the AJAR label' }
+        { file: 'ajar-olijven-verpakt.jpg', alt: 'Packed olives with the AJAR label' },
+        { file: 'ajar-voorraad-blikken.jpg', alt: 'Towers of pallets with AJAR cans under the loading bay, with forklift' },
+        { file: 'ajar-olijven-voorraad.jpg', alt: 'Buckets of table olives stacked high in the warehouse' },
+        { file: 'ajar-magazijn-tractor.jpg', alt: 'Outdoor warehouse with pallets of preserves and a tractor' }
       ]
     },
     timeline: {

@@ -914,6 +914,10 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .stack-card[data-pos="1"] { transform: translate(11px, 9px) rotate(2deg); z-index: 3; }
 .stack-card[data-pos="2"] { transform: translate(-10px, 15px) rotate(-2.8deg); z-index: 2; }
 .stack-card[data-pos="3"] { transform: translate(4px, 21px) rotate(1.2deg); z-index: 1; }
+/* kaarten dieper in de stapel (5+ foto's): verstopt achter de onderste zichtbare kaart */
+.stack-card[data-pos="4"],
+.stack-card[data-pos="5"],
+.stack-card[data-pos="6"] { transform: translate(4px, 21px) rotate(1.2deg); z-index: 0; }
 /* bovenste kaart glijdt opzij weg vóór hij achteraan schuift */
 .stack-card.stack-leaving { transform: translateX(58%) rotate(7deg); opacity: 0; z-index: 5; }
 .stack-dots {
