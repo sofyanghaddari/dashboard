@@ -127,6 +127,14 @@ leverbaar is" (pre-launch-toon), maar de olie is er al, alleen de site wordt nog
 gepromoot. Nu een gewone "blijf op de hoogte"-tekst zonder leverbaarheids-belofte.
 `LANCERING-CHECKLIST.md` sectie C1/C7 bijgewerkt (aannames afgevinkt, beantwoorde vragen gemarkeerd).
 
+**v7-vervolg 2 — btw-nummer + Formspree-ID ingesteld (10 juli 2026, zelfde dag):**
+`config.btw = 'NL003042226B35'` (nieuw veld) en `config.formspreeId = 'mbdvnykk'` in content.js.
+Btw-nummer verschijnt nu naast KvK in het footer-legal-blok, de Contact-importeurskaart en de
+JSON-LD (`vatID`) — stond al langer in het dashboard zelf (Boekhouding → `ADMINS`), dus facturen
+waren al goed. Met een echte `formspreeId` posten alle 4 formulieren (offerte/sample/presentatie/
+nieuwsbrief) nu daadwerkelijk naar Formspree i.p.v. terug te vallen op mailto/WhatsApp — **nog te
+controleren door Soef: staat het juiste ontvanger-e-mailadres ingesteld op formspree.io.**
+
 ### v6g — Kennisbank-pagina + nieuwsbrief-inschrijving (5 juli 2026)
 
 Uit een verbeter-menu koos Soef "verder gaan" met de items die ik volledig zonder aangeleverde

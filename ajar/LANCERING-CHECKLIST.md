@@ -60,7 +60,10 @@
   o.a. "olijfolie van de eerste persing (extra vierge)", herkomst, netto-inhoud, THT, lotnummer,
   bewaaradvies, voedingswaardetabel én jouw naam/adres als importeur. (EU-verordening 1169/2011 +
   handelsnormen olijfolie.) Laat het definitieve etiket-ontwerp hierop checken.
-- [ ] **Btw-identificatienummer** doorgeven → zetten we in de footer + voorwaarden + facturen.
+- [x] ~~Btw-identificatienummer doorgeven~~ **Ontvangen en verwerkt (10 juli 2026): NL003042226B35**
+  — staat nu in de footer, op Contact en in de JSON-LD (`vatID`) van déze site. Stond al in het
+  dashboard (Boekhouding → `ADMINS`-object) sinds eerder — facturen tonen het dus al correct,
+  daar is niets veranderd.
 - [ ] **Check je KvK-uittreksel:** staat "AJAR" als handelsnaam geregistreerd onder KvK 77755170?
   Zo niet: handelsnaam toevoegen (kan online bij KvK, gratis).
 - [x] ~~Algemene voorwaarden nalopen op 3 aannames~~ **Bevestigd door Soef (10 juli 2026):**
@@ -104,8 +107,10 @@
 
 ### C5. Techniek & config (5 minuten werk per stuk)
 
-- [ ] **Formspree-ID** (`formspreeId` in content.js) — nu vallen formulieren terug op mailto/WhatsApp.
-  Zeker voor de **nieuwsbrief** is dit nodig: zonder Formspree worden adressen nergens verzameld.
+- [x] ~~Formspree-ID~~ **Ingesteld (10 juli 2026): `mbdvnykk`** — offerte-, sample-, presentatie-
+  en nieuwsbrief-formulier posten er nu echt naartoe i.p.v. terug te vallen op mailto/WhatsApp.
+  *Check bij Soef: staat het juiste e-mailadres ingesteld als ontvanger op formspree.io bij dit
+  formulier?*
 - [ ] **GA4-ID** (`gaId`) — nu geen statistieken en geen cookiebanner.
 - [ ] **Zakelijk e-mailadres** — nu jouw persoonlijke Gmail; een adres op eigen domein
   (bijv. info@ajar-olijfolie.nl) oogt professioneler bij inkopers. Staat op meerdere plekken:

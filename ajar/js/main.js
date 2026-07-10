@@ -182,7 +182,8 @@
         '<div class="footer-col">' +
           '<h3>' + esc(imp.label) + '</h3>' +
           '<p class="footer-legal">' + esc(imp.name) + '<br>' + esc(imp.address) + '<br>' + esc(imp.postalCity) + '<br>' + esc(imp.country) + '<br>' +
-            'KvK: ' + (cfg.kvk ? esc(cfg.kvk) : '<span class="todo-mark">volgt</span>') + '</p>' +
+            'KvK: ' + (cfg.kvk ? esc(cfg.kvk) : '<span class="todo-mark">volgt</span>') +
+            (cfg.btw ? '<br>Btw: ' + esc(cfg.btw) : '') + '</p>' +
           '<h3>' + esc(prod.label) + '</h3>' +
           '<p class="footer-legal">' + esc(prod.name) + '<br>' + esc(prod.city) + ', ' + esc(prod.country) + '</p>' +
         '</div>' +
@@ -730,7 +731,7 @@
             '<h3>' + esc(C.importer.label) + '</h3>' +
             '<p class="footer-legal">' + esc(C.importer.name) + '<br>' + esc(C.importer.address) + '<br>' +
               esc(C.importer.postalCity) + '<br>' + esc(C.importer.country) + '<br>' +
-              'KvK: ' + esc(cfg.kvk) + '</p>' +
+              'KvK: ' + esc(cfg.kvk) + (cfg.btw ? '<br>Btw: ' + esc(cfg.btw) : '') + '</p>' +
           '</div>' +
         '</aside>' +
 
@@ -1110,7 +1111,7 @@
       logo: cfg.domain + 'assets/logo/ajar-wordmark.svg',
       email: cfg.email || undefined,
       telephone: '+' + cfg.whatsappNumber,
-      vatID: undefined, /* btw-id volgt — invullen zodra bekend */
+      vatID: cfg.btw || undefined,
       taxID: cfg.kvk ? 'KvK ' + cfg.kvk : undefined,
       contactPoint: { '@type': 'ContactPoint', contactType: 'sales', telephone: '+' + cfg.whatsappNumber, email: cfg.email || undefined, availableLanguage: ['nl'] },
       address: { '@type': 'PostalAddress', streetAddress: C.importer.address, postalCode: '1055 JV', addressLocality: 'Amsterdam', addressCountry: 'NL' }

@@ -15,10 +15,11 @@ window.AJAR_CONTENT = {
     payoff: 'Extra vierge olijfolie, rechtstreeks uit Marokko.',
 
     gaId: '',                                 // TODO: GA4 measurement ID (bijv. 'G-XXXXXXXXXX') — leeg = GA uit, banner verborgen
-    formspreeId: '',                          // TODO (FORMSPREE_PLACEHOLDER): Formspree form-ID (bijv. 'xqkrgwyz') — leeg = formulier valt terug op WhatsApp
+    formspreeId: 'mbdvnykk',                  // Formspree form-ID — formulieren + nieuwsbrief posten hierheen (10 juli 2026)
     email: 'sofyanghaddari@gmail.com',        // zakelijk e-mailadres (voorlopig); formulieren mailen hierheen + zichtbaar in footer/contact
     whatsappNumber: '31640293567',            // internationaal formaat zonder + of spaties
     kvk: '77755170',                          // KvK-nummer
+    btw: 'NL003042226B35',                    // btw-identificatienummer
     domain: 'https://sofyanghaddari.github.io/dashboard/ajar/',  // later: custom domain (zie README.md)
 
     showPartners: false,                      // true zodra er echte verkooppunten/logo's zijn ("Verkrijgbaar bij")
