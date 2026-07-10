@@ -562,7 +562,7 @@ window.AJAR_CONTENT_EN = {
       { title: '1. Who is AJAR and what do these terms apply to?', body: 'AJAR is an importer of extra virgin olive oil, based at Jephtastraat 28H, 1055 JV Amsterdam, registered with the Dutch Chamber of Commerce under number 77755170. These terms apply to all quotes, orders and deliveries by AJAR. We supply business customers only (B2B), not consumers. Deviations from these terms only apply if we have agreed to them with you in writing (including by e-mail or WhatsApp). Any purchasing terms of the customer do not apply, unless we have explicitly accepted them in writing.' },
       { title: '2. Quotes and prices', body: 'All our quotes are without obligation and valid for 30 days, unless stated otherwise in the quote. Prices are in euros and exclude VAT; they are volume-dependent and set out per quote. Obvious mistakes or typos in a quote do not bind us — we will contact you for a corrected version.' },
       { title: '3. How does an order come about?', body: 'You order by accepting a quote, or by placing an order via e-mail or WhatsApp. The agreement is formed once AJAR confirms your order in writing. That confirmation states the volume, price, delivery date and payment arrangements — so you know exactly where you stand in advance.' },
-      { title: '4. Delivery', body: 'We agree a concrete delivery date with you for every order. Stated periods are indicative and not a strict deadline; should a delivery unexpectedly be delayed, we will let you know as soon as possible and agree a new date. Delivery takes place at the address you provide within the Netherlands, unless agreed otherwise. Risk in the products passes to you at the moment of delivery.' },
+      { title: '4. Delivery', body: 'We agree a concrete delivery date with you for every order. Stated periods are indicative and not a strict deadline; should a delivery unexpectedly be delayed, we will let you know as soon as possible and agree a new date. Delivery takes place at the address you provide within the Netherlands or Belgium, unless agreed otherwise. Risk in the products passes to you at the moment of delivery.' },
       { title: '5. Payment', body: 'You receive an invoice with every delivery. The payment term is stated on the quote and invoice; if nothing has been agreed, a term of 14 days after the invoice date applies. If payment remains outstanding after a reminder, we may charge the statutory commercial interest rate and reasonable collection costs, and suspend further deliveries until outstanding invoices are settled.' },
       { title: '6. Retention of title', body: 'Delivered products remain the property of AJAR until the corresponding invoice has been paid in full. Until then you may use or resell the products in the normal course of business, but not pledge them or give them as security.' },
       { title: '7. Quality, inspection and complaints', body: 'Please inspect the delivery on receipt. Report visible defects (damage, wrong quantities) within 48 hours of delivery; report other defects as soon as possible after discovery. If something is genuinely wrong, we will replace or credit the products concerned — we deal with this directly and without detours, you have one point of contact. Please note: olive oil is a natural product. Colour, aroma and taste may vary slightly per harvest; that is not a defect as long as the oil meets the extra virgin standard. Store the oil cool, dark and well sealed; the best-before date is on every bottle.' },
@@ -584,10 +584,10 @@ window.AJAR_CONTENT_EN = {
   newsletter: {
     enabled: true,
     title: 'Stay informed?',
-    text: 'Leave your e-mail address — we will let you know as soon as AJAR is available.',
+    text: 'Leave your e-mail address for news and updates about AJAR.',
     placeholder: 'Your e-mail address',
     button: 'Subscribe',
-    success: 'Thank you — you will hear from us as soon as we get started.',
+    success: 'Thank you — you will hear from us shortly.',
     privacyNote: 'Only for updates about AJAR — no spam, unsubscribe any time.',
     emailSubject: 'Newsletter sign-up AJAR'
   },
