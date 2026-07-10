@@ -4744,6 +4744,11 @@ label.subtask {
   flex-shrink: 0;
 }
 
+/* Snel invullen — plak klantgegevens */
+.bk-paste-box textarea { resize: vertical; min-height: 74px; font-family: inherit; line-height: 1.5; }
+.bk-paste-hint { font-size: .78rem; color: var(--text-dim); margin-top: 6px; min-height: 1em; }
+.bk-paste-hint.ok { color: var(--accent); font-weight: 600; }
+
 /* Amount row */
 .bk-amount-row {
   display: flex;
