@@ -105,8 +105,8 @@
 
 ### C5. Techniek & config (5 minuten werk per stuk)
 
-- [ ] **Formspree-ID** (`formspreeId` in content.js) — nu vallen formulieren terug op mailto/WhatsApp.
-  Zeker voor de **nieuwsbrief** is dit nodig: zonder Formspree worden adressen nergens verzameld.
+- [x] **Formspree-ID** (`formspreeId` in content.js) — ✅ ingevuld (10 juli 2026), alle vier
+  formulieren (offerte, sample, presentatie, nieuwsbrief) versturen nu echt i.p.v. mailto/WhatsApp.
 - [ ] **GA4-ID** (`gaId`) — nu geen statistieken en geen cookiebanner.
 - [ ] **Zakelijk e-mailadres** — nu jouw persoonlijke Gmail; een adres op eigen domein
   (bijv. info@ajar-olijfolie.nl) oogt professioneler bij inkopers. Staat op meerdere plekken:

@@ -359,7 +359,7 @@ window.AJAR_CONTENT_EN = {
       },
       presentation: {
         title: 'AJAR company presentation',
-        text: 'A more detailed presentation about the company, the family and the oil. Leave your details and you will receive the presentation as soon as it is available.',
+        text: 'A more detailed presentation about the company, the family and the oil. Leave your details and download the presentation right away.',
         nameLabel: 'Name',
         emailLabel: 'E-mail address',
         companyLabel: 'Company name',
@@ -485,6 +485,8 @@ window.AJAR_CONTENT_EN = {
       text: 'Send a WhatsApp message — that is the fastest route.',
       whatsappLabel: 'Open WhatsApp',
       whatsappPrefill: 'Hello, I am interested in AJAR olive oil for my business.',
+      phoneDisplay: '+31 6 40 29 35 67',
+      phoneNote: 'You can also call:',
       topicsTitle: 'Message us directly about…',
       topics: [
         { label: 'Hospitality quote', prefill: 'Hello, I would like a quote for AJAR olive oil for my hospitality business.', ga: 'wa_topic_offerte' },
@@ -536,13 +538,39 @@ window.AJAR_CONTENT_EN = {
     },
     updated: 'Last updated: July 2026',
     sections: [
-      { title: 'Who is responsible?', body: 'The controller for this website is AJAR (importer of AJAR olive oil), based at Jephtastraat 28H, 1055 JV Amsterdam. Contact is via WhatsApp (+31 6 40 29 35 67).' },
-      { title: 'Which data do we collect?', body: 'Two kinds. (1) Form data: when you request a sample, quote or presentation, we receive the details you fill in yourself — name, company name, e-mail address, phone number and your message. (2) Visitor statistics: only if you accept via the cookie notice do we use Google Analytics 4 to see anonymously how the site is used (pages visited, source of the visit). IP addresses are anonymised. If you decline, nothing is measured.' },
-      { title: 'What do we use that data for?', body: 'We use form data solely to answer your request and to follow up any business relationship. We use statistics to improve the site and to see which channels bring visitors. We do not sell or share your data with third parties for marketing.' },
-      { title: 'How long do we keep data?', body: 'We keep requests as long as needed for the contact and for a maximum of 2 years after the last contact, unless a customer relationship arises (then the statutory record-keeping periods apply). Analytics data is kept for a maximum of 14 months.' },
-      { title: 'Who processes data for us?', body: 'The contact form is technically processed by Formspree; statistics by Google (Google Analytics 4). Processor terms apply with these parties. If you send a WhatsApp message, WhatsApp’s terms apply.' },
-      { title: 'Your rights', body: 'You have the right to access, correct and delete your data, and you can object to processing. Send a message via WhatsApp for this. You can also lodge a complaint with the Dutch Data Protection Authority.' },
-      { title: 'Cookies', body: 'This site only places cookies for Google Analytics, and only after you have given consent via the cookie notice. Your choice is stored locally in your browser and you can always undo it by clearing the site data.' }
+      { title: 'Who is responsible?', body: 'The controller for this website is AJAR (importer of AJAR olive oil), based at Jephtastraat 28H, 1055 JV Amsterdam, registered with the Dutch Chamber of Commerce under number 77755170. Contact is via e-mail (sofyanghaddari@gmail.com) or WhatsApp (+31 6 40 29 35 67).' },
+      { title: 'Which data do we collect?', body: 'Three kinds. (1) Form data: when you request a sample, quote or presentation, we receive the details you fill in yourself — name, company name, e-mail address, phone number, delivery address and your message. (2) Newsletter: if you subscribe, we only keep your e-mail address. (3) Visitor statistics: only if you accept via the cookie notice do we use Google Analytics 4 to see anonymously how the site is used (pages visited, source of the visit). IP addresses are anonymised. If you decline, nothing is measured.' },
+      { title: 'What do we use that data for?', body: 'We use form data solely to answer your request and to follow up any business relationship. We use your newsletter address only to inform you about AJAR (such as product availability); you can unsubscribe at any time by letting us know via e-mail or WhatsApp. We use statistics to improve the site and to see which channels bring visitors. We never sell or share your data with third parties for marketing.' },
+      { title: 'How long do we keep data?', body: 'We keep requests as long as needed for the contact and for a maximum of 2 years after the last contact, unless a customer relationship arises (then the statutory record-keeping periods apply, such as the 7-year tax retention period for invoices). Newsletter addresses are kept until you unsubscribe. Analytics data is kept for a maximum of 14 months.' },
+      { title: 'Who processes data for us?', body: 'The forms are technically processed by Formspree; statistics by Google (Google Analytics 4, only after your consent). Processor terms apply with these parties. The website is hosted on GitHub Pages (GitHub, Inc.); as with any web server, the hosting provider may temporarily process technical log data such as IP addresses. Fonts and every other part of the site load from our own hosting — no data goes to external parties for that. If you send a WhatsApp message, WhatsApp’s terms apply.' },
+      { title: 'Your rights', body: 'You have the right to access, correct and delete your data, the right to data portability, and you can object to processing. Send a message via e-mail or WhatsApp for this — we respond as quickly as possible, within a month at the latest. You can also lodge a complaint with the Dutch Data Protection Authority (autoriteitpersoonsgegevens.nl).' },
+      { title: 'Cookies', body: 'This site only places cookies for Google Analytics, and only after you have given consent via the cookie notice. Your choice is stored locally in your browser. You can change your choice at any time via the "Cookie preferences" link at the bottom of the site, or by clearing your browser’s site data. Without consent, the site places no cookies at all.' },
+      { title: 'Security', body: 'The connection to this website is encrypted (HTTPS). Requests only reach the importer himself — there is no external sales team or call centre with access to your data.' }
+    ]
+  },
+
+  /* v7: nieuwe pagina Algemene voorwaarden — vertaald zodat EN/FR-bezoekers dezelfde
+     juridische informatie krijgen als de NL-basis. */
+  terms: {
+    hero: {
+      kicker: 'Terms',
+      title: 'Terms and conditions',
+      sub: 'The agreements that apply to business orders — in plain language.'
+    },
+    updated: 'Last updated: 10 July 2026 · version 1.0',
+    sections: [
+      { title: '1. Who is AJAR and what do these terms apply to?', body: 'AJAR is an importer of extra virgin olive oil, based at Jephtastraat 28H, 1055 JV Amsterdam, registered with the Dutch Chamber of Commerce under number 77755170. These terms apply to all quotes, orders and deliveries by AJAR. We supply business customers only (B2B), not consumers. Deviations from these terms only apply if we have agreed to them with you in writing (including by e-mail or WhatsApp). Any purchasing terms of the customer do not apply, unless we have explicitly accepted them in writing.' },
+      { title: '2. Quotes and prices', body: 'All our quotes are without obligation and valid for 30 days, unless stated otherwise in the quote. Prices are in euros and exclude VAT; they are volume-dependent and set out per quote. Obvious mistakes or typos in a quote do not bind us — we will contact you for a corrected version.' },
+      { title: '3. How does an order come about?', body: 'You order by accepting a quote, or by placing an order via e-mail or WhatsApp. The agreement is formed once AJAR confirms your order in writing. That confirmation states the volume, price, delivery date and payment arrangements — so you know exactly where you stand in advance.' },
+      { title: '4. Delivery', body: 'We agree a concrete delivery date with you for every order. Stated periods are indicative and not a strict deadline; should a delivery unexpectedly be delayed, we will let you know as soon as possible and agree a new date. Delivery takes place at the address you provide within the Netherlands, unless agreed otherwise. Risk in the products passes to you at the moment of delivery.' },
+      { title: '5. Payment', body: 'You receive an invoice with every delivery. The payment term is stated on the quote and invoice; if nothing has been agreed, a term of 14 days after the invoice date applies. If payment remains outstanding after a reminder, we may charge the statutory commercial interest rate and reasonable collection costs, and suspend further deliveries until outstanding invoices are settled.' },
+      { title: '6. Retention of title', body: 'Delivered products remain the property of AJAR until the corresponding invoice has been paid in full. Until then you may use or resell the products in the normal course of business, but not pledge them or give them as security.' },
+      { title: '7. Quality, inspection and complaints', body: 'Please inspect the delivery on receipt. Report visible defects (damage, wrong quantities) within 48 hours of delivery; report other defects as soon as possible after discovery. If something is genuinely wrong, we will replace or credit the products concerned — we deal with this directly and without detours, you have one point of contact. Please note: olive oil is a natural product. Colour, aroma and taste may vary slightly per harvest; that is not a defect as long as the oil meets the extra virgin standard. Store the oil cool, dark and well sealed; the best-before date is on every bottle.' },
+      { title: '8. Free samples', body: 'Samples are free of charge and do not obligate you to anything. No rights for future deliveries can be derived from a sample: the sample reflects the oil at that moment, and as a natural product a later batch may differ slightly within the extra virgin standard. Samples are available while stocks last, one per business.' },
+      { title: '9. Liability', body: 'Our liability per event is limited to the invoice amount of the delivery to which the damage relates. We are not liable for indirect damage, such as loss of turnover or consequential damage. These limitations do not apply in the event of intent or deliberate recklessness by AJAR, or where the law does not permit a limitation.' },
+      { title: '10. Force majeure', body: 'In the event of force majeure — circumstances beyond our control, such as crop failure, transport problems, import or export restrictions, or disruptions at the producer — we may suspend delivery. If the force majeure lasts longer than 60 days, both you and we may cancel the order free of charge for the part not yet delivered. Any amounts already paid for undelivered products will be refunded.' },
+      { title: '11. Applicable law and disputes', body: 'Dutch law applies to all agreements with AJAR; the Vienna Sales Convention (CISG) is excluded. If we cannot reach agreement together — which we will of course try first — the Amsterdam court has jurisdiction.' },
+      { title: '12. Changes', body: 'We may amend these terms. For orders already placed, the version in force at the time of your order continues to apply. The current version is always available on this page.' }
     ]
   },
 
@@ -560,11 +588,14 @@ window.AJAR_CONTENT_EN = {
     placeholder: 'Your e-mail address',
     button: 'Subscribe',
     success: 'Thank you — you will hear from us as soon as we get started.',
+    privacyNote: 'Only for updates about AJAR — no spam, unsubscribe any time.',
     emailSubject: 'Newsletter sign-up AJAR'
   },
 
   footer: {
     aboutLine: 'AJAR — extra virgin olive oil from Morocco. Directly imported for Dutch hospitality, delicatessens and retail.',
-    privacyLabel: 'Privacy statement'
+    privacyLabel: 'Privacy statement',
+    termsLabel: 'Terms and conditions',
+    cookiePrefsLabel: 'Cookie preferences'
   }
 };

@@ -359,7 +359,7 @@ window.AJAR_CONTENT_FR = {
       },
       presentation: {
         title: "Présentation de l’entreprise AJAR",
-        text: "Une présentation plus détaillée de l’entreprise, de la famille et de l’huile. Laissez vos coordonnées et vous recevrez la présentation dès qu’elle sera disponible.",
+        text: "Une présentation plus détaillée de l’entreprise, de la famille et de l’huile. Laissez vos coordonnées et téléchargez la présentation immédiatement.",
         nameLabel: "Nom",
         emailLabel: "Adresse e-mail",
         companyLabel: "Nom de l’entreprise",
@@ -485,6 +485,8 @@ window.AJAR_CONTENT_FR = {
       text: "Envoyez un message WhatsApp — c’est la voie la plus rapide.",
       whatsappLabel: "Ouvrir WhatsApp",
       whatsappPrefill: "Bonjour, je suis intéressé(e) par l’huile d’olive AJAR pour mon établissement.",
+      phoneDisplay: "+31 6 40 29 35 67",
+      phoneNote: "Vous pouvez aussi appeler :",
       topicsTitle: "Écrivez-nous directement à propos de…",
       topics: [
         { label: "Devis restauration", prefill: "Bonjour, je souhaiterais un devis pour l’huile d’olive AJAR pour mon établissement de restauration.", ga: "wa_topic_offerte" },
@@ -536,13 +538,39 @@ window.AJAR_CONTENT_FR = {
     },
     updated: "Dernière mise à jour : juillet 2026",
     sections: [
-      { title: "Qui est responsable ?", body: "Le responsable du traitement pour ce site est AJAR (importateur de l’huile d’olive AJAR), établi au Jephtastraat 28H, 1055 JV Amsterdam. Le contact se fait via WhatsApp (+31 6 40 29 35 67)." },
-      { title: "Quelles données collectons-nous ?", body: "Deux types. (1) Données de formulaire : lorsque vous demandez un échantillon, un devis ou une présentation, nous recevons les informations que vous saisissez vous-même — nom, nom de l’entreprise, adresse e-mail, numéro de téléphone et votre message. (2) Statistiques de visite : uniquement si vous l’acceptez via l’avis de cookies, nous utilisons Google Analytics 4 pour voir de façon anonyme comment le site est utilisé (pages visitées, provenance de la visite). Les adresses IP sont anonymisées. Si vous refusez, rien n’est mesuré." },
-      { title: "À quoi servent ces données ?", body: "Nous utilisons les données de formulaire uniquement pour répondre à votre demande et assurer le suivi d’une éventuelle relation commerciale. Les statistiques servent à améliorer le site et à voir quels canaux amènent des visiteurs. Nous ne vendons ni ne partageons vos données avec des tiers à des fins de marketing." },
-      { title: "Combien de temps conservons-nous les données ?", body: "Nous conservons les demandes le temps nécessaire au contact et au maximum 2 ans après le dernier contact, sauf si une relation client se noue (les délais légaux de conservation s’appliquent alors). Les données d’analyse sont conservées au maximum 14 mois." },
-      { title: "Qui traite des données pour nous ?", body: "Le formulaire de contact est traité techniquement par Formspree ; les statistiques par Google (Google Analytics 4). Des conditions de sous-traitance s’appliquent avec ces parties. Si vous envoyez un message WhatsApp, les conditions de WhatsApp s’appliquent." },
-      { title: "Vos droits", body: "Vous avez le droit d’accéder à vos données, de les corriger et de les supprimer, et vous pouvez vous opposer au traitement. Envoyez pour cela un message via WhatsApp. Vous pouvez également déposer une plainte auprès de l’autorité de protection des données compétente." },
-      { title: "Cookies", body: "Ce site ne place des cookies que pour Google Analytics, et uniquement après votre consentement via l’avis de cookies. Votre choix est stocké localement dans votre navigateur et vous pouvez toujours l’annuler en effaçant les données du site." }
+      { title: "Qui est responsable ?", body: "Le responsable du traitement pour ce site est AJAR (importateur de l’huile d’olive AJAR), établi au Jephtastraat 28H, 1055 JV Amsterdam, inscrit à la Chambre de commerce néerlandaise sous le numéro 77755170. Le contact se fait par e-mail (sofyanghaddari@gmail.com) ou WhatsApp (+31 6 40 29 35 67)." },
+      { title: "Quelles données collectons-nous ?", body: "Trois types. (1) Données de formulaire : lorsque vous demandez un échantillon, un devis ou une présentation, nous recevons les informations que vous saisissez vous-même — nom, nom de l’entreprise, adresse e-mail, numéro de téléphone, adresse de livraison et votre message. (2) Newsletter : si vous vous inscrivez, nous conservons uniquement votre adresse e-mail. (3) Statistiques de visite : uniquement si vous l’acceptez via l’avis de cookies, nous utilisons Google Analytics 4 pour voir de façon anonyme comment le site est utilisé (pages visitées, provenance de la visite). Les adresses IP sont anonymisées. Si vous refusez, rien n’est mesuré." },
+      { title: "À quoi servent ces données ?", body: "Nous utilisons les données de formulaire uniquement pour répondre à votre demande et assurer le suivi d’une éventuelle relation commerciale. Votre adresse newsletter sert uniquement à vous informer sur AJAR (comme la disponibilité du produit) ; vous pouvez vous désinscrire à tout moment en nous le signalant par e-mail ou WhatsApp. Les statistiques servent à améliorer le site et à voir quels canaux amènent des visiteurs. Nous ne vendons ni ne partageons jamais vos données avec des tiers à des fins de marketing." },
+      { title: "Combien de temps conservons-nous les données ?", body: "Nous conservons les demandes le temps nécessaire au contact et au maximum 2 ans après le dernier contact, sauf si une relation client se noue (les délais légaux de conservation s’appliquent alors, comme le délai fiscal de 7 ans pour les factures). Les adresses newsletter sont conservées jusqu’à la désinscription. Les données d’analyse sont conservées au maximum 14 mois." },
+      { title: "Qui traite des données pour nous ?", body: "Les formulaires sont traités techniquement par Formspree ; les statistiques par Google (Google Analytics 4, uniquement après votre consentement). Des conditions de sous-traitance s’appliquent avec ces parties. Le site est hébergé sur GitHub Pages (GitHub, Inc.) ; comme pour tout serveur web, l’hébergeur peut traiter temporairement des données techniques comme les adresses IP. Les polices de caractères et tous les autres éléments du site sont chargés depuis notre propre hébergement — aucune donnée ne part vers des tiers pour cela. Si vous envoyez un message WhatsApp, les conditions de WhatsApp s’appliquent." },
+      { title: "Vos droits", body: "Vous avez le droit d’accéder à vos données, de les corriger et de les supprimer, un droit à la portabilité de vos données, et vous pouvez vous opposer au traitement. Envoyez pour cela un message par e-mail ou WhatsApp — nous répondons aussi vite que possible, au plus tard dans un délai d’un mois. Vous pouvez également déposer une plainte auprès de l’autorité de protection des données compétente (autoriteitpersoonsgegevens.nl)." },
+      { title: "Cookies", body: "Ce site ne place des cookies que pour Google Analytics, et uniquement après votre consentement via l’avis de cookies. Votre choix est stocké localement dans votre navigateur. Vous pouvez modifier votre choix à tout moment via le lien « Préférences cookies » en bas du site, ou en effaçant les données du site dans votre navigateur. Sans consentement, le site ne place aucun cookie." },
+      { title: "Sécurité", body: "La connexion à ce site est chiffrée (HTTPS). Les demandes n’arrivent que chez l’importateur lui-même — il n’y a pas d’équipe commerciale externe ni de centre d’appels ayant accès à vos données." }
+    ]
+  },
+
+  /* v7 : nouvelle page Conditions générales — traduite pour que les visiteurs EN/FR reçoivent
+     les mêmes informations juridiques que la base NL. */
+  terms: {
+    hero: {
+      kicker: "Conditions",
+      title: "Conditions générales",
+      sub: "Les accords qui s’appliquent aux commandes professionnelles — en langage clair."
+    },
+    updated: "Dernière mise à jour : 10 juillet 2026 · version 1.0",
+    sections: [
+      { title: "1. Qui est AJAR et à quoi s’appliquent ces conditions ?", body: "AJAR est importateur d’huile d’olive extra vierge, établi au Jephtastraat 28H, 1055 JV Amsterdam, inscrit à la Chambre de commerce néerlandaise sous le numéro 77755170. Ces conditions s’appliquent à tous les devis, commandes et livraisons d’AJAR. Nous ne livrons qu’à des clients professionnels (B2B), pas aux consommateurs. Les dérogations à ces conditions ne s’appliquent que si nous les avons convenues avec vous par écrit (y compris par e-mail ou WhatsApp). D’éventuelles conditions d’achat du client ne s’appliquent pas, sauf si nous les avons expressément acceptées par écrit." },
+      { title: "2. Devis et prix", body: "Tous nos devis sont sans engagement et valables 30 jours, sauf indication contraire dans le devis. Les prix sont en euros et hors TVA ; ils dépendent du volume et sont fixés par devis. Les erreurs ou fautes de frappe manifestes dans un devis ne nous engagent pas — nous vous contacterons alors pour une version corrigée." },
+      { title: "3. Comment une commande est-elle conclue ?", body: "Vous commandez en acceptant un devis, ou en transmettant une commande par e-mail ou WhatsApp. Le contrat est conclu dès qu’AJAR confirme votre commande par écrit. Cette confirmation indique le volume, le prix, la date de livraison et les modalités de paiement — vous savez ainsi exactement à quoi vous attendre." },
+      { title: "4. Livraison", body: "Nous convenons d’une date de livraison concrète pour chaque commande. Les délais indiqués sont indicatifs et ne constituent pas un délai de rigueur ; si une livraison venait à prendre du retard, vous en seriez informé au plus vite et une nouvelle date serait convenue. La livraison a lieu à l’adresse que vous indiquez aux Pays-Bas, sauf accord contraire. Le risque des produits vous est transféré au moment de la livraison." },
+      { title: "5. Paiement", body: "Vous recevez une facture à chaque livraison. Le délai de paiement figure sur le devis et la facture ; à défaut d’accord, un délai de 14 jours après la date de facture s’applique. Si le paiement reste dû après un rappel, nous pouvons facturer les intérêts commerciaux légaux et des frais de recouvrement raisonnables, et suspendre les livraisons suivantes jusqu’au règlement des factures impayées." },
+      { title: "6. Réserve de propriété", body: "Les produits livrés restent la propriété d’AJAR jusqu’au paiement intégral de la facture correspondante. Jusque-là, vous pouvez utiliser ou revendre les produits dans le cadre normal de votre activité, mais pas les mettre en gage ni les donner en garantie." },
+      { title: "7. Qualité, contrôle et réclamations", body: "Contrôlez la livraison à réception. Signalez les défauts visibles (dommages, quantités erronées) dans les 48 heures suivant la livraison ; signalez les autres défauts dès que possible après leur découverte. En cas de problème réel, nous remplaçons ou créditons les produits concernés — nous en discutons directement et sans détour, vous avez un seul interlocuteur. Attention : l’huile d’olive est un produit naturel. La couleur, l’arôme et le goût peuvent légèrement varier d’une récolte à l’autre ; ce n’est pas un défaut tant que l’huile respecte la norme extra vierge. Conservez l’huile au frais, à l’abri de la lumière et bien fermée ; la date de conservation figure sur chaque bouteille." },
+      { title: "8. Échantillons gratuits", body: "Les échantillons sont gratuits et ne vous engagent à rien. Aucun droit pour des livraisons ultérieures ne peut être tiré d’un échantillon : celui-ci reflète l’huile du moment, et en tant que produit naturel, un lot ultérieur peut légèrement varier dans le cadre de la norme extra vierge. Les échantillons sont disponibles dans la limite des stocks, un par établissement." },
+      { title: "9. Responsabilité", body: "Notre responsabilité par événement est limitée au montant de la facture de la livraison concernée par le dommage. Nous ne sommes pas responsables des dommages indirects, tels que la perte de chiffre d’affaires ou les dommages consécutifs. Ces limitations ne s’appliquent pas en cas de dol ou de négligence grave délibérée d’AJAR, ni là où la loi n’autorise pas de limitation." },
+      { title: "10. Force majeure", body: "En cas de force majeure — circonstances hors de notre contrôle, telles que mauvaise récolte, problèmes de transport, restrictions d’import ou d’export, ou perturbations chez le producteur — nous pouvons suspendre la livraison. Si la force majeure dure plus de 60 jours, vous et nous pouvons annuler gratuitement la commande pour la partie non encore livrée. Les montants déjà payés pour des produits non livrés seront alors remboursés." },
+      { title: "11. Droit applicable et litiges", body: "Le droit néerlandais s’applique à tous les contrats avec AJAR ; la Convention de Vienne sur la vente internationale de marchandises (CVIM) est exclue. Si nous ne parvenons pas à nous entendre — ce que nous essaierons bien sûr en premier lieu — le tribunal d’Amsterdam est compétent." },
+      { title: "12. Modifications", body: "Nous pouvons modifier ces conditions. Pour les commandes en cours, la version en vigueur au moment de votre commande continue de s’appliquer. La version actuelle est toujours disponible sur cette page." }
     ]
   },
 
@@ -560,11 +588,14 @@ window.AJAR_CONTENT_FR = {
     placeholder: "Votre adresse e-mail",
     button: "S’inscrire",
     success: "Merci — vous aurez de nos nouvelles dès notre lancement.",
+    privacyNote: "Uniquement pour les actualités AJAR — pas de spam, désinscription possible à tout moment.",
     emailSubject: "Inscription newsletter AJAR"
   },
 
   footer: {
     aboutLine: "AJAR — huile d’olive extra vierge du Maroc. Importée en direct pour la restauration, les épiceries fines et le commerce de détail néerlandais.",
-    privacyLabel: "Déclaration de confidentialité"
+    privacyLabel: "Déclaration de confidentialité",
+    termsLabel: "Conditions générales",
+    cookiePrefsLabel: "Préférences cookies"
   }
 };

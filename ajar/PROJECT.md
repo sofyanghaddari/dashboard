@@ -78,6 +78,46 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v8 — Uitklapmenu, B2B-features, meertalig NL/EN/FR, Formspree live (10 juli 2026)
+
+Losse sessie op verzoek van Soef ("de pagina's zijn te lang, maak overzichtelijker" + "wat is er
+nog meer nuttig voor een zakelijke klant"), parallel aan v7 ontwikkeld op een feature-branch en
+achteraf samengevoegd (rebase, geen functionaliteit uit v7 verloren — zie hieronder).
+
+- **Uitklap-submenu's**: Over ons/Product/Zakelijke klanten krijgen een dropdown (`nav[].children`
+  in content.js) waarmee een klant direct naar een sectie springt i.p.v. de hele pagina te lezen.
+  Desktop hover-paneel, mobiel accordeon. Klik op dezelfde pagina = soepel scrollen + kort oplichten
+  (geen herlaad); vanaf een andere pagina = navigeren en op de sectie landen (`scroll-margin-top`).
+- **Herkomst-/traceerkaart** (Product): geanimeerde route Taourirt/Debdou → Amsterdam met een
+  reizende marker (SVG `getPointAtLength`, IntersectionObserver-gestuurd, reduced-motion-safe).
+- **"Zo bestelt u"** (Zakelijk): concrete voorwaarden op een rij (minimale afname, levertijd,
+  betaling, prijs) zodat een inkoper niet door de FAQ hoeft te zoeken.
+- **Inkoopdossier** (Zakelijk): "Documenten & certificaten"-checklist met beschikbaar/op-aanvraag-
+  status per document + WhatsApp-opvraagknop.
+- **Slimmer offerteformulier**: velden type zaak, leverfrequentie, contactvoorkeur (incl. "bel me
+  terug" + gewenst belmoment) — gaan mee in de mail/WhatsApp-aanvraag.
+- **WhatsApp per onderwerp**: voorgevulde snelknoppen (offerte/sample/proeverij/relatiegeschenk) op
+  de contactpagina, naast de bestaande algemene WhatsApp-knop.
+- **Bewaar/deel**: vCard-download (`.vcf`, gaat in Contacten op iPhone/Android), Web Share (valt
+  terug op link kopiëren) en een QR-code (`assets/qr-site.svg`). Een echte Apple Wallet-pass kan
+  niet op een statische site (vereist Apple-certificaten + ondertekening) — de vCard is het
+  praktische equivalent.
+- **Meertalig NL/EN/FR**: globe-schakelaar in het menu (desktop dropdown, mobiel pill-rij).
+  `content.js` = NL-basis, `content.en.js`/`content.fr.js` overschrijven diezelfde structuur,
+  `i18n.js` kiest de taal (localStorage, standaard NL, **geen** browsertaal-auto-detectie) en valt
+  per ontbrekende sleutel terug op NL. Volledig vertaald, inclusief de v7-toevoegingen (uitgebreide
+  privacyverklaring, alle 12 voorwaarden-artikelen) na het samenvoegen.
+- **Formspree live**: `formspreeId` ingevuld (`mbdvnykk`) — alle vier formulieren (offerte, sample,
+  presentatie, nieuwsbrief) versturen nu echt i.p.v. terug te vallen op mailto/WhatsApp.
+- **Samenvoegronde met v7**: v7 werd rechtstreeks op `main` gepusht terwijl deze branch nog openstond
+  (beide raakten `content.js`/`main.js`/`css/style.css`/alle HTML-shells). Opgelost via rebase +
+  handmatige merge — niets van beide kanten verloren: v7's algemene-voorwaardenpagina, uitgebreide
+  AVG-tekst, lokale fonts en foto-optimalisatie staan naast de v8-features hierboven. Dubbele
+  `theme-color`/`canonical`-tags die de auto-merge opleverde zijn opgeschoond; de eerder gekozen
+  per-pagina `theme-color` (olijfgroen bij topbar-pagina's, crème alleen op `sample.html`, dat had
+  v7 uniform crème) is behouden. E2E geverifieerd (headless Chromium, 390/1280px, NL/EN/FR, alle
+  9 pagina's): geen JS-fouten, geen overflow, Formspree/vCard/dropdowns/herkomstkaart werken.
+
 ### v7 — Volledige overhaul: bedrijfsteksten compleet + AVG/performance-ronde (10 juli 2026)
 
 Grote audit-ronde op verzoek van Soef ("bekijk de hele site, schrijf alle teksten die een bedrijf
