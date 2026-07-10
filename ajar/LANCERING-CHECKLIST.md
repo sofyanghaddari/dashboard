@@ -107,10 +107,10 @@
 
 ### C5. Techniek & config (5 minuten werk per stuk)
 
-- [x] ~~Formspree-ID~~ **Ingesteld (10 juli 2026): `mbdvnykk`** — offerte-, sample-, presentatie-
-  en nieuwsbrief-formulier posten er nu echt naartoe i.p.v. terug te vallen op mailto/WhatsApp.
-  *Check bij Soef: staat het juiste e-mailadres ingesteld als ontvanger op formspree.io bij dit
-  formulier?*
+- [x] **Formspree-ID** (`formspreeId` in content.js) — ✅ ingevuld (10 juli 2026): `mbdvnykk`.
+  Alle vier formulieren (offerte, sample, presentatie, nieuwsbrief) versturen nu echt i.p.v.
+  mailto/WhatsApp. *Check bij Soef: staat het juiste e-mailadres ingesteld als ontvanger op
+  formspree.io bij dit formulier?*
 - [ ] **GA4-ID** (`gaId`) — nu geen statistieken en geen cookiebanner.
 - [ ] **Zakelijk e-mailadres** — nu jouw persoonlijke Gmail; een adres op eigen domein
   (bijv. info@ajar-olijfolie.nl) oogt professioneler bij inkopers. Staat op meerdere plekken:
