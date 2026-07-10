@@ -1140,6 +1140,8 @@ function openClientDetailModal(client, invoices, container) {
       ${client.address ? `<div style="font-size:.85rem;color:var(--text-dim)">${escapeHTML(client.address)}</div>` : ''}
       ${client.city    ? `<div style="font-size:.85rem;color:var(--text-dim)">${escapeHTML(client.city)}</div>` : ''}
       ${client.kvk     ? `<div style="font-size:.85rem;color:var(--text-dim)">KvK: ${escapeHTML(client.kvk)}</div>` : ''}
+      ${client.btw     ? `<div style="font-size:.85rem;color:var(--text-dim)">BTW: ${escapeHTML(client.btw)}</div>` : ''}
+      ${client.iban    ? `<div style="font-size:.85rem;color:var(--text-dim)">IBAN: ${escapeHTML(client.iban)}${client.bic ? ` · BIC: ${escapeHTML(client.bic)}` : ''}</div>` : ''}
       ${client.email   ? `<div style="font-size:.85rem;color:var(--text-dim)">${icon('mail')} ${escapeHTML(client.email)}</div>` : ''}
       ${client.phone   ? `<div style="font-size:.85rem;color:var(--text-dim)">${icon('phone')} ${escapeHTML(client.phone)}</div>` : ''}
 
@@ -1210,6 +1212,12 @@ function openEditClientModal(client, container) {
           <input id="ec-city"  type="text"  value="${escapeHTML(client.city    || '')}" placeholder="1234 AB Amsterdam" />
           <label>KvK-nummer</label>
           <input id="ec-kvk"   type="text"  inputmode="numeric" value="${escapeHTML(client.kvk   || '')}" placeholder="12345678" />
+          <label>BTW-nummer</label>
+          <input id="ec-btw"   type="text"  value="${escapeHTML(client.btw     || '')}" placeholder="NL123456789B01" />
+          <label>IBAN</label>
+          <input id="ec-iban"  type="text"  value="${escapeHTML(client.iban    || '')}" placeholder="NL00 BANK 0123 4567 89" />
+          <label>BIC</label>
+          <input id="ec-bic"   type="text"  value="${escapeHTML(client.bic     || '')}" placeholder="INGBNL2A" />
           <label>E-mailadres</label>
           <input id="ec-email" type="email" value="${escapeHTML(client.email   || '')}" placeholder="info@bedrijf.nl" />
           <label>Telefoon / WhatsApp</label>
@@ -1234,6 +1242,9 @@ function openEditClientModal(client, container) {
       address: backdrop.querySelector('#ec-addr').value.trim(),
       city:    backdrop.querySelector('#ec-city').value.trim(),
       kvk:     backdrop.querySelector('#ec-kvk').value.trim(),
+      btw:     backdrop.querySelector('#ec-btw').value.trim(),
+      iban:    backdrop.querySelector('#ec-iban').value.trim(),
+      bic:     backdrop.querySelector('#ec-bic').value.trim(),
       email:   backdrop.querySelector('#ec-email').value.trim(),
       phone:   backdrop.querySelector('#ec-phone').value.trim(),
     });
@@ -1241,6 +1252,66 @@ function openEditClientModal(client, container) {
     backdrop.remove();
     render(container);
   };
+}
+
+// ─── Snel invullen: plak een blok klantgegevens en lees alles zelf uit ──────
+// Herkent (met of zonder label): naam, straat+nr, postcode+stad, KvK, BTW,
+// IBAN, BIC, e-mail en telefoon. Gelabelde regels ("Btw-nummer: …") winnen;
+// ongelabelde regels worden op patroon herkend.
+export function parseClientText(raw) {
+  const res = {};
+  const lines = (raw || '').split(/\r?\n/).map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  const leftover = [];
+  const afterLabel = line => (line.includes(':') ? line.slice(line.indexOf(':') + 1) : line).trim();
+
+  for (const line of lines) {
+    const lower = line.toLowerCase();
+    if (!res.btw && /\bbtw|\bvat\b/.test(lower)) {
+      const m = line.match(/[A-Z]{2}\s?\d{9}\s?B\s?\d{2}/i);
+      res.btw = (m ? m[0] : afterLabel(line)).replace(/[\s.]/g, '').toUpperCase();
+      continue;
+    }
+    if (!res.kvk && /k\.?v\.?k|kamer van koophandel/.test(lower)) {
+      const m = line.match(/\d{8}/);
+      res.kvk = m ? m[0] : afterLabel(line);
+      continue;
+    }
+    if (!res.iban && /iban|rekeningnummer/.test(lower)) {
+      const m = line.match(/[A-Z]{2}\d{2}[A-Z0-9 ]{10,36}/i);
+      res.iban = (m ? m[0] : afterLabel(line)).replace(/\s/g, '').toUpperCase();
+      continue;
+    }
+    if (!res.bic && /\bbic\b|swift/.test(lower)) {
+      const m = afterLabel(line).match(/[A-Z]{6}[A-Z0-9]{2}(?:[A-Z0-9]{3})?/i);
+      res.bic = (m ? m[0] : afterLabel(line)).toUpperCase();
+      continue;
+    }
+    if (/mail/.test(lower)) {
+      const m = line.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/);
+      if (m && !res.email) { res.email = m[0].toLowerCase(); continue; }
+    }
+    if (!res.phone && /^(tel(efoon)?|mobiel|phone|gsm)\b/.test(lower)) {
+      res.phone = afterLabel(line);
+      continue;
+    }
+    leftover.push(line);
+  }
+
+  const rest = [];
+  for (const line of leftover) {
+    let m;
+    if (!res.email && (m = line.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/))) { res.email = m[0].toLowerCase(); continue; }
+    if (!res.btw && (m = line.match(/\b[A-Z]{2}\s?\d{9}\s?B\s?\d{2}\b/i))) { res.btw = m[0].replace(/\s/g, '').toUpperCase(); continue; }
+    if (!res.iban && (m = line.match(/\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]{4}){3,7}(?:\s?[A-Z0-9]{1,3})?\b/))) { res.iban = m[0].replace(/\s/g, '').toUpperCase(); continue; }
+    if (!res.kvk && (m = line.match(/^\d{8}$/))) { res.kvk = m[0]; continue; }
+    if (!res.city && (m = line.match(/^(\d{4})\s?([A-Za-z]{2})\s+(.+)$/))) { res.city = `${m[1]} ${m[2].toUpperCase()} ${m[3]}`; continue; }
+    if (!res.phone && /^(\+31|0)[\d\s\-()]{7,}$/.test(line)) { res.phone = line; continue; }
+    if (!res.address && /^[^\d@]{2,}\s\d+\S*$/.test(line)) { res.address = line; continue; }
+    rest.push(line);
+  }
+
+  if (rest.length) res.name = rest[0];
+  return res;
 }
 
 function openNewClientModal(container) {
@@ -1251,6 +1322,11 @@ function openNewClientModal(container) {
       <button type="button" class="modal-close" id="nc-x">×</button>
       <h2 style="margin:0 0 16px">Nieuwe klant</h2>
       <form id="nc-form" autocomplete="off">
+        <div class="bk-form-section bk-paste-box">
+          <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3.5" width="10" height="4" rx="1.2"/><path d="M17 5.5h2a1.5 1.5 0 0 1 1.5 1.5v12A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V7A1.5 1.5 0 0 1 5 5.5h2"/><path d="M8 11.5h8M8 15h5.5"/></svg>Snel invullen</div>
+          <textarea id="nc-paste" rows="4" placeholder="Plak hier de klantgegevens (naam, adres, KvK, BTW, IBAN, e-mail…) — de velden hieronder worden automatisch ingevuld"></textarea>
+          <div id="nc-paste-hint" class="bk-paste-hint"></div>
+        </div>
         <div class="bk-form-section">
           <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"/></svg>Klantgegevens</div>
           <label>Bedrijfsnaam / naam *</label>
@@ -1261,6 +1337,12 @@ function openNewClientModal(container) {
           <input id="nc-city" type="text" placeholder="1234 AB Amsterdam" />
           <label>KvK-nummer</label>
           <input id="nc-kvk" type="text" inputmode="numeric" placeholder="12345678" />
+          <label>BTW-nummer</label>
+          <input id="nc-btw" type="text" placeholder="NL123456789B01" />
+          <label>IBAN</label>
+          <input id="nc-iban" type="text" placeholder="NL00 BANK 0123 4567 89" />
+          <label>BIC</label>
+          <input id="nc-bic" type="text" placeholder="INGBNL2A" />
           <label>E-mailadres</label>
           <input id="nc-email" type="email" placeholder="info@bedrijf.nl" />
           <label>Telefoon / WhatsApp</label>
@@ -1275,6 +1357,20 @@ function openNewClientModal(container) {
   backdrop.querySelector('#nc-x').onclick = () => backdrop.remove();
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 
+  const FIELD_MAP = { name: '#nc-name', address: '#nc-addr', city: '#nc-city', kvk: '#nc-kvk', btw: '#nc-btw', iban: '#nc-iban', bic: '#nc-bic', email: '#nc-email', phone: '#nc-phone' };
+  const pasteEl = backdrop.querySelector('#nc-paste');
+  pasteEl.addEventListener('input', () => {
+    const parsed = parseClientText(pasteEl.value);
+    let count = 0;
+    for (const [key, sel] of Object.entries(FIELD_MAP)) {
+      if (parsed[key]) { backdrop.querySelector(sel).value = parsed[key]; count++; }
+    }
+    const hint = backdrop.querySelector('#nc-paste-hint');
+    if (count) hint.textContent = `✓ ${count} veld${count !== 1 ? 'en' : ''} herkend — controleer hieronder en sla op`;
+    else hint.textContent = pasteEl.value.trim() ? 'Niets herkend — vul de velden handmatig in' : '';
+    hint.classList.toggle('ok', count > 0);
+  });
+
   backdrop.querySelector('#nc-form').onsubmit = async e => {
     e.preventDefault();
     const name = backdrop.querySelector('#nc-name').value.trim();
@@ -1285,6 +1381,9 @@ function openNewClientModal(container) {
       address: backdrop.querySelector('#nc-addr').value.trim(),
       city:    backdrop.querySelector('#nc-city').value.trim(),
       kvk:     backdrop.querySelector('#nc-kvk').value.trim(),
+      btw:     backdrop.querySelector('#nc-btw').value.trim(),
+      iban:    backdrop.querySelector('#nc-iban').value.trim(),
+      bic:     backdrop.querySelector('#nc-bic').value.trim(),
       email:   backdrop.querySelector('#nc-email').value.trim(),
       phone:   backdrop.querySelector('#nc-phone').value.trim(),
       lastUsed: Date.now(),

@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=8), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v165** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v166** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -130,7 +130,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v165)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v166)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -196,7 +196,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v165
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v166
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -232,7 +232,7 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - `invoices`: { id, number, adminId, clientId, date, dueDate, lines[], status, notes? } — boekhouding verkoopfacturen
 - `purchase_invoices`: { id, adminId, vendor, date, amount, vatRate, vatAmount, category, note?, receiptText? } — inkoop/bonnetjes
 - `km_log`: { id, date, from, to, km, purpose, adminId } — km-registratie
-- `clients`: { id, adminId, name, email, phone?, address?, kvk?, btw? } — klantenbeheer
+- `clients`: { id, adminId, name, email, phone?, address?, city?, kvk?, btw?, iban?, bic? } — klantenbeheer
 - `taxi_expenses`: { id, name, amount, frequency ('monthly'|'weekly'|'eenmalig'), date?, note? } — taxikosten (vaste lasten + eenmalig geboekte kosten)
 - `agenda_events`: { id, date, hour, minute, duration, title, cat, done? } — Week-tab afspraken (gemigreerd uit localStorage)
 - `grammar_topics`: { id, titelAr, titelNl, uitleg{regel, puntenNl[], puntenAr[]}, voorbeeldzinnen[{id, zin, vertaling, i3rab[{woord, analyse}]}], status ('nieuw'|'bezig'|'beheerst'), srs{stap, laatsteHerhaling, volgendeHerhaling}, foutgeschiedenis[{datum, oefentype, fouttype, zinId}], bron, createdAt } — Stof-module
@@ -307,6 +307,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++31. **⚡ Klant snel opslaan via plakken v166 (10 juli 2026):** op verzoek van user — in Boekhouding → Klanten → "+ Klant" staat nu bovenaan een **"Snel invullen"**-plakveld: plak een blok klantgegevens (zoals van een website/e-mailhandtekening) en `parseClientText()` in `boekhouding.js` leest zelf naam, straat+nr, postcode+stad, KvK, **BTW-nummer**, **IBAN**, **BIC**, e-mail en telefoon uit (gelabelde regels zoals "Btw-nummer: …" winnen; ongelabelde regels op patroon — postcode `1431ZN Aalsmeer` wordt genormaliseerd naar "1431 ZN Aalsmeer", eerste overgebleven regel = naam). Velden worden live ingevuld met een "✓ N velden herkend"-hint (`.bk-paste-hint`), user controleert en slaat op. Klant-record heeft nu ook `btw`/`iban`/`bic` (geen DB-bump nodig); die velden staan ook in de bewerk-modal en het klant-detail. CSS: `.bk-paste-box`/`.bk-paste-hint`.
 
 +30. **🫒 AJAR B2B-olijfoliesite in `ajar/` + SW-fixes v164-v165 (2-3 juli 2026):** aparte statische marketingsite (eigen bouwprompt van user) op `/dashboard/ajar/` — vijf pagina's + privacy, alle content in `ajar/js/content.js`, Formspree/GA4/cookiebanner/spec-sheet-PDF, animatie-pakket; beheer-gids in `ajar/README.md`, foto-shotlist in `ajar/SHOTLIST.md`. **Twee SW-lessen:** (1) v164 — de cache-first-branch cachede élke response, óók 404's (tijdens een GitHub Pages-deploystoring bleef de 404 van ajar/ permanent hangen) → alleen `resp.ok` cachen; (2) v165 — **`/ajar/`-paden worden door de SW volledig genegeerd** (early return in fetch-handler): het is een vaak-updatende marketingsite, cache-first toonde bezoekers eindeloos oude versies. Ajar-wijzigingen vereisen dus GEEN cache-bump; dashboard-wijzigingen wél, zoals altijd. Let op: GitHub Pages-deploys haperden 2x op rij ("deployment_queued" timeout / "try again later") — bij een 404 na push eerst de Pages-run checken vóór in de code te zoeken; lege commit = nieuwe deploy.
 
