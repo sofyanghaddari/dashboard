@@ -78,6 +78,47 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v7 — Volledige overhaul: bedrijfsteksten compleet + AVG/performance-ronde (10 juli 2026)
+
+Grote audit-ronde op verzoek van Soef ("bekijk de hele site, schrijf alle teksten die een bedrijf
+nodig heeft, noteer alles wat mist"). Nieuw overzichtsdocument: **`LANCERING-CHECKLIST.md`** —
+dé plek waar nu alles staat wat Soef nog moet aanleveren/beslissen (incl. juridische punten als
+NVWA-registratie, etiket-eisen, btw-id, verzekering). Wijzigingen:
+
+- **Algemene voorwaarden** — nieuwe pagina `voorwaarden.html` (`data-page="voorwaarden"`,
+  `C.terms` in content.js, gedeelde `renderLegal()` met privacy). 12 artikelen B2B-voorwaarden in
+  gewone taal. **Drie bewuste standaard-aannames die Soef moet checken** (staan in de checklist):
+  betaaltermijn 14 dagen, samples "één per zaak", levergebied Nederland. `noindex,follow` net als
+  privacy; gelinkt in footer-nav + footer-bottom. Niet in de hoofdnav (bewust) en niet in sitemap.
+- **Privacyverklaring herschreven/uitgebreid**: nieuwsbrief-verwerking, e-mail als contactkanaal,
+  KvK-nummer, GitHub Pages-hosting, dataportabiliteit, beveiligingsparagraaf, fiscale bewaartermijn,
+  cookie-voorkeuren-link. Datum → 10 juli 2026.
+- **Google Fonts → lokaal gehost** (AVG: het CDN lekte bezoekers-IP's naar Google vóór consent;
+  in DE al beboet). 4 woff2-bestanden in `assets/fonts/` (variabele fonts, latin + latin-ext,
+  OFL-licentie), `@font-face` bovenin style.css, `preload` in alle shells i.p.v. de
+  preconnect/CSS-links. **Let op:** de sandbox-consolefout "Google Fonts geblokkeerd" is hiermee
+  ook definitief weg.
+- **Foto's geoptimaliseerd**: alle in gebruik zijnde beelden naar max 1800px lange zijde,
+  JPEG q72–80 progressive (Pillow). Van ~16 MB totaal naar ~4 MB; Over ons laadde eerst ~10 MB.
+  Originelen staan in de git-historie. Wees-bestanden (hero-01/story-02/stock-hero-orchard)
+  bewust ongemoeid gelaten.
+- **Cookie-voorkeuren heropenen**: `.footer-link-btn` in de footer-bottom (alleen gerenderd als
+  `gaId` gezet is) wist de consent-keuze en toont de banner opnieuw.
+- **Contact completer**: telefoonnummer als klikbare `tel:`-link in footer + Contact-zijkaart
+  (`contact.direct.phoneDisplay`), e-mail nu ook op de Contact-pagina, KvK in de importeur-kaart.
+- **Presentatie-tekstfix**: "u ontvangt de presentatie zodra die beschikbaar is" → "download de
+  presentatie direct" (de PDF bestaat al; de succes-flow toonde de downloadlink al).
+- **Succesmelding scrollt in beeld** na formulier-verzending (`showMsg` → `scrollIntoView`,
+  reduced-motion-safe) — op mobiel stond de bevestiging vaak buiten beeld.
+- **SEO/tech**: `rel=canonical` + `theme-color` op alle 9 shells; JSON-LD Organization uitgebreid
+  met email/telephone/contactPoint/taxID.
+- **Toegankelijkheid**: skip-link "Direct naar de inhoud" (`.skip-link`, alleen zichtbaar bij
+  toetsenbord-focus) als eerste element via `renderHeader()`.
+- **Nieuwsbrief-privacynotitie** (`newsletter.privacyNote` + `.newsletter-note`).
+- Mobiele CTA-balk ook onderdrukt op de voorwaarden-pagina.
+- E2E geverifieerd (headless Chromium, 390px + 1280px, alle 9 pagina's): geen JS-fouten, geen
+  kapotte beelden, geen overflow; fonts laden lokaal; voorwaarden-pagina rendert 12 artikelen.
+
 ### v6g — Kennisbank-pagina + nieuwsbrief-inschrijving (5 juli 2026)
 
 Uit een verbeter-menu koos Soef "verder gaan" met de items die ik volledig zonder aangeleverde
@@ -729,6 +770,10 @@ AJAR's onderscheid blijft: Marokkaanse herkomst + directe-importeur-verhaal.
 ---
 
 ## 6. Openstaande TODO's — wat Soef moet aanleveren
+
+> **v7 (10 juli 2026): het actuele, volledige overzicht staat nu in `LANCERING-CHECKLIST.md`**
+> (incl. juridische stappen: NVWA-registratie, etiket-eisen, btw-id, verzekering, AV-aannames).
+> Onderstaande lijst blijft staan als historie maar de checklist is leidend.
 
 Deze gaten kan alléén Soef vullen; **nooit invullen met verzonnen data.** Zodra hij ze levert,
 verdwijnen de "volgt"-placeholders vanzelf.

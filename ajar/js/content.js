@@ -435,7 +435,9 @@ window.AJAR_CONTENT = {
       },
       presentation: {
         title: 'AJAR bedrijfspresentatie',
-        text: 'Uitgebreidere presentatie over het bedrijf, de familie en de olie. Laat uw gegevens achter, dan ontvangt u de presentatie zodra die beschikbaar is.',
+        /* v7: tekst gecorrigeerd — de PDF bestaat al (presentationPdf is gevuld), dus geen
+           "zodra beschikbaar"-belofte meer; na het formulier verschijnt direct de downloadlink. */
+        text: 'Uitgebreidere presentatie over het bedrijf, de familie en de olie. Laat uw gegevens achter en download de presentatie direct.',
         nameLabel: 'Naam',
         emailLabel: 'E-mailadres',
         companyLabel: 'Bedrijfsnaam',
@@ -540,7 +542,10 @@ window.AJAR_CONTENT = {
       title: 'Liever direct contact?',
       text: 'Stuur een WhatsApp-bericht — dat is de snelste route.',
       whatsappLabel: 'WhatsApp openen',
-      whatsappPrefill: 'Hallo, ik heb interesse in AJAR olijfolie voor mijn zaak.'
+      whatsappPrefill: 'Hallo, ik heb interesse in AJAR olijfolie voor mijn zaak.',
+      /* v7: nummer óók leesbaar tonen (niet iedere inkoper gebruikt WhatsApp) */
+      phoneDisplay: '+31 6 40 29 35 67',
+      phoneNote: 'Bellen kan ook:'
     }
   },
 
@@ -578,42 +583,113 @@ window.AJAR_CONTENT = {
     }
   },
 
-  /* ---------- Privacyverklaring ---------- */
+  /* ---------- Privacyverklaring ----------
+     v7 (10 juli 2026): uitgebreid — nieuwsbrief-verwerking, e-mail als contactkanaal,
+     hosting (GitHub Pages), lokaal gehoste lettertypen (geen Google-CDN meer),
+     dataportabiliteit, cookie-voorkeuren aanpasbaar via de footer-link. */
   privacy: {
     hero: {
       kicker: 'Privacy',
       title: 'Privacyverklaring',
       sub: 'Kort en duidelijk: welke gegevens we verwerken en waarom.'
     },
-    updated: 'Laatst bijgewerkt: juli 2026',
+    updated: 'Laatst bijgewerkt: 10 juli 2026',
     sections: [
       {
         title: 'Wie is verantwoordelijk?',
-        body: 'Verwerkingsverantwoordelijke voor deze website is AJAR (importeur van AJAR olijfolie), gevestigd aan de Jephtastraat 28H, 1055 JV Amsterdam. Contact verloopt via WhatsApp (+31 6 40 29 35 67).'
+        body: 'Verwerkingsverantwoordelijke voor deze website is AJAR (importeur van AJAR olijfolie), gevestigd aan de Jephtastraat 28H, 1055 JV Amsterdam, ingeschreven bij de Kamer van Koophandel onder nummer 77755170. Contact kan via e-mail (sofyanghaddari@gmail.com) of WhatsApp (+31 6 40 29 35 67).'
       },
       {
         title: 'Welke gegevens verzamelen we?',
-        body: 'Twee soorten. (1) Formuliergegevens: als u een sample, offerte of presentatie aanvraagt, ontvangen we de gegevens die u zelf invult — naam, bedrijfsnaam, e-mailadres, telefoonnummer en uw bericht. (2) Bezoekersstatistieken: alléén als u dat accepteert via de cookiemelding, gebruiken we Google Analytics 4 om anoniem te zien hoe de site wordt gebruikt (bezochte pagina’s, herkomst van het bezoek). IP-adressen worden daarbij geanonimiseerd. Weigert u, dan wordt er niets gemeten.'
+        body: 'Drie soorten. (1) Formuliergegevens: als u een sample, offerte of presentatie aanvraagt, ontvangen we de gegevens die u zelf invult — naam, bedrijfsnaam, e-mailadres, telefoonnummer, bezorgadres en uw bericht. (2) Nieuwsbrief: als u zich inschrijft, bewaren we alleen uw e-mailadres. (3) Bezoekersstatistieken: alléén als u dat accepteert via de cookiemelding, gebruiken we Google Analytics 4 om anoniem te zien hoe de site wordt gebruikt (bezochte pagina’s, herkomst van het bezoek). IP-adressen worden daarbij geanonimiseerd. Weigert u, dan wordt er niets gemeten.'
       },
       {
         title: 'Waarvoor gebruiken we die gegevens?',
-        body: 'Formuliergegevens gebruiken we uitsluitend om uw aanvraag te beantwoorden en een eventuele zakelijke relatie op te volgen. Statistieken gebruiken we om de site te verbeteren en te zien welke kanalen bezoekers opleveren. We verkopen of delen uw gegevens niet met derden voor marketing.'
+        body: 'Formuliergegevens gebruiken we uitsluitend om uw aanvraag te beantwoorden en een eventuele zakelijke relatie op te volgen. Uw nieuwsbrief-adres gebruiken we alleen om u te informeren over AJAR (zoals beschikbaarheid van het product); uitschrijven kan op elk moment door dat te melden via e-mail of WhatsApp. Statistieken gebruiken we om de site te verbeteren en te zien welke kanalen bezoekers opleveren. We verkopen of delen uw gegevens nooit met derden voor marketing.'
       },
       {
         title: 'Hoe lang bewaren we gegevens?',
-        body: 'Aanvragen bewaren we zolang dat nodig is voor het contact en maximaal 2 jaar na het laatste contactmoment, tenzij er een klantrelatie ontstaat (dan gelden de wettelijke administratietermijnen). Analytics-gegevens worden maximaal 14 maanden bewaard.'
+        body: 'Aanvragen bewaren we zolang dat nodig is voor het contact en maximaal 2 jaar na het laatste contactmoment, tenzij er een klantrelatie ontstaat (dan gelden de wettelijke administratietermijnen, zoals de fiscale bewaarplicht van 7 jaar voor facturen). Nieuwsbrief-adressen bewaren we tot u zich uitschrijft. Analytics-gegevens worden maximaal 14 maanden bewaard.'
       },
       {
         title: 'Wie verwerken er gegevens voor ons?',
-        body: 'Het contactformulier wordt technisch verwerkt door Formspree; statistieken door Google (Google Analytics 4). Met deze partijen gelden verwerkersvoorwaarden. Stuurt u een WhatsApp-bericht, dan gelden de voorwaarden van WhatsApp.'
+        body: 'De formulieren worden technisch verwerkt door Formspree; statistieken door Google (Google Analytics 4, alleen na uw toestemming). Met deze partijen gelden verwerkersvoorwaarden. De website wordt gehost op GitHub Pages (GitHub, Inc.); zoals bij elke webserver kan de hostingpartij daarbij tijdelijk technische loggegevens zoals IP-adressen verwerken. Lettertypen en alle andere onderdelen van de site laden we vanaf onze eigen hosting — daarvoor gaan geen gegevens naar externe partijen. Stuurt u een WhatsApp-bericht, dan gelden de voorwaarden van WhatsApp.'
       },
       {
         title: 'Uw rechten',
-        body: 'U heeft recht op inzage, correctie en verwijdering van uw gegevens, en u kunt bezwaar maken tegen verwerking. Stuur daarvoor een bericht via WhatsApp. U kunt daarnaast een klacht indienen bij de Autoriteit Persoonsgegevens.'
+        body: 'U heeft recht op inzage, correctie en verwijdering van uw gegevens, recht op overdracht van uw gegevens (dataportabiliteit) en u kunt bezwaar maken tegen verwerking. Stuur daarvoor een bericht via e-mail of WhatsApp — we reageren zo snel mogelijk, uiterlijk binnen een maand. U kunt daarnaast een klacht indienen bij de Autoriteit Persoonsgegevens (autoriteitpersoonsgegevens.nl).'
       },
       {
         title: 'Cookies',
-        body: 'Deze site plaatst alleen cookies voor Google Analytics, en alléén nadat u daarvoor toestemming heeft gegeven via de cookiemelding. Uw keuze wordt lokaal in uw browser opgeslagen en kunt u altijd terugdraaien door de sitegegevens te wissen.'
+        body: 'Deze site plaatst alleen cookies voor Google Analytics, en alléén nadat u daarvoor toestemming heeft gegeven via de cookiemelding. Uw keuze wordt lokaal in uw browser opgeslagen. U kunt uw keuze op elk moment aanpassen via de link "Cookie-voorkeuren" onderaan de site, of door de sitegegevens in uw browser te wissen. Zonder toestemming plaatst de site geen enkele cookie.'
+      },
+      {
+        title: 'Beveiliging',
+        body: 'De verbinding met deze website is versleuteld (HTTPS). Aanvragen komen alleen terecht bij de importeur zelf — er is geen extern verkoopteam of callcenter dat toegang heeft tot uw gegevens.'
+      }
+    ]
+  },
+
+  /* ---------- Algemene voorwaarden ----------
+     v7 (10 juli 2026): nieuwe pagina. B2B verkoop- en leveringsvoorwaarden in gewone taal,
+     passend bij de toon van de site. Bewust geen cijfers verzonnen: waar iets per offerte
+     wordt afgesproken, staat dat er ook zo in. Bij groei of twijfel: laten toetsen door
+     een jurist (staat ook in LANCERING-CHECKLIST.md). */
+  terms: {
+    hero: {
+      kicker: 'Voorwaarden',
+      title: 'Algemene voorwaarden',
+      sub: 'De afspraken die gelden bij zakelijke bestellingen — in gewone taal.'
+    },
+    updated: 'Laatst bijgewerkt: 10 juli 2026 · versie 1.0',
+    sections: [
+      {
+        title: '1. Wie is AJAR en waarop zijn deze voorwaarden van toepassing?',
+        body: 'AJAR is importeur van extra vierge olijfolie, gevestigd aan de Jephtastraat 28H, 1055 JV Amsterdam, ingeschreven bij de Kamer van Koophandel onder nummer 77755170. Deze voorwaarden gelden voor alle offertes, bestellingen en leveringen van AJAR. We leveren uitsluitend aan zakelijke afnemers (B2B), niet aan consumenten. Afwijkingen van deze voorwaarden gelden alleen als we ze schriftelijk (ook per e-mail of WhatsApp) met u zijn overeengekomen. Eventuele inkoopvoorwaarden van de afnemer zijn niet van toepassing, tenzij we die uitdrukkelijk schriftelijk hebben aanvaard.'
+      },
+      {
+        title: '2. Offertes en prijzen',
+        body: 'Al onze offertes zijn vrijblijvend en 30 dagen geldig, tenzij in de offerte anders staat. Prijzen zijn in euro’s en exclusief btw; ze zijn volume-afhankelijk en worden per offerte vastgelegd. Kennelijke vergissingen of verschrijvingen in een offerte binden ons niet — we nemen dan contact met u op voor een correcte versie.'
+      },
+      {
+        title: '3. Hoe komt een bestelling tot stand?',
+        body: 'U bestelt door een offerte te accepteren, of door een bestelling door te geven via e-mail of WhatsApp. De overeenkomst komt tot stand zodra AJAR uw bestelling schriftelijk bevestigt. In die bevestiging staan het volume, de prijs, de leverdatum en de betaalafspraken — zo weet u vooraf precies waar u aan toe bent.'
+      },
+      {
+        title: '4. Levering',
+        body: 'De leverdatum spreken we bij elke bestelling concreet met u af. Genoemde termijnen zijn indicatief en geen fatale termijn; loopt een levering onverhoopt uit, dan hoort u dat zo snel mogelijk en spreken we een nieuwe datum af. Levering vindt plaats op het door u opgegeven bezorgadres in Nederland, tenzij anders overeengekomen. Het risico van de producten gaat op u over op het moment van aflevering.'
+      },
+      {
+        title: '5. Betaling',
+        body: 'U ontvangt bij elke levering een factuur. De betaaltermijn staat op de offerte en de factuur; als er niets is afgesproken geldt een termijn van 14 dagen na factuurdatum. Blijft betaling na een herinnering uit, dan mogen we de wettelijke handelsrente en redelijke incassokosten in rekening brengen en verdere leveringen opschorten totdat openstaande facturen zijn voldaan.'
+      },
+      {
+        title: '6. Eigendomsvoorbehoud',
+        body: 'Geleverde producten blijven eigendom van AJAR totdat de bijbehorende factuur volledig is betaald. Tot dat moment mag u de producten wel in de normale bedrijfsvoering gebruiken of doorverkopen, maar niet verpanden of als zekerheid geven.'
+      },
+      {
+        title: '7. Kwaliteit, controle en klachten',
+        body: 'Controleer de levering bij ontvangst. Zichtbare gebreken (schade, verkeerde aantallen) meldt u binnen 48 uur na levering; andere gebreken zo snel mogelijk na ontdekking. Is er echt iets mis, dan vervangen we de betreffende producten of crediteren we ze — dat bespreken we direct en zonder omwegen, u heeft één aanspreekpunt. Let op: olijfolie is een natuurproduct. Kleur, geur en smaak kunnen per oogst licht verschillen; dat is geen gebrek zolang de olie voldoet aan de norm voor extra vierge. Bewaar de olie koel, donker en goed afgesloten; de houdbaarheidsdatum staat op elke fles.'
+      },
+      {
+        title: '8. Gratis samples',
+        body: 'Samples zijn kosteloos en verplichten u tot niets. Aan een sample kunnen geen rechten worden ontleend voor latere leveringen: de sample toont de olie van dat moment, en als natuurproduct kan een volgende partij licht afwijken binnen de extra vierge-norm. Samples zijn beschikbaar zolang de voorraad strekt, één per zaak.'
+      },
+      {
+        title: '9. Aansprakelijkheid',
+        body: 'Onze aansprakelijkheid per gebeurtenis is beperkt tot het factuurbedrag van de levering waarop de schade betrekking heeft. We zijn niet aansprakelijk voor indirecte schade, zoals gederfde omzet of gevolgschade. Deze beperkingen gelden niet bij opzet of bewuste roekeloosheid van AJAR, of waar de wet een beperking niet toestaat.'
+      },
+      {
+        title: '10. Overmacht',
+        body: 'Bij overmacht — omstandigheden buiten onze invloed, zoals misoogst, transportproblemen, in- of uitvoerbeperkingen of storingen bij de producent — mogen we de levering opschorten. Duurt de overmacht langer dan 60 dagen, dan mogen zowel u als wij de bestelling kosteloos annuleren voor het nog niet geleverde deel. Al betaalde bedragen voor niet-geleverde producten betalen we dan terug.'
+      },
+      {
+        title: '11. Toepasselijk recht en geschillen',
+        body: 'Op alle overeenkomsten met AJAR is Nederlands recht van toepassing; het Weens Koopverdrag (CISG) is uitgesloten. Komen we er samen niet uit — wat we uiteraard eerst gewoon proberen — dan is de rechtbank Amsterdam bevoegd.'
+      },
+      {
+        title: '12. Wijzigingen',
+        body: 'We kunnen deze voorwaarden aanpassen. Voor lopende bestellingen blijft de versie gelden die van kracht was op het moment van uw bestelling. De actuele versie staat altijd op deze pagina.'
       }
     ]
   },
@@ -655,6 +731,8 @@ window.AJAR_CONTENT = {
     placeholder: 'Uw e-mailadres',
     button: 'Inschrijven',
     success: 'Bedankt — u hoort van ons zodra we van start gaan.',
+    /* v7: AVG — korte uitleg bij het veld wat er met het adres gebeurt */
+    privacyNote: 'Alleen voor updates over AJAR — geen spam, uitschrijven kan altijd.',
     emailSubject: 'Nieuwsbrief-inschrijving AJAR'
   },
 
@@ -662,6 +740,8 @@ window.AJAR_CONTENT = {
   footer: {
     aboutLine: 'AJAR — extra vierge olijfolie uit Marokko. Rechtstreeks geïmporteerd voor de Nederlandse horeca, delicatessenzaak en retail.',
     privacyLabel: 'Privacyverklaring',
+    termsLabel: 'Algemene voorwaarden',
+    cookiePrefsLabel: 'Cookie-voorkeuren',
     socials: [
       /* Later invullen — leeg = niet getoond. Voorbeeld: { label:'Instagram', href:'https://instagram.com/…' } */
     ]

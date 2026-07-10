@@ -98,6 +98,12 @@
         '</a>');
     }
 
+    /* Skip-link voor toetsenbord/screenreader: als allereerste focusbaar element */
+    if (!document.querySelector('.skip-link')) {
+      document.body.insertAdjacentHTML('afterbegin',
+        '<a class="skip-link" href="#site-main">Direct naar de inhoud</a>');
+    }
+
     document.getElementById('site-header').innerHTML =
       '<div class="wrap header-inner">' +
         '<a class="brand" href="index.html" aria-label="' + esc(cfg.brandName) + ' — home">' +
@@ -162,11 +168,13 @@
         '</div>' +
         '<div class="footer-col">' +
           '<h3>Navigatie</h3><nav class="footer-nav">' + navLinks +
-          '<a href="privacy.html">' + esc(f.privacyLabel) + '</a></nav>' +
+          '<a href="privacy.html">' + esc(f.privacyLabel) + '</a>' +
+          '<a href="voorwaarden.html">' + esc(f.termsLabel) + '</a></nav>' +
         '</div>' +
         '<div class="footer-col">' +
           '<h3>Contact</h3>' +
           '<a class="footer-wa" href="' + waLink(C.contact.direct.whatsappPrefill) + '" target="_blank" rel="noopener" data-ga-event="whatsapp_click">WhatsApp — snelste route</a>' +
+          (C.contact.direct.phoneDisplay ? '<a href="tel:+' + esc(cfg.whatsappNumber) + '">' + esc(C.contact.direct.phoneDisplay) + '</a>' : '') +
           (cfg.email ? '<a href="mailto:' + esc(cfg.email) + '">' + esc(cfg.email) + '</a>' : '') +
           (socials.length ? '<div class="footer-socials">' + socials.map(s =>
             '<a href="' + esc(s.href) + '" target="_blank" rel="noopener">' + esc(s.label) + '</a>').join('') + '</div>' : '') +
@@ -182,8 +190,18 @@
       '<div class="wrap footer-bottom">' +
         '<span>© ' + new Date().getFullYear() + ' ' + esc(cfg.brandName) + ' · ' + esc(cfg.tagline) + '</span>' +
         '<a href="privacy.html">' + esc(f.privacyLabel) + '</a>' +
+        '<a href="voorwaarden.html">' + esc(f.termsLabel) + '</a>' +
+        /* Cookie-voorkeuren opnieuw kiezen — alleen zinvol als er iets te kiezen valt (GA aan) */
+        (cfg.gaId ? '<button type="button" class="footer-link-btn" id="cookie-prefs">' + esc(f.cookiePrefsLabel) + '</button>' : '') +
         '<span>' + esc(cfg.origin) + '</span>' +
       '</div>';
+
+    const prefs = document.getElementById('cookie-prefs');
+    if (prefs) prefs.addEventListener('click', () => {
+      localStorage.removeItem(CONSENT_KEY);
+      document.querySelectorAll('.cookie-banner').forEach(el => el.remove());
+      initConsent();
+    });
   }
 
   /* Nieuwsbrief-inschrijving in de footer (zelfde Formspree→mailto-fallback als de formulieren). */
@@ -198,6 +216,7 @@
         '<input type="email" name="email" required aria-label="' + esc(n.placeholder) + '" placeholder="' + esc(n.placeholder) + '">' +
         '<button type="submit" class="btn btn-primary" data-ga-event="newsletter_signup">' + esc(n.button) + '</button>' +
       '</div>' +
+      (n.privacyNote ? '<p class="newsletter-note">' + esc(n.privacyNote) + ' <a href="privacy.html">Privacy</a></p>' : '') +
       '<p class="form-error" data-role="error" hidden></p>' +
       '<p class="form-success" data-role="success" hidden></p>' +
     '</form>';
@@ -704,11 +723,14 @@
             '<h3>' + esc(c.direct.title) + '</h3>' +
             '<p>' + esc(c.direct.text) + '</p>' +
             '<a class="btn btn-primary btn-wa" href="' + waLink(c.direct.whatsappPrefill) + '" target="_blank" rel="noopener" data-ga-event="whatsapp_click">' + esc(c.direct.whatsappLabel) + '</a>' +
+            (c.direct.phoneDisplay ? '<p class="contact-phone">' + esc(c.direct.phoneNote) + ' <a href="tel:+' + esc(cfg.whatsappNumber) + '">' + esc(c.direct.phoneDisplay) + '</a></p>' : '') +
+            (cfg.email ? '<p class="contact-phone">E-mail: <a href="mailto:' + esc(cfg.email) + '">' + esc(cfg.email) + '</a></p>' : '') +
           '</div>' +
           '<div class="card reveal">' +
             '<h3>' + esc(C.importer.label) + '</h3>' +
             '<p class="footer-legal">' + esc(C.importer.name) + '<br>' + esc(C.importer.address) + '<br>' +
-              esc(C.importer.postalCity) + '<br>' + esc(C.importer.country) + '</p>' +
+              esc(C.importer.postalCity) + '<br>' + esc(C.importer.country) + '<br>' +
+              'KvK: ' + esc(cfg.kvk) + '</p>' +
           '</div>' +
         '</aside>' +
 
@@ -797,8 +819,8 @@
     });
   }
 
-  function renderPrivacy() {
-    const p = C.privacy;
+  /* Gedeelde renderer voor juridische pagina's (privacyverklaring + algemene voorwaarden) */
+  function renderLegal(p) {
     return pageHero(p.hero) +
       '<section class="section"><div class="wrap wrap-narrow prose">' +
       '<p class="form-note reveal">' + esc(p.updated) + '</p>' +
@@ -807,6 +829,8 @@
       ).join('') +
       '</div></section>';
   }
+  function renderPrivacy() { return renderLegal(C.privacy); }
+  function renderTerms() { return renderLegal(C.terms); }
 
   /* Kennisbank: intro + accordion met algemene olijfolie-kennis (geen productclaims) + CTA. */
   function renderKnowledge() {
@@ -858,7 +882,13 @@
     if (!el) return;
     el.textContent = msg;
     el.hidden = false;
-    if (role === 'success') el.insertAdjacentHTML('afterbegin', OK_CHECK);
+    if (role === 'success') {
+      el.insertAdjacentHTML('afterbegin', OK_CHECK);
+      /* De melding staat onder het formulier — zeker op mobiel vaak buiten beeld na submit.
+         Zacht in beeld scrollen zodat de bevestiging niet gemist wordt. */
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+    }
     if (role === 'error') shakeFirstMissing(form);
   }
 
@@ -1078,6 +1108,11 @@
       description: C.footer.aboutLine,
       url: cfg.domain,
       logo: cfg.domain + 'assets/logo/ajar-wordmark.svg',
+      email: cfg.email || undefined,
+      telephone: '+' + cfg.whatsappNumber,
+      vatID: undefined, /* btw-id volgt — invullen zodra bekend */
+      taxID: cfg.kvk ? 'KvK ' + cfg.kvk : undefined,
+      contactPoint: { '@type': 'ContactPoint', contactType: 'sales', telephone: '+' + cfg.whatsappNumber, email: cfg.email || undefined, availableLanguage: ['nl'] },
       address: { '@type': 'PostalAddress', streetAddress: C.importer.address, postalCode: '1055 JV', addressLocality: 'Amsterdam', addressCountry: 'NL' }
     };
     const product = {
@@ -1467,7 +1502,7 @@
   /* ---------- Sticky mobiele CTA-balk (lead-site: sample altijd binnen duimbereik) ---------- */
 
   function initMobileCta() {
-    if (page === 'sample' || page === 'contact' || page === 'privacy') return; // daar staat het formulier al
+    if (page === 'sample' || page === 'contact' || page === 'privacy' || page === 'voorwaarden') return; // formulier-/juridische pagina's
     const m = C.mobileCta;
     if (!m) return;
     const bar = document.createElement('div');
@@ -1511,7 +1546,7 @@
   const renderers = {
     home: renderHome, 'over-ons': renderAbout, product: renderProduct,
     zakelijk: renderB2b, contact: renderContact, privacy: renderPrivacy,
-    sample: renderSample, kennis: renderKnowledge
+    sample: renderSample, kennis: renderKnowledge, voorwaarden: renderTerms
   };
 
   renderHeader();
