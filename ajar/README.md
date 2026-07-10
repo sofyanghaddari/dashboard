@@ -11,7 +11,7 @@ Alle teksten, contactgegevens en instellingen staan in `js/content.js`. De pagin
 |---|---|---|
 | `brandName` | Merknaam — wijzigt overal in één keer | AJAR |
 | `gaId` | GA4 measurement-ID (`G-XXXXXXXXXX`). Leeg = geen tracking én geen cookiebanner | **TODO** |
-| `formspreeId` | Formspree form-ID. Leeg = formulieren vallen netjes terug op WhatsApp met voorgevuld bericht | **TODO** |
+| `formspreeId` | Formspree form-ID. Leeg = formulieren vallen netjes terug op WhatsApp met voorgevuld bericht | ✅ ingesteld |
 | `email` | Zakelijk e-mailadres. Leeg = nergens getoond, WhatsApp is primair kanaal | **TODO** |
 | `kvk` | KvK-nummer (footer toont "volgt" zolang leeg) | **TODO** |
 | `domain` | Basis-URL — aanpassen bij custom domein | github.io |

@@ -15,7 +15,7 @@ window.AJAR_CONTENT = {
     payoff: 'Extra vierge olijfolie, rechtstreeks uit Marokko.',
 
     gaId: '',                                 // TODO: GA4 measurement ID (bijv. 'G-XXXXXXXXXX') — leeg = GA uit, banner verborgen
-    formspreeId: '',                          // TODO (FORMSPREE_PLACEHOLDER): Formspree form-ID (bijv. 'xqkrgwyz') — leeg = formulier valt terug op WhatsApp
+    formspreeId: 'mbdvnykk',                  // Formspree form-ID — formulieren versturen nu direct i.p.v. mailto/WhatsApp-fallback
     email: 'sofyanghaddari@gmail.com',        // zakelijk e-mailadres (voorlopig); formulieren mailen hierheen + zichtbaar in footer/contact
     whatsappNumber: '31640293567',            // internationaal formaat zonder + of spaties
     kvk: '77755170',                          // KvK-nummer
