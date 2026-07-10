@@ -657,7 +657,7 @@ window.AJAR_CONTENT = {
       },
       {
         title: '4. Levering',
-        body: 'De leverdatum spreken we bij elke bestelling concreet met u af. Genoemde termijnen zijn indicatief en geen fatale termijn; loopt een levering onverhoopt uit, dan hoort u dat zo snel mogelijk en spreken we een nieuwe datum af. Levering vindt plaats op het door u opgegeven bezorgadres in Nederland, tenzij anders overeengekomen. Het risico van de producten gaat op u over op het moment van aflevering.'
+        body: 'De leverdatum spreken we bij elke bestelling concreet met u af. Genoemde termijnen zijn indicatief en geen fatale termijn; loopt een levering onverhoopt uit, dan hoort u dat zo snel mogelijk en spreken we een nieuwe datum af. Levering vindt plaats op het door u opgegeven bezorgadres in Nederland of België, tenzij anders overeengekomen. Het risico van de producten gaat op u over op het moment van aflevering.'
       },
       {
         title: '5. Betaling',
@@ -721,16 +721,19 @@ window.AJAR_CONTENT = {
   },
 
   /* ---------- Nieuwsbrief (footer-inschrijving) ----------
-     v6g: verzamelt e-mailadressen van geïnteresseerde zaken vóór de lancering. Gebruikt dezelfde
+     v6g: verzamelt e-mailadressen van geïnteresseerde zaken. Gebruikt dezelfde
      Formspree→mailto-fallback als de andere formulieren (submitLead) — zonder formspreeId opent
-     het een voorgevulde mail. `enabled: false` verbergt het blok volledig. */
+     het een voorgevulde mail. `enabled: false` verbergt het blok volledig.
+     v7-vervolg (10 juli 2026): tekst ging nog uit van "nog niet leverbaar" — de olie is er al,
+     alleen de site wordt nog niet actief gepromoot. Herschreven naar gewone "blijf op de
+     hoogte"-copy, geen leverbaarheids-belofte meer (Soef: "doe maar alsof de voorraad er al is"). */
   newsletter: {
     enabled: true,
     title: 'Op de hoogte blijven?',
-    text: 'Laat uw e-mailadres achter — dan laten we het weten zodra AJAR leverbaar is.',
+    text: 'Laat uw e-mailadres achter voor nieuws en updates over AJAR.',
     placeholder: 'Uw e-mailadres',
     button: 'Inschrijven',
-    success: 'Bedankt — u hoort van ons zodra we van start gaan.',
+    success: 'Bedankt — u hoort binnenkort van ons.',
     /* v7: AVG — korte uitleg bij het veld wat er met het adres gebeurt */
     privacyNote: 'Alleen voor updates over AJAR — geen spam, uitschrijven kan altijd.',
     emailSubject: 'Nieuwsbrief-inschrijving AJAR'

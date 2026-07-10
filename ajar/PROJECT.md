@@ -119,6 +119,14 @@ NVWA-registratie, etiket-eisen, btw-id, verzekering). Wijzigingen:
 - E2E geverifieerd (headless Chromium, 390px + 1280px, alle 9 pagina's): geen JS-fouten, geen
   kapotte beelden, geen overflow; fonts laden lokaal; voorwaarden-pagina rendert 12 artikelen.
 
+**v7-vervolg — Soefs antwoorden op de C7-vragen verwerkt (10 juli 2026, zelfde dag):**
+Betaaltermijn (14 dagen) en de sample-aanname ("één per zaak") bevestigd, geen wijziging nodig.
+Twee content.js-aanpassingen: **levergebied** in de voorwaarden (art. 4) van "Nederland" naar
+**"Nederland of België"**; **nieuwsbrief-tekst** herschreven — ging nog uit van "zodra AJAR
+leverbaar is" (pre-launch-toon), maar de olie is er al, alleen de site wordt nog niet actief
+gepromoot. Nu een gewone "blijf op de hoogte"-tekst zonder leverbaarheids-belofte.
+`LANCERING-CHECKLIST.md` sectie C1/C7 bijgewerkt (aannames afgevinkt, beantwoorde vragen gemarkeerd).
+
 ### v6g — Kennisbank-pagina + nieuwsbrief-inschrijving (5 juli 2026)
 
 Uit een verbeter-menu koos Soef "verder gaan" met de items die ik volledig zonder aangeleverde

@@ -63,11 +63,10 @@
 - [ ] **Btw-identificatienummer** doorgeven → zetten we in de footer + voorwaarden + facturen.
 - [ ] **Check je KvK-uittreksel:** staat "AJAR" als handelsnaam geregistreerd onder KvK 77755170?
   Zo niet: handelsnaam toevoegen (kan online bij KvK, gratis).
-- [ ] **Algemene voorwaarden nalopen op 3 aannames die ik als redelijke standaard heb ingevuld** —
-  pas ze aan als je iets anders wilt (alleen `js/content.js` → `terms`):
-  1. betaaltermijn **14 dagen** als er niets is afgesproken (art. 5);
-  2. samples **"één per zaak, zolang de voorraad strekt"** (art. 8);
-  3. levergebied **Nederland** tenzij anders afgesproken (art. 4).
+- [x] ~~Algemene voorwaarden nalopen op 3 aannames~~ **Bevestigd door Soef (10 juli 2026):**
+  1. betaaltermijn **14 dagen** als er niets is afgesproken (art. 5) — akkoord;
+  2. samples **"één per zaak, zolang de voorraad strekt"** (art. 8) — akkoord;
+  3. levergebied → aangepast naar **Nederland én België** (art. 4), was alleen Nederland.
 - [ ] **Bedrijfs- en productaansprakelijkheidsverzekering** afsluiten (voedselproduct = product-
   aansprakelijkheidsrisico; een AVB+productdekking is voor een importeur echt aan te raden).
 - [ ] **(Aanbevolen)** De algemene voorwaarden een keer laten toetsen door een jurist zodra er
@@ -128,11 +127,13 @@
 
 1. **Reactiebelofte:** wil je op Contact "u hoort binnen één werkdag van ons" beloven?
    (Sterker dan het huidige "u hoort snel van ons" — maar alleen doen als je het waarmaakt.)
-2. **Levergebied België/EU:** de voorwaarden zeggen nu "Nederland, tenzij anders overeengekomen".
-   Wil je actief ook België bedienen? Dan passen we site + voorwaarden aan.
-3. **Nieuwsbrief-tekst** zegt "zodra AJAR leverbaar is" — klopt dat nog met je planning, of is
-   de olie al leverbaar? (De rest van de site suggereert dat bestellen al kan.)
-4. **De 3 aannames in de voorwaarden** (zie C1, punt 4).
+
+**Beantwoord (10 juli 2026):**
+- ~~Levergebied België/EU~~ → **Nederland én België** (verwerkt in de voorwaarden, art. 4).
+- ~~Nieuwsbrief-tekst "zodra leverbaar"~~ → herschreven naar een gewone "blijf op de hoogte"-tekst,
+  geen leverbaarheids-belofte meer (de olie is er al, alleen de site is nog niet actief gepromoot).
+- ~~3 aannames in de voorwaarden~~ → betaaltermijn en samples bevestigd, levergebied aangepast
+  (zie C1 hierboven).
 
 ---
 
