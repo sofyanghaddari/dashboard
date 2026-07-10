@@ -257,9 +257,7 @@
           newsletterBlock() +
         '</div>' +
         '<div class="footer-col">' +
-          '<h3>Navigatie</h3><nav class="footer-nav">' + navLinks +
-          '<a href="privacy.html">' + esc(f.privacyLabel) + '</a>' +
-          '<a href="voorwaarden.html">' + esc(f.termsLabel) + '</a></nav>' +
+          '<h3>Navigatie</h3><nav class="footer-nav">' + navLinks + '</nav>' +
         '</div>' +
         '<div class="footer-col">' +
           '<h3>Contact</h3>' +
@@ -284,7 +282,6 @@
         '<a href="voorwaarden.html">' + esc(f.termsLabel) + '</a>' +
         /* Cookie-voorkeuren opnieuw kiezen — alleen zinvol als er iets te kiezen valt (GA aan) */
         (cfg.gaId ? '<button type="button" class="footer-link-btn" id="cookie-prefs">' + esc(f.cookiePrefsLabel) + '</button>' : '') +
-        '<span>' + esc(cfg.origin) + '</span>' +
       '</div>';
 
     const prefs = document.getElementById('cookie-prefs');

@@ -11,7 +11,6 @@ window.AJAR_CONTENT = {
     brandName: 'AJAR',                       // werkbedrijfsnaam — kan later wijzigen, alléén hier
     legalProducer: 'ConservAjar SARL',
     tagline: 'Extra vierge olijfolie',
-    origin: 'Marokko',
     payoff: 'Extra vierge olijfolie, rechtstreeks uit Marokko.',
 
     gaId: '',                                 // TODO: GA4 measurement ID (bijv. 'G-XXXXXXXXXX') — leeg = GA uit, banner verborgen
