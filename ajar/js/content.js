@@ -308,15 +308,10 @@ window.AJAR_CONTENT = {
         { label: 'Oogstjaar', value: 'Volgt', unit: '', todo: true, explain: 'Verse oogst, geen jarenlange opslag — u weet precies uit welk seizoen uw olie komt.' }
       ]
     },
-    why: {
-      kicker: 'Waarom deze olie',
-      title: 'Wat AJAR anders maakt',
-      items: [
-        { title: 'Koud geperst', text: 'De olijven worden koud geperst, waardoor smaak, geur en natuurlijke inhoudsstoffen behouden blijven.' },
-        { title: 'Korte keten', text: 'Eigen productie in Marokko en directe import naar Nederland: geen anonieme bulk, geen blends van onbekende herkomst.' },
-        { title: 'Directe import', text: 'Eén importeur, één producent. Vragen over een partij of levering worden direct beantwoord — niet via drie schakels.' }
-      ]
-    },
+    /* v8 (sanering juli 2026): sectie "Wat AJAR anders maakt" (why) verwijderd — de 3 punten
+       (koud geperst / korte keten / directe import) stonden vrijwel woordelijk ook al in het
+       vergelijkingsblok hieronder (compare), in een sterkere vorm (naast-elkaar met de
+       supermarkt-tegenhanger). Geen nav-anchor verwezen naar "why", dus geen links te herstellen. */
     /* Vergelijkingsblok — alléén feitelijke claims. */
     compare: {
       kicker: 'Het verschil',
@@ -361,19 +356,18 @@ window.AJAR_CONTENT = {
       ]
     },
     /* Herkomst-/traceerkaart — "van déze boomgaard naar uw zaak". Geanimeerde route
-       Debdou/Taourirt (MA) → Amsterdam (NL). Abstracte kaart, geen exacte cartografie. */
+       Debdou/Taourirt (MA) → Amsterdam (NL). Abstracte kaart, geen exacte cartografie.
+       v8 (sanering juli 2026): de 4-stappenlijst (oogst/botteling/import/levering) is verwijderd —
+       dat is woordelijk dezelfde keten als process.steps hierboven (met foto's, dus rijker).
+       Deze sectie draagt nu alleen nog de eigen, unieke waarde: de visuele route-kaart. `steps`
+       blijft als lege array staan zodat main.js (originMap()) zonder aanpassing blijft werken. */
     origin: {
       kicker: 'Herkomst',
       title: 'Van Debdou naar uw zaak',
       text: 'Eén korte, controleerbare keten: geoogst en koud geperst in de eigen fabriek in Taourirt, gebotteld aan de bron, en rechtstreeks geïmporteerd naar Amsterdam.',
       from: { label: 'Taourirt · Debdou', sub: 'Noordoost-Marokko' },
       to: { label: 'Amsterdam', sub: 'Nederland' },
-      steps: [
-        { title: 'Oogst & persing', text: 'Debdou-regio — eigen boomgaarden, koud geperst in Taourirt.' },
-        { title: 'Botteling', text: 'Aan de bron gebotteld onder ISO 22000-condities.' },
-        { title: 'Import', text: 'Rechtstreeks naar Amsterdam, met importdocumentatie.' },
-        { title: 'Levering', text: 'Vanuit Amsterdam bij u in de zaak.' }
-      ]
+      steps: []
     },
     cta: {
       title: 'Zelf proeven?',
