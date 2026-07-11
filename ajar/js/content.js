@@ -56,7 +56,6 @@ window.AJAR_CONTENT = {
     { id: 'over-ons', label: 'Over ons',          href: 'over-ons.html', children: [
       { label: 'Ons verhaal',          href: 'over-ons.html#verhaal' },
       { label: 'Kwaliteit & ISO',      href: 'over-ons.html#kwaliteit-iso' },
-      { label: 'Onze familie',         href: 'over-ons.html#familie' },
       { label: 'Importeur in Nederland', href: 'over-ons.html#importeur' },
       { label: 'Tijdlijn',             href: 'over-ons.html#tijdlijn' }
     ] },
@@ -202,8 +201,14 @@ window.AJAR_CONTENT = {
            v6b: BELANGRIJK — "MOUSTAINE" is géén (voormalige) bedrijfs-/merknaam, het is de
            achternaam van Soefs opa (persoonsnaam). Eerdere sessies namen ten onrechte aan dat het
            een oude handelsnaam was en zetten 'm meermaals op de site — dat is in deze ronde overal
-           verwijderd, conform de eigen harde regel #2 (geen persoonsnamen). NIET opnieuw invoeren. */
-        text: "ConservAjar SARL werd begin jaren '90 opgericht in het noordoosten van Marokko — een familiebedrijf waar de kennis van het persen en verwerken van olijven al drie generaties wordt doorgegeven. Naast olijfolie conserveert het bedrijf ook tafelolijven, abrikozenpulp en specerijen onder het eigen merk AJAR, in binnen- en buitenland.",
+           verwijderd, conform de eigen harde regel #2 (geen persoonsnamen). NIET opnieuw invoeren.
+           v8 (sanering juli 2026): dit is nu de ENIGE plek op de site die het familieverhaal
+           vertelt — voorheen stond het ook (deels anders verwoord) in het losse "Onze familie"-blok
+           (about.familyStory, verwijderd) en werd de assortiment-zin hier gedupliceerd door
+           factoryGallery.text. Tekst hieronder combineert opa's verhaal + de oprichting in 2-3
+           zinnen; de assortiment-claim (tafelolijven/abrikozenpulp/specerijen) staat voortaan
+           alleen nog bij de fabrieksfoto's (factoryGallery), niet meer hier. */
+        text: 'Onze opa vertrok als jongvolwassene naar Nederland om te werken, keerde na een paar jaar terug naar Marokko en begon een klein winkeltje in olijven. Onder zijn vijf zonen groeide dat uit tot ConservAjar SARL, het familiebedrijf waar de kennis van het persen en verwerken van olijven inmiddels drie generaties wordt doorgegeven.',
         image: 'fabriek-taourirt.jpg'
       },
       {
@@ -221,27 +226,11 @@ window.AJAR_CONTENT = {
         image: 'overons-08.jpg'
       }
     ],
-    /* "Onze familie" — persoonlijk verhaal, ná het vertrouwensblok (ISO 22000) en vóór "De eerste
-       officiële importeur" (vertrouwen eerst, emotie als verdieping — masterprompt-volgorde).
-       v6: fors ingekort (Soef: "niemand heeft daar tijd voor") — van 6 uitgebreide blokken + een
-       zelfprijzend citaat naar 2 korte alinea's. Quote verwijderd (te veel zelfprijzing). "Opa"/
-       "kleinzoon" mag nu expliciet gebruikt worden i.p.v. de omslachtige "de oprichter"/"zijn oudste
-       kleinzoon". Nog steeds: géén namen, géén jaartallen die niet vaststaan, géén ziektenaam/
-       oorzaak-gevolg-claim. */
-    familyStory: {
-      kicker: 'Onze familie',
-      title: 'Het verhaal achter de olie',
-      blocks: [
-        {
-          title: 'Een nieuw begin',
-          text: 'Onze opa vertrok als jongvolwassene naar Nederland om te werken — uit noodzaak, niet uit avontuur. Na een paar jaar keerde hij terug naar Marokko en begon een klein winkeltje in olijven.'
-        },
-        {
-          title: 'Van winkeltje tot AJAR',
-          text: 'Wat klein begon, groeide uit tot ConservAjar, geleid door zijn vijf zonen. Zijn gezondheid liet het uiteindelijk niet meer toe zelf door te gaan — zijn kleinzoon brengt de olie nu naar Nederland.'
-        }
-      ]
-    },
+    /* v8 (sanering juli 2026): het losse "Onze familie"-blok (opa/winkeltje/ConservAjar) is
+       verwijderd — het herhaalde vrijwel hetzelfde verhaal als hierboven (about.blocks[0]), alleen
+       in een andere volgorde/toon. Eén telling van het familieverhaal, in blocks[0]. De
+       bijbehorende nav-subitem (#familie) en main.js-renderfunctie (familyStorySection) zijn ook
+       verwijderd; het anker "familie" bestaat niet meer op deze pagina. */
     /* Bewijs van schaal: 7 echte ajar.ma-foto's van het bredere assortiment (magazijn, tafelolijven,
        conserven) — bewust GEEN productgrid met namen/prijzen/aanbod-taal, alleen een korte kicker
        + stille foto's. Zelfde principe als de ene assortiment-zin hierboven: laat zien dat de fabriek
