@@ -81,6 +81,23 @@
       '</div></section>';
   }
 
+  /* Vloeiende olie-scheidingslijn tussen twee grote secties: een zachte golf waar langzaam een
+     gouden lichtdruppel doorheen "stroomt" (offset-path), als traag vloeiende olie. Puur decoratief
+     (aria-hidden), staat stil bij reduced-motion. Bewust spaarzaam ingezet — één per pagina op een
+     sterke overgang. De golfvorm zit in zowel het zichtbare pad als in .oil-flow's offset-path (CSS). */
+  function oilDivider() {
+    /* Twee paden over dezelfde golf: een rustige basislijn + een kort, feller lichtsegment dat er
+       via stroke-dash langzaam doorheen "stroomt". non-scaling-stroke houdt de lijn overal even dun,
+       ook al rekt de SVG op volle breedte uit — zo schaalt het effect naadloos van mobiel tot desktop. */
+    var d = 'M0 20 C 150 4, 300 4, 450 20 S 750 36, 900 20 S 1050 4, 1200 20';
+    return '<div class="oil-divider reveal" aria-hidden="true">' +
+      '<svg class="oil-wave" viewBox="0 0 1200 40" preserveAspectRatio="none" fill="none">' +
+        '<path class="oil-base" d="' + d + '" vector-effect="non-scaling-stroke" pathLength="1"/>' +
+        '<path class="oil-glow" d="' + d + '" vector-effect="non-scaling-stroke" pathLength="1"/>' +
+      '</svg>' +
+    '</div>';
+  }
+
   /* ---------- Header ---------- */
 
   /* Caret-pijltje voor menu-items met een uitklap-submenu */
@@ -402,6 +419,8 @@
         '</div>' +
       '</div></section>' +
 
+      oilDivider() +
+
       marqueeBand() +
 
       /* 4. Slot-CTA — andere formulering dan de hero, zelfde doel */
@@ -556,6 +575,8 @@
 
       factoryGallery(a.factoryGallery) +
 
+      oilDivider() +
+
       /* Familie-tijdlijn */
       '<section class="section section-tint" id="tijdlijn"><div class="wrap wrap-narrow">' +
         '<div class="section-head reveal">' + kickerTitle(tl.kicker, tl.title) + '</div>' +
@@ -661,7 +682,7 @@
 
       '<section class="section section-tint" id="proces"><div class="wrap">' +
         '<div class="section-head reveal">' + kickerTitle(p.process.kicker, p.process.title) + '</div>' +
-        '<ol class="process" data-anim>' + p.process.steps.map((s, i) =>
+        '<ol class="process process-journey" data-anim>' + p.process.steps.map((s, i) =>
           '<li class="process-step reveal">' +
             processMedia(s.image, s.icon, s.title) +
             '<span class="process-num">' + (i + 1) + '</span>' +
@@ -681,6 +702,8 @@
         '</div>' +
       '</div></section>' +
 
+      oilDivider() +
+
       originMap(p.origin) +
 
       ctaBand(p.cta);
@@ -699,6 +722,7 @@
         '<span class="bm-neck" aria-hidden="true"></span>' +
         '<span class="bm-body" aria-hidden="true">' +
           '<span class="bm-label"><img src="assets/logo/ajar-wordmark.svg" alt="AJAR (concept-etiket)" loading="lazy"></span>' +
+          '<span class="bm-shine"></span>' +
         '</span>' +
       '</div>' +
       '<p class="bottle-mockup-cap">' + esc(m.caption) + '</p>' +
@@ -796,6 +820,8 @@
       '</div></section>' +
 
       dossierSection(b.dossier) +
+
+      oilDivider() +
 
       /* Documentatie: spec-sheet (vrij) + bedrijfspresentatie (achter mini-formulier) */
       '<section class="section section-tint" id="documentatie"><div class="wrap">' +
@@ -1771,44 +1797,127 @@
 
   /* ---------- Lightbox voor fabrieks- en procesfoto's (klik = groot bekijken) ---------- */
 
+  /* Lightbox-galerij: klik een procesfoto → groot bekijken, dan vegen/pijltjes/knoppen naar de
+     volgende of vorige, met een teller (2 / 4) en een vloeiende schuif-overgang. De galerij bestaat
+     uit álle procesfoto's die daadwerkelijk laadden (icoon-tegels doen niet mee). */
   function initLightbox() {
-    const targets = document.querySelectorAll('.factory-gallery-item .img-slot, .proc-media');
-    if (!targets.length) return;
-    let box = null;
+    const slots = Array.from(document.querySelectorAll('.proc-media'));
+    if (!slots.length) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Galerij opbouwen in DOM-volgorde; elke slot onthoudt zijn index zodra z'n foto laadt. */
+    const gallery = [];
+    let box = null, imgEl = null, capEl = null, counterEl = null, cur = 0, busy = false;
+    let onKey = null;
+
     function close() {
       if (!box) return;
-      box.classList.remove('open');
-      const b = box;
-      setTimeout(() => { b.remove(); }, 280);
-      box = null;
+      const b = box; box = null;
+      b.classList.remove('open');
+      setTimeout(() => b.remove(), 280);
       document.documentElement.classList.remove('nav-lock');
+      if (onKey) { document.removeEventListener('keydown', onKey); onKey = null; }
     }
-    function open(src, alt) {
+
+    function paint(idx) {
+      cur = (idx + gallery.length) % gallery.length;
+      const it = gallery[cur];
+      imgEl.src = it.src; imgEl.alt = it.alt || '';
+      capEl.textContent = it.alt || '';
+      capEl.style.display = it.alt ? '' : 'none';
+      if (counterEl) counterEl.textContent = (cur + 1) + ' / ' + gallery.length;
+    }
+
+    /* Schuif-overgang naar een andere foto: huidige glijdt weg, nieuwe glijdt van de andere kant in. */
+    function go(idx, dir) {
+      if (busy || gallery.length < 2) { paint(idx); return; }
+      if (reduce) { paint(idx); return; }
+      busy = true;
+      const out = dir < 0 ? 34 : -34;
+      imgEl.style.transition = 'transform .18s ease, opacity .18s ease';
+      imgEl.style.transform = 'translateX(' + out + 'px)';
+      imgEl.style.opacity = '0';
+      setTimeout(() => {
+        paint(idx);
+        imgEl.style.transition = 'none';
+        imgEl.style.transform = 'translateX(' + (-out) + 'px)';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          imgEl.style.transition = 'transform .24s var(--ease), opacity .24s var(--ease)';
+          imgEl.style.transform = 'translateX(0)';
+          imgEl.style.opacity = '1';
+          setTimeout(() => { busy = false; }, 240);
+        }));
+      }, 180);
+    }
+    const next = () => go(cur + 1, 1);
+    const prev = () => go(cur - 1, -1);
+
+    function open(startIdx) {
       close();
+      const multi = gallery.length > 1;
       box = document.createElement('div');
-      box.className = 'lightbox';
+      box.className = 'lightbox' + (multi ? ' lb-multi' : '');
       box.innerHTML =
         '<button class="lightbox-close" aria-label="Sluiten">✕</button>' +
-        '<img src="' + src + '" alt="' + esc(alt || '') + '">' +
-        (alt ? '<p class="lightbox-cap">' + esc(alt) + '</p>' : '');
+        (multi ? '<button class="lb-nav lb-prev" aria-label="Vorige foto">‹</button>' +
+                 '<button class="lb-nav lb-next" aria-label="Volgende foto">›</button>' : '') +
+        '<figure class="lb-figure"><img alt=""><figcaption class="lightbox-cap"></figcaption></figure>' +
+        (multi ? '<span class="lb-counter" aria-hidden="true"></span>' : '');
       document.body.appendChild(box);
+      imgEl = box.querySelector('img');
+      capEl = box.querySelector('.lightbox-cap');
+      counterEl = box.querySelector('.lb-counter');
+      paint(startIdx);
       document.documentElement.classList.add('nav-lock');
       requestAnimationFrame(() => requestAnimationFrame(() => box && box.classList.add('open')));
-      box.addEventListener('click', close);
+
+      /* Achtergrond of ✕ sluit; knoppen en de foto zelf niet. */
+      box.addEventListener('click', (e) => {
+        if (e.target.closest('.lb-nav')) return;
+        if (e.target === imgEl || e.target.closest('.lb-figure')) return;
+        close();
+      });
+      const prevBtn = box.querySelector('.lb-prev'), nextBtn = box.querySelector('.lb-next');
+      if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); prev(); });
+      if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); next(); });
+
+      /* Swipe op mobiel: horizontale veeg > 40px = volgende/vorige. */
+      if (multi) {
+        let sx = 0, sy = 0, tracking = false;
+        box.addEventListener('touchstart', (e) => {
+          const t = e.changedTouches[0]; sx = t.clientX; sy = t.clientY; tracking = true;
+        }, { passive: true });
+        box.addEventListener('touchend', (e) => {
+          if (!tracking) return; tracking = false;
+          const t = e.changedTouches[0];
+          const dx = t.clientX - sx, dy = t.clientY - sy;
+          if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4) { dx < 0 ? next() : prev(); }
+        }, { passive: true });
+      }
+
+      onKey = (e) => {
+        if (e.key === 'Escape') close();
+        else if (multi && e.key === 'ArrowRight') next();
+        else if (multi && e.key === 'ArrowLeft') prev();
+      };
+      document.addEventListener('keydown', onKey);
     }
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-    targets.forEach(slot => {
+
+    slots.forEach(slot => {
       const img = slot.querySelector('img');
       if (!img) return;
       /* Pas activeren als de foto echt geladen is — icoon-tegels (404 by design) blijven gewoon tegels */
       const enable = () => {
-        if (slot.classList.contains('has-lightbox')) return;
+        if (slot.dataset.lbIdx != null) return;
+        const idx = gallery.length;
+        gallery.push({ src: img.src, alt: img.alt });
+        slot.dataset.lbIdx = String(idx);
         slot.classList.add('has-lightbox');
         slot.setAttribute('role', 'button');
         slot.setAttribute('tabindex', '0');
-        slot.addEventListener('click', () => open(img.src, img.alt));
+        slot.addEventListener('click', () => open(Number(slot.dataset.lbIdx)));
         slot.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(img.src, img.alt); }
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(Number(slot.dataset.lbIdx)); }
         });
       };
       if (img.complete && img.naturalWidth > 0) enable();
@@ -1916,6 +2025,163 @@
     update();
   }
 
+  /* ---------- Scrollytelling "Van boom tot fles" (Product-procesrij) ----------
+     Terwijl je door de sectie scrolt, licht stap voor stap de actieve stap op, vult de
+     verbindingslijn mee en dimmen de nog-komende stappen licht — een mini-film van de keten.
+     Werkt zowel op de horizontale desktop-rij als de verticale mobiele stapel. */
+  function initProcessJourney() {
+    const ol = document.querySelector('.process-journey');
+    if (!ol) return;
+    const steps = Array.from(ol.querySelectorAll('.process-step'));
+    if (!steps.length) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { steps.forEach(s => s.classList.add('step-active')); ol.style.setProperty('--journey', '1'); return; }
+
+    let ticking = false;
+    function measure() {
+      ticking = false;
+      const vh = window.innerHeight;
+      /* "focuslijn" iets boven het midden van het scherm; de stap die daar het dichtst bij is = actief */
+      const focus = vh * 0.52;
+      let activeIdx = -1, best = Infinity;
+      steps.forEach((s, i) => {
+        const r = s.getBoundingClientRect();
+        const c = r.top + r.height / 2;
+        const dist = Math.abs(c - focus);
+        if (c - focus < r.height * 0.9 && dist < best) { best = dist; activeIdx = i; }
+      });
+      /* Boven de sectie: niets actief; eronder: alles "gehad" */
+      const first = steps[0].getBoundingClientRect();
+      const last = steps[steps.length - 1].getBoundingClientRect();
+      if (first.top > focus) activeIdx = -1;
+      else if (last.bottom < focus) activeIdx = steps.length - 1;
+
+      steps.forEach((s, i) => {
+        s.classList.toggle('step-active', i === activeIdx);
+        s.classList.toggle('step-done', i < activeIdx);
+      });
+      const fillTo = activeIdx < 0 ? 0 : (steps.length === 1 ? 1 : activeIdx / (steps.length - 1));
+      ol.style.setProperty('--journey', fillTo.toFixed(3));
+    }
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(measure); } };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    measure();
+  }
+
+  /* ---------- Gyroscoop-diepte op de hero-foto (mobiel) ----------
+     De desktop-hero volgt al de muis (init3d); dit is de mobiele tegenhanger: de foto kantelt
+     héél licht mee met het toestel, alsof je door een raampje kijkt. iOS vraagt eenmalig
+     toestemming bij de eerste tik — komt die er niet, dan slaan we het stil over. */
+  function initHeroTilt() {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;
+    /* Alleen op touch-toestellen zonder fijne muis (init3d dekt de muis-variant al) */
+    if (!window.matchMedia('(pointer: coarse)').matches) return;
+    if (!('DeviceOrientationEvent' in window)) return;
+    const heroImg = document.querySelector('.hero-media .img-slot');
+    if (!heroImg) return;
+
+    let base = null, raf = 0, tx = 0, ty = 0, cx = 0, cy = 0;
+    function onOrient(e) {
+      if (e.beta == null || e.gamma == null) return;
+      if (base == null) base = { beta: e.beta, gamma: e.gamma };
+      /* kleine uitslag, geklemd — subtiel en chic, geen wiebel */
+      const gy = Math.max(-14, Math.min(14, (e.gamma - base.gamma)));
+      const bx = Math.max(-14, Math.min(14, (e.beta - base.beta)));
+      tx = (gy / 14) * 4;   // ry (graden)
+      ty = (bx / 14) * 3;   // rx (graden)
+      if (!raf) raf = requestAnimationFrame(apply);
+    }
+    function apply() {
+      raf = 0;
+      cx += (tx - cx) * 0.12;
+      cy += (ty - cy) * 0.12;
+      heroImg.style.setProperty('--hry', cx.toFixed(2) + 'deg');
+      heroImg.style.setProperty('--hrx', (-cy).toFixed(2) + 'deg');
+      if (Math.abs(tx - cx) > 0.05 || Math.abs(ty - cy) > 0.05) raf = requestAnimationFrame(apply);
+    }
+    function start() {
+      heroImg.classList.add('hero-3d');
+      window.addEventListener('deviceorientation', onOrient, { passive: true });
+    }
+    /* iOS 13+: expliciete toestemming, alleen te vragen vanuit een gebruikersgebaar */
+    const needsPermission = typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function';
+    if (needsPermission) {
+      const ask = () => {
+        DeviceOrientationEvent.requestPermission().then(state => {
+          if (state === 'granted') start();
+        }).catch(() => {});
+        window.removeEventListener('touchend', ask);
+      };
+      window.addEventListener('touchend', ask, { once: true });
+    } else {
+      start();
+    }
+  }
+
+  /* ---------- Menu-indicator die meeglijdt ----------
+     Eén dun goudlijntje onder het actieve menu-item dat bij hover naar het item onder de cursor
+     glijdt (en terugkeert), én bij een paginawissel via de View Transition naar het nieuwe actieve
+     item schuift (eigen view-transition-name). Alleen desktop; het mobiele volscherm-menu heeft al
+     een actief-markering. */
+  function initNavIndicator() {
+    if (!window.matchMedia('(min-width: 861px)').matches) return;
+    const nav = document.getElementById('site-nav');
+    if (!nav) return;
+    const links = Array.from(nav.querySelectorAll('a:not(.btn)'));
+    const active = nav.querySelector('a.active') || links[0];
+    if (!active || !links.length) return;
+
+    const ind = document.createElement('span');
+    ind.className = 'nav-underline';
+    ind.setAttribute('aria-hidden', 'true');
+    nav.appendChild(ind);
+    document.body.classList.add('has-nav-underline');
+
+    function moveTo(el) {
+      if (!el) return;
+      const nr = nav.getBoundingClientRect(), r = el.getBoundingClientRect();
+      ind.style.width = r.width + 'px';
+      ind.style.transform = 'translate(' + (r.left - nr.left) + 'px,' + (r.bottom - nr.top - 2) + 'px)';
+    }
+    const settle = () => moveTo(active);
+    moveTo(active);                       // meteen positioneren (voor de eerste view-transition-snapshot)
+    requestAnimationFrame(settle);        // en corrigeren zodra de layout definitief is
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(settle);
+    window.addEventListener('resize', settle);
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce) {
+      links.forEach(a => a.addEventListener('mouseenter', () => moveTo(a)));
+      nav.addEventListener('mouseleave', settle);
+    }
+  }
+
+  /* ---------- WhatsApp-tik-bevestiging ----------
+     WhatsApp opent in een ander tabblad — een korte ripple vanaf het tikpunt + een even
+     oplichtend vinkje maken duidelijk dat de tik geregistreerd is. Tekstloos (universeel icoon),
+     dus geen vertaling nodig. */
+  function initWhatsappFeedback() {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;
+    document.addEventListener('pointerdown', (e) => {
+      const wa = e.target.closest('a[href^="https://wa.me"], a[href^="https://api.whatsapp.com"]');
+      if (!wa) return;
+      /* Los in de body op vaste positie bij het tikpunt — werkt voor knoppen én tekstlinks,
+         zonder de knop-layout of overflow aan te raken. */
+      const fx = document.createElement('div');
+      fx.className = 'wa-fx';
+      fx.style.left = e.clientX + 'px';
+      fx.style.top = e.clientY + 'px';
+      fx.innerHTML = '<span class="wa-ripple"></span>' +
+        '<span class="wa-tick"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4 4L19 7"/></svg></span>';
+      document.body.appendChild(fx);
+      setTimeout(() => fx.remove(), 1000);
+    });
+  }
+
   /* ---------- Boot ---------- */
 
   const renderers = {
@@ -1947,4 +2213,8 @@
   initNewsletter();
   initSaveShare();
   initOriginMap();
+  initProcessJourney();
+  initHeroTilt();
+  initNavIndicator();
+  initWhatsappFeedback();
 })();

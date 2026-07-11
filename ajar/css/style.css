@@ -2213,3 +2213,167 @@ body.nav-open .site-header { transform: none !important; }
   .compare-a::before { animation: none !important; transition: none; opacity: 1; background: rgba(201,162,39,.05); }
   .section-head .kicker::after { transform: scaleX(1); transition: none; }
 }
+
+/* ============================================================
+   ✨ ANIMATIE-PAKKET v9 (10 juli 2026)
+   Acht kwaliteitsanimaties, mobile-first, elk met reduced-motion-uitzet
+   in het blok onderaan deze sectie.
+   ============================================================ */
+
+/* ── 1. Scrollytelling "Van boom tot fles" (Product-procesrij) ──
+   Actieve stap licht op, gehad = zachtjes aan, nog-te-komen = licht gedimd.
+   De verbindingslijn (desktop) vult mee met --journey (0..1, door JS gezet). */
+.process-journey .process-step {
+  transition: opacity .45s var(--ease), transform .45s var(--ease),
+              box-shadow .45s var(--ease), border-color .45s var(--ease);
+}
+.process-journey .process-step { opacity: .62; }
+.process-journey .process-step.step-done { opacity: .9; }
+.process-journey .process-step.step-active {
+  opacity: 1;
+  transform: translateY(-4px);
+  border-color: rgba(184,147,74,.5);
+  box-shadow: 0 16px 40px rgba(30,30,28,.13), 0 0 0 1px rgba(184,147,74,.18);
+}
+.process-journey .process-num { transition: background .45s var(--ease), color .45s var(--ease), border-color .45s var(--ease), transform .45s var(--ease); }
+.process-journey .step-done .process-num { background: rgba(184,147,74,.14); }
+.process-journey .step-active .process-num {
+  background: var(--gold); color: #fff; border-color: var(--gold);
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(184,147,74,.4);
+}
+.process-journey .proc-media img { transition: filter .5s var(--ease), transform .6s var(--ease); filter: saturate(.72) brightness(.96); }
+.process-journey .step-active .proc-media img,
+.process-journey .step-done .proc-media img { filter: none; }
+/* Desktop-lijn volgt de voortgang i.p.v. de eenmalige scaleX(1) */
+@media (min-width: 700px) {
+  .process-journey.in::before { transform: scaleX(var(--journey, 0)); transition: transform .35s linear; }
+}
+
+/* ── 3. Lightbox-galerij: knoppen, teller, schuif-overgang ── */
+.lb-figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.lb-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(247,245,240,.28); border-radius: 50%;
+  background: rgba(20,26,12,.4); color: #F7F5F0; font-size: 1.7rem; line-height: 1;
+  cursor: pointer; z-index: 2;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  transition: background .25s var(--ease), border-color .25s var(--ease), transform .25s var(--ease);
+}
+.lb-nav:hover { background: rgba(20,26,12,.7); border-color: rgba(247,245,240,.6); }
+.lb-prev { left: max(10px, 2vw); }
+.lb-next { right: max(10px, 2vw); }
+.lb-prev:hover { transform: translateY(-50%) translateX(-2px); }
+.lb-next:hover { transform: translateY(-50%) translateX(2px); }
+.lb-counter {
+  position: absolute; bottom: max(16px, env(safe-area-inset-bottom));
+  left: 50%; transform: translateX(-50%);
+  color: rgba(247,245,240,.75); font-size: .8rem; letter-spacing: .1em;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 560px) {
+  .lb-nav { width: 44px; height: 44px; font-size: 1.4rem; }
+}
+
+/* ── 4. Vloeiende olie-scheidingslijn ── */
+.oil-divider { position: relative; width: 100%; height: 44px; margin: -6px 0; overflow: hidden; }
+.oil-wave { position: absolute; inset: 0; width: 100%; height: 100%; }
+.oil-base { stroke: rgba(184,147,74,.28); stroke-width: 1.4; }
+.oil-glow {
+  stroke: var(--gold-bright); stroke-width: 2;
+  stroke-dasharray: .16 .84;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 5px rgba(201,162,39,.55));
+  animation: oilFlow 7s linear infinite;
+}
+@keyframes oilFlow { from { stroke-dashoffset: 1; } to { stroke-dashoffset: -1; } }
+
+/* ── 5. Glans die traag over de concept-fles strijkt ── */
+.bm-body { position: absolute; overflow: hidden; }
+.bm-shine {
+  position: absolute; top: 0; left: -60%;
+  width: 55%; height: 100%;
+  background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.32) 48%, rgba(255,255,255,.08) 60%, transparent 100%);
+  transform: skewX(-14deg);
+  pointer-events: none;
+  animation: bmShine 6.5s var(--ease) infinite;
+}
+@keyframes bmShine {
+  0%, 62% { left: -60%; }
+  84%, 100% { left: 120%; }
+}
+
+/* ── 6. Menu-indicator die meeglijdt (desktop) ── */
+.has-nav-underline .site-nav { position: relative; }
+.nav-underline {
+  position: absolute; top: 0; left: 0;
+  height: 2px; width: 0;
+  background: var(--gold); border-radius: 2px;
+  pointer-events: none;
+  transition: transform .32s var(--ease), width .32s var(--ease);
+  view-transition-name: navind;
+}
+@media (max-width: 860px) { .nav-underline { display: none; } }
+/* Indicator vervangt de losse hover-underline + actief-randje */
+.has-nav-underline .site-nav a:not(.btn)::after { display: none; }
+.has-nav-underline .site-nav a.active { border-bottom-color: transparent; }
+
+/* ── 7. WhatsApp-tik-bevestiging (ripple + vinkje, los in de body) ── */
+.wa-fx { position: fixed; z-index: 1400; pointer-events: none; transform: translate(-50%, -50%); }
+.wa-ripple {
+  position: absolute; left: 50%; top: 50%;
+  width: 20px; height: 20px; margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,211,102,.5), rgba(37,211,102,0) 68%);
+  transform: scale(0);
+  animation: waRipple .65s ease-out forwards;
+}
+@keyframes waRipple { to { transform: scale(9); opacity: 0; } }
+.wa-tick {
+  position: absolute; left: 50%; top: 50%;
+  width: 34px; height: 34px; margin: -17px 0 0 -17px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: #25D366; color: #fff;
+  box-shadow: 0 6px 18px rgba(37,211,102,.4);
+  transform: scale(0);
+  animation: waTickIn .3s var(--ease) .12s forwards, waTickOut .3s var(--ease) .68s forwards;
+}
+.wa-tick svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: waTickDraw .3s var(--ease) .24s forwards; }
+.wa-tick svg path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: waTickDraw .32s var(--ease) .22s forwards; }
+@keyframes waTickIn { to { transform: scale(1); } }
+@keyframes waTickOut { to { transform: scale(0); opacity: 0; } }
+@keyframes waTickDraw { to { stroke-dashoffset: 0; } }
+
+/* ── 8. Succes-vinkje met gouden gloed-puls na een formulier ── */
+.form-success:not([hidden]) { position: relative; }
+.form-success:not([hidden])::before {
+  content: '';
+  position: absolute; left: 9px; top: 50%;
+  width: 18px; height: 18px; margin-top: -9px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,162,39,.55), rgba(201,162,39,0) 70%);
+  transform: scale(0); opacity: 0;
+  pointer-events: none;
+  animation: okGlow 1.1s var(--ease) .15s;
+}
+@keyframes okGlow {
+  0% { transform: scale(.4); opacity: 0; }
+  35% { transform: scale(1.8); opacity: .9; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
+/* Reduced motion: alle v9-effecten in rusttoestand, geen beweging */
+@media (prefers-reduced-motion: reduce) {
+  .process-journey .process-step,
+  .process-journey .process-step.step-done,
+  .process-journey .process-step.step-active { opacity: 1; transform: none; transition: none; }
+  .process-journey .proc-media img { filter: none; transition: none; }
+  .process-journey.in::before { transform: scaleX(1); transition: none; }
+  .oil-glow { animation: none; stroke-dashoffset: 0; stroke-dasharray: none; opacity: .5; }
+  .bm-shine { animation: none; display: none; }
+  .nav-underline { transition: none; }
+  .wa-fx { display: none; }
+  .form-success:not([hidden])::before { animation: none; display: none; }
+}
