@@ -329,7 +329,7 @@ window.AJAR_CONTENT = {
       kicker: 'Van boom tot fles',
       title: 'Vier stappen, één keten',
       steps: [
-        { title: 'Oogst', text: 'De olijven worden met de hand geoogst en dezelfde periode verwerkt.', image: 'proces-04.jpg', icon: 'olive' },
+        { title: 'Oogst', text: 'De olijven worden met de hand geoogst en in dezelfde periode verwerkt.', image: 'proces-04.jpg', icon: 'olive' },
         { title: 'Persing', text: 'Koude persing in de eigen perserij — de kern van drie generaties vakkennis.', image: 'proces-05.jpg', icon: 'press' },
         { title: 'Botteling', text: 'De olie wordt aan de bron gebotteld in flessen van 500 ml, onder ISO 22000-condities.', image: 'proces-06.jpg', icon: 'bottle' },
         { title: 'Import naar Nederland', text: 'Rechtstreeks naar Amsterdam, met de vereiste importdocumentatie en importeursvermelding.', image: 'proces-07.jpg', icon: 'truck' }
