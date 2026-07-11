@@ -573,7 +573,8 @@ window.AJAR_CONTENT_EN = {
       { title: '9. Liability', body: 'Our liability per event is limited to the invoice amount of the delivery to which the damage relates. We are not liable for indirect damage, such as loss of turnover or consequential damage. These limitations do not apply in the event of intent or deliberate recklessness by AJAR, or where the law does not permit a limitation.' },
       { title: '10. Force majeure', body: 'In the event of force majeure — circumstances beyond our control, such as crop failure, transport problems, import or export restrictions, or disruptions at the producer — we may suspend delivery. If the force majeure lasts longer than 60 days, both you and we may cancel the order free of charge for the part not yet delivered. Any amounts already paid for undelivered products will be refunded.' },
       { title: '11. Applicable law and disputes', body: 'Dutch law applies to all agreements with AJAR; the Vienna Sales Convention (CISG) is excluded. If we cannot reach agreement together — which we will of course try first — the Amsterdam court has jurisdiction.' },
-      { title: '12. Changes', body: 'We may amend these terms. For orders already placed, the version in force at the time of your order continues to apply. The current version is always available on this page.' }
+      { title: '12. Changes', body: 'We may amend these terms. For orders already placed, the version in force at the time of your order continues to apply. The current version is always available on this page.' },
+      { title: '13. Company details', body: 'AJAR, Jephtastraat 28H, 1055 JV Amsterdam, Netherlands. Chamber of Commerce: 77755170. VAT: NL003042226B35. Producer: ConservAjar SARL, Taourirt, Morocco.' }
     ]
   },
 

@@ -243,7 +243,7 @@
   /* ---------- Footer ---------- */
 
   function renderFooter() {
-    const f = C.footer, imp = C.importer, prod = C.producer;
+    const f = C.footer;
     const navLinks = C.nav.map(n => '<a href="' + n.href + '">' + esc(n.label) + '</a>').join('');
     const socials = (f.socials || []).filter(s => s && s.href);
 
@@ -268,14 +268,6 @@
           (cfg.email ? '<a href="mailto:' + esc(cfg.email) + '">' + esc(cfg.email) + '</a>' : '') +
           (socials.length ? '<div class="footer-socials">' + socials.map(s =>
             '<a href="' + esc(s.href) + '" target="_blank" rel="noopener">' + esc(s.label) + '</a>').join('') + '</div>' : '') +
-        '</div>' +
-        '<div class="footer-col">' +
-          '<h3>' + esc(imp.label) + '</h3>' +
-          '<p class="footer-legal">' + esc(imp.name) + '<br>' + esc(imp.address) + '<br>' + esc(imp.postalCity) + '<br>' + esc(imp.country) + '<br>' +
-            'KvK: ' + (cfg.kvk ? esc(cfg.kvk) : '<span class="todo-mark">volgt</span>') +
-            (cfg.btw ? '<br>Btw: ' + esc(cfg.btw) : '') + '</p>' +
-          '<h3>' + esc(prod.label) + '</h3>' +
-          '<p class="footer-legal">' + esc(prod.name) + '<br>' + esc(prod.city) + ', ' + esc(prod.country) + '</p>' +
         '</div>' +
       '</div>' +
       '<div class="wrap footer-bottom">' +

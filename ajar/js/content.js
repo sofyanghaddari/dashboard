@@ -820,6 +820,10 @@ window.AJAR_CONTENT = {
       {
         title: '12. Wijzigingen',
         body: 'We kunnen deze voorwaarden aanpassen. Voor lopende bestellingen blijft de versie gelden die van kracht was op het moment van uw bestelling. De actuele versie staat altijd op deze pagina.'
+      },
+      {
+        title: '13. Bedrijfsgegevens',
+        body: 'AJAR, Jephtastraat 28H, 1055 JV Amsterdam, Nederland. KvK: 77755170. Btw: NL003042226B35. Producent: ConservAjar SARL, Taourirt, Marokko.'
       }
     ]
   },

@@ -734,7 +734,7 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   padding-top: clamp(2.6rem, 5vw, 4rem);
   padding-bottom: 2.4rem;
 }
-@media (min-width: 820px) { .footer-inner { grid-template-columns: 1.3fr 1fr 1fr 1.2fr; gap: 40px; } }
+@media (min-width: 820px) { .footer-inner { grid-template-columns: 1.3fr 1fr 1fr; gap: 40px; } }
 .footer-col h3 {
   color: var(--gold);
   font-family: var(--sans);
