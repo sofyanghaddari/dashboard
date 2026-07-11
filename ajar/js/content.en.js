@@ -173,15 +173,6 @@ window.AJAR_CONTENT_EN = {
         { label: 'Harvest year', value: 'To follow', unit: '', todo: true, explain: 'Fresh harvest, no years in storage — you know exactly which season your oil is from.' }
       ]
     },
-    why: {
-      kicker: 'Why this oil',
-      title: 'What sets AJAR apart',
-      items: [
-        { title: 'Cold-pressed', text: 'The olives are cold-pressed, preserving flavour, aroma and natural compounds.' },
-        { title: 'Short chain', text: 'Own production in Morocco and direct import to the Netherlands: no anonymous bulk, no blends of unknown origin.' },
-        { title: 'Direct import', text: 'One importer, one producer. Questions about a batch or delivery are answered directly — not through three links.' }
-      ]
-    },
     compare: {
       kicker: 'The difference',
       title: 'AJAR next to supermarket olive oil',
@@ -230,12 +221,7 @@ window.AJAR_CONTENT_EN = {
       text: 'One short, verifiable chain: harvested and cold-pressed in our own factory in Taourirt, bottled at source, and imported directly to Amsterdam.',
       from: { label: 'Taourirt · Debdou', sub: 'North-eastern Morocco' },
       to: { label: 'Amsterdam', sub: 'The Netherlands' },
-      steps: [
-        { title: 'Harvest & pressing', text: 'Debdou region — our own groves, cold-pressed in Taourirt.' },
-        { title: 'Bottling', text: 'Bottled at source under ISO 22000 conditions.' },
-        { title: 'Import', text: 'Straight to Amsterdam, with import documentation.' },
-        { title: 'Delivery', text: 'From Amsterdam to your business.' }
-      ]
+      steps: []
     },
     cta: {
       title: 'Taste for yourself?',
