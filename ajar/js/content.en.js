@@ -388,8 +388,8 @@ window.AJAR_CONTENT_EN = {
       phoneLabel: 'Phone number',
       addressLabel: 'Delivery address (street + no., postcode, town)',
       messageLabel: 'Note (optional)',
-      tipLabel: 'Tip a fellow business owner (optional)',
-      tipPlaceholder: 'Business name + town — we will surprise them with a sample too',
+      tipLabel: 'Tip a fellow business owner — they get a free sample too (optional)',
+      tipPlaceholder: 'Business name + town',
       submit: 'Request a free sample',
       success: 'Request received — your sample bottle is on its way. See you soon!',
       emailSubject: 'Sample request AJAR'

@@ -570,8 +570,8 @@ window.AJAR_CONTENT = {
       addressLabel: 'Bezorgadres (straat + nr, postcode, plaats)',
       messageLabel: 'Opmerking (optioneel)',
       /* "Deel de liefde"-draai, B2B: tip een collega-ondernemer */
-      tipLabel: 'Tip een collega-ondernemer (optioneel)',
-      tipPlaceholder: 'Naam zaak + plaats — dan verrassen we hen ook met een proefflesje',
+      tipLabel: 'Tip een collega-ondernemer — ook zij krijgen een gratis proefflesje (optioneel)',
+      tipPlaceholder: 'Naam zaak + plaats',
       submit: 'Gratis sample aanvragen',
       success: 'Aanvraag ontvangen — het proefflesje komt eraan. Tot snel!',
       emailSubject: 'Sample-aanvraag AJAR'

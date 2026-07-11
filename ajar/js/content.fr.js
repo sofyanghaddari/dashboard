@@ -388,8 +388,8 @@ window.AJAR_CONTENT_FR = {
       phoneLabel: "Numéro de téléphone",
       addressLabel: "Adresse de livraison (rue + n°, code postal, ville)",
       messageLabel: "Remarque (facultatif)",
-      tipLabel: "Recommandez un confrère (facultatif)",
-      tipPlaceholder: "Nom de l’établissement + ville — nous lui offrirons aussi un flacon d’essai",
+      tipLabel: "Recommandez un confrère — lui aussi recevra un échantillon gratuit (facultatif)",
+      tipPlaceholder: "Nom de l’établissement + ville",
       submit: "Demander un échantillon gratuit",
       success: "Demande reçue — votre flacon d’essai arrive. À bientôt !",
       emailSubject: "Demande d’échantillon AJAR"

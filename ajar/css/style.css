@@ -694,6 +694,7 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   font: inherit;
   font-size: .96rem;
   color: var(--ink);
+  text-overflow: ellipsis;
   background-color: var(--bg);
   /* gouden onderlijn die vanuit het midden groeit bij focus (premium touch) */
   background-image: linear-gradient(var(--gold), var(--gold));

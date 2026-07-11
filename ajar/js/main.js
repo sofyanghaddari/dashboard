@@ -905,8 +905,6 @@
           '</div>' +
           '<div class="form-grid">' +
             selectField('frequentie', f.frequencyLabel, f.frequencyOptions) +
-            '<label class="form-field"><span>' + esc(f.callTimeLabel) + '</span>' +
-              '<input type="text" name="belmoment" placeholder="' + esc(f.callTimePlaceholder) + '"></label>' +
           '</div>' +
           '<fieldset class="form-field choice-field"><legend>' + esc(f.channelLabel) + '</legend>' +
             '<div class="choice-row">' + f.channelOptions.map((o, i) =>
@@ -914,6 +912,8 @@
               '<span>' + esc(o.label) + '</span></label>').join('') +
             '</div>' +
           '</fieldset>' +
+          '<label class="form-field"><span>' + esc(f.callTimeLabel) + '</span>' +
+            '<input type="text" name="belmoment" placeholder="' + esc(f.callTimePlaceholder) + '"></label>' +
           '<label class="form-field"><span>' + esc(f.messageLabel) + '</span>' +
             '<textarea name="bericht" rows="4" placeholder="' + esc(f.messagePlaceholder) + '"></textarea>' +
           '</label>' +
