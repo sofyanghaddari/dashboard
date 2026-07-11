@@ -261,7 +261,7 @@ window.AJAR_CONTENT_FR = {
       items: [
         { size: "Flacon d’essai", name: "L’échantillon", text: "Une découverte gratuite : de quoi goûter, comparer et décider.", shape: "small", todo: true, todoNote: "format à venir" },
         { size: "500 ml", name: "La bouteille", text: "Le cœur de la gamme — pour la cuisine et la table, mise en bouteille à la source.", shape: "bottle" },
-        { size: "12 × 500 ml", name: "Le carton", text: "L’unité B2B dans laquelle nous livrons et facturons.", shape: "box", todo: true, todoNote: "contenu définitif du carton à venir" }
+        { size: "12 × 500 ml", name: "Le carton", text: "L’unité B2B dans laquelle nous livrons et facturons.", shape: "box" }
       ],
       mockup: {
         badge: "Concept",
@@ -271,9 +271,7 @@ window.AJAR_CONTENT_FR = {
     pricing: {
       title: "Prix sur demande",
       text: "Nous ne publions volontairement pas de tarif : les prix B2B dépendent du volume, de la fréquence et des modalités de livraison. Un court échange suffit à y voir clair.",
-      fair: "Un principe reste ferme : des prix justes pour tous les maillons — la famille derrière l’huile, vous en tant qu’entrepreneur, et votre client.",
-      packaging: "Livraison par carton de 12 × 500 ml (contenu définitif du carton à venir).",
-      packagingTodo: true
+      fair: "Un principe reste ferme : des prix justes pour tous les maillons — la famille derrière l’huile, vous en tant qu’entrepreneur, et votre client."
     },
     assurance: {
       kicker: "Pourquoi vous lancer maintenant",
@@ -313,13 +311,12 @@ window.AJAR_CONTENT_FR = {
       intro: "Tout ce dont votre service achats ou votre dossier HACCP a besoin, au même endroit. Ce qui est disponible peut être demandé directement ; le reste est ajouté dès réception.",
       items: [
         { label: "Certificat ISO 22000 (SGS)", note: "Gestion de la sécurité des aliments, auditée en externe", available: true },
-        { label: "Fiche technique produit (PDF)", note: "Toutes les informations techniques sur un A4", available: true },
         { label: "EUR.1 / certificat d’origine", note: "Origine préférentielle UE–Maroc", available: false },
         { label: "Fiche allergènes & HACCP", note: "En cours d’ajout", available: false },
         { label: "Conservation & DDM par lot", note: "À venir par lot sur la bouteille", available: false }
       ],
       requestLabel: "Demander le certificat",
-      requestPrefill: "Bonjour, pourriez-vous m’envoyer le certificat ISO 22000 et la fiche technique AJAR pour mon dossier d’achat ?",
+      requestPrefill: "Bonjour, pourriez-vous m’envoyer le certificat ISO 22000 d’AJAR pour mon dossier d’achat ?",
       availableTag: "Disponible",
       pendingTag: "Sur demande / à venir"
     },
