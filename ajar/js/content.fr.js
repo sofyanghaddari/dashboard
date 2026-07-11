@@ -560,7 +560,7 @@ window.AJAR_CONTENT_FR = {
       title: "Conditions générales",
       sub: "Les accords qui s’appliquent aux commandes professionnelles — en langage clair."
     },
-    updated: "Dernière mise à jour : 10 juillet 2026 · version 1.0",
+    updated: "Dernière mise à jour : 11 juillet 2026 · version 1.1",
     sections: [
       { title: "1. Qui est AJAR et à quoi s’appliquent ces conditions ?", body: "AJAR est importateur d’huile d’olive extra vierge, établi au Jephtastraat 28H, 1055 JV Amsterdam, inscrit à la Chambre de commerce néerlandaise sous le numéro 77755170. Ces conditions s’appliquent à tous les devis, commandes et livraisons d’AJAR. Nous ne livrons qu’à des clients professionnels (B2B), pas aux consommateurs. Les dérogations à ces conditions ne s’appliquent que si nous les avons convenues avec vous par écrit (y compris par e-mail ou WhatsApp). D’éventuelles conditions d’achat du client ne s’appliquent pas, sauf si nous les avons expressément acceptées par écrit." },
       { title: "2. Devis et prix", body: "Tous nos devis sont sans engagement et valables 30 jours, sauf indication contraire dans le devis. Les prix sont en euros et hors TVA ; ils dépendent du volume et sont fixés par devis. Les erreurs ou fautes de frappe manifestes dans un devis ne nous engagent pas — nous vous contacterons alors pour une version corrigée." },
@@ -573,8 +573,9 @@ window.AJAR_CONTENT_FR = {
       { title: "9. Responsabilité", body: "Notre responsabilité par événement est limitée au montant de la facture de la livraison concernée par le dommage. Nous ne sommes pas responsables des dommages indirects, tels que la perte de chiffre d’affaires ou les dommages consécutifs. Ces limitations ne s’appliquent pas en cas de dol ou de négligence grave délibérée d’AJAR, ni là où la loi n’autorise pas de limitation." },
       { title: "10. Force majeure", body: "En cas de force majeure — circonstances hors de notre contrôle, telles que mauvaise récolte, problèmes de transport, restrictions d’import ou d’export, ou perturbations chez le producteur — nous pouvons suspendre la livraison. Si la force majeure dure plus de 60 jours, vous et nous pouvons annuler gratuitement la commande pour la partie non encore livrée. Les montants déjà payés pour des produits non livrés seront alors remboursés." },
       { title: "11. Droit applicable et litiges", body: "Le droit néerlandais s’applique à tous les contrats avec AJAR ; la Convention de Vienne sur la vente internationale de marchandises (CVIM) est exclue. Si nous ne parvenons pas à nous entendre — ce que nous essaierons bien sûr en premier lieu — le tribunal d’Amsterdam est compétent." },
-      { title: "12. Modifications", body: "Nous pouvons modifier ces conditions. Pour les commandes en cours, la version en vigueur au moment de votre commande continue de s’appliquer. La version actuelle est toujours disponible sur cette page." },
-      { title: "13. Coordonnées de l’entreprise", body: "AJAR, Jephtastraat 28H, 1055 JV Amsterdam, Pays-Bas. Chambre de commerce : 77755170. TVA : NL003042226B35. Producteur : ConservAjar SARL, Taourirt, Maroc." }
+      { title: "12. Propriété intellectuelle", body: "Tout le contenu de ce site et de nos supports — textes, photos et autres images, le logo et la marque AJAR, le design, les fiches techniques et les devis — est la propriété d’AJAR ou utilisé avec autorisation, et est protégé par le droit d’auteur et d’autres droits de propriété intellectuelle. La copie, la diffusion ou l’usage commercial n’est pas autorisé sans notre accord écrit préalable. Si vous êtes client, vous pouvez bien entendu utiliser nos images et informations produit pour présenter nos produits dans votre établissement, votre carte ou votre boutique en ligne. Une brève citation avec mention de la source est également autorisée." },
+      { title: "13. Modifications", body: "Nous pouvons modifier ces conditions. Pour les commandes en cours, la version en vigueur au moment de votre commande continue de s’appliquer. La version actuelle est toujours disponible sur cette page." },
+      { title: "14. Coordonnées de l’entreprise", body: "AJAR, Jephtastraat 28H, 1055 JV Amsterdam, Pays-Bas. Chambre de commerce : 77755170. TVA : NL003042226B35. Producteur : ConservAjar SARL, Taourirt, Maroc." }
     ]
   },
 
@@ -600,6 +601,7 @@ window.AJAR_CONTENT_FR = {
     aboutLine: "AJAR — huile d’olive extra vierge du Maroc. Importée en direct pour la restauration, les épiceries fines et le commerce de détail néerlandais.",
     privacyLabel: "Déclaration de confidentialité",
     termsLabel: "Conditions générales",
-    cookiePrefsLabel: "Préférences cookies"
+    cookiePrefsLabel: "Préférences cookies",
+    rightsLine: "Tous droits réservés"
   }
 };

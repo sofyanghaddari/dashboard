@@ -14,7 +14,7 @@
 | 9 pagina's: Home, Over ons, Product, Kennis, Zakelijk, Contact, Sample, Privacy, **Algemene voorwaarden (nieuw)** | ✅ |
 | Alle teksten geschreven (geen lorem ipsum, geen verzonnen productdata) | ✅ |
 | Privacyverklaring (AVG-compleet: formulieren, nieuwsbrief, GA4, hosting, rechten, cookies) | ✅ |
-| Algemene voorwaarden B2B (12 artikelen, gewone taal) | ✅ — *wel punt C1 checken* |
+| Algemene voorwaarden B2B (14 artikelen, gewone taal, incl. intellectueel eigendom) | ✅ — *wel punt C1 checken* |
 | Cookiebanner + GA4 pas ná toestemming + cookie-voorkeuren aanpasbaar (footer-link) | ✅ |
 | Formulieren: offerte, sample, presentatie, nieuwsbrief — met WhatsApp/mailto-fallback | ✅ |
 | Spec-sheet-PDF (vrij) + bedrijfspresentatie-PDF (achter mini-formulier) | ✅ |
@@ -27,8 +27,9 @@
 ## B. Wat er in deze ronde (v7, 10 juli 2026) is gedaan
 
 1. **Algemene voorwaarden geschreven** — nieuwe pagina `voorwaarden.html`, gelinkt in de footer.
-   12 artikelen: toepasselijkheid, offertes, bestelling, levering, betaling, eigendomsvoorbehoud,
-   klachten, samples, aansprakelijkheid, overmacht, recht/geschillen, wijzigingen.
+   14 artikelen: toepasselijkheid, offertes, bestelling, levering, betaling, eigendomsvoorbehoud,
+   klachten, samples, aansprakelijkheid, overmacht, recht/geschillen, intellectueel eigendom,
+   wijzigingen, bedrijfsgegevens.
 2. **Privacyverklaring uitgebreid** — nieuwsbrief-verwerking, e-mail als contactkanaal, KvK-nummer,
    hosting (GitHub Pages), dataportabiliteit, beveiligingsparagraaf, cookie-voorkeuren-uitleg.
 3. **Google Fonts vervangen door lokaal gehoste fonts** — het laden van fonts via Google's CDN
