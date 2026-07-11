@@ -77,7 +77,7 @@ window.AJAR_CONTENT_EN = {
     partners: { kicker: 'Available at', items: [] },
     intro: {
       kicker: 'The story',
-      text: "A family business in north-eastern Morocco has been pressing this oil since the '90s — three generations on the same land.",
+      text: 'A family business in north-eastern Morocco has pressed this oil for three generations, on the same land.',
       linkLabel: 'Read our story'
     },
     cta: {
