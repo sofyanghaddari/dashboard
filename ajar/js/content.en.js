@@ -102,7 +102,7 @@ window.AJAR_CONTENT_EN = {
       {
         anchor: 'kwaliteit-iso',
         title: 'Quality you can verify',
-        text: 'Production is certified to ISO 22000, issued by SGS — an international standard for food-safety management. For you as a buyer that means documented processes, batch-level traceability and a producer used to audits.',
+        text: 'Production is certified to ISO 22000, issued by SGS.',
         image: ''
       },
       {
@@ -131,7 +131,7 @@ window.AJAR_CONTENT_EN = {
       items: [
         { year: "Early '90s", title: 'The family business is founded', text: 'The family business begins pressing olives from its own groves.', todo: false },
         { year: 'Year to follow', title: 'Formally registered as ConservAjar SARL', text: 'The company grows and is formally registered as ConservAjar SARL, with its own AJAR brand.', todo: true },
-        { year: 'Year to follow', title: 'ISO 22000 certification (SGS)', text: 'Production is certified to ISO 22000 — food safety and traceability, externally audited by SGS.', todo: true },
+        { year: 'Year to follow', title: 'ISO 22000 certification (SGS)', text: 'Production achieves ISO 22000 certification (SGS).', todo: true },
         { year: '2026', title: 'First official import into the Netherlands', text: 'AJAR reaches the Dutch market officially for the first time, from Amsterdam.', todo: false }
       ],
       note: 'Names and dates of the generations will be added after consulting the family.'
@@ -142,7 +142,7 @@ window.AJAR_CONTENT_EN = {
     hero: {
       kicker: 'The product',
       title: 'Extra virgin olive oil',
-      sub: 'Cold-pressed, bottled at source, directly imported.'
+      sub: 'Bottled at source and imported directly to the Netherlands.'
     },
     specs: {
       title: 'AJAR Extra Virgin',
@@ -160,7 +160,7 @@ window.AJAR_CONTENT_EN = {
       text: 'AJAR is pressed from a single olive variety: the Picholine Marocaine, the most widely planted olive in Morocco. Not a blend of shifting varieties and origins — one olive, from our own land.',
       points: [
         { title: 'At home in the east', text: 'The variety thrives in the dry climate of eastern Morocco — precisely the Debdou area where the groves are.' },
-        { title: 'One variety, no blend', text: 'Where much olive oil is a mix of varieties and countries of origin, AJAR comes from one cultivar and one producer.' }
+        { title: 'Consistent taste', text: 'Because every bottle comes from the same variety, you taste the same recognisable flavour, batch after batch.' }
       ]
     },
     quality: {
@@ -218,7 +218,7 @@ window.AJAR_CONTENT_EN = {
     origin: {
       kicker: 'Origin',
       title: 'From Debdou to your business',
-      text: 'One short, verifiable chain: harvested and cold-pressed in our own factory in Taourirt, bottled at source, and imported directly to Amsterdam.',
+      text: 'From the groves near Debdou straight to Amsterdam.',
       from: { label: 'Taourirt · Debdou', sub: 'North-eastern Morocco' },
       to: { label: 'Amsterdam', sub: 'The Netherlands' },
       steps: []
@@ -347,7 +347,7 @@ window.AJAR_CONTENT_EN = {
       items: [
         { q: 'What is the minimum order?', a: 'We work with small and large orders — from a single case to start with to a fixed monthly volume. Tell us roughly what you are looking for in your request and we will tailor it to you straight away.' },
         { q: 'What is the lead time?', a: 'We keep the lines short and agree a concrete delivery date when you order. Ask about the current lead time for your volume in your request.' },
-        { q: 'How does requesting a sample work?', a: 'You request a free sample via the form or WhatsApp. You taste the oil at your leisure in your own kitchen or business, then we discuss volume and price. No obligations.' },
+        { q: 'How does requesting a sample work?', a: 'It works simply and free of charge — you are not tied to anything, you decide yourself if and when to continue.' },
         { q: 'What are the payment terms?', a: 'We agree the payment terms with you in advance; they are always stated clearly on the quote — no surprises afterwards.' },
         { q: 'How do I store the oil and how long does it keep?', a: 'Store it cool, dark and well sealed — that is how extra virgin olive oil keeps its flavour longest. The best-before date is on every bottle.' },
         { q: 'Who is the importer and why does it matter?', a: 'AJAR is the official importer in the Netherlands (based in Amsterdam) and is listed as such on the bottle. For you that means: one point of contact in the Netherlands, clear liability and batch-level traceability — exactly what your HACCP file requires.' }
@@ -377,7 +377,7 @@ window.AJAR_CONTENT_EN = {
     },
     usps: [
       { title: 'Truly free', text: 'No small print — the sample bottle costs you nothing.' },
-      { title: 'Personal', text: 'You get the oil from the importer himself, not from a sales department.' },
+      { title: 'Delivered to your door', text: 'The sample bottle is sent straight to your business — no need to pick it up anywhere.' },
       { title: 'Traceable', text: 'One family business in Morocco, ISO 22000-certified.' }
     ],
     form: {
@@ -495,7 +495,7 @@ window.AJAR_CONTENT_EN = {
     ],
     cta: {
       title: 'Tasting says the most',
-      text: 'Theory is nice, but taste decides. Request a free sample and judge the oil in your own kitchen.',
+      text: 'Knowledge is a good start, but your own palate decides. Request a free sample bottle.',
       button: 'Request a free sample',
       secondary: 'View the product'
     }
