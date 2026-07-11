@@ -77,7 +77,7 @@ window.AJAR_CONTENT_FR = {
     partners: { kicker: "Disponible chez", items: [] },
     intro: {
       kicker: "L’histoire",
-      text: "Une entreprise familiale du nord-est du Maroc presse cette huile depuis les années 90 — trois générations sur la même terre.",
+      text: "Une entreprise familiale du nord-est du Maroc presse cette huile depuis trois générations, sur la même terre.",
       linkLabel: "Lire notre histoire"
     },
     cta: {
