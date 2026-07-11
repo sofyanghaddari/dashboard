@@ -261,7 +261,7 @@ window.AJAR_CONTENT_EN = {
       items: [
         { size: 'Sample bottle', name: 'The sample', text: 'A free introduction: enough to taste, compare and decide.', shape: 'small', todo: true, todoNote: 'size to follow' },
         { size: '500 ml', name: 'The bottle', text: 'The heart of the line — for kitchen and table, bottled at source.', shape: 'bottle' },
-        { size: '12 × 500 ml', name: 'The case', text: 'The B2B unit we deliver and price in.', shape: 'box', todo: true, todoNote: 'final case count to follow' }
+        { size: '12 × 500 ml', name: 'The case', text: 'The B2B unit we deliver and price in.', shape: 'box' }
       ],
       mockup: {
         badge: 'Concept',
@@ -271,9 +271,7 @@ window.AJAR_CONTENT_EN = {
     pricing: {
       title: 'Price on request',
       text: 'We deliberately publish no price list: B2B prices depend on volume, frequency and delivery arrangements. One short conversation and you know where you stand.',
-      fair: 'One principle stands firm: fair prices for everyone in the chain — the family behind the oil, you as the entrepreneur, and your customer.',
-      packaging: 'Delivery per case of 12 × 500 ml (final case count to follow).',
-      packagingTodo: true
+      fair: 'One principle stands firm: fair prices for everyone in the chain — the family behind the oil, you as the entrepreneur, and your customer.'
     },
     assurance: {
       kicker: 'Why join now',
@@ -313,13 +311,12 @@ window.AJAR_CONTENT_EN = {
       intro: 'Everything your purchasing or HACCP file needs, in one place. What is available now you can request directly; the rest is added as soon as it is in.',
       items: [
         { label: 'ISO 22000 certificate (SGS)', note: 'Food-safety management, externally audited', available: true },
-        { label: 'Product spec sheet (PDF)', note: 'All technical product information on one A4', available: true },
         { label: 'EUR.1 / certificate of origin', note: 'Preferential origin EU–Morocco', available: false },
         { label: 'Allergen & HACCP sheet', note: 'Being added', available: false },
         { label: 'Shelf life & best-before per batch', note: 'To follow per batch on the bottle', available: false }
       ],
       requestLabel: 'Request certificate',
-      requestPrefill: 'Hello, could you send me the ISO 22000 certificate and the AJAR spec sheet for my buyer file?',
+      requestPrefill: 'Hello, could you send me the ISO 22000 certificate of AJAR for my buyer file?',
       availableTag: 'Available',
       pendingTag: 'On request / to follow'
     },
