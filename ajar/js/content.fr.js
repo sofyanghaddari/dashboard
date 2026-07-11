@@ -173,15 +173,6 @@ window.AJAR_CONTENT_FR = {
         { label: "Année de récolte", value: "À venir", unit: "", todo: true, explain: "Récolte fraîche, sans années de stockage — vous savez exactement de quelle saison provient votre huile." }
       ]
     },
-    why: {
-      kicker: "Pourquoi cette huile",
-      title: "Ce qui distingue AJAR",
-      items: [
-        { title: "Pressée à froid", text: "Les olives sont pressées à froid, ce qui préserve le goût, l’arôme et les composés naturels." },
-        { title: "Circuit court", text: "Production propre au Maroc et importation directe aux Pays-Bas : pas de vrac anonyme, pas d’assemblages d’origine inconnue." },
-        { title: "Importation directe", text: "Un importateur, un producteur. Les questions sur un lot ou une livraison reçoivent une réponse directe — pas via trois maillons." }
-      ]
-    },
     compare: {
       kicker: "La différence",
       title: "AJAR face à l’huile de supermarché",
@@ -230,12 +221,7 @@ window.AJAR_CONTENT_FR = {
       text: "Une chaîne courte et vérifiable : récoltée et pressée à froid dans notre propre usine à Taourirt, mise en bouteille à la source, et importée directement à Amsterdam.",
       from: { label: "Taourirt · Debdou", sub: "Nord-est du Maroc" },
       to: { label: "Amsterdam", sub: "Pays-Bas" },
-      steps: [
-        { title: "Récolte & pressage", text: "Région de Debdou — nos propres oliveraies, pressée à froid à Taourirt." },
-        { title: "Mise en bouteille", text: "Mise en bouteille à la source, conditions ISO 22000." },
-        { title: "Importation", text: "Directement à Amsterdam, avec documentation d’importation." },
-        { title: "Livraison", text: "D’Amsterdam jusque chez vous." }
-      ]
+      steps: []
     },
     cta: {
       title: "Goûter par vous-même ?",
