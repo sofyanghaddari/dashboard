@@ -14,7 +14,6 @@ window.AJAR_CONTENT_EN = {
     { id: 'over-ons', label: 'About us',        href: 'over-ons.html', children: [
       { label: 'Our story',            href: 'over-ons.html#verhaal' },
       { label: 'Quality & ISO',        href: 'over-ons.html#kwaliteit-iso' },
-      { label: 'Our family',           href: 'over-ons.html#familie' },
       { label: 'Importer in NL',       href: 'over-ons.html#importeur' },
       { label: 'Timeline',             href: 'over-ons.html#tijdlijn' }
     ] },
@@ -97,7 +96,7 @@ window.AJAR_CONTENT_EN = {
       {
         anchor: 'verhaal',
         title: 'A family business with deep roots',
-        text: "ConservAjar SARL was founded in the early '90s in north-eastern Morocco — a family business where the craft of pressing and processing olives has been passed down for three generations. Besides olive oil, the company also preserves table olives, apricot pulp and spices under its own AJAR brand, at home and abroad.",
+        text: 'Our grandfather left for the Netherlands as a young man to work, returned to Morocco a few years later and opened a small olive shop. Under his five sons that grew into ConservAjar SARL, the family business where the craft of pressing and processing olives is still passed down today, three generations on.',
         image: 'fabriek-taourirt.jpg'
       },
       {
@@ -113,20 +112,6 @@ window.AJAR_CONTENT_EN = {
         image: 'overons-08.jpg'
       }
     ],
-    familyStory: {
-      kicker: 'Our family',
-      title: 'The story behind the oil',
-      blocks: [
-        {
-          title: 'A fresh start',
-          text: 'Our grandfather left for the Netherlands as a young man to work — out of necessity, not adventure. After a few years he returned to Morocco and opened a small olive shop.'
-        },
-        {
-          title: 'From little shop to AJAR',
-          text: 'What began small grew into ConservAjar, run by his five sons. When his health no longer allowed him to continue himself, his grandson now brings the oil to the Netherlands.'
-        }
-      ]
-    },
     factoryGallery: {
       kicker: 'Also at ConservAjar SARL',
       text: 'The same factory processes and packs at scale — here for the wider range under the AJAR brand.',
