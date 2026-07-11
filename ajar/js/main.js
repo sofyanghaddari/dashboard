@@ -1115,21 +1115,47 @@
   /* Groen vinkje per veld zodra het geldig is ingevuld (verlaagt de drempel bij lange formulieren).
      E-mail: regex; telefoon: alleen als er iets staat én het minstens 8 cijfers heeft; overige
      verplichte velden: niet leeg. Optionele lege velden krijgen géén vinkje. */
+  /* Per veld een groen vinkje zodra het geldig is + (op formulieren met 3+ verplichte
+     velden) een dunne gouden voortgangsbalk die per geldig verplicht veld vult — laat
+     zonder woorden zien hoe dicht je bij "klaar" bent (tekstloos, dus geen vertaling nodig). */
   function initFieldChecks() {
-    document.querySelectorAll('form .form-field input').forEach(inp => {
-      if (inp.type === 'hidden' || inp.name === '_gotcha') return;
-      const wrap = inp.closest('.form-field');
-      if (!wrap) return;
-      const check = () => {
-        const val = inp.value.trim();
-        let ok = false;
-        if (inp.type === 'email') ok = /.+@.+\..+/.test(val);
-        else if (inp.type === 'tel') ok = val.length > 0 && (val.replace(/\D/g, '').length >= 8);
-        else if (inp.hasAttribute('required')) ok = val.length > 1;
-        wrap.classList.toggle('field-ok', ok);
+    const valid = (inp) => {
+      const val = inp.value.trim();
+      if (inp.type === 'email') return /.+@.+\..+/.test(val);
+      if (inp.type === 'tel') return val.length > 0 && (val.replace(/\D/g, '').length >= 8);
+      if (inp.hasAttribute('required')) return val.length > 1;
+      return false;
+    };
+    document.querySelectorAll('form').forEach(form => {
+      const inputs = Array.from(form.querySelectorAll('.form-field input'))
+        .filter(i => i.type !== 'hidden' && i.name !== '_gotcha');
+      if (!inputs.length) return;
+      const required = inputs.filter(i => i.hasAttribute('required'));
+
+      let fill = null;
+      if (required.length >= 3) {
+        const bar = document.createElement('span');
+        bar.className = 'form-progress';
+        bar.setAttribute('aria-hidden', 'true');
+        bar.innerHTML = '<span class="fp-fill"></span>';
+        const grid = form.querySelector('.form-grid');
+        if (grid) grid.parentNode.insertBefore(bar, grid); else form.prepend(bar);
+        fill = bar.firstChild;
+      }
+
+      const update = () => {
+        inputs.forEach(inp => {
+          const wrap = inp.closest('.form-field');
+          if (wrap) wrap.classList.toggle('field-ok', valid(inp));
+        });
+        if (fill) {
+          const done = required.filter(valid).length;
+          fill.style.width = (done / required.length) * 100 + '%';
+          fill.parentElement.classList.toggle('fp-done', done === required.length);
+        }
       };
-      inp.addEventListener('input', check);
-      inp.addEventListener('blur', check);
+      inputs.forEach(inp => { inp.addEventListener('input', update); inp.addEventListener('blur', update); });
+      update();
     });
   }
 
@@ -1563,6 +1589,18 @@
       const summary = d.querySelector('summary');
       const body = d.querySelector('.faq-body');
       if (!summary || !body) return;
+      /* Afronden na de hoogte-transitie, met een timeout-vangnet: als transitionend
+         niet vuurt (bug-fix v8 — zonder geforceerde reflow startte de transitie soms
+         helemaal niet en bleef data-busy hangen, waarna het item nooit meer toggelde),
+         ruimt de timer alsnog op. */
+      function settle(cleanup) {
+        let done = false;
+        const finish = () => { if (done) return; done = true; body.removeEventListener('transitionend', onEnd); cleanup(); };
+        const onEnd = (ev) => { if (ev.propertyName === 'height') finish(); };
+        body.addEventListener('transitionend', onEnd);
+        setTimeout(finish, 500);
+      }
+
       summary.addEventListener('click', (e) => {
         if (reduce) return; // standaard instant gedrag
         e.preventDefault();
@@ -1570,9 +1608,9 @@
         d.setAttribute('data-busy', '');
         if (d.open) {
           body.style.height = body.scrollHeight + 'px';
-          requestAnimationFrame(() => { body.style.height = '0px'; body.style.opacity = '0'; });
-          body.addEventListener('transitionend', function done() {
-            body.removeEventListener('transitionend', done);
+          void body.offsetHeight; /* reflow: startwaarde vastleggen zodat de transitie écht start */
+          body.style.height = '0px'; body.style.opacity = '0';
+          settle(() => {
             d.open = false;
             body.style.height = body.style.opacity = '';
             d.removeAttribute('data-busy');
@@ -1581,11 +1619,14 @@
           d.open = true;
           const h = body.scrollHeight;
           body.style.height = '0px'; body.style.opacity = '0';
-          requestAnimationFrame(() => { body.style.height = h + 'px'; body.style.opacity = '1'; });
-          body.addEventListener('transitionend', function done() {
-            body.removeEventListener('transitionend', done);
+          void body.offsetHeight; /* reflow */
+          body.style.height = h + 'px'; body.style.opacity = '1';
+          settle(() => {
             body.style.height = body.style.opacity = '';
             d.removeAttribute('data-busy');
+            /* Antwoord dat onder de vouw uitklapte zacht in beeld brengen —
+               'nearest' scrolt alleen als het echt (deels) buiten beeld valt. */
+            d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
           });
         }
       });

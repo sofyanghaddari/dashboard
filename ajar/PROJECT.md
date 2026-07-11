@@ -118,6 +118,46 @@ achteraf samengevoegd (rebase, geen functionaliteit uit v7 verloren — zie hier
   v7 uniform crème) is behouden. E2E geverifieerd (headless Chromium, 390/1280px, NL/EN/FR, alle
   9 pagina's): geen JS-fouten, geen overflow, Formspree/vCard/dropdowns/herkomstkaart werken.
 
+### v8 — Nuttige micro-animaties + FAQ-bugfix (10 juli 2026)
+
+Op verzoek van Soef ("nuttige simpele animaties met tekst of foto's"). Zelfde lat als v6d:
+alleen functioneel/oriënterend, geen extra sfeer. Eerst gecheckt wat er al was (proceslijn,
+Ken Burns, timeline-cascade en nav-underline bestonden al uit de parallelle sessie) — vier
+nieuwe effecten gebouwd, alle tekstloos (dus géén EN/FR-vertaling nodig), CSS-sectie
+"✨ NUTTIGE MICRO-ANIMATIES v8" onderaan style.css met eigen reduced-motion-blok:
+
+1. **Foto-onthulling** — grote editorial foto's (hero, split-secties, specs, sample) onthullen
+   met een zachte clip-path-wipe van boven + kleur die "aan" gaat (saturate .55 → 1). Bewust
+   NIET op de fotostapel (eigen wissel-animatie) en de kleine procestegels. Werkt samen met de
+   bestaande blur-up (opacity-transition behouden in de override) en de scroll-drift (animation
+   op transform, geen conflict).
+2. **Formulier-voortgangsbalk** — dunne gouden balk boven het formulier vult per geldig
+   verplicht veld; vol = olijfgroen (`.form-progress`/`.fp-fill`/`.fp-done`). Automatisch op elk
+   formulier met 3+ verplichte velden (sample/offerte/presentatie; nieuwsbrief bewust niet).
+   `initFieldChecks()` herschreven: per-form, gedeelde `valid()`, bar via JS ingevoegd vóór de
+   `.form-grid`. Tekstloos → i18n-vrij.
+3. **Vergelijkingstabel goud-sweep** — op Product veegt een gouden glans rij-voor-rij (cascade
+   .35–.8s) over de AJAR-kolom zodra de tabel in beeld komt, en er blijft een héél lichte
+   goudtint achter (`.compare-a::before`, `cmpSweep`). Trekt het oog naar de verschil-kolom;
+   werkt ook in de mobiele gestapelde weergave.
+4. **Kicker-streepje** — klein goudlijntje (26px) groeit onder elke `.section-head .kicker` als
+   de sectiekop in beeld komt (na de titel-maskeranimatie, delay .45s). Absolute positionering,
+   geen layout-shift; paginahero's bewust niet (hebben de titel-animatie al).
+5. **FAQ-antwoord scrolt in beeld** ná het uitklappen (`scrollIntoView block:'nearest'` — scrolt
+   alleen als het antwoord echt onder de vouw valt).
+
+**Echte bugfix onderweg gevonden (pre-existing):** de FAQ open/dicht-animatie zette start- en
+eindhoogte zonder geforceerde reflow ertussen → de transitie startte (in elk geval in headless
+Chromium) nooit, `transitionend` vuurde nooit en **`data-busy` bleef permanent hangen — het item
+kon daarna nooit meer dicht/open**. Fix: `void body.offsetHeight` reflow tussen start- en
+eindwaarde + een `settle()`-helper met 500ms timeout-vangnet dat altijd opruimt, en filtering op
+`propertyName === 'height'`. Regressie-getest: open → dicht → opnieuw open werkt nu.
+
+E2E geverifieerd (headless Chromium, 390px + 1280px, alle 9 pagina's mét volledige scroll):
+geen JS-fouten (behalve de bekende bewuste 404's van proces-06/07.jpg), geen kapotte beelden,
+geen overflow; voortgangsbalk 0→50→100% + fp-done; wipe eindstand correct; compare-sweep
+opacity 1; kicker scaleX(1); EN-taalvariant gecheckt (balk aanwezig, geen tekst te vertalen).
+
 ### v7 — Volledige overhaul: bedrijfsteksten compleet + AVG/performance-ronde (10 juli 2026)
 
 Grote audit-ronde op verzoek van Soef ("bekijk de hele site, schrijf alle teksten die een bedrijf

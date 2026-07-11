@@ -2109,3 +2109,107 @@ body.nav-open .site-header { transform: none !important; }
   }
   .lang-menu button.on { border-color: var(--olive); }
 }
+
+/* ============================================================
+   ✨ NUTTIGE MICRO-ANIMATIES v8 (10 juli 2026)
+   Vier kleine, functionele effecten — tekstloos (geen vertaling
+   nodig), mobile-first, allemaal met reduced-motion-uitzet onderaan.
+   ============================================================ */
+
+/* ── 1. Foto-onthulling: zachte wipe van boven + kleur die "aan" gaat ──
+   Alleen op de grote editorial foto's (hero, split-secties, specs, sample) —
+   niet op de fotostapel (die heeft z'n eigen wissel-animatie) en niet op de
+   kleine procestegels. De figure heeft al overflow+border-radius, dus de
+   hoeken blijven rond tijdens de wipe. */
+.hero-media .img-slot, .split-media .img-slot,
+.specs-media .img-slot, .sample-media-sec .img-slot {
+  clip-path: inset(9% 0 0 0);
+  transition: clip-path 1s var(--ease) .08s;
+}
+.reveal.in .img-slot { clip-path: inset(0 0 0 0); }
+.hero-media .img-slot img.imgok, .split-media .img-slot img.imgok,
+.specs-media .img-slot img.imgok, .sample-media-sec .img-slot img.imgok {
+  filter: saturate(.55) brightness(.97);
+  transition: filter 1.2s ease .3s, opacity .7s var(--ease); /* opacity = bestaande blur-up-fade */
+}
+.reveal.in .img-slot img.imgok {
+  filter: none;
+}
+
+/* ── 2. Formulier-voortgangsbalk (JS: initFieldChecks) ──
+   Vult per geldig verplicht veld; helemaal vol = olijfgroen. */
+.form-progress {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+  margin: 0 0 18px;
+}
+.fp-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+  transition: width .5s var(--ease), background .4s ease;
+}
+.fp-done .fp-fill { background: var(--olive-soft); }
+
+/* ── 3. Vergelijkingstabel: gouden veeg over de AJAR-kolom ──
+   Trekt het oog naar de linkerkolom zodra de tabel in beeld komt; elke rij
+   net iets later (cascade) en er blijft een héél lichte goudtint achter. */
+.compare-a { position: relative; z-index: 0; }
+.compare-a::before {
+  content: '';
+  position: absolute;
+  inset: -5px -8px;
+  border-radius: 8px;
+  z-index: -1;
+  background:
+    linear-gradient(100deg, rgba(201,162,39,0) 32%, rgba(201,162,39,.18) 50%, rgba(201,162,39,0) 68%) no-repeat 140% 0 / 250% 100%,
+    rgba(201,162,39,.05);
+  opacity: 0;
+  pointer-events: none;
+}
+.compare.in .compare-a::before {
+  opacity: 1;
+  transition: opacity .5s ease .35s;
+  animation: cmpSweep 1.5s var(--ease) both;
+}
+.compare.in .compare-row:nth-of-type(2) .compare-a::before { animation-delay: .35s; }
+.compare.in .compare-row:nth-of-type(3) .compare-a::before { animation-delay: .5s; }
+.compare.in .compare-row:nth-of-type(4) .compare-a::before { animation-delay: .65s; }
+.compare.in .compare-row:nth-of-type(5) .compare-a::before { animation-delay: .8s; }
+@keyframes cmpSweep {
+  from { background-position: 140% 0, 0 0; }
+  to   { background-position: -80% 0, 0 0; }
+}
+
+/* ── 4. Kicker-streepje: klein goudlijntje groeit onder de sectiekop ──
+   Alleen in .section-head (paginakoppen hebben al de titel-maskeranimatie);
+   absolute positionering, dus geen layout-verschuiving. */
+.section-head .kicker { position: relative; }
+.section-head .kicker::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  bottom: -7px;
+  width: 26px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .8s var(--ease) .45s;
+}
+.section-head.in .kicker::after { transform: scaleX(1); }
+
+/* Reduced motion: alles direct in eindstand, geen beweging */
+@media (prefers-reduced-motion: reduce) {
+  .hero-media .img-slot, .split-media .img-slot,
+  .specs-media .img-slot, .sample-media-sec .img-slot { clip-path: none; transition: none; }
+  .fp-fill { transition: none; }
+  .compare-a::before { animation: none !important; transition: none; opacity: 1; background: rgba(201,162,39,.05); }
+  .section-head .kicker::after { transform: scaleX(1); transition: none; }
+}
