@@ -163,10 +163,12 @@ window.AJAR_CONTENT = {
       ]
     },
     /* De ene beeldsectie: fabriek/bomen + één zin + link naar Over ons. Foto volgt zodra
-       fabriek-taourirt.jpg is aangeleverd (zie ook about.blocks[0], zelfde foto/verhaal). */
+       fabriek-taourirt.jpg is aangeleverd (zie ook about.blocks[0], zelfde foto/verhaal).
+       v8 (sanering juli 2026): "sinds de jaren '90" verwijderd — stond al in kernpunten
+       hierboven op dezelfde pagina; deze zin voegt nu alleen het nieuwe feit toe. */
     intro: {
       kicker: 'Het verhaal',
-      text: "Een familiebedrijf in noordoost-Marokko perst deze olie al sinds de jaren '90 — drie generaties op dezelfde grond.",
+      text: 'Een familiebedrijf in noordoost-Marokko perst deze olie al drie generaties lang, op dezelfde grond.',
       linkLabel: 'Lees ons verhaal',
       linkHref: 'over-ons.html',
       image: 'fabriek-taourirt.jpg'
