@@ -14,7 +14,6 @@ window.AJAR_CONTENT_FR = {
     { id: "over-ons", label: "À propos",       href: "over-ons.html", children: [
       { label: "Notre histoire",        href: "over-ons.html#verhaal" },
       { label: "Qualité & ISO",         href: "over-ons.html#kwaliteit-iso" },
-      { label: "Notre famille",         href: "over-ons.html#familie" },
       { label: "Importateur aux P.-B.", href: "over-ons.html#importeur" },
       { label: "Chronologie",           href: "over-ons.html#tijdlijn" }
     ] },
@@ -97,7 +96,7 @@ window.AJAR_CONTENT_FR = {
       {
         anchor: "verhaal",
         title: "Une entreprise familiale aux racines profondes",
-        text: "ConservAjar SARL a été fondée au début des années 90 dans le nord-est du Maroc — une entreprise familiale où le savoir-faire du pressage et de la transformation des olives se transmet depuis trois générations. Outre l’huile d’olive, l’entreprise conserve aussi des olives de table, de la pulpe d’abricot et des épices sous sa propre marque AJAR, au pays et à l’étranger.",
+        text: "Notre grand-père est parti travailler aux Pays-Bas jeune homme, puis est rentré au Maroc quelques années plus tard pour ouvrir une petite boutique d’olives. Sous la direction de ses cinq fils, celle-ci est devenue ConservAjar SARL, l’entreprise familiale où le savoir-faire du pressage et de la transformation des olives se transmet aujourd’hui encore, trois générations plus tard.",
         image: "fabriek-taourirt.jpg"
       },
       {
@@ -113,20 +112,6 @@ window.AJAR_CONTENT_FR = {
         image: "overons-08.jpg"
       }
     ],
-    familyStory: {
-      kicker: "Notre famille",
-      title: "L’histoire derrière l’huile",
-      blocks: [
-        {
-          title: "Un nouveau départ",
-          text: "Notre grand-père est parti travailler aux Pays-Bas jeune homme — par nécessité, non par goût de l’aventure. Après quelques années, il est rentré au Maroc et a ouvert une petite boutique d’olives."
-        },
-        {
-          title: "De la petite boutique à AJAR",
-          text: "Ce qui a commencé petit est devenu ConservAjar, dirigée par ses cinq fils. Sa santé ne lui permettant plus de continuer lui-même, son petit-fils apporte aujourd’hui l’huile aux Pays-Bas."
-        }
-      ]
-    },
     factoryGallery: {
       kicker: "Aussi chez ConservAjar SARL",
       text: "La même usine transforme et conditionne à grande échelle — ici pour la gamme plus large sous la marque AJAR.",
