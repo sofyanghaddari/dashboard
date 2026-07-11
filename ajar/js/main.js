@@ -548,28 +548,15 @@
       '<h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div></section>';
   }
 
-  /* "Onze familie" — kort persoonlijk verhaal, ná het vertrouwensblok (ISO). Géén jaartallen
-     (dat blijft voorbehouden aan de tijdlijn verderop) en géén uitgelicht citaat (zelfprijzing). */
-  function familyStorySection(fs) {
-    if (!fs) return '';
-    return '<section class="section family-story" id="familie"><div class="wrap wrap-narrow">' +
-      '<div class="section-head reveal">' + kickerTitle(fs.kicker, fs.title) + '</div>' +
-      '<ol class="story">' + fs.blocks.map((b, i) =>
-        '<li class="story-item reveal" style="transition-delay:' + (i * .1).toFixed(1) + 's">' +
-          '<span class="story-dot" aria-hidden="true"></span>' +
-          '<h3>' + esc(b.title) + '</h3><p>' + esc(b.text) + '</p>' +
-        '</li>').join('') +
-      '</ol>' +
-    '</div></section>';
-  }
+  /* v8 (sanering juli 2026): familyStorySection() ("Onze familie", anchor #familie) verwijderd —
+     het familieverhaal wordt nu één keer verteld, in about.blocks[0] ("Ons verhaal"). Zie de
+     bijbehorende comment in content.js. Nav-subitem #familie is ook verwijderd. */
 
   function renderAbout() {
     const a = C.about;
     const tl = a.timeline;
     return pageHero(a.hero) +
       a.blocks.slice(0, 2).map(aboutBlock).join('') +
-
-      familyStorySection(a.familyStory) +
 
       a.blocks.slice(2).map((b, i) => aboutBlock(b, i + 2)).join('') +
 
