@@ -599,10 +599,10 @@
           '<span class="om-end om-end-b"><strong>' + esc(o.to.label) + '</strong><em>' + esc(o.to.sub) + '</em></span>' +
         '</div>' +
       '</div>' +
-      '<ol class="origin-steps">' + o.steps.map((s, i) =>
+      (o.steps && o.steps.length ? '<ol class="origin-steps">' + o.steps.map((s, i) =>
         '<li class="origin-step reveal"><span class="origin-step-num">' + (i + 1) + '</span>' +
         '<h3>' + esc(s.title) + '</h3><p>' + esc(s.text) + '</p></li>').join('') +
-      '</ol>' +
+      '</ol>' : '') +
     '</div></section>';
   }
 
@@ -648,11 +648,8 @@
         '<p class="form-note reveal">' + esc(p.quality.note) + '</p>' +
       '</div></section>' +
 
-      '<section class="section"><div class="wrap">' +
-        '<div class="section-head reveal">' + kickerTitle(p.why.kicker, p.why.title) + '</div>' +
-        uspGrid(p.why.items) +
-      '</div></section>' +
-
+      /* v8 (sanering juli 2026): sectie "Wat AJAR anders maakt" (p.why) verwijderd — zie
+         comment bij product.why in content.js (dubbel met het vergelijkingsblok hieronder). */
       /* Vergelijkingsblok */
       '<section class="section"><div class="wrap wrap-narrow">' +
         '<div class="section-head reveal">' + kickerTitle(p.compare.kicker, p.compare.title) + '</div>' +
