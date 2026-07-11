@@ -11,12 +11,6 @@ window.AJAR_CONTENT_EN = {
 
   nav: [
     { id: 'home',     label: 'Home',            href: 'index.html' },
-    { id: 'over-ons', label: 'About us',        href: 'over-ons.html', children: [
-      { label: 'Our story',            href: 'over-ons.html#verhaal' },
-      { label: 'Quality & ISO',        href: 'over-ons.html#kwaliteit-iso' },
-      { label: 'Importer in NL',       href: 'over-ons.html#importeur' },
-      { label: 'Timeline',             href: 'over-ons.html#tijdlijn' }
-    ] },
     { id: 'product',  label: 'Product',         href: 'product.html', children: [
       { label: 'Specifications',       href: 'product.html#specs' },
       { label: 'The olive',            href: 'product.html#de-olijf' },
@@ -34,6 +28,12 @@ window.AJAR_CONTENT_EN = {
       { label: 'Buyer documents',      href: 'zakelijk.html#dossier' },
       { label: 'Documentation',        href: 'zakelijk.html#documentatie' },
       { label: 'FAQ',                  href: 'zakelijk.html#faq' }
+    ] },
+    { id: 'over-ons', label: 'About us',        href: 'over-ons.html', children: [
+      { label: 'Our story',            href: 'over-ons.html#verhaal' },
+      { label: 'Quality & ISO',        href: 'over-ons.html#kwaliteit-iso' },
+      { label: 'Importer in NL',       href: 'over-ons.html#importeur' },
+      { label: 'Timeline',             href: 'over-ons.html#tijdlijn' }
     ] },
     { id: 'contact',  label: 'Contact',         href: 'contact.html' }
   ],

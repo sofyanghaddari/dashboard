@@ -332,6 +332,9 @@ body.nav-open .nav-toggle span:last-child { transform: translateY(-4px) rotate(-
   }
   body.nav-open .site-nav { display: flex; z-index: 40; animation: menuIn .35s var(--ease) both; }
   body.nav-open .topbar { visibility: hidden; }
+  /* De sticky sample/WhatsApp-balk zit met een hoger z-index vast onderin het scherm en
+     bleef anders zichtbaar boven op het volscherm-menu — daar staat al een eigen sample-knop. */
+  body.nav-open .mob-cta { display: none; }
   /* backdrop-filter maakt de header het containing block voor fixed-kinderen —
      uitzetten zolang het menu open is, anders zit het volscherm-menu gevangen in de headerbalk */
   body.nav-open .site-header {

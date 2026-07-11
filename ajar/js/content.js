@@ -53,12 +53,6 @@ window.AJAR_CONTENT = {
      LET OP bij wijzigen: pas je een anchor hier aan, pas dan óók de sectie-id in main.js aan. */
   nav: [
     { id: 'home',     label: 'Home',              href: 'index.html' },
-    { id: 'over-ons', label: 'Over ons',          href: 'over-ons.html', children: [
-      { label: 'Ons verhaal',          href: 'over-ons.html#verhaal' },
-      { label: 'Kwaliteit & ISO',      href: 'over-ons.html#kwaliteit-iso' },
-      { label: 'Importeur in Nederland', href: 'over-ons.html#importeur' },
-      { label: 'Tijdlijn',             href: 'over-ons.html#tijdlijn' }
-    ] },
     { id: 'product',  label: 'Product',           href: 'product.html', children: [
       { label: 'Specificaties',        href: 'product.html#specs' },
       { label: 'De olijf',             href: 'product.html#de-olijf' },
@@ -76,6 +70,12 @@ window.AJAR_CONTENT = {
       { label: 'Inkoopdossier',        href: 'zakelijk.html#dossier' },
       { label: 'Documentatie',         href: 'zakelijk.html#documentatie' },
       { label: 'Veelgestelde vragen',  href: 'zakelijk.html#faq' }
+    ] },
+    { id: 'over-ons', label: 'Over ons',          href: 'over-ons.html', children: [
+      { label: 'Ons verhaal',          href: 'over-ons.html#verhaal' },
+      { label: 'Kwaliteit & ISO',      href: 'over-ons.html#kwaliteit-iso' },
+      { label: 'Importeur in Nederland', href: 'over-ons.html#importeur' },
+      { label: 'Tijdlijn',             href: 'over-ons.html#tijdlijn' }
     ] },
     { id: 'contact',  label: 'Contact',           href: 'contact.html' }
   ],

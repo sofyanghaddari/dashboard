@@ -11,12 +11,6 @@ window.AJAR_CONTENT_FR = {
 
   nav: [
     { id: "home",     label: "Accueil",        href: "index.html" },
-    { id: "over-ons", label: "À propos",       href: "over-ons.html", children: [
-      { label: "Notre histoire",        href: "over-ons.html#verhaal" },
-      { label: "Qualité & ISO",         href: "over-ons.html#kwaliteit-iso" },
-      { label: "Importateur aux P.-B.", href: "over-ons.html#importeur" },
-      { label: "Chronologie",           href: "over-ons.html#tijdlijn" }
-    ] },
     { id: "product",  label: "Produit",        href: "product.html", children: [
       { label: "Spécifications",        href: "product.html#specs" },
       { label: "L’olive",               href: "product.html#de-olijf" },
@@ -34,6 +28,12 @@ window.AJAR_CONTENT_FR = {
       { label: "Dossier d’achat",       href: "zakelijk.html#dossier" },
       { label: "Documentation",         href: "zakelijk.html#documentatie" },
       { label: "FAQ",                   href: "zakelijk.html#faq" }
+    ] },
+    { id: "over-ons", label: "À propos",       href: "over-ons.html", children: [
+      { label: "Notre histoire",        href: "over-ons.html#verhaal" },
+      { label: "Qualité & ISO",         href: "over-ons.html#kwaliteit-iso" },
+      { label: "Importateur aux P.-B.", href: "over-ons.html#importeur" },
+      { label: "Chronologie",           href: "over-ons.html#tijdlijn" }
     ] },
     { id: "contact",  label: "Contact",        href: "contact.html" }
   ],
