@@ -102,7 +102,7 @@ window.AJAR_CONTENT_FR = {
       {
         anchor: "kwaliteit-iso",
         title: "Une qualité que vous pouvez vérifier",
-        text: "La production est certifiée ISO 22000, délivrée par SGS — une norme internationale de gestion de la sécurité des aliments. Pour vous, acheteur, cela signifie des processus documentés, une traçabilité par lot et un producteur habitué aux audits.",
+        text: "La production est certifiée ISO 22000, délivrée par SGS.",
         image: ""
       },
       {
@@ -131,7 +131,7 @@ window.AJAR_CONTENT_FR = {
       items: [
         { year: "Début des années 90", title: "Fondation de l’entreprise familiale", text: "L’entreprise familiale commence à presser les olives de ses propres oliveraies.", todo: false },
         { year: "Année à venir", title: "Enregistrée officiellement sous ConservAjar SARL", text: "L’entreprise grandit et est enregistrée officiellement sous le nom ConservAjar SARL, avec sa propre marque AJAR.", todo: true },
-        { year: "Année à venir", title: "Certification ISO 22000 (SGS)", text: "La production est certifiée ISO 22000 — sécurité des aliments et traçabilité, auditée en externe par SGS.", todo: true },
+        { year: "Année à venir", title: "Certification ISO 22000 (SGS)", text: "La production obtient la certification ISO 22000 (SGS).", todo: true },
         { year: "2026", title: "Première importation officielle aux Pays-Bas", text: "AJAR arrive officiellement pour la première fois sur le marché néerlandais, depuis Amsterdam.", todo: false }
       ],
       note: "Les noms et dates des générations seront ajoutés après concertation avec la famille."
@@ -142,7 +142,7 @@ window.AJAR_CONTENT_FR = {
     hero: {
       kicker: "Le produit",
       title: "Huile d’olive extra vierge",
-      sub: "Pressée à froid, mise en bouteille à la source, importée en direct."
+      sub: "Mise en bouteille à la source et importée directement aux Pays-Bas."
     },
     specs: {
       title: "AJAR Extra Vierge",
@@ -160,7 +160,7 @@ window.AJAR_CONTENT_FR = {
       text: "AJAR est pressée à partir d’une seule variété d’olive : la Picholine Marocaine, l’olive la plus plantée du Maroc. Pas d’assemblage de variétés et d’origines changeantes — une seule olive, de notre propre terre.",
       points: [
         { title: "Chez elle à l’est", text: "La variété prospère dans le climat sec de l’est du Maroc — précisément la région de Debdou où se trouvent les oliveraies." },
-        { title: "Une variété, pas d’assemblage", text: "Là où beaucoup d’huiles d’olive sont un mélange de variétés et de pays d’origine, AJAR provient d’un seul cultivar et d’un seul producteur." }
+        { title: "Un goût constant", text: "Comme chaque bouteille provient de la même variété, vous retrouvez le même goût reconnaissable, lot après lot." }
       ]
     },
     quality: {
@@ -218,7 +218,7 @@ window.AJAR_CONTENT_FR = {
     origin: {
       kicker: "Origine",
       title: "De Debdou à votre établissement",
-      text: "Une chaîne courte et vérifiable : récoltée et pressée à froid dans notre propre usine à Taourirt, mise en bouteille à la source, et importée directement à Amsterdam.",
+      text: "Des oliveraies de Debdou directement à Amsterdam.",
       from: { label: "Taourirt · Debdou", sub: "Nord-est du Maroc" },
       to: { label: "Amsterdam", sub: "Pays-Bas" },
       steps: []
@@ -347,7 +347,7 @@ window.AJAR_CONTENT_FR = {
       items: [
         { q: "Quelle est la commande minimale ?", a: "Nous travaillons avec de petites comme de grandes commandes — d’un seul carton pour commencer à un volume mensuel fixe. Indiquez dans votre demande ce que vous recherchez à peu près, et nous l’adaptons aussitôt." },
         { q: "Quel est le délai de livraison ?", a: "Nous gardons des circuits courts et convenons d’une date de livraison concrète à la commande. Demandez le délai actuel pour votre volume dans votre demande." },
-        { q: "Comment demander un échantillon ?", a: "Vous demandez un échantillon gratuit via le formulaire ou WhatsApp. Vous goûtez l’huile tranquillement dans votre cuisine ou votre établissement, puis nous discutons du volume et du prix. Sans engagement." },
+        { q: "Comment demander un échantillon ?", a: "C’est simple et gratuit — vous ne vous engagez à rien, c’est vous qui décidez si et quand vous poursuivez." },
         { q: "Quelles sont les conditions de paiement ?", a: "Nous convenons des conditions de paiement à l’avance ; elles figurent toujours clairement sur le devis — sans surprises." },
         { q: "Comment conserver l’huile et combien de temps se garde-t-elle ?", a: "À conserver au frais, à l’abri de la lumière et bien fermée — c’est ainsi que l’huile d’olive extra vierge garde le plus longtemps son goût. La date de conservation figure sur chaque bouteille." },
         { q: "Qui est l’importateur et pourquoi est-ce important ?", a: "AJAR est l’importateur officiel aux Pays-Bas (établi à Amsterdam) et figure comme tel sur la bouteille. Pour vous : un interlocuteur aux Pays-Bas, une responsabilité claire et une traçabilité par lot — exactement ce qu’exige votre dossier HACCP." }
@@ -377,7 +377,7 @@ window.AJAR_CONTENT_FR = {
     },
     usps: [
       { title: "Vraiment gratuit", text: "Pas de petits caractères — le flacon d’essai ne vous coûte rien." },
-      { title: "Personnel", text: "Vous recevez l’huile de l’importateur lui-même, pas d’un service commercial." },
+      { title: "Livré chez vous", text: "Le flacon d’essai est envoyé directement à votre établissement — vous n’avez nulle part à vous déplacer." },
       { title: "Traçable", text: "Une entreprise familiale au Maroc, certifiée ISO 22000." }
     ],
     form: {
@@ -495,7 +495,7 @@ window.AJAR_CONTENT_FR = {
     ],
     cta: {
       title: "C’est la dégustation qui parle le mieux",
-      text: "La théorie, c’est bien, mais le goût décide. Demandez un échantillon gratuit et jugez l’huile dans votre cuisine.",
+      text: "Les connaissances sont un bon début, mais c’est votre propre palais qui décide. Demandez un flacon d’essai gratuit.",
       button: "Demander un échantillon gratuit",
       secondary: "Voir le produit"
     }
