@@ -785,7 +785,6 @@
           '<h3>' + esc(b.pricing.title) + '</h3>' +
           '<p>' + esc(b.pricing.text) + '</p>' +
           '<p class="pricing-fair">' + esc(b.pricing.fair) + '</p>' +
-          '<p class="pricing-packaging' + (b.pricing.packagingTodo ? ' is-todo' : '') + '">' + esc(b.pricing.packaging) + '</p>' +
         '</div>' +
       '</div></section>' +
 
