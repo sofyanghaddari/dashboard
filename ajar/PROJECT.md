@@ -92,6 +92,15 @@ Op verzoek van Soef ("copyright voor de ajar site").
 - **Footer-copyrightregel uitgebreid**: "© <jaar> AJAR · <tagline> · Alle rechten voorbehouden"
   via nieuwe sleutel `footer.rightsLine` in alle drie de contentbestanden (main.js laat 'm weg
   als de sleutel ontbreekt). EN "All rights reserved", FR "Tous droits réservés".
+- **Vervolgronde (zelfde dag)**: `<meta name="copyright">` op alle 9 pagina's; **WebSite JSON-LD**
+  met `copyrightHolder`/`copyrightYear`/`copyrightNotice`/`license` (→ voorwaarden.html) naast de
+  bestaande Organization/Product-blokken; **EXIF-copyright ingebed in alle 14 eigen foto's**
+  ("(c) 2026 AJAR, Amsterdam …" + Artist "AJAR", via piexif — alleen metadata, beelddata onaangetast,
+  elk +110 bytes). Stockfoto's (stock-*, proces-05) bewust NIET geclaimd — auteursrecht ligt daar
+  niet bij AJAR. Zie de copyright-sectie in `assets/images/LEES-MIJ.txt` voor nieuwe foto's.
+  Géén zichtbaar watermerk — dat zou de marketingsite schaden; EXIF + voorwaarden-artikel volstaan.
+  Alles geverifieerd: alle 14 JPEG's decoderen (naturalWidth-test headless chromium), JSON-LD
+  parseert, meta aanwezig op alle pagina's.
 
 ### v8 — Uitklapmenu, B2B-features, meertalig NL/EN/FR, Formspree live (10 juli 2026)
 

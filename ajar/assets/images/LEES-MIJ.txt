@@ -55,10 +55,21 @@ proces-07.jpg    — Stap 4: import / onderweg naar NL (dozen, vrachtwagen) — 
                    importtraject, geen ajar.ma-fabrieksfoto zal hier logisch passen
 product-03.jpg   — liever nog: een echte fles-foto (500 ml) zodra beschikbaar
 
+COPYRIGHT (11 juli 2026)
+------------------------
+Alle EIGEN foto's hierboven dragen een ingebedde EXIF-copyright:
+  Copyright: "(c) 2026 AJAR, Amsterdam - alle rechten voorbehouden / all rights reserved"
+  Artist: "AJAR"
+De stockfoto's (stock-*.jpg en proces-05.jpg) hebben dit bewust NIET —
+daar ligt het auteursrecht niet bij AJAR en een valse claim is schadelijk.
+Bij nieuwe eigen foto's: zelfde EXIF-copyright toevoegen (piexif of exiftool),
+bij nieuwe stockfoto's: niet claimen.
+
 Tips
 ----
 - Zelfde bestandsnaam = automatisch vervangen, niets anders nodig.
-- EXIF/locatie wordt niet meegepubliceerd; ik strip die er standaard uit.
+- EXIF/locatie wordt niet meegepubliceerd; ik strip die er standaard uit
+  (persoonsgegevens/GPS eruit — de copyright-tag hierboven blijft er juist wél in).
 - Aangeleverde foto's worden geoptimaliseerd (max ~2400px, scherp maar snel).
 - Voor de 2 lage-resolutie foto's (olijftak + geoogste olijven): stuur de
   originele versie rechtstreeks van de telefoon/camera (niet via WhatsApp,

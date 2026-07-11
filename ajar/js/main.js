@@ -1454,7 +1454,18 @@
       manufacturer: { '@type': 'Organization', name: C.producer.name, address: { '@type': 'PostalAddress', addressLocality: C.producer.city, addressCountry: 'MA' } },
       offers: { '@type': 'Offer', availability: 'https://schema.org/InStock', businessFunction: 'http://purl.org/goodrelations/v1#Sell', priceSpecification: { '@type': 'PriceSpecification', description: 'Prijs op aanvraag (B2B)' } }
     };
-    const objs = [org, product];
+    /* Copyright-claim als structured data (WebSite erft copyright-velden van CreativeWork) */
+    const website = {
+      '@context': 'https://schema.org', '@type': 'WebSite',
+      name: cfg.brandName,
+      url: cfg.domain,
+      inLanguage: window.AJAR_LANG || 'nl',
+      copyrightHolder: { '@type': 'Organization', name: cfg.brandName },
+      copyrightYear: 2026,
+      copyrightNotice: '© ' + new Date().getFullYear() + ' ' + cfg.brandName + ' — alle rechten voorbehouden',
+      license: cfg.domain + 'voorwaarden.html'
+    };
+    const objs = [org, product, website];
     /* FAQ-rich-result op de zakelijk-pagina */
     if (page === 'zakelijk' && C.b2b && C.b2b.faq && C.b2b.faq.items.length) {
       objs.push({
