@@ -271,7 +271,8 @@
         '</div>' +
       '</div>' +
       '<div class="wrap footer-bottom">' +
-        '<span>© ' + new Date().getFullYear() + ' ' + esc(cfg.brandName) + ' · ' + esc(cfg.tagline) + '</span>' +
+        '<span>© ' + new Date().getFullYear() + ' ' + esc(cfg.brandName) + ' · ' + esc(cfg.tagline) +
+          (f.rightsLine ? ' · ' + esc(f.rightsLine) : '') + '</span>' +
         /* Cookie-voorkeuren opnieuw kiezen — alleen zinvol als er iets te kiezen valt (GA aan) */
         (cfg.gaId ? '<button type="button" class="footer-link-btn" id="cookie-prefs">' + esc(f.cookiePrefsLabel) + '</button>' : '') +
       '</div>';

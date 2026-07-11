@@ -771,7 +771,7 @@ window.AJAR_CONTENT = {
       title: 'Algemene voorwaarden',
       sub: 'De afspraken die gelden bij zakelijke bestellingen — in gewone taal.'
     },
-    updated: 'Laatst bijgewerkt: 10 juli 2026 · versie 1.0',
+    updated: 'Laatst bijgewerkt: 11 juli 2026 · versie 1.1',
     sections: [
       {
         title: '1. Wie is AJAR en waarop zijn deze voorwaarden van toepassing?',
@@ -818,11 +818,15 @@ window.AJAR_CONTENT = {
         body: 'Op alle overeenkomsten met AJAR is Nederlands recht van toepassing; het Weens Koopverdrag (CISG) is uitgesloten. Komen we er samen niet uit — wat we uiteraard eerst gewoon proberen — dan is de rechtbank Amsterdam bevoegd.'
       },
       {
-        title: '12. Wijzigingen',
+        title: '12. Intellectueel eigendom',
+        body: 'Alle inhoud van deze website en van onze materialen — teksten, foto’s en ander beeldmateriaal, het AJAR-logo en de merknaam, het ontwerp, spec-sheets en offertes — is eigendom van AJAR of wordt met toestemming gebruikt, en is beschermd door het auteursrecht en andere intellectuele-eigendomsrechten. Kopiëren, verspreiden of commercieel gebruiken mag niet zonder onze voorafgaande schriftelijke toestemming. Bent u afnemer, dan mag u ons beeldmateriaal en onze productinformatie wél gewoon gebruiken om onze producten in uw eigen zaak, menukaart of webshop te presenteren. Kort citeren met bronvermelding is uiteraard ook toegestaan.'
+      },
+      {
+        title: '13. Wijzigingen',
         body: 'We kunnen deze voorwaarden aanpassen. Voor lopende bestellingen blijft de versie gelden die van kracht was op het moment van uw bestelling. De actuele versie staat altijd op deze pagina.'
       },
       {
-        title: '13. Bedrijfsgegevens',
+        title: '14. Bedrijfsgegevens',
         body: 'AJAR, Jephtastraat 28H, 1055 JV Amsterdam, Nederland. KvK: 77755170. Btw: NL003042226B35. Producent: ConservAjar SARL, Taourirt, Marokko.'
       }
     ]
@@ -879,6 +883,7 @@ window.AJAR_CONTENT = {
     privacyLabel: 'Privacyverklaring',
     termsLabel: 'Algemene voorwaarden',
     cookiePrefsLabel: 'Cookie-voorkeuren',
+    rightsLine: 'Alle rechten voorbehouden',
     socials: [
       /* Later invullen — leeg = niet getoond. Voorbeeld: { label:'Instagram', href:'https://instagram.com/…' } */
     ]

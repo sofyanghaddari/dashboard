@@ -78,6 +78,21 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v9 — Copyright/intellectueel eigendom (11 juli 2026)
+
+Op verzoek van Soef ("copyright voor de ajar site").
+
+- **Nieuw artikel "12. Intellectueel eigendom"** in de Algemene voorwaarden (NL/EN/FR): alle
+  site-inhoud, foto's, logo, merknaam, spec-sheets en offertes zijn eigendom van AJAR en
+  auteursrechtelijk beschermd; kopiëren/commercieel gebruik alleen met schriftelijke toestemming.
+  Bewuste uitzonderingen: afnemers mógen beeldmateriaal/productinfo gebruiken om AJAR-producten
+  in eigen zaak/menukaart/webshop te presenteren, en kort citeren met bronvermelding mag.
+  Oude artikelen 12/13 (Wijzigingen/Bedrijfsgegevens) hernummerd naar 13/14; `terms.updated`
+  → versie 1.1. LANCERING-CHECKLIST-vermelding "12 artikelen" bijgewerkt naar 14.
+- **Footer-copyrightregel uitgebreid**: "© <jaar> AJAR · <tagline> · Alle rechten voorbehouden"
+  via nieuwe sleutel `footer.rightsLine` in alle drie de contentbestanden (main.js laat 'm weg
+  als de sleutel ontbreekt). EN "All rights reserved", FR "Tous droits réservés".
+
 ### v8 — Uitklapmenu, B2B-features, meertalig NL/EN/FR, Formspree live (10 juli 2026)
 
 Losse sessie op verzoek van Soef ("de pagina's zijn te lang, maak overzichtelijker" + "wat is er

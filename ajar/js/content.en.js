@@ -560,7 +560,7 @@ window.AJAR_CONTENT_EN = {
       title: 'Terms and conditions',
       sub: 'The agreements that apply to business orders — in plain language.'
     },
-    updated: 'Last updated: 10 July 2026 · version 1.0',
+    updated: 'Last updated: 11 July 2026 · version 1.1',
     sections: [
       { title: '1. Who is AJAR and what do these terms apply to?', body: 'AJAR is an importer of extra virgin olive oil, based at Jephtastraat 28H, 1055 JV Amsterdam, registered with the Dutch Chamber of Commerce under number 77755170. These terms apply to all quotes, orders and deliveries by AJAR. We supply business customers only (B2B), not consumers. Deviations from these terms only apply if we have agreed to them with you in writing (including by e-mail or WhatsApp). Any purchasing terms of the customer do not apply, unless we have explicitly accepted them in writing.' },
       { title: '2. Quotes and prices', body: 'All our quotes are without obligation and valid for 30 days, unless stated otherwise in the quote. Prices are in euros and exclude VAT; they are volume-dependent and set out per quote. Obvious mistakes or typos in a quote do not bind us — we will contact you for a corrected version.' },
@@ -573,8 +573,9 @@ window.AJAR_CONTENT_EN = {
       { title: '9. Liability', body: 'Our liability per event is limited to the invoice amount of the delivery to which the damage relates. We are not liable for indirect damage, such as loss of turnover or consequential damage. These limitations do not apply in the event of intent or deliberate recklessness by AJAR, or where the law does not permit a limitation.' },
       { title: '10. Force majeure', body: 'In the event of force majeure — circumstances beyond our control, such as crop failure, transport problems, import or export restrictions, or disruptions at the producer — we may suspend delivery. If the force majeure lasts longer than 60 days, both you and we may cancel the order free of charge for the part not yet delivered. Any amounts already paid for undelivered products will be refunded.' },
       { title: '11. Applicable law and disputes', body: 'Dutch law applies to all agreements with AJAR; the Vienna Sales Convention (CISG) is excluded. If we cannot reach agreement together — which we will of course try first — the Amsterdam court has jurisdiction.' },
-      { title: '12. Changes', body: 'We may amend these terms. For orders already placed, the version in force at the time of your order continues to apply. The current version is always available on this page.' },
-      { title: '13. Company details', body: 'AJAR, Jephtastraat 28H, 1055 JV Amsterdam, Netherlands. Chamber of Commerce: 77755170. VAT: NL003042226B35. Producer: ConservAjar SARL, Taourirt, Morocco.' }
+      { title: '12. Intellectual property', body: 'All content of this website and of our materials — texts, photos and other imagery, the AJAR logo and brand name, the design, spec sheets and quotes — is the property of AJAR or used with permission, and is protected by copyright and other intellectual property rights. Copying, distributing or commercial use is not permitted without our prior written consent. If you are a customer, you are of course welcome to use our imagery and product information to present our products in your own business, menu or web shop. Brief quotation with attribution is also permitted.' },
+      { title: '13. Changes', body: 'We may amend these terms. For orders already placed, the version in force at the time of your order continues to apply. The current version is always available on this page.' },
+      { title: '14. Company details', body: 'AJAR, Jephtastraat 28H, 1055 JV Amsterdam, Netherlands. Chamber of Commerce: 77755170. VAT: NL003042226B35. Producer: ConservAjar SARL, Taourirt, Morocco.' }
     ]
   },
 
@@ -600,6 +601,7 @@ window.AJAR_CONTENT_EN = {
     aboutLine: 'AJAR — extra virgin olive oil from Morocco. Directly imported for Dutch hospitality, delicatessens and retail.',
     privacyLabel: 'Privacy statement',
     termsLabel: 'Terms and conditions',
-    cookiePrefsLabel: 'Cookie preferences'
+    cookiePrefsLabel: 'Cookie preferences',
+    rightsLine: 'All rights reserved'
   }
 };
