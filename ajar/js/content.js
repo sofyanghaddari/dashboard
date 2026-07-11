@@ -214,7 +214,7 @@ window.AJAR_CONTENT = {
       {
         anchor: 'kwaliteit-iso',
         title: 'Kwaliteit die je kunt controleren',
-        text: 'De productie is gecertificeerd volgens ISO 22000, uitgegeven door SGS — een internationale norm voor voedselveiligheidsmanagement. Voor u als inkoper betekent dat: gedocumenteerde processen, traceerbaarheid per partij en een producent die audits gewend is.',
+        text: 'De productie is gecertificeerd volgens ISO 22000, uitgegeven door SGS.',
         image: ''
       },
       {
@@ -255,7 +255,7 @@ window.AJAR_CONTENT = {
       items: [
         { year: "Begin jaren '90", title: 'Oprichting van het familiebedrijf', text: 'Het familiebedrijf begint met het persen van olijven uit de eigen boomgaarden.', todo: false },
         { year: 'Jaartal volgt', title: 'Formeel geregistreerd als ConservAjar SARL', text: 'Het bedrijf groeit en wordt formeel geregistreerd onder de naam ConservAjar SARL, met het eigen merk AJAR.', todo: true },
-        { year: 'Jaartal volgt', title: 'ISO 22000-certificering (SGS)', text: 'De productie wordt gecertificeerd volgens ISO 22000 — voedselveiligheid en traceerbaarheid, extern getoetst door SGS.', todo: true },
+        { year: 'Jaartal volgt', title: 'ISO 22000-certificering (SGS)', text: 'De productie behaalt de ISO 22000-certificering (SGS).', todo: true },
         { year: '2026', title: 'Eerste officiële import in Nederland', text: 'AJAR komt vanuit Amsterdam voor het eerst officieel op de Nederlandse markt.', todo: false }
       ],
       note: 'Namen en jaartallen van de generaties worden aangevuld na overleg met de familie.'
@@ -267,7 +267,7 @@ window.AJAR_CONTENT = {
     hero: {
       kicker: 'Het product',
       title: 'Extra vierge olijfolie',
-      sub: 'Koud geperst, gebotteld aan de bron, rechtstreeks geïmporteerd.'
+      sub: 'Gebotteld aan de bron en rechtstreeks geïmporteerd naar Nederland.'
     },
     specs: {
       title: 'AJAR Extra Vierge',
@@ -293,7 +293,7 @@ window.AJAR_CONTENT = {
       text: 'AJAR wordt geperst van één olijfvariëteit: de Picholine Marocaine, de meest aangeplante olijf van Marokko. Geen blend van wisselende rassen en herkomsten — één olijf, van eigen grond.',
       points: [
         { title: 'Thuis in het oosten', text: 'De variëteit gedijt in het droge klimaat van oost-Marokko — precies de streek rond Debdou waar de boomgaarden staan.' },
-        { title: 'Eén ras, geen blend', text: 'Waar veel olijfolie een mengsel is van rassen en landen van herkomst, komt AJAR van één cultivar en één producent.' }
+        { title: 'Constante smaak', text: 'Doordat elke fles van dezelfde variëteit komt, proeft u batch na batch dezelfde herkenbare smaak.' }
       ]
     },
     /* Meetbare kwaliteitscijfers — lab-analyse wordt in Marokko geregeld (actie Soef).
@@ -364,7 +364,7 @@ window.AJAR_CONTENT = {
     origin: {
       kicker: 'Herkomst',
       title: 'Van Debdou naar uw zaak',
-      text: 'Eén korte, controleerbare keten: geoogst en koud geperst in de eigen fabriek in Taourirt, gebotteld aan de bron, en rechtstreeks geïmporteerd naar Amsterdam.',
+      text: 'Van de boomgaarden bij Debdou rechtstreeks naar Amsterdam.',
       from: { label: 'Taourirt · Debdou', sub: 'Noordoost-Marokko' },
       to: { label: 'Amsterdam', sub: 'Nederland' },
       steps: []
@@ -523,7 +523,7 @@ window.AJAR_CONTENT = {
       items: [
         { q: 'Wat is de minimale afname?', a: 'We werken met kleine én grote afnames — van een enkele doos om mee te starten tot een vast maandvolume. Vertel bij uw aanvraag wat u ongeveer zoekt, dan stemmen we het meteen op u af.' },
         { q: 'Wat is de levertijd?', a: 'We houden de lijnen kort en spreken bij uw bestelling een concrete leverdatum met u af. Vraag bij uw aanvraag naar de actuele levertijd voor uw volume.' },
-        { q: 'Hoe werkt een sample aanvragen?', a: 'U vraagt via het formulier of WhatsApp een gratis sample aan. U proeft de olie rustig in uw eigen keuken of zaak, daarna bespreken we volume en prijs. Geen verplichtingen.' },
+        { q: 'Hoe werkt een sample aanvragen?', a: 'Dat werkt heel eenvoudig en kosteloos — u zit nergens aan vast, u beslist zelf of en wanneer u doorgaat.' },
         { q: 'Wat zijn de betaalvoorwaarden?', a: 'De betaalvoorwaarden spreken we vooraf met u af; ze staan altijd duidelijk op de offerte — geen verrassingen achteraf.' },
         { q: 'Hoe bewaar ik de olie en hoe lang is die houdbaar?', a: 'Koel, donker en goed afgesloten bewaren — zo behoudt extra vierge olijfolie zijn smaak het langst. De houdbaarheidsdatum staat op elke fles.' },
         { q: 'Wie is de importeur en waarom maakt dat uit?', a: 'AJAR is de officiële importeur in Nederland (gevestigd in Amsterdam) en staat als zodanig op de fles. Voor u betekent dat: één aanspreekpunt in Nederland, duidelijke aansprakelijkheid en traceerbaarheid per partij — precies wat uw HACCP-dossier vraagt.' }
@@ -558,7 +558,7 @@ window.AJAR_CONTENT = {
     },
     usps: [
       { title: 'Echt gratis', text: 'Geen kleine letters — het proefflesje kost u niets.' },
-      { title: 'Persoonlijk', text: 'U krijgt de olie van de importeur zelf, niet van een verkoopafdeling.' },
+      { title: 'Rechtstreeks bezorgd', text: 'Het proefflesje komt gewoon bij uw zaak binnen — u hoeft nergens voor langs.' },
       { title: 'Traceerbaar', text: 'Eén familiebedrijf in Marokko, ISO 22000-gecertificeerd.' }
     ],
     form: {
@@ -693,7 +693,7 @@ window.AJAR_CONTENT = {
     ],
     cta: {
       title: 'Zelf proeven zegt het meest',
-      text: 'Theorie is mooi, maar smaak beslist. Vraag een gratis sample aan en beoordeel de olie in uw eigen keuken.',
+      text: 'Kennis is een goed begin, maar uw eigen tong beslist. Vraag een gratis proefflesje aan.',
       button: 'Gratis sample aanvragen',
       buttonHref: 'sample.html',
       secondary: 'Bekijk het product',
