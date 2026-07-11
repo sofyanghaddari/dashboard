@@ -78,6 +78,60 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v10 — Animatie-pakket: 8 kwaliteitsanimaties (11 juli 2026)
+
+Op verzoek van Soef ("doe ze allemaal, verhoog de uitvoeringskwaliteit, neem je tijd") — de acht
+opties uit het aangeboden menu gebouwd. CSS-sectie "✨ ANIMATIE-PAKKET v9" onderaan `style.css`
+(intern v9 genoemd in de CSS-comment; in dit dossier v10 om botsing met de copyright-v9 te
+vermijden), nieuwe init-functies in `main.js`, alles reduced-motion-geguard en getest.
+
+1. **Scrollytelling "Van boom tot fles"** (`initProcessJourney()`): de 4 processtappen op Product
+   (`.process-journey`) worden een scroll-verhaal — de stap bij de "focuslijn" (52% schermhoogte)
+   is actief (opgelicht, gouden gevulde nummerbadge, foto op volle kleur, lichte lift), gehad =
+   zachtjes aan, nog-te-komen = gedimd (opacity .62 + gedempte foto). De desktop-verbindingslijn
+   vult mee via `--journey` (0→1). rAF-throttled scroll. Reduced-motion → alles actief, lijn vol.
+2. **Gyroscoop-diepte op de hero-foto (mobiel)** (`initHeroTilt()`): tegenhanger van de desktop-
+   muisdiepte (init3d) — de hero kantelt héél licht (±4°/±3°, gedempt via lerp) met
+   `deviceorientation`. iOS 13+ vraagt eenmalig toestemming bij de eerste `touchend`; geweigerd/
+   niet-beschikbaar → stil overgeslagen. Hergebruikt de bestaande `.hero-3d` `--hrx/--hry`-vars.
+3. **Lightbox-galerij** (`initLightbox()` herschreven): procesfoto's groot bekijken en dan
+   **vegen/pijltjes/‹›-knoppen** naar de volgende/vorige, met teller (`2 / 4`) en vloeiende
+   schuif-overgang. Galerij = alle procesfoto's die echt laadden (icoon-tegels doen niet mee).
+   Touch-swipe (>40px horizontaal), ArrowLeft/Right, Escape. Achtergrond/✕ sluit; knoppen niet.
+4. **Vloeiende olie-scheidingslijn** (`oilDivider()`): een zachte golf (SVG) met een kort feller
+   goud-lichtsegment dat er via `stroke-dashoffset` doorheen "stroomt" — `non-scaling-stroke` +
+   `pathLength=1` zodat het naadloos schaalt van mobiel tot desktop. Spaarzaam ingezet: één per
+   pagina op een sterke overgang (home, product, over-ons, zakelijk).
+5. **Glans over de concept-fles** (`.bm-shine`): traag strijkend licht over het flesglas op
+   Zakelijk (`.bm-body` kreeg `overflow:hidden` als clip). Puur CSS, `bmShine` 6,5s.
+6. **Menu-indicator die meeglijdt** (`initNavIndicator()`, desktop): één goudlijntje onder het
+   actieve menu-item dat bij hover naar het item onder de cursor glijdt (en terugkeert), én bij
+   paginawissel via de al-actieve MPA View Transition naar het nieuwe actieve item schuift (eigen
+   `view-transition-name: navind`). Vervangt de losse hover-underline + het actief-randje
+   (`body.has-nav-underline`). Mobiel: uit (volscherm-menu heeft al een actief-markering).
+7. **WhatsApp-tik-bevestiging** (`initWhatsappFeedback()`): tik op een `wa.me`-link → korte groene
+   ripple + oplichtend vinkje (los in de body op vaste positie bij het tikpunt, dus geen
+   knop-layout/overflow-gedoe; werkt voor knoppen én tekstlinks). Tekstloos → i18n-vrij.
+8. **Succes-vinkje met gouden gloed-puls** (`.form-success::before`): na een gelukte
+   formulierverzending één zachte radiale goud-puls achter het getekende vinkje (`okGlow`).
+
+- E2E geverifieerd (headless Chromium, 390px + 1280px, alle 9 pagina's mét volledige scroll):
+  scrollytelling actief-index −1→0→1→2→3 + journey 0→1; lightbox teller 1/2→2/2, next/Escape;
+  nav-indicator onder actief item + verschuift bij hover; flesglans-animatie draait + `overflow:hidden`;
+  WhatsApp-fx spawnt ripple+tick; succes-gloed `okGlow`. Geen JS-fouten (m.u.v. de bekende bewuste
+  404's proces-06/07.jpg), geen kapotte beelden, geen overflow. Reduced-motion: alle acht in
+  rusttoestand (journey vol, oil/shine/glow uit).
+- Testles: de site heeft `scroll-behavior:smooth`; bij het verifiëren van scroll-gedreven animaties
+  in headless eerst `html{scroll-behavior:auto}` injecteren, anders meet je midden in een trage
+  smooth-scroll (eerste testronde toonde daardoor ten onrechte activeIdx −1).
+
+**Geparkeerd voor later (bewust NIET gebouwd — wachten op assets/akkoord):**
+- **Voor/na-kleur-sleepslider** (AJAR vs supermarktolie) — vereist échte foto's van de eigen olie.
+- **360°-fles / cinemagraph-hero** — pas zodra de fles + beeldmateriaal er zijn.
+- **Vallende olijfblaadjes in de hero** — schuurt tegen kitsch; alleen op expliciet verzoek.
+- **Count-up op kwaliteitscijfers** — bestaat al (`initCountUp`), gaat vanzelf "aan" zodra de
+  labcijfers (zuurgraad/polyfenolen/oogstjaar) in `content.js` staan.
+
 ### v9 — Copyright/intellectueel eigendom (11 juli 2026)
 
 Op verzoek van Soef ("copyright voor de ajar site").
@@ -141,6 +195,46 @@ achteraf samengevoegd (rebase, geen functionaliteit uit v7 verloren — zie hier
   per-pagina `theme-color` (olijfgroen bij topbar-pagina's, crème alleen op `sample.html`, dat had
   v7 uniform crème) is behouden. E2E geverifieerd (headless Chromium, 390/1280px, NL/EN/FR, alle
   9 pagina's): geen JS-fouten, geen overflow, Formspree/vCard/dropdowns/herkomstkaart werken.
+
+### v8 — Nuttige micro-animaties + FAQ-bugfix (10 juli 2026)
+
+Op verzoek van Soef ("nuttige simpele animaties met tekst of foto's"). Zelfde lat als v6d:
+alleen functioneel/oriënterend, geen extra sfeer. Eerst gecheckt wat er al was (proceslijn,
+Ken Burns, timeline-cascade en nav-underline bestonden al uit de parallelle sessie) — vier
+nieuwe effecten gebouwd, alle tekstloos (dus géén EN/FR-vertaling nodig), CSS-sectie
+"✨ NUTTIGE MICRO-ANIMATIES v8" onderaan style.css met eigen reduced-motion-blok:
+
+1. **Foto-onthulling** — grote editorial foto's (hero, split-secties, specs, sample) onthullen
+   met een zachte clip-path-wipe van boven + kleur die "aan" gaat (saturate .55 → 1). Bewust
+   NIET op de fotostapel (eigen wissel-animatie) en de kleine procestegels. Werkt samen met de
+   bestaande blur-up (opacity-transition behouden in de override) en de scroll-drift (animation
+   op transform, geen conflict).
+2. **Formulier-voortgangsbalk** — dunne gouden balk boven het formulier vult per geldig
+   verplicht veld; vol = olijfgroen (`.form-progress`/`.fp-fill`/`.fp-done`). Automatisch op elk
+   formulier met 3+ verplichte velden (sample/offerte/presentatie; nieuwsbrief bewust niet).
+   `initFieldChecks()` herschreven: per-form, gedeelde `valid()`, bar via JS ingevoegd vóór de
+   `.form-grid`. Tekstloos → i18n-vrij.
+3. **Vergelijkingstabel goud-sweep** — op Product veegt een gouden glans rij-voor-rij (cascade
+   .35–.8s) over de AJAR-kolom zodra de tabel in beeld komt, en er blijft een héél lichte
+   goudtint achter (`.compare-a::before`, `cmpSweep`). Trekt het oog naar de verschil-kolom;
+   werkt ook in de mobiele gestapelde weergave.
+4. **Kicker-streepje** — klein goudlijntje (26px) groeit onder elke `.section-head .kicker` als
+   de sectiekop in beeld komt (na de titel-maskeranimatie, delay .45s). Absolute positionering,
+   geen layout-shift; paginahero's bewust niet (hebben de titel-animatie al).
+5. **FAQ-antwoord scrolt in beeld** ná het uitklappen (`scrollIntoView block:'nearest'` — scrolt
+   alleen als het antwoord echt onder de vouw valt).
+
+**Echte bugfix onderweg gevonden (pre-existing):** de FAQ open/dicht-animatie zette start- en
+eindhoogte zonder geforceerde reflow ertussen → de transitie startte (in elk geval in headless
+Chromium) nooit, `transitionend` vuurde nooit en **`data-busy` bleef permanent hangen — het item
+kon daarna nooit meer dicht/open**. Fix: `void body.offsetHeight` reflow tussen start- en
+eindwaarde + een `settle()`-helper met 500ms timeout-vangnet dat altijd opruimt, en filtering op
+`propertyName === 'height'`. Regressie-getest: open → dicht → opnieuw open werkt nu.
+
+E2E geverifieerd (headless Chromium, 390px + 1280px, alle 9 pagina's mét volledige scroll):
+geen JS-fouten (behalve de bekende bewuste 404's van proces-06/07.jpg), geen kapotte beelden,
+geen overflow; voortgangsbalk 0→50→100% + fp-done; wipe eindstand correct; compare-sweep
+opacity 1; kicker scaleX(1); EN-taalvariant gecheckt (balk aanwezig, geen tekst te vertalen).
 
 ### v7 — Volledige overhaul: bedrijfsteksten compleet + AVG/performance-ronde (10 juli 2026)
 
