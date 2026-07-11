@@ -416,7 +416,7 @@ window.AJAR_CONTENT = {
       items: [
         { size: 'Proefflesje', name: 'De sample', text: 'Gratis kennismaking: genoeg om te proeven, te vergelijken en te beslissen.', shape: 'small', todo: true, todoNote: 'formaat volgt' },
         { size: '500 ml', name: 'De fles', text: 'Het hart van de lijn — voor keuken en tafel, gebotteld aan de bron.', shape: 'bottle' },
-        { size: '12 × 500 ml', name: 'De doos', text: 'De B2B-eenheid waarin we leveren en rekenen.', shape: 'box', todo: true, todoNote: 'definitieve doosinhoud volgt' }
+        { size: '12 × 500 ml', name: 'De doos', text: 'De B2B-eenheid waarin we leveren en rekenen.', shape: 'box' }
       ],
       /* Concept-mockup van de fles met ons logo — GEEN productfoto (fles/etiket bestaan nog niet).
          Bewust duidelijk gelabeld als ontwerprichting, i.p.v. verzwegen als "gewoon een foto".
@@ -426,13 +426,13 @@ window.AJAR_CONTENT = {
         caption: 'Ontwerprichting — geen productfoto. De definitieve fles en het etiket volgen zodra de verpakking klaar is.'
       }
     },
+    /* v8 (sanering juli 2026): `packaging`-regel verwijderd — die herhaalde woordelijk de
+       "Levering"-rij in b2b.ordering.rows hieronder (was 2x op dezelfde pagina). Die rij is nu de
+       enige plek die de doosinhoud/aantal noemt. */
     pricing: {
       title: 'Prijs op aanvraag',
       text: 'We publiceren bewust geen prijslijst: B2B-prijzen hangen af van volume, frequentie en afspraken over levering. In één kort gesprek weet u waar u aan toe bent.',
-      fair: 'Eén uitgangspunt staat vast: eerlijke prijzen voor iedereen in de keten — de familie achter de olie, u als ondernemer, en uw klant.',
-      /* B2B rekent in dozen, niet in flessen. Definitieve doosinhoud volgt. */
-      packaging: 'Levering per doos à 12 × 500 ml (definitieve doosinhoud volgt).',
-      packagingTodo: true
+      fair: 'Eén uitgangspunt staat vast: eerlijke prijzen voor iedereen in de keten — de familie achter de olie, u als ondernemer, en uw klant.'
     },
     /* Eerlijke geruststelling — draait "nieuw/onbewezen" om naar een voordeel. Geen verzonnen cijfers. */
     assurance: {
@@ -473,20 +473,23 @@ window.AJAR_CONTENT = {
     },
     /* Inkoopdossier — checklist met documenten/certificaten en hun status. Toont wat er is
        (ISO 22000) en wat volgt (EUR.1, allergenen/HACCP-blad). "available:false" = nog niet
-       beschikbaar → nette "op aanvraag"-status i.p.v. een verzonnen document. */
+       beschikbaar → nette "op aanvraag"-status i.p.v. een verzonnen document.
+       v8 (sanering juli 2026): "Product spec-sheet (PDF)" verwijderd uit deze checklist — het
+       spec-sheet staat al met een directe downloadknop in b2b.downloads hieronder op dezelfde
+       pagina; hier stond het nogmaals als losse regel zonder knop. requestPrefill noemt het
+       spec-sheet daarom ook niet meer (dat vraagt u niet aan, dat downloadt u direct). */
     dossier: {
       kicker: 'Voor uw inkoopdossier',
       title: 'Documenten & certificaten',
       intro: 'Alles wat uw inkoop of HACCP-dossier nodig heeft, op één plek. Wat nu beschikbaar is, kunt u direct opvragen; de rest wordt aangevuld zodra het binnen is.',
       items: [
         { label: 'ISO 22000-certificaat (SGS)', note: 'Voedselveiligheidsmanagement, extern getoetst', available: true },
-        { label: 'Product spec-sheet (PDF)', note: 'Alle technische productinformatie op één A4', available: true },
         { label: 'EUR.1 / oorsprongsdocument', note: 'Preferentiële oorsprong EU–Marokko', available: false },
         { label: 'Allergenen- & HACCP-blad', note: 'Wordt aangevuld', available: false },
         { label: 'Houdbaarheid & THT per partij', note: 'Volgt per partij op de fles', available: false }
       ],
       requestLabel: 'Certificaat opvragen',
-      requestPrefill: 'Hallo, kunt u mij het ISO 22000-certificaat en het spec-sheet van AJAR toesturen voor mijn inkoopdossier?',
+      requestPrefill: 'Hallo, kunt u mij het ISO 22000-certificaat van AJAR toesturen voor mijn inkoopdossier?',
       availableTag: 'Beschikbaar',
       pendingTag: 'Op aanvraag / volgt'
     },
