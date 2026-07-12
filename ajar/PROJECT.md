@@ -78,6 +78,40 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v11 — Animatie-kwaliteitsronde: lelijke effecten hersteld (12 juli 2026)
+
+Op verzoek van Soef ("sommige animaties zien er lelijk en amateuristisch uit") — volledige audit
+van alle animaties met headless-Chromium-screenshots, daarna gerichte fixes. CSS-comment-sectie
+"✨ ANIMATIE-KWALITEITSRONDE v11" onderaan `style.css`; de meeste fixes zitten bij hun eigen secties.
+
+**Hersteld (zag er goedkoop/amateuristisch uit):**
+1. **Olijftak in de CTA-band hertekend** (`branchSvg()` in `main.js` + `.cta-branch`-CSS): de oude
+   SVG rendeerde als een onherkenbare krabbel/handtekening. Nieuw: échte takvorm — rustige steel,
+   zes slanke lansvormige blaadjes afwisselend boven/onder, twee olijfjes aan korte steeltjes.
+   Choreografie: steel tekent eerst, blaadjes één voor één (nth-of-type-delays) met zachte
+   goudvulling, olijfjes verschijnen als laatste. Prototype eerst los geverifieerd vóór inbouw.
+2. **Oneindige glans-vegen weg** — het klassieke "goedkope shine"-effect: de goudglans over álle
+   foto's (elke 14s) is nu één veeg bij de scroll-reveal ("het licht vangt de foto"); de sheen op
+   primaire knoppen (elke 8s) reageert nu alleen op hover/focus; de spec-sheet-kaart veegt éénmalig
+   bij reveal.
+3. **Verdwaalde gouden streep** boven de 3-stappenrij (Zakelijk/Sample) weg: de proceslijn is nu
+   beperkt tot `.process-journey` (Product), waar hij als voortgangsspoor betekenis heeft.
+4. **3D-tilt getemperd**: ±7° → ±4° (7° oogde speelgoedachtig op grote kaarten), glare zachter
+   (.5 → .32). **Ken Burns** hero: 24s → 40s en 1.08 → 1.06 — het omkeerpunt ("terugpompen") was
+   zichtbaar. **Flesglans** rustiger (alpha .32 → .22, 6,5s → 9s).
+5. **Dode code opgeruimd**: `.cta-band-drop` (stond op `display:none` maar draaide wél dropGlow +
+   dropSway) volledig verwijderd uit JS + CSS; dubbele `anchorFlash`-keyframes ontdubbeld.
+
+**Nieuw (kwaliteitsupgrades):**
+6. **Home-hero-entree**: h1 onthult zich uit een masker (zelfde stijl als de sectietitels elders),
+   subtekst en knop volgen zacht gestaggerd (.35s/.5s) — verving de vlakke alles-tegelijk-fade.
+7. **Ghost-knoppen vullen zich vloeiend** van links met olijfgroen bij hover (`background-size`-
+   veeg, tekst wordt crème); `.btn-ghost-light` op de donkere CTA-band vult crème-transparant.
+
+- Geverifieerd (headless Chromium, 375px + 1280px, alle 9 pagina's): tak leesbaar als olijftak op
+  beide formaten, streep weg op Zakelijk, hero netjes gesetteld, geen JS-fouten. Reduced-motion
+  voor alle gewijzigde effecten bijgewerkt (blaadjes/vulling direct in eindstand, geen vegen).
+
 ### v10 — Animatie-pakket: 8 kwaliteitsanimaties (11 juli 2026)
 
 Op verzoek van Soef ("doe ze allemaal, verhoog de uitvoeringskwaliteit, neem je tijd") — de acht

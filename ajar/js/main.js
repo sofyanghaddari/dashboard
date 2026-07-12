@@ -55,15 +55,22 @@
   }
 
   /* CTA-band met primaire (sample) en optionele secundaire (offerte) knop */
-  /* Olijftak die zichzelf tekent zodra de CTA-band in beeld komt (stroke-draw via pathLength) */
+  /* Olijftak die zichzelf tekent zodra de CTA-band in beeld komt (stroke-draw via pathLength).
+     v11 hertekend: échte takvorm — rustige steel, zes slanke lansvormige blaadjes afwisselend
+     boven/onder, twee olijfjes aan korte steeltjes (verving de onherkenbare krabbel). */
   function branchSvg() {
     return '<svg class="cta-branch" viewBox="0 0 220 56" fill="none" aria-hidden="true">' +
-      '<path class="cb-stem" pathLength="1" d="M8 44 C 58 34 116 22 212 12"/>' +
-      '<path class="cb-leaf" pathLength="1" d="M52 36 C 50 26 56 18 66 16 C 66 26 61 33 52 36 Z"/>' +
-      '<path class="cb-leaf" pathLength="1" d="M96 29 C 102 20 112 17 121 19 C 117 28 108 33 96 29 Z"/>' +
-      '<path class="cb-leaf" pathLength="1" d="M142 22 C 140 13 146 5 156 3 C 156 13 151 20 142 22 Z"/>' +
-      '<circle class="cb-olive" cx="78" cy="35" r="4.5"/>' +
-      '<circle class="cb-olive" cx="170" cy="17" r="4.5"/>' +
+      '<path class="cb-stem" pathLength="1" d="M16 40 C 70 36, 150 30, 204 18"/>' +
+      '<path class="cb-leaf" pathLength="1" d="M46 38 Q 40.5 27.5 38 17.5 Q 49 24.5 46 38 Z"/>' +
+      '<path class="cb-leaf" pathLength="1" d="M74 36 Q 81 46 92 50.5 Q 82.5 38 74 36 Z"/>' +
+      '<path class="cb-leaf" pathLength="1" d="M102 34 Q 96.5 23.5 95 13.5 Q 105.5 20.5 102 34 Z"/>' +
+      '<path class="cb-leaf" pathLength="1" d="M130 31.5 Q 137 41.5 148 46 Q 138.5 33.5 130 31.5 Z"/>' +
+      '<path class="cb-leaf" pathLength="1" d="M156 28.5 Q 151.5 18 151 8 Q 160.5 15.5 156 28.5 Z"/>' +
+      '<path class="cb-leaf" pathLength="1" d="M182 24 Q 189.5 32.5 200.5 36 Q 190.5 25.5 182 24 Z"/>' +
+      '<path class="cb-vein" pathLength="1" d="M62 37 Q 63.5 42 66 45"/>' +
+      '<path class="cb-vein" pathLength="1" d="M118 32.5 Q 120 37.5 123 40.5"/>' +
+      '<circle class="cb-olive" cx="67.5" cy="47.5" r="4"/>' +
+      '<circle class="cb-olive" cx="124.5" cy="43" r="4"/>' +
     '</svg>';
   }
 
@@ -71,7 +78,6 @@
     return '<section class="cta-band reveal">' +
       '<div class="wrap cta-band-inner">' +
       branchSvg() +
-      '<div class="cta-band-drop" aria-hidden="true"></div>' +
       '<h2>' + esc(cta.title) + '</h2>' +
       '<p>' + esc(cta.text) + '</p>' +
       '<div class="cta-band-actions">' +
@@ -1964,8 +1970,8 @@
           const r = el.getBoundingClientRect();
           const px = (e.clientX - r.left) / r.width;
           const py = (e.clientY - r.top) / r.height;
-          el.style.setProperty('--ry', ((px - .5) * 7).toFixed(2) + 'deg');
-          el.style.setProperty('--rx', ((.5 - py) * 7).toFixed(2) + 'deg');
+          el.style.setProperty('--ry', ((px - .5) * 4).toFixed(2) + 'deg');
+          el.style.setProperty('--rx', ((.5 - py) * 4).toFixed(2) + 'deg');
           el.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
           el.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
         });

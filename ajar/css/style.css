@@ -137,12 +137,21 @@ p { margin: 0 0 1em; }
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(62,75,46,.25);
 }
+/* Ghost-knop: vult zich bij hover vloeiend van links met olijfgroen (v11) —
+   verving de vlakke kleurwissel; reduced-motion zet de veeg uit (blok onderaan). */
 .btn-ghost {
-  background: transparent;
+  background-color: transparent;
+  background-image: linear-gradient(var(--olive), var(--olive));
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  background-position: left center;
   color: var(--olive);
   border-color: rgba(62,75,46,.35);
+  transition: background-size .35s var(--ease), color .25s var(--ease),
+              border-color .25s var(--ease), transform .25s var(--ease),
+              box-shadow .25s var(--ease);
 }
-.btn-ghost:hover { border-color: var(--olive); background: rgba(62,75,46,.05); }
+.btn-ghost:hover { border-color: var(--olive); background-size: 100% 100%; color: #F7F5F0; }
 
 /* ---------- Topbar (belofte-balk, scrolt mee weg) ---------- */
 .topbar {
@@ -247,12 +256,7 @@ body.scrolled .site-header {
 /* Sectie-ankers vrijhouden van de sticky header bij een sprong */
 section[id] { scroll-margin-top: 96px; }
 
-/* Doelsectie licht kort op na een klik/deel-link */
-.anchor-flash { animation: anchorFlash 1.5s var(--ease); }
-@keyframes anchorFlash {
-  0%, 100% { background-color: transparent; }
-  18%, 42% { background-color: rgba(201,162,39,.10); }
-}
+/* Doelsectie licht kort op na een klik/deel-link — keyframes verderop (één definitie, v11 ontdubbeld) */
 
 @media (min-width: 861px) {
   .nav-sub {
@@ -558,15 +562,6 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   background: var(--gold-bright);
   box-shadow: 0 6px 20px rgba(0,0,0,.25);
 }
-.cta-band-drop {
-  width: 15px;
-  height: 15px;
-  margin: 0 auto 1.6rem;
-  background: var(--gold);
-  border-radius: 0 50% 50% 50%;
-  transform: rotate(45deg); /* druppel met de punt omhoog */
-}
-
 /* ---------- Proces-stappen ---------- */
 .process {
   list-style: none;
@@ -866,8 +861,12 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 
 /* ---------- CTA-band: dubbele knoppen ---------- */
 .cta-band-actions { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
-.btn-ghost-light { color: #F3F0E8; border-color: rgba(247,245,240,.4); }
-.btn-ghost-light:hover { border-color: #F7F5F0; background: rgba(247,245,240,.08); color: #fff; }
+.btn-ghost-light {
+  color: #F3F0E8;
+  border-color: rgba(247,245,240,.4);
+  background-image: linear-gradient(rgba(247,245,240,.12), rgba(247,245,240,.12));
+}
+.btn-ghost-light:hover { border-color: #F7F5F0; background-size: 100% 100%; color: #fff; }
 
 /* ---------- Partnerwall ("Verkrijgbaar bij") ---------- */
 .partners { padding: 1.4rem 0 0; }
@@ -1312,7 +1311,9 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   .split-media .img-slot { will-change: transform; }
 }
 
-/* ── Olie-glans: trage goudglans die over beeld-slots (en latere foto's) trekt ── */
+/* ── Olie-glans: één zachte goudveeg over de foto zodra die in beeld komt ──
+   v11: was een oneindig herhalende glans over álle foto's (elke 14s) — dat oogde
+   goedkoop. Nu één keer, als "het licht de foto vangt" bij de scroll-reveal. */
 .img-slot::before {
   content: '';
   position: absolute;
@@ -1326,11 +1327,14 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
     rgba(201,162,39,.10) 53%,
     transparent 62%);
   background-size: 300% 100%;
-  animation: oilSheen 14s var(--ease) infinite;
+  background-position: 120% 0;
+}
+.reveal.in .img-slot::before, .img-slot.reveal.in::before {
+  animation: oilSheen 1.8s var(--ease) .55s 1 both;
 }
 @keyframes oilSheen {
-  0%, 55% { background-position: 120% 0; }
-  85%, 100% { background-position: -60% 0; }
+  from { background-position: 120% 0; }
+  to { background-position: -60% 0; }
 }
 .img-slot.empty::after { z-index: 2; }
 .img-slot-note { z-index: 2; }
@@ -1352,13 +1356,6 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   80% { transform: rotate(-.8deg); }
 }
 
-/* ── De oliedruppel leeft: zachte gloed-puls in de CTA-band ── */
-.cta-band-drop { animation: dropGlow 5.5s ease-in-out infinite; }
-@keyframes dropGlow {
-  0%, 100% { box-shadow: 0 0 0 rgba(201,162,39,0); }
-  50% { box-shadow: 0 0 18px rgba(201,162,39,.55), 0 0 4px rgba(201,162,39,.4); }
-}
-
 /* ── Tijdlijn tekent zichzelf bij scroll ── */
 .timeline::before {
   transform: scaleY(0);
@@ -1376,9 +1373,12 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .timeline.in .timeline-item:nth-child(4) .timeline-dot { transition-delay: 1.2s; }
 .timeline.in .timeline-dot { border-color: var(--gold); }
 
-/* ── Proceslijn "van boom tot fles" vult zich bij scroll ── */
+/* ── Proceslijn "van boom tot fles" vult zich bij scroll ──
+   v11: alléén op de scrollytelling-rij (.process-journey), waar de lijn als
+   voortgangsspoor meebeweegt. Op de gewone 3-stappenrij oogde dezelfde lijn
+   als een verdwaalde streep boven de kaarten. */
 @media (min-width: 700px) {
-  .process::before {
+  .process-journey::before {
     content: '';
     grid-column: 1 / -1;
     height: 2px;
@@ -1386,9 +1386,7 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
     background: linear-gradient(90deg, var(--gold), rgba(184,147,74,.35));
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform 1.3s var(--ease) .15s;
   }
-  .process.in::before { transform: scaleX(1); }
 }
 .process .process-num { transition: background .5s var(--ease), color .5s var(--ease); }
 .process.in .process-step:nth-child(2) .process-num { transition-delay: .35s; }
@@ -1413,7 +1411,9 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   .site-nav a:not(.btn)::after { display: none; }
 }
 
-/* ── Trage sheen-veeg over primaire knoppen en de spec-sheet-kaart ── */
+/* ── Sheen-veeg over primaire knoppen en de spec-sheet-kaart ──
+   v11: was oneindig herhalend (het klassieke "glimmende knop"-effect) — nu één
+   veeg als reactie: knop bij hover/focus, kaart eenmalig bij de scroll-reveal. */
 .btn-primary { position: relative; overflow: hidden; }
 .btn-primary::after {
   content: '';
@@ -1422,11 +1422,14 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   pointer-events: none;
   background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.22) 50%, transparent 58%);
   background-size: 320% 100%;
-  animation: btnSheen 8s var(--ease) infinite;
+  background-position: 130% 0;
+}
+.btn-primary:hover::after, .btn-primary:focus-visible::after {
+  animation: btnSheen .9s var(--ease) 1;
 }
 @keyframes btnSheen {
-  0%, 70% { background-position: 130% 0; }
-  92%, 100% { background-position: -60% 0; }
+  from { background-position: 130% 0; }
+  to { background-position: -60% 0; }
 }
 .sheen-card { position: relative; overflow: hidden; }
 .sheen-card::after {
@@ -1436,8 +1439,9 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   pointer-events: none;
   background: linear-gradient(115deg, transparent 44%, rgba(184,147,74,.09) 50%, transparent 56%);
   background-size: 340% 100%;
-  animation: btnSheen 11s var(--ease) infinite;
+  background-position: 140% 0;
 }
+.sheen-card.reveal.in::after { animation: btnSheen 1.7s var(--ease) .7s 1 both; }
 
 /* ── FAQ vloeiend open/dicht (hoogte via JS gezet) ── */
 .faq-body {
@@ -1528,11 +1532,13 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .img-slot:not(.img-hero) img { transform: scale(1.05); transition: opacity .7s var(--ease), filter .7s var(--ease), transform .7s var(--ease); }
 .img-slot:not(.img-hero) img.imgok { transform: none; }
 
-/* ── Ken-Burns: hele trage, subtiele zoom op de hero-foto ── */
-.img-hero img.imgok { animation: kenburns 24s ease-in-out infinite alternate; will-change: transform; }
+/* ── Ken-Burns: hele trage, subtiele zoom op de hero-foto ──
+   v11: 24s → 40s en kleinere uitslag — bij 24s was het omkeerpunt ("terugpompen")
+   zichtbaar; op dit tempo is de beweging voelbaar maar niet meer aanwijsbaar. */
+.img-hero img.imgok { animation: kenburns 40s ease-in-out infinite alternate; will-change: transform; }
 @keyframes kenburns {
   from { transform: scale(1); }
-  to { transform: scale(1.08) translate(-1.2%, -1%); }
+  to { transform: scale(1.06) translate(-1%, -.8%); }
 }
 
 /* ── Zachte pagina-overgang ── */
@@ -1596,7 +1602,7 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
   opacity: 0;
   transition: opacity .35s var(--ease);
   background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 50%),
-    rgba(247,243,232,.5), rgba(201,162,39,.10) 42%, transparent 66%);
+    rgba(247,243,232,.32), rgba(201,162,39,.07) 42%, transparent 66%);
   mix-blend-mode: soft-light;
   z-index: 2;
 }
@@ -1620,14 +1626,6 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
 @keyframes numFlip {
   from { transform: perspective(420px) rotateX(-90deg); opacity: 0; }
   to { transform: perspective(420px) rotateX(0); opacity: 1; }
-}
-
-/* ── De CTA-druppel wiegt traag in 3D (naast de bestaande gloed-puls) ── */
-.cta-band-inner { perspective: 520px; }
-.cta-band-drop { animation: dropGlow 5.5s ease-in-out infinite, dropSway 7s ease-in-out infinite; }
-@keyframes dropSway {
-  0%, 100% { transform: rotate(45deg) rotate3d(1, -1, 0, 0deg); }
-  50% { transform: rotate(45deg) rotate3d(1, -1, 0, 30deg); }
 }
 
 /* ============================================================
@@ -1689,15 +1687,28 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
 .mq-dot { color: var(--gold); font-weight: 700; }
 @keyframes mqScroll { to { transform: translateX(-50%); } }
 
-/* ── Olijftak tekent zichzelf in de CTA-band ── */
-.cta-branch { width: 168px; height: auto; display: block; margin: 0 auto 10px; overflow: visible; }
-.cta-branch path, .cta-branch circle { stroke: var(--gold); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+/* ── Olijftak tekent zichzelf in de CTA-band (v11 hertekend) ──
+   Steel eerst, dan de blaadjes één voor één (elk met eigen delay), blaadjes
+   vullen zich zacht goud, tot slot verschijnen de olijfjes aan hun steeltjes. */
+.cta-branch { width: 190px; height: auto; display: block; margin: 0 auto 12px; overflow: visible; }
+.cta-branch path, .cta-branch circle { stroke: var(--gold); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
 .cta-branch path { stroke-dasharray: 1; stroke-dashoffset: 1; }
-.cta-branch circle { opacity: 0; transition: opacity .6s var(--ease) 1.4s, fill 1s var(--ease) 1.4s; }
-.cta-band.in .cta-branch path { transition: stroke-dashoffset 1.5s var(--ease) .3s; stroke-dashoffset: 0; }
-.cta-band.in .cta-branch .cb-leaf { transition-delay: .7s; }
+.cta-branch .cb-leaf { stroke-width: 1.3; fill: rgba(201,162,39,0); }
+.cta-branch circle { opacity: 0; transition: opacity .6s var(--ease) 1.7s, fill 1s var(--ease) 1.7s; }
+.cta-band.in .cta-branch .cb-stem { transition: stroke-dashoffset 1.2s var(--ease) .25s; stroke-dashoffset: 0; }
+.cta-band.in .cta-branch .cb-leaf {
+  transition: stroke-dashoffset .7s var(--ease), fill .9s var(--ease) .8s;
+  stroke-dashoffset: 0;
+  fill: rgba(201,162,39,.16);
+}
+.cta-band.in .cta-branch path:nth-of-type(2) { transition-delay: .55s, 1.15s; }
+.cta-band.in .cta-branch path:nth-of-type(3) { transition-delay: .68s, 1.28s; }
+.cta-band.in .cta-branch path:nth-of-type(4) { transition-delay: .81s, 1.41s; }
+.cta-band.in .cta-branch path:nth-of-type(5) { transition-delay: .94s, 1.54s; }
+.cta-band.in .cta-branch path:nth-of-type(6) { transition-delay: 1.07s, 1.67s; }
+.cta-band.in .cta-branch path:nth-of-type(7) { transition-delay: 1.2s, 1.8s; }
+.cta-band.in .cta-branch .cb-vein { transition: stroke-dashoffset .5s var(--ease) 1.5s; stroke-dashoffset: 0; }
 .cta-band.in .cta-branch circle { opacity: 1; fill: rgba(201,162,39,.55); }
-.cta-band .cta-band-drop { display: none; } /* de tak vervangt de losse druppel als merkmoment */
 
 /* ── CTA-band: traag ademende gouden gloed ── */
 .cta-band { position: relative; overflow: hidden; }
@@ -1883,7 +1894,7 @@ body.nav-open .site-header { transform: none !important; }
   .btn, .card, .text-link { transition: none; }
   [data-parallax], .split-media .img-slot { transform: none !important; }
   .img-slot::before, .btn-primary::after, .sheen-card::after,
-  .cta-band-drop, .hdr-twig, .cookie-banner { animation: none !important; }
+  .hdr-twig, .cookie-banner { animation: none !important; }
   /* micro-interacties: eindstand direct tonen, geen beweging */
   .ok-check circle, .ok-check path { animation: none; stroke-dashoffset: 0; }
   .field-shake { animation: none; }
@@ -1915,6 +1926,7 @@ body.nav-open .site-header { transform: none !important; }
   .kernpunten-row li { opacity: 1; transform: none; transition: none; border-left-color: var(--line); }
   .marquee-track { animation: none; }
   .cta-branch path { stroke-dashoffset: 0; transition: none; }
+  .cta-branch .cb-leaf { fill: rgba(201,162,39,.16); }
   .cta-branch circle { opacity: 1; fill: rgba(201,162,39,.55); transition: none; }
   .cta-band::before { animation: none; }
   .cursor-dot, .cursor-ring { display: none !important; }
@@ -2294,14 +2306,14 @@ body.nav-open .site-header { transform: none !important; }
 .bm-shine {
   position: absolute; top: 0; left: -60%;
   width: 55%; height: 100%;
-  background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.32) 48%, rgba(255,255,255,.08) 60%, transparent 100%);
+  background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.22) 48%, rgba(255,255,255,.06) 60%, transparent 100%);
   transform: skewX(-14deg);
   pointer-events: none;
-  animation: bmShine 6.5s var(--ease) infinite;
+  animation: bmShine 9s var(--ease) infinite;
 }
 @keyframes bmShine {
-  0%, 62% { left: -60%; }
-  84%, 100% { left: 120%; }
+  0%, 72% { left: -60%; }
+  90%, 100% { left: 120%; }
 }
 
 /* ── 6. Menu-indicator die meeglijdt (desktop) ── */
@@ -2376,4 +2388,43 @@ body.nav-open .site-header { transform: none !important; }
   .nav-underline { transition: none; }
   .wa-fx { display: none; }
   .form-success:not([hidden])::before { animation: none; display: none; }
+}
+
+/* ============================================================
+   ✨ ANIMATIE-KWALITEITSRONDE v11 (12 juli 2026)
+   Herstelde/vernieuwde effecten; de fixes zelf staan bij hun eigen
+   secties (foto-/knop-sheen eenmalig, olijftak hertekend, proceslijn
+   alleen op de journey-rij). Hieronder alleen de nieuwe entree van
+   de home-hero, met reduced-motion-uitzet onderaan.
+   ============================================================ */
+
+/* ── Home-hero: titel onthult zich uit een masker (zelfde stijl als de
+   sectietitels elders), daarna subtekst en knop zacht gestaggerd na.
+   Alles opacity/transform/clip-path — geen layout-verschuiving. ── */
+.hero-text h1 {
+  clip-path: inset(0 0 102% 0);
+  transform: translateY(.35em);
+  transition: clip-path .8s var(--ease) .08s, transform .8s var(--ease) .08s;
+}
+.hero-text.in h1 {
+  clip-path: inset(-5% 0 -12% 0);
+  transform: none;
+}
+.hero-text .hero-sub, .hero-text .hero-actions {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .6s var(--ease), transform .6s var(--ease);
+}
+.hero-text.in .hero-sub { opacity: 1; transform: none; transition-delay: .35s; }
+.hero-text.in .hero-actions { opacity: 1; transform: none; transition-delay: .5s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-text h1 { clip-path: none; transform: none; transition: none; }
+  .hero-text .hero-sub, .hero-text .hero-actions { opacity: 1; transform: none; transition: none; }
+  .btn-ghost, .btn-ghost-light { background-size: 0% 100%; }
+  .btn-ghost:hover { color: var(--olive); }
+  .btn-ghost-light:hover { color: #fff; }
+  .reveal.in .img-slot::before, .img-slot.reveal.in::before { animation: none; }
+  .btn-primary:hover::after, .btn-primary:focus-visible::after { animation: none; }
+  .sheen-card.reveal.in::after { animation: none; }
 }
