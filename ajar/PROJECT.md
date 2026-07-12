@@ -53,7 +53,9 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
    Elke toevoeging moet de vraag doorstaan: *"wat heeft een inkoper/horeca-eigenaar hieraan?"*
    Concreet: (a) **geen zelfgetekende natuur-illustraties** (olijftakken, blaadjes-ornamenten) —
    naast échte fabrieksfoto's oogt elke handgetekende SVG-tak amateuristisch, hoe netjes ook
-   (Soef wees dit tweemaal af: de krabbel én de hertekende versie); (b) **geen puur decoratieve
+   (Soef wees dit tweemaal af: de krabbel én de hertekende versie). **Uitzondering (v16):** de
+   realistische gekleurde olijftak-boog in de CTA-band is door Soef expliciet gekozen uit zes
+   voorgelegde varianten — die blijft; (b) **geen puur decoratieve
    lijnen/golven** tussen secties (de "olie-scheidingslijn" las als storende gouden streep);
    (c) sier-elementen die wél mogen: typografie op bestaande content (initialen, Nº-nummering,
    colofon) — die dragen informatie-hiërarchie. Twijfel je → weglaten en iets nuttigs bouwen
@@ -86,6 +88,26 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
   een lege commit forceert een nieuwe deploy.
 
 ---
+
+### v16 — Olijftak-boog live in de CTA-band + vallende-olijven-animatie (12 juli 2026)
+
+Soef koos variant D (boog) uit de zes kandidaten, met twee aanwijzingen: de olijven leken
+op kersen, en hij wilde een realistische val-animatie.
+
+- **Olijven hertekend:** eivormig (smaller bij het kroontje, voller onderin, `olivePath()` met
+  rek-factor 1.16–1.32 per vrucht) i.p.v. ronde "kersen"; korte steeltjes; onregelmatige
+  verdeling 3+2+1 met verschillende maten/rotaties; één olijf met rode rijpingsblos, één
+  donker half achter het loof. Generator: `tools/gen-olijftak-boog.mjs`; statische versie
+  `assets/art/olijftak-boog.svg`; de inline-markup zit in `ctaTak()` in main.js.
+- **Val-animatie (`olvDrop`):** twee olijven (.olv-a 13s, .olv-b 17s + 6s offset — priemachtige
+  periodes, dus het patroon herhaalt niet zichtbaar) laten periodiek los: kort wiebelen →
+  versnellende vrije val (per-keyframe cubic-bezier als zwaartekracht) met lichte rotatie/drift →
+  uitfaden vlak boven de titel → na een poos rijpt zachtjes een nieuwe aan. Start pas bij
+  `.cta-band.in`; volledig uit bij reduced-motion. De vallende groep is een binnenste `<g>`
+  zonder eigen transform-attribuut (CSS-transform zou anders de positionering overschrijven).
+- Staat op alle 5 pagina's met een CTA-band. Geverifieerd: desktop + iPhone (0 overflow),
+  val-moment via Web Animations API vastgelegd, reduced-motion → 0 lopende olvDrop-animaties,
+  geen JS-fouten. GIF van de val + live-screenshots naar Soef gestuurd.
 
 ### v15 — Mega-audit: 3 parallelle agent-audits + volledige browser-inspectie, alles gefixt (12 juli 2026)
 

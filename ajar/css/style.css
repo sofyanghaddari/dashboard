@@ -1710,6 +1710,35 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
 .mq-dot { color: var(--gold); font-weight: 700; }
 @keyframes mqScroll { to { transform: translateX(-50%); } }
 
+/* ── Olijftak-boog in de CTA-band (v16, gekozen variant D) ──
+   Realistische vector-tak die over de titel welft; entree = zachte fade-in
+   zodra de band in beeld komt. Twee olijven vallen periodiek (olvDrop):
+   loslaten → versnellende vrije val → uitfaden vlak boven de titel → na een
+   poos rijpt er zachtjes een nieuwe aan. Puur transform/opacity; start pas
+   bij .cta-band.in en staat volledig uit bij reduced-motion. */
+.cta-tak {
+  width: min(330px, 76vw);
+  height: auto;
+  display: block;
+  margin: 0 auto 10px;
+  overflow: visible;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity .9s var(--ease) .15s, transform .9s var(--ease) .15s;
+}
+.cta-band.in .cta-tak { opacity: 1; transform: none; }
+.cta-tak .olv-drop { transform-box: fill-box; transform-origin: center; }
+.cta-band.in .cta-tak .olv-a { animation: olvDrop 13s linear infinite; }
+.cta-band.in .cta-tak .olv-b { animation: olvDrop 17s linear 6s infinite; }
+@keyframes olvDrop {
+  0%, 55%    { transform: none; opacity: 1; animation-timing-function: ease-in-out; }
+  57%        { transform: translate(.5px, 2.5px) rotate(4deg); animation-timing-function: cubic-bezier(.5,0,.88,.42); } /* loslaten */
+  64.5%      { transform: translate(6px, 106px) rotate(30deg); opacity: 1; animation-timing-function: linear; } /* vrije val */
+  66.5%      { transform: translate(8px, 148px) rotate(36deg); opacity: 0; } /* vlak boven de titel uitfaden */
+  66.6%, 80% { transform: none; opacity: 0; }  /* onzichtbaar terug op de tak */
+  97%, 100%  { transform: none; opacity: 1; animation-timing-function: ease; } /* rijpt zachtjes terug aan */
+}
+
 /* ── Zekerheden-rij in de CTA-band (v13) ──
    Verving het getekende olijftak-ornament: geen decoratie, maar de drie feiten
    die bij de inkoper de laatste twijfel wegnemen (teksten in content.js ctaFacts,
@@ -1958,6 +1987,8 @@ body.nav-open .site-header { transform: none !important; }
   .kernpunten-row li { opacity: 1; transform: none; transition: none; border-left-color: var(--line); }
   .marquee-track { animation: none; }
   .cta-facts li { opacity: 1; transform: none; transition: none; }
+  .cta-tak { opacity: 1; transform: none; transition: none; }
+  .cta-tak .olv-drop { animation: none !important; }
   .cta-band::before { animation: none; }
   .cursor-dot, .cursor-ring { display: none !important; }
   .btn-primary, .nav-cta { transition: none; transform: none !important; }
