@@ -758,14 +758,13 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 }
 .footer-col a:hover { color: #fff; }
 .footer-brand p { color: rgba(247,245,240,.7); max-width: 34ch; }
-/* v18: footer-merk is nu een inline SVG (witte AJAR + groen vector-olijfje).
-   Verving de wit-gefilterde bitmap (.footer-logo), waarvan het gedetailleerde
-   olijfje tot een vormeloze witte vlek werd platgeslagen. */
-.footer-brand-mark { height: 44px; width: auto; display: block; margin-bottom: 14px; overflow: visible; }
-.footer-brand-mark .fbm-word {
-  font-family: var(--serif);
-  font-weight: 500;
-  letter-spacing: .5px;
+/* Footer-logo: het originele header-logo, wit gemaakt voor de donkere footer. */
+.footer-logo {
+  height: 40px;
+  width: auto;
+  margin-bottom: 14px;
+  filter: brightness(0) invert(1);
+  opacity: .92;
 }
 .footer-nav a { font-size: .9rem; }
 .footer-wa { font-weight: 600; }

@@ -89,22 +89,14 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
-### v18 — Footer-merk: lelijk wit olijf-blobje vervangen door een echt vector-olijfje (12 juli 2026)
+### v18 — Footer-logo (12 juli 2026)
 
-Soef: het olijfje op de "AJAR" met witte letters in de footer zag er lelijk uit. Oorzaak: het
-footer-logo was de header-**bitmap** (`ajar-header.svg`, ingebedde WebP) met
-`filter: brightness(0) invert(1)`, wat álles — letters én het gedetailleerde olijftakje op de
-J — pl=platslaat tot puur wit; het olijfje werd zo een vormeloze witte vlek.
-
-- **Fix:** het footer-logo is nu een **eigen inline SVG** (`renderFooter`): witte "AJAR" in de
-  site-serif (Fraunces, consistent met de grote fluister-"AJAR"-watermark eronder) + een echt
-  **groen vector-olijfje** op de J — zelfde olijf-palet als de CTA-tak (radial #C9C878→#9BA04F→
-  #6E7736, twee groene blad-gradiënten, gouden twijg, kleine highlight). Scherp op elk formaat,
-  geen bitmap-blob meer. Generator/tuneables: `tools/gen-footer-merk.mjs`; CSS `.footer-brand-mark`
-  / `.fbm-word` verving de oude `.footer-logo`-filter.
-- De **header** (bovenaan, op crème) blijft de bestaande bitmap — daar staat het olijfje op een
-  lichte achtergrond en oogt het gewoon goed; alleen de footer had het wit-blob-probleem.
-- Geverifieerd desktop + iPhone (0 overflow, geen JS-fouten). /ajar/ buiten SW → geen cache-bump.
+Korte iteratie: eerst het footer-olijfje hertekend als eigen inline-SVG (witte Fraunces-"AJAR"
++ groen vector-olijfje), maar Soef wilde dat NIET — hij wil het **originele header-logo behouden,
+alleen wit gemaakt voor de footer, meer niet**. Definitieve stand: het footer-logo is weer de
+`<img src="assets/logo/ajar-header.svg" class="footer-logo">` met `filter: brightness(0) invert(1)`
+(exact zoals vóór deze ronde). De redraw + `tools/gen-footer-merk.mjs` zijn teruggedraaid.
+Les voor een volgende sessie: het merk niet zelf hertekenen — origineel logo respecteren.
 
 ### v17 — Compact op mobiel: swipe-carrousels + inklapbare footer (12 juli 2026)
 
