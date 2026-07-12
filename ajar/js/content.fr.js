@@ -58,6 +58,9 @@ window.AJAR_CONTENT_FR = {
 
   marquee: ["Extra vierge", "Pressée à froid", "Picholine Marocaine", "Entreprise familiale depuis les années 90", "ISO 22000 · SGS", "Importée en direct"],
 
+  /* Garanties sous les boutons CTA (v13) — des faits déjà présents ailleurs sur le site */
+  ctaFacts: ["Gratuit et sans engagement", "Dès un carton", "Contact direct avec l’importateur"],
+
   cookies: {
     text: "Nous utilisons des statistiques de visite anonymes (Google Analytics) pour voir comment le site est utilisé. C’est vous qui décidez si cela vous convient.",
     accept: "Accepter",

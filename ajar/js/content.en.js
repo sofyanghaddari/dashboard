@@ -58,6 +58,9 @@ window.AJAR_CONTENT_EN = {
 
   marquee: ['Extra virgin', 'Cold-pressed', 'Picholine Marocaine', "Family business since the '90s", 'ISO 22000 · SGS', 'Directly imported'],
 
+  /* Reassurances under the CTA buttons (v13) — facts that already appear elsewhere on the site */
+  ctaFacts: ['Free and without obligation', 'From a single box', 'Direct contact with the importer'],
+
   cookies: {
     text: 'We use anonymous visitor statistics (Google Analytics) to see how the site is used. You decide whether that is OK.',
     accept: 'Accept',

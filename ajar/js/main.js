@@ -54,70 +54,32 @@
       (sub ? '<p class="section-sub">' + esc(sub) + '</p>' : '');
   }
 
-  /* CTA-band met primaire (sample) en optionele secundaire (offerte) knop */
-  /* Olijftak die zichzelf tekent zodra de CTA-band in beeld komt (stroke-draw via pathLength).
-     v11 hertekend: échte takvorm — rustige steel, zes slanke lansvormige blaadjes afwisselend
-     boven/onder, twee olijfjes aan korte steeltjes (verving de onherkenbare krabbel). */
-  function branchSvg() {
-    return '<svg class="cta-branch" viewBox="0 0 220 56" fill="none" aria-hidden="true">' +
-      '<path class="cb-stem" pathLength="1" d="M16 40 C 70 36, 150 30, 204 18"/>' +
-      '<path class="cb-leaf" pathLength="1" d="M46 38 Q 40.5 27.5 38 17.5 Q 49 24.5 46 38 Z"/>' +
-      '<path class="cb-leaf" pathLength="1" d="M74 36 Q 81 46 92 50.5 Q 82.5 38 74 36 Z"/>' +
-      '<path class="cb-leaf" pathLength="1" d="M102 34 Q 96.5 23.5 95 13.5 Q 105.5 20.5 102 34 Z"/>' +
-      '<path class="cb-leaf" pathLength="1" d="M130 31.5 Q 137 41.5 148 46 Q 138.5 33.5 130 31.5 Z"/>' +
-      '<path class="cb-leaf" pathLength="1" d="M156 28.5 Q 151.5 18 151 8 Q 160.5 15.5 156 28.5 Z"/>' +
-      '<path class="cb-leaf" pathLength="1" d="M182 24 Q 189.5 32.5 200.5 36 Q 190.5 25.5 182 24 Z"/>' +
-      '<path class="cb-vein" pathLength="1" d="M62 37 Q 63.5 42 66 45"/>' +
-      '<path class="cb-vein" pathLength="1" d="M118 32.5 Q 120 37.5 123 40.5"/>' +
-      '<circle class="cb-olive" cx="67.5" cy="47.5" r="4"/>' +
-      '<circle class="cb-olive" cx="124.5" cy="43" r="4"/>' +
-    '</svg>';
+  /* CTA-band met primaire (sample) en optionele secundaire (offerte) knop.
+     v13: het getekende olijftak-ornament is verwijderd (les: geen zelfgetekende
+     natuur-illustraties naast echte productfoto's — dat oogt amateuristisch).
+     In plaats daarvan een rij zekerheden (C.ctaFacts) onder de knoppen: precies
+     de feiten die bij de inkoper de laatste twijfel wegnemen. */
+  function ctaFactsRow() {
+    if (!C.ctaFacts || !C.ctaFacts.length) return '';
+    return '<ul class="cta-facts">' + C.ctaFacts.map(f =>
+      '<li>' + esc(f) + '</li>').join('') + '</ul>';
   }
 
   function ctaBand(cta) {
     return '<section class="cta-band reveal">' +
       '<div class="wrap cta-band-inner">' +
-      branchSvg() +
       '<h2>' + esc(cta.title) + '</h2>' +
       '<p>' + esc(cta.text) + '</p>' +
       '<div class="cta-band-actions">' +
       '<a class="btn btn-primary" href="' + esc(cta.buttonHref || C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(cta.button) + '</a>' +
       (cta.secondary ? '<a class="btn btn-ghost btn-ghost-light" href="' + esc(cta.secondaryHref || C.ctaHref) + '" data-ga-event="offerte_cta_click">' + esc(cta.secondary) + '</a>' : '') +
       '</div>' +
+      ctaFactsRow() +
       '</div></section>';
-  }
-
-  /* Fleuron: klein statisch olijftak-ornament als klassiek hoofdstuk-slot (boektypografie).
-     Twee haarlijntjes met in het midden een blaadjespaar + olijfje. Puur decoratief. */
-  function fleuron() {
-    return '<div class="fleuron-wrap" aria-hidden="true"><svg class="fleuron" viewBox="0 0 140 26" fill="none">' +
-      '<path class="fl-line" d="M2 13 H 48"/>' +
-      '<path class="fl-line" d="M92 13 H 138"/>' +
-      '<path class="fl-leaf" d="M70 13 Q 61 10.5 55.5 4 Q 65.5 4.5 70 13 Z"/>' +
-      '<path class="fl-leaf" d="M70 13 Q 79 10.5 84.5 4 Q 74.5 4.5 70 13 Z"/>' +
-      '<circle class="fl-olive" cx="70" cy="17.5" r="3.2"/>' +
-    '</svg></div>';
   }
 
   /* Editorial nummering: "01" i.p.v. "1" op processtappen (klassieke magazine-nummering) */
   const pad2 = (n) => String(n).padStart(2, '0');
-
-  /* Vloeiende olie-scheidingslijn tussen twee grote secties: een zachte golf waar langzaam een
-     gouden lichtdruppel doorheen "stroomt" (offset-path), als traag vloeiende olie. Puur decoratief
-     (aria-hidden), staat stil bij reduced-motion. Bewust spaarzaam ingezet — één per pagina op een
-     sterke overgang. De golfvorm zit in zowel het zichtbare pad als in .oil-flow's offset-path (CSS). */
-  function oilDivider() {
-    /* Twee paden over dezelfde golf: een rustige basislijn + een kort, feller lichtsegment dat er
-       via stroke-dash langzaam doorheen "stroomt". non-scaling-stroke houdt de lijn overal even dun,
-       ook al rekt de SVG op volle breedte uit — zo schaalt het effect naadloos van mobiel tot desktop. */
-    var d = 'M0 20 C 150 4, 300 4, 450 20 S 750 36, 900 20 S 1050 4, 1200 20';
-    return '<div class="oil-divider reveal" aria-hidden="true">' +
-      '<svg class="oil-wave" viewBox="0 0 1200 40" preserveAspectRatio="none" fill="none">' +
-        '<path class="oil-base" d="' + d + '" vector-effect="non-scaling-stroke" pathLength="1"/>' +
-        '<path class="oil-glow" d="' + d + '" vector-effect="non-scaling-stroke" pathLength="1"/>' +
-      '</svg>' +
-    '</div>';
-  }
 
   /* ---------- Header ---------- */
 
@@ -440,7 +402,6 @@
         '</div>' +
       '</div></section>' +
 
-      oilDivider() +
 
       marqueeBand() +
 
@@ -583,7 +544,6 @@
           '<h3>' + esc(b.title) + '</h3><p>' + esc(b.text) + '</p>' +
         '</li>').join('') +
       '</ol>' +
-      fleuron() +
     '</div></section>';
   }
 
@@ -599,7 +559,6 @@
 
       factoryGallery(a.factoryGallery) +
 
-      oilDivider() +
 
       /* Familie-tijdlijn */
       '<section class="section section-tint" id="tijdlijn"><div class="wrap wrap-narrow">' +
@@ -726,7 +685,6 @@
         '</div>' +
       '</div></section>' +
 
-      oilDivider() +
 
       originMap(p.origin) +
 
@@ -845,7 +803,6 @@
 
       dossierSection(b.dossier) +
 
-      oilDivider() +
 
       /* Documentatie: spec-sheet (vrij) + bedrijfspresentatie (achter mini-formulier) */
       '<section class="section section-tint" id="documentatie"><div class="wrap">' +
@@ -1078,7 +1035,6 @@
       p.sections.map(s =>
         '<div class="reveal privacy-block"><h2 class="privacy-title">' + esc(s.title) + '</h2><p>' + esc(s.body) + '</p></div>'
       ).join('') +
-      fleuron() +
       '</div></section>';
   }
   function renderPrivacy() { return renderLegal(C.privacy); }
@@ -1098,7 +1054,6 @@
             '<div class="faq-body"><p>' + esc(it.a) + '</p></div>' +
           '</details>').join('') +
         '</div>' +
-        fleuron() +
       '</div></section>' +
       ctaBand(k.cta);
   }

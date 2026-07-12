@@ -49,6 +49,15 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 5. **Alles met `prefers-reduced-motion`-guard.** Animaties zijn subtiel en uitschakelbaar.
 6. **AVG:** GA4 laadt pas ná cookie-toestemming; EXIF uit foto's gestript; privacy-pagina `noindex`.
 7. **Eerlijk over de status.** Placeholders zijn zichtbaar als placeholder, niet gecamoufleerd.
+8. **Alles vanuit de zakelijke klant — geen decoratie zonder functie (v13, 12 juli 2026).**
+   Elke toevoeging moet de vraag doorstaan: *"wat heeft een inkoper/horeca-eigenaar hieraan?"*
+   Concreet: (a) **geen zelfgetekende natuur-illustraties** (olijftakken, blaadjes-ornamenten) —
+   naast échte fabrieksfoto's oogt elke handgetekende SVG-tak amateuristisch, hoe netjes ook
+   (Soef wees dit tweemaal af: de krabbel én de hertekende versie); (b) **geen puur decoratieve
+   lijnen/golven** tussen secties (de "olie-scheidingslijn" las als storende gouden streep);
+   (c) sier-elementen die wél mogen: typografie op bestaande content (initialen, Nº-nummering,
+   colofon) — die dragen informatie-hiërarchie. Twijfel je → weglaten en iets nuttigs bouwen
+   (zoals de `ctaFacts`-zekerhedenrij).
 
 ---
 
@@ -77,6 +86,27 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
   een lege commit forceert een nieuwe deploy.
 
 ---
+
+### v13 — Decoratie eruit, zekerheden erin (12 juli 2026)
+
+Correctie na feedback van Soef (met foto van een échte olijftak): de getekende
+CTA-olijftak bleef amateuristisch ogen — een echte tak is vol en gelaagd, dat haalt een
+lijn-SVG nooit — en de gouden "olie-scheidingslijn" las niet als olie maar als een storende
+streep. Nieuw hard principe vastgelegd (zie §2, regel 8): **alles vanuit de zakelijke klant,
+geen decoratie zonder functie.**
+
+- **Verwijderd:** het olijftak-ornament in de CTA-band (`branchSvg()` + `.cta-branch`-CSS),
+  de olie-scheidingslijn (`oilDivider()` + `.oil-*`-CSS, stond op home/product/over-ons/zakelijk)
+  én het v12-fleuron (zelfde getekende-blaadjes-stijl, zelfde bezwaar).
+- **Nieuw — zekerheden-rij in de CTA-band:** onder de knoppen staan nu drie ✓-feiten
+  (`ctaFacts` in content.js/en/fr): "Gratis en zonder verplichtingen · Vanaf één doos ·
+  Direct contact met de importeur". Precies de laatste-twijfel-wegnemers voor een inkoper
+  op het beslismoment; alle drie stonden al elders op de site (geen nieuwe claims).
+  Gestaggerde fade met de band mee, reduced-motion gedekt.
+- Geverifieerd in NL/EN/FR (headless Chromium, 375px + 1280px): rij netjes op alle formaten,
+  geen restanten van de verwijderde elementen in de DOM, geen JS-fouten op alle 9 pagina's.
+- De typografische v12-laag (initiaal, lead, Nº-nummering, grote cijfers, manifest, colofon,
+  dubbele haarlijnen) blijft staan — die draagt informatie en is geen tekening.
 
 ### v12 — Klassieke luxe-laag: boek- en tijdschrifttypografie (12 juli 2026)
 

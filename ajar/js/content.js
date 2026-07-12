@@ -122,6 +122,11 @@ window.AJAR_CONTENT = {
      staat stil. Niet uitbreiden met niet-bevestigde claims (smaak/cijfers/prijzen). */
   marquee: ['Extra vierge', 'Koudgeperst', 'Picholine Marocaine', "Familiebedrijf sinds jaren '90", 'ISO 22000 · SGS', 'Rechtstreeks geïmporteerd'],
 
+  /* Zekerheden onder de CTA-knoppen (v13, verving het olijftak-ornament):
+     de drie feiten die de laatste twijfel van een inkoper wegnemen. Alleen
+     zaken die al elders op de site staan — geen nieuwe claims. */
+  ctaFacts: ['Gratis en zonder verplichtingen', 'Vanaf één doos', 'Direct contact met de importeur'],
+
   /* ---------- Cookiebanner ---------- */
   cookies: {
     text: 'We gebruiken anonieme bezoekersstatistieken (Google Analytics) om te zien hoe de site wordt gebruikt. U kiest zelf of u dat goed vindt.',

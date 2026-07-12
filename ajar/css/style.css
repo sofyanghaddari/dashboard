@@ -1708,28 +1708,40 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
 .mq-dot { color: var(--gold); font-weight: 700; }
 @keyframes mqScroll { to { transform: translateX(-50%); } }
 
-/* ── Olijftak tekent zichzelf in de CTA-band (v11 hertekend) ──
-   Steel eerst, dan de blaadjes één voor één (elk met eigen delay), blaadjes
-   vullen zich zacht goud, tot slot verschijnen de olijfjes aan hun steeltjes. */
-.cta-branch { width: 190px; height: auto; display: block; margin: 0 auto 12px; overflow: visible; }
-.cta-branch path, .cta-branch circle { stroke: var(--gold); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
-.cta-branch path { stroke-dasharray: 1; stroke-dashoffset: 1; }
-.cta-branch .cb-leaf { stroke-width: 1.3; fill: rgba(201,162,39,0); }
-.cta-branch circle { opacity: 0; transition: opacity .6s var(--ease) 1.7s, fill 1s var(--ease) 1.7s; }
-.cta-band.in .cta-branch .cb-stem { transition: stroke-dashoffset 1.2s var(--ease) .25s; stroke-dashoffset: 0; }
-.cta-band.in .cta-branch .cb-leaf {
-  transition: stroke-dashoffset .7s var(--ease), fill .9s var(--ease) .8s;
-  stroke-dashoffset: 0;
-  fill: rgba(201,162,39,.16);
+/* ── Zekerheden-rij in de CTA-band (v13) ──
+   Verving het getekende olijftak-ornament: geen decoratie, maar de drie feiten
+   die bij de inkoper de laatste twijfel wegnemen (teksten in content.js ctaFacts,
+   per taal). Kleine ✓'s, rustig crème, gestaggerde fade met de band mee. */
+.cta-facts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 26px;
+  margin: 22px 0 0;
+  padding: 0;
 }
-.cta-band.in .cta-branch path:nth-of-type(2) { transition-delay: .55s, 1.15s; }
-.cta-band.in .cta-branch path:nth-of-type(3) { transition-delay: .68s, 1.28s; }
-.cta-band.in .cta-branch path:nth-of-type(4) { transition-delay: .81s, 1.41s; }
-.cta-band.in .cta-branch path:nth-of-type(5) { transition-delay: .94s, 1.54s; }
-.cta-band.in .cta-branch path:nth-of-type(6) { transition-delay: 1.07s, 1.67s; }
-.cta-band.in .cta-branch path:nth-of-type(7) { transition-delay: 1.2s, 1.8s; }
-.cta-band.in .cta-branch .cb-vein { transition: stroke-dashoffset .5s var(--ease) 1.5s; stroke-dashoffset: 0; }
-.cta-band.in .cta-branch circle { opacity: 1; fill: rgba(201,162,39,.55); }
+.cta-facts li {
+  position: relative;
+  padding-left: 20px;
+  font-size: .84rem;
+  letter-spacing: .02em;
+  color: rgba(247,245,240,.78);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .55s var(--ease), transform .55s var(--ease);
+}
+.cta-facts li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-weight: 600;
+}
+.cta-band.in .cta-facts li { opacity: 1; transform: none; }
+.cta-band.in .cta-facts li:nth-child(1) { transition-delay: .35s; }
+.cta-band.in .cta-facts li:nth-child(2) { transition-delay: .5s; }
+.cta-band.in .cta-facts li:nth-child(3) { transition-delay: .65s; }
 
 /* ── CTA-band: traag ademende gouden gloed ── */
 .cta-band { position: relative; overflow: hidden; }
@@ -1946,9 +1958,7 @@ body.nav-open .site-header { transform: none !important; }
   .section-head .section-title, .page-hero h1 { clip-path: none; transform: none; transition: none; }
   .kernpunten-row li { opacity: 1; transform: none; transition: none; border-left-color: var(--line); }
   .marquee-track { animation: none; }
-  .cta-branch path { stroke-dashoffset: 0; transition: none; }
-  .cta-branch .cb-leaf { fill: rgba(201,162,39,.16); }
-  .cta-branch circle { opacity: 1; fill: rgba(201,162,39,.55); transition: none; }
+  .cta-facts li { opacity: 1; transform: none; transition: none; }
   .cta-band::before { animation: none; }
   .cursor-dot, .cursor-ring { display: none !important; }
   .btn-primary, .nav-cta { transition: none; transform: none !important; }
@@ -2314,19 +2324,6 @@ body.nav-open .site-header { transform: none !important; }
   .lb-nav { width: 44px; height: 44px; font-size: 1.4rem; }
 }
 
-/* ── 4. Vloeiende olie-scheidingslijn ── */
-.oil-divider { position: relative; width: 100%; height: 44px; margin: -6px 0; overflow: hidden; }
-.oil-wave { position: absolute; inset: 0; width: 100%; height: 100%; }
-.oil-base { stroke: rgba(184,147,74,.28); stroke-width: 1.4; }
-.oil-glow {
-  stroke: var(--gold-bright); stroke-width: 2;
-  stroke-dasharray: .16 .84;
-  stroke-dashoffset: 1;
-  filter: drop-shadow(0 0 5px rgba(201,162,39,.55));
-  animation: oilFlow 7s linear infinite;
-}
-@keyframes oilFlow { from { stroke-dashoffset: 1; } to { stroke-dashoffset: -1; } }
-
 /* ── 5. Glans die traag over de concept-fles strijkt ── */
 .bm-body { position: absolute; overflow: hidden; }
 .bm-shine {
@@ -2409,7 +2406,6 @@ body.nav-open .site-header { transform: none !important; }
   .process-journey .process-step.step-active { opacity: 1; transform: none; transition: none; }
   .process-journey .proc-media img { filter: none; transition: none; }
   .process-journey.in::before { transform: scaleX(1); transition: none; }
-  .oil-glow { animation: none; stroke-dashoffset: 0; stroke-dasharray: none; opacity: .5; }
   .bm-shine { animation: none; display: none; }
   .nav-underline { transition: none; }
   .wa-fx { display: none; }
@@ -2459,7 +2455,7 @@ body.nav-open .site-header { transform: none !important; }
    📖 KLASSIEKE LUXE-LAAG v12 (12 juli 2026)
    Boek- en tijdschrifttypografie op bestaande content — geen nieuwe
    claims, geen beweging (dus geen reduced-motion nodig): initiaal,
-   lead-alinea's, Nº-nummering, fleuron, colofon, dubbele haarlijnen.
+   lead-alinea's, Nº-nummering, colofon, dubbele haarlijnen.
    De grote serif-cijfers (.process-num/.origin-step-num/.timeline-year)
    en het manifest (.pricing-fair) staan bij hun eigen secties.
    ============================================================ */
@@ -2505,19 +2501,6 @@ body.nav-open .site-header { transform: none !important; }
   font-style: normal;
   color: color-mix(in srgb, var(--gold) 55%, transparent);
 }
-
-/* ── Fleuron: hoofdstuk-slotornament (haarlijnen + blaadjespaar + olijfje) ──
-   Onder het familieverhaal, de kennisbank en de juridische pagina's. */
-.fleuron-wrap { display: flex; justify-content: center; padding: 26px 0 0; }
-.fleuron { width: 150px; height: auto; }
-.fleuron .fl-line { stroke: var(--line); stroke-width: 1; }
-.fleuron .fl-leaf {
-  stroke: var(--gold);
-  stroke-width: 1.2;
-  stroke-linejoin: round;
-  fill: rgba(201,162,39,.16);
-}
-.fleuron .fl-olive { stroke: var(--gold); stroke-width: 1.2; fill: rgba(201,162,39,.5); }
 
 /* ── Colofon: het importeursblok op Contact als klassiek drukwerk-colofon —
    gecentreerd tussen dubbele haarlijnen, als een stempel op briefpapier. ── */
