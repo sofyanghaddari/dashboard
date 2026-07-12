@@ -87,6 +87,63 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v15 — Mega-audit: 3 parallelle agent-audits + volledige browser-inspectie, alles gefixt (12 juli 2026)
+
+Op verzoek van Soef ("controleer de site grondig, spawn verschillende agents, elke pagina,
+óók de telefoonversie, maak hier een mega-update van"). Aanpak: drie parallelle audits
+(JS-correctheid / vertaal-pariteit / CSS-responsive) + eigen headless-browser-inspectie van
+alle 9 pagina's × desktop + iPhone-viewport × 3 talen, mét interactietests (menu, submenu,
+taalwissel, formulieren, fotostapel, lightbox) en automatische checks (overflow, kapotte
+ankers, 404's, dubbele ID's, console-fouten). Alles wat gevonden is, is gefixt:
+
+**Mobiel zichtbaar (de "telefoon ziet er anders uit"-klachten):**
+- **Menu-caret zweefde los bóven het label** (Over ons/Product/Zakelijke klanten): de
+  basisregel gaf de toggle een vaste hoogte van 24px waardoor `align-self: stretch` niets
+  deed en de pijl bovenaan de 79px-rij plakte. Fix: `height: auto` in de mobiele override.
+- **Fotostapel gaf elke ~4s een horizontale scrollbalk**: de wegglijdende kaart
+  (`translateX(58%)`) stak buiten de viewport. Fix: `overflow: hidden` op `.factory-gallery`;
+  geverifieerd 0px overflow tijdens de animatie.
+- **Contrast (WCAG):** klein goud op crème was ~2,6:1 → nieuw token `--gold-ink: #7A5C20`
+  voor alle kleine functionele goudtekst (kickers, fmt-labels, cert-badges, "volgt"-teksten,
+  tijdlijn-jaartallen, colofon-kop); `--ink-faint` verdonkerd #8A8578 → #6F6B60 (~3,3 → ≥4,5:1,
+  raakt o.a. de Supermarkt-vergelijkingskolom en alle veldlabels); footer-crème alphas omhoog
+  (.5/.55 → .72/.75 voor AVG-notitie, copyrightregel en cookievoorkeuren-knop).
+- `.specs-row` labelkolom 130px → 96px onder 420px (zeer smalle toestellen).
+
+**JS-bugs (agent-audit, allemaal geverifieerd):**
+- `initConsent()` las/schreef localStorage zonder try-catch — bij geblokkeerde storage
+  (Safari lockdown/embedded webview) zou de héle boot afbreken zodra er een GA-ID staat
+  (alle content blijft dan opacity:0). Nu overal try-catch, zoals i18n.js al deed.
+- Footer-nav injecteerde `n.href` ongeëscaped in het href-attribuut → `esc()` zoals overal.
+- Lightbox-race: snel ›› klikken verloor een klik en desyncte de teller → tijdens een
+  overgang worden kliks nu genegeerd i.p.v. met verouderde index geschilderd.
+- Hero-parallax zette een inline transform die de reveal-entree overrulede → wacht nu op `.in`.
+- Topbar-rotatie: de `tb-enter`-klasse werd synchroon verwijderd waardoor de entree-animatie
+  nooit speelde → verwijdering in `requestAnimationFrame`.
+- Fotostapel: `stop()` ruimt nu ook de lopende overgangs-timeout op.
+
+**i18n (agent-audit: EN/FR-structuurdiff + hardcoded-string-scan):**
+- **`config.tagline`/`payoff` ontbraken in EN/FR** → de footer-copyrightregel was op élke
+  EN/FR-pagina Nederlands. Nu vertaald (footer toont "Huile d'olive extra vierge · …").
+- **Alle opgebouwde WhatsApp-/e-mailberichten waren hardcoded NL** (labels Naam/Bedrijf/
+  Bezorgadres/…, subjects "Aanvraag bedrijfspresentatie", sample-WA-prefill op de knop):
+  nieuw `ui.lbl{}`-blok in 3 talen + `L()`-helper; `sample.waPrefill` per taal; nieuwsbrief-
+  "Privacy"-linktekst via `T()` (FR: "Confidentialité").
+- JSON-LD: `availableLanguage: ['nl','en','fr']`, prijsomschrijving vertaalbaar.
+- noscript-tekst in alle 9 shells nu tweetalig NL/EN.
+- Bewust NIET "gefixt": ontbrekende URL-/afbeelding-/eigennaam-sleutels in EN/FR (terugval
+  naar NL is daar correct) en de NL title/meta-tags (bekende beperking client-side switch).
+
+**CSS-opruiming (agent-audit):** reduced-motion-gaten gedicht (`omDash`-stippellijn,
+volscherm-menu-entree, naar-boven-knop, lightbox-pijlen; stale `.process::before`-selector
+gecorrigeerd); duplicaten weg (dubbele `:focus-visible`, dubbele FAQ-caret-regel — kleur
+behouden —, dubbele anchor-flash in reduce); dode `.pricing-card` verwijderd; `!important`
+op `.sample-usp` vervangen door specifieke selector; dode `hero-title-anim`-class uit de markup.
+
+- Eindverificatie: volledige her-audit (9 pagina's × 2 viewports): 0 overflow, 0 kapotte
+  ankers, 0 dubbele ID's, 0 JS-fouten (ook met reduced-motion aan), alle interacties werken;
+  FR/EN-lekken dicht (footer + WA-prefill gecontroleerd), menu- en contrastfix visueel bevestigd.
+
 ### v14 — Realistische olijftak (kandidaat) + kwaliteitsronde: performance & i18n-gaten (12 juli 2026)
 
 Vervolg op v13: Soef vond de olijftak als idee wél mooi, alleen niet realistisch genoeg — en wil

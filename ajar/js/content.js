@@ -130,6 +130,27 @@ window.AJAR_CONTENT = {
   /* UI-teksten (v14): foutmeldingen, aria-labels en vaste kopjes — per taal,
      zodat de EN/FR-versie geen Nederlands meer lekt. Gelezen via T() in main.js. */
   ui: {
+    privacyShort: 'Privacy',
+    priceOnRequest: 'Prijs op aanvraag (B2B)',
+    /* labels in de opgebouwde WhatsApp-/e-mailberichten (v15) */
+    lbl: {
+      request: 'Aanvraag',
+      sampleRequest: 'Sample-aanvraag',
+      presRequest: 'Aanvraag bedrijfspresentatie',
+      name: 'Naam',
+      contactPerson: 'Contactpersoon',
+      company: 'Bedrijf',
+      typeBusiness: 'Type zaak',
+      email: 'E-mail',
+      phone: 'Telefoon',
+      address: 'Bezorgadres',
+      volume: 'Gewenst volume',
+      frequency: 'Leverfrequentie',
+      channel: 'Contactvoorkeur',
+      callMoment: 'Gewenst belmoment',
+      note: 'Opmerking',
+      tip: 'Tip collega-ondernemer'
+    },
     photoFollows: 'Foto volgt',
     skipLink: 'Direct naar de inhoud',
     mainNav: 'Hoofdnavigatie',
@@ -581,6 +602,8 @@ window.AJAR_CONTENT = {
 
   /* ---------- Gratis sample (landingspagina — doel van QR-codes) ---------- */
   sample: {
+    /* WhatsApp-voorinvulling van de knop op de samplepagina (v15, per taal) */
+    waPrefill: 'Hallo, ik wil graag een gratis sample van AJAR olijfolie aanvragen voor mijn zaak.',
     hero: {
       kicker: 'Gratis sample',
       title: 'Proef AJAR eerst — dan praten we verder',

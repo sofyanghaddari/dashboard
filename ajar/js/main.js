@@ -23,6 +23,9 @@
   /* UI-tekstje in de actieve taal (C.ui in content.js/en/fr), met NL-fallback —
      dicht de vertaalgaten: foutmeldingen, aria-labels, footer-kopjes etc. (v14) */
   const T = (key, fallback) => (C.ui && C.ui[key]) || fallback;
+  /* Label in WhatsApp-/e-mailberichten (C.ui.lbl per taal) — v15: de opgebouwde
+     berichten (waText/_subject) waren hardcoded Nederlands, ook voor EN/FR-bezoekers */
+  const L = (key, fallback) => (C.ui && C.ui.lbl && C.ui.lbl[key]) || fallback;
 
   function waLink(text) {
     return 'https://wa.me/' + cfg.whatsappNumber + '?text=' + encodeURIComponent(text || '');
@@ -248,7 +251,7 @@
 
   function renderFooter() {
     const f = C.footer;
-    const navLinks = C.nav.map(n => '<a href="' + n.href + '">' + esc(n.label) + '</a>').join('');
+    const navLinks = C.nav.map(n => '<a href="' + esc(n.href) + '">' + esc(n.label) + '</a>').join('');
     const socials = (f.socials || []).filter(s => s && s.href);
 
     document.getElementById('site-footer').innerHTML =
@@ -283,7 +286,7 @@
 
     const prefs = document.getElementById('cookie-prefs');
     if (prefs) prefs.addEventListener('click', () => {
-      localStorage.removeItem(CONSENT_KEY);
+      try { localStorage.removeItem(CONSENT_KEY); } catch (e) {}
       document.querySelectorAll('.cookie-banner').forEach(el => el.remove());
       initConsent();
     });
@@ -301,7 +304,7 @@
         '<input type="email" name="email" required aria-label="' + esc(n.placeholder) + '" placeholder="' + esc(n.placeholder) + '">' +
         '<button type="submit" class="btn btn-primary" data-ga-event="newsletter_signup">' + esc(n.button) + '</button>' +
       '</div>' +
-      (n.privacyNote ? '<p class="newsletter-note">' + esc(n.privacyNote) + ' <a href="privacy.html">Privacy</a></p>' : '') +
+      (n.privacyNote ? '<p class="newsletter-note">' + esc(n.privacyNote) + ' <a href="privacy.html">' + esc(T('privacyShort', 'Privacy')) + '</a></p>' : '') +
       '<p class="form-error" data-role="error" hidden></p>' +
       '<p class="form-success" data-role="success" hidden></p>' +
     '</form>';
@@ -319,7 +322,7 @@
         return;
       }
       v._subject = n.emailSubject;
-      const waText = n.emailSubject + '\n\nE-mail: ' + v.email;
+      const waText = n.emailSubject + '\n\n' + L('email', 'E-mail') + ': ' + v.email;
       const ok = await submitLead(form, v, waText, n.success);
       if (ok) gaEvent('newsletter_signup', {});
     });
@@ -378,7 +381,7 @@
       '<section class="hero">' +
         '<div class="wrap hero-inner">' +
           '<div class="hero-text reveal">' +
-            '<h1 class="hero-title-anim">' + esc(h.hero.title) + '</h1>' +
+            '<h1>' + esc(h.hero.title) + '</h1>' +
             '<p class="hero-sub">' + esc(h.hero.sub) + '</p>' +
             '<div class="hero-actions">' +
               '<a class="btn btn-primary" href="' + esc(C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(C.sampleCtaLabel) + '</a>' +
@@ -452,7 +455,7 @@
     const dots = Array.from(document.querySelectorAll('.stack-dot'));
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let order = cards.map((_, i) => i);   // order[0] = index van de bovenste kaart
-    let busy = false, timer = null;
+    let busy = false, timer = null, leaveTimer = null;
 
     function apply() {
       order.forEach((cardIdx, pos) => cards[cardIdx].setAttribute('data-pos', pos));
@@ -464,7 +467,7 @@
       busy = true;
       const top = cards[order[0]];
       top.classList.add('stack-leaving');
-      setTimeout(() => {
+      leaveTimer = setTimeout(() => {
         top.classList.remove('stack-leaving');
         order.push(order.shift());
         apply();
@@ -472,7 +475,7 @@
       }, 480);
     }
     function start() { if (!timer && !reduce && !document.hidden) timer = setInterval(advance, 4200); }
-    function stop() { clearInterval(timer); timer = null; }
+    function stop() { clearInterval(timer); timer = null; clearTimeout(leaveTimer); }
 
     g.addEventListener('click', () => { advance(); stop(); start(); });
     g.addEventListener('keydown', (e) => {
@@ -516,7 +519,7 @@
         el.classList.add('tb-enter');
         void el.offsetWidth;
         el.style.transition = '';
-        el.classList.remove('tb-enter');        /* en zacht omhoog het beeld in */
+        requestAnimationFrame(() => el.classList.remove('tb-enter')); /* v15: pas volgend frame — anders speelt de entree nooit */
       }, 300);
     }, 3800);
   }
@@ -1003,7 +1006,7 @@
           '<div class="card reveal">' +
             '<h3>' + esc(C.contact.direct.title) + '</h3>' +
             '<p>' + esc(C.contact.direct.text) + '</p>' +
-            '<a class="btn btn-primary btn-wa" href="' + waLink('Hallo, ik wil graag een gratis sample van AJAR olijfolie aanvragen voor mijn zaak.') + '" target="_blank" rel="noopener" data-ga-event="whatsapp_click">' + esc(C.contact.direct.whatsappLabel) + '</a>' +
+            '<a class="btn btn-primary btn-wa" href="' + waLink((C.sample && C.sample.waPrefill) || 'Hallo, ik wil graag een gratis sample van AJAR olijfolie aanvragen voor mijn zaak.') + '" target="_blank" rel="noopener" data-ga-event="whatsapp_click">' + esc(C.contact.direct.whatsappLabel) + '</a>' +
           '</div>' +
         '</aside>' +
       '</div></section>';
@@ -1021,11 +1024,14 @@
         return;
       }
       v._subject = f.emailSubject + ' — ' + v.bedrijf;
-      const waText = 'Sample-aanvraag ' + cfg.brandName + '\n\nBedrijf: ' + v.bedrijf + '\nContactpersoon: ' + v.naam +
-        '\nE-mail: ' + v.email + (v.telefoon ? '\nTelefoon: ' + v.telefoon : '') +
-        '\nBezorgadres: ' + v.adres +
-        (v.bericht ? '\nOpmerking: ' + v.bericht : '') +
-        (v.tip ? '\nTip collega-ondernemer: ' + v.tip : '');
+      const waText = L('sampleRequest', 'Sample-aanvraag') + ' ' + cfg.brandName +
+        '\n\n' + L('company', 'Bedrijf') + ': ' + v.bedrijf +
+        '\n' + L('contactPerson', 'Contactpersoon') + ': ' + v.naam +
+        '\n' + L('email', 'E-mail') + ': ' + v.email +
+        (v.telefoon ? '\n' + L('phone', 'Telefoon') + ': ' + v.telefoon : '') +
+        '\n' + L('address', 'Bezorgadres') + ': ' + v.adres +
+        (v.bericht ? '\n' + L('note', 'Opmerking') + ': ' + v.bericht : '') +
+        (v.tip ? '\n' + L('tip', 'Tip collega-ondernemer') + ': ' + v.tip : '');
       const ok = await submitLead(form, v, waText, f.success);
       if (ok) gaEvent('sample_aanvraag', { tip: v.tip ? 'ja' : 'nee' });
     });
@@ -1287,13 +1293,16 @@
       const type = v.type ? labelOf(f.typeOptions, v.type) : '';
       const freq = v.frequentie ? labelOf(f.frequencyOptions, v.frequentie) : '';
       const kanaal = v.kanaal ? labelOf(f.channelOptions, v.kanaal) : '';
-      const waText = 'Aanvraag ' + cfg.brandName + '\n\nNaam: ' + v.naam + '\nBedrijf: ' + v.bedrijf +
-        (type ? '\nType zaak: ' + type : '') +
-        '\nE-mail: ' + v.email + (v.telefoon ? '\nTelefoon: ' + v.telefoon : '') +
-        '\nGewenst volume: ' + volume +
-        (freq ? '\nLeverfrequentie: ' + freq : '') +
-        (kanaal ? '\nContactvoorkeur: ' + kanaal : '') +
-        (v.belmoment ? '\nGewenst belmoment: ' + v.belmoment : '') +
+      const waText = L('request', 'Aanvraag') + ' ' + cfg.brandName +
+        '\n\n' + L('name', 'Naam') + ': ' + v.naam +
+        '\n' + L('company', 'Bedrijf') + ': ' + v.bedrijf +
+        (type ? '\n' + L('typeBusiness', 'Type zaak') + ': ' + type : '') +
+        '\n' + L('email', 'E-mail') + ': ' + v.email +
+        (v.telefoon ? '\n' + L('phone', 'Telefoon') + ': ' + v.telefoon : '') +
+        '\n' + L('volume', 'Gewenst volume') + ': ' + volume +
+        (freq ? '\n' + L('frequency', 'Leverfrequentie') + ': ' + freq : '') +
+        (kanaal ? '\n' + L('channel', 'Contactvoorkeur') + ': ' + kanaal : '') +
+        (v.belmoment ? '\n' + L('callMoment', 'Gewenst belmoment') + ': ' + v.belmoment : '') +
         (v.bericht ? '\n\n' + v.bericht : '');
       v._subject = f.emailSubject + ' — ' + volume;
       const ok = await submitLead(form, v, waText, f.success);
@@ -1400,9 +1409,12 @@
         showMsg(form, 'error', T('errContact', 'Vul minimaal naam, bedrijfsnaam en een geldig e-mailadres in.'));
         return;
       }
-      v._subject = 'Aanvraag bedrijfspresentatie ' + cfg.brandName;
-      const waText = 'Aanvraag bedrijfspresentatie ' + cfg.brandName + '\n\nNaam: ' + v.naam +
-        '\nBedrijf: ' + v.bedrijf + '\nE-mail: ' + v.email + (v.telefoon ? '\nTelefoon: ' + v.telefoon : '');
+      v._subject = L('presRequest', 'Aanvraag bedrijfspresentatie') + ' ' + cfg.brandName;
+      const waText = v._subject +
+        '\n\n' + L('name', 'Naam') + ': ' + v.naam +
+        '\n' + L('company', 'Bedrijf') + ': ' + v.bedrijf +
+        '\n' + L('email', 'E-mail') + ': ' + v.email +
+        (v.telefoon ? '\n' + L('phone', 'Telefoon') + ': ' + v.telefoon : '');
       const okMsg = cfg.presentationPdf ? d.successDownload : d.success;
       const ok = await submitLead(form, v, waText, okMsg);
       if (ok) {
@@ -1437,7 +1449,8 @@
   function initConsent() {
     if (!cfg.gaId) return; // geen GA-ID → niets te meten, geen banner nodig
 
-    const choice = localStorage.getItem(CONSENT_KEY);
+    let choice = null;
+    try { choice = localStorage.getItem(CONSENT_KEY); } catch (e) {} /* v15: geblokkeerde storage mag de boot niet breken */
     if (choice === 'granted') { loadGA(); return; }
     if (choice === 'denied') return;
 
@@ -1454,10 +1467,12 @@
       '</div>';
     document.body.appendChild(el);
     el.querySelector('#ck-accept').addEventListener('click', () => {
-      localStorage.setItem(CONSENT_KEY, 'granted'); el.remove(); loadGA();
+      try { localStorage.setItem(CONSENT_KEY, 'granted'); } catch (e) {}
+      el.remove(); loadGA();
     });
     el.querySelector('#ck-decline').addEventListener('click', () => {
-      localStorage.setItem(CONSENT_KEY, 'denied'); el.remove();
+      try { localStorage.setItem(CONSENT_KEY, 'denied'); } catch (e) {}
+      el.remove();
     });
   }
 
@@ -1480,7 +1495,7 @@
       telephone: '+' + cfg.whatsappNumber,
       vatID: cfg.btw || undefined,
       taxID: cfg.kvk ? 'KvK ' + cfg.kvk : undefined,
-      contactPoint: { '@type': 'ContactPoint', contactType: 'sales', telephone: '+' + cfg.whatsappNumber, email: cfg.email || undefined, availableLanguage: ['nl'] },
+      contactPoint: { '@type': 'ContactPoint', contactType: 'sales', telephone: '+' + cfg.whatsappNumber, email: cfg.email || undefined, availableLanguage: ['nl', 'en', 'fr'] },
       address: { '@type': 'PostalAddress', streetAddress: C.importer.address, postalCode: '1055 JV', addressLocality: 'Amsterdam', addressCountry: 'NL' }
     };
     const product = {
@@ -1490,7 +1505,7 @@
       description: C.product.hero.sub,
       countryOfOrigin: 'MA',
       manufacturer: { '@type': 'Organization', name: C.producer.name, address: { '@type': 'PostalAddress', addressLocality: C.producer.city, addressCountry: 'MA' } },
-      offers: { '@type': 'Offer', availability: 'https://schema.org/InStock', businessFunction: 'http://purl.org/goodrelations/v1#Sell', priceSpecification: { '@type': 'PriceSpecification', description: 'Prijs op aanvraag (B2B)' } }
+      offers: { '@type': 'Offer', availability: 'https://schema.org/InStock', businessFunction: 'http://purl.org/goodrelations/v1#Sell', priceSpecification: { '@type': 'PriceSpecification', description: T('priceOnRequest', 'Prijs op aanvraag (B2B)') } }
     };
     /* Copyright-claim als structured data (WebSite erft copyright-velden van CreativeWork) */
     const website = {
@@ -1557,7 +1572,8 @@
       let ticking = false;
       const update = () => {
         ticking = false;
-        if (hero) hero.style.transform = 'translateY(' + (Math.min(window.scrollY, 600) * 0.06) + 'px)';
+        /* v15: pas ná de reveal-entree — een inline transform overrulede de opkomst-animatie */
+        if (hero && hero.classList.contains('in')) hero.style.transform = 'translateY(' + (Math.min(window.scrollY, 600) * 0.06) + 'px)';
         const vh = window.innerHeight;
         splits.forEach(el => {
           const r = el.getBoundingClientRect();
@@ -1827,8 +1843,8 @@
 
     /* Schuif-overgang naar een andere foto: huidige glijdt weg, nieuwe glijdt van de andere kant in. */
     function go(idx, dir) {
-      if (busy || gallery.length < 2) { paint(idx); return; }
-      if (reduce) { paint(idx); return; }
+      if (gallery.length < 2 || reduce) { paint(idx); return; }
+      if (busy) return; /* v15: midden in een overgang géén paint met verouderde index */
       busy = true;
       const out = dir < 0 ? 34 : -34;
       imgEl.style.transition = 'transform .18s ease, opacity .18s ease';

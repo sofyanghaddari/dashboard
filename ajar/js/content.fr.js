@@ -56,12 +56,38 @@ window.AJAR_CONTENT_FR = {
 
   mobileCta: { sample: "Échantillon gratuit", whatsapp: "WhatsApp" },
 
+  /* v15: textes config traduits (tagline = ligne copyright du footer, payoff = vCard) */
+  config: {
+    tagline: "Huile d’olive extra vierge",
+    payoff: "Huile d’olive extra vierge, directement du Maroc."
+  },
+
   marquee: ["Extra vierge", "Pressée à froid", "Picholine Marocaine", "Entreprise familiale depuis les années 90", "ISO 22000 · SGS", "Importée en direct"],
 
   /* Garanties sous les boutons CTA (v13) — des faits déjà présents ailleurs sur le site */
   ctaFacts: ["Gratuit et sans engagement", "Dès un carton", "Contact direct avec l’importateur"],
 
   ui: {
+    privacyShort: "Confidentialité",
+    priceOnRequest: "Prix sur demande (B2B)",
+    lbl: {
+      request: "Demande",
+      sampleRequest: "Demande d’échantillon",
+      presRequest: "Demande de présentation d’entreprise",
+      name: "Nom",
+      contactPerson: "Personne de contact",
+      company: "Entreprise",
+      typeBusiness: "Type d’établissement",
+      email: "E-mail",
+      phone: "Téléphone",
+      address: "Adresse de livraison",
+      volume: "Volume souhaité",
+      frequency: "Fréquence de livraison",
+      channel: "Préférence de contact",
+      callMoment: "Moment d’appel souhaité",
+      note: "Remarque",
+      tip: "Recommandation d’un confrère"
+    },
     photoFollows: "Photo à venir",
     skipLink: "Aller au contenu",
     mainNav: "Navigation principale",
@@ -418,6 +444,7 @@ window.AJAR_CONTENT_FR = {
   },
 
   sample: {
+    waPrefill: "Bonjour, je souhaite demander un échantillon gratuit d’huile d’olive AJAR pour mon établissement.",
     hero: {
       kicker: "Échantillon gratuit",
       title: "Goûtez AJAR d’abord — on parle ensuite",

@@ -56,12 +56,39 @@ window.AJAR_CONTENT_EN = {
 
   mobileCta: { sample: 'Free sample', whatsapp: 'WhatsApp' },
 
+  /* v15: vertaalde config-teksten — tagline staat in de footer-copyrightregel op elke
+     pagina, payoff in de vCard; zonder deze override lekte daar Nederlands */
+  config: {
+    tagline: 'Extra virgin olive oil',
+    payoff: 'Extra virgin olive oil, straight from Morocco.'
+  },
+
   marquee: ['Extra virgin', 'Cold-pressed', 'Picholine Marocaine', "Family business since the '90s", 'ISO 22000 · SGS', 'Directly imported'],
 
   /* Reassurances under the CTA buttons (v13) — facts that already appear elsewhere on the site */
   ctaFacts: ['Free and without obligation', 'From a single box', 'Direct contact with the importer'],
 
   ui: {
+    privacyShort: 'Privacy',
+    priceOnRequest: 'Price on request (B2B)',
+    lbl: {
+      request: 'Request',
+      sampleRequest: 'Sample request',
+      presRequest: 'Company presentation request',
+      name: 'Name',
+      contactPerson: 'Contact person',
+      company: 'Company',
+      typeBusiness: 'Type of business',
+      email: 'E-mail',
+      phone: 'Phone',
+      address: 'Delivery address',
+      volume: 'Desired volume',
+      frequency: 'Delivery frequency',
+      channel: 'Contact preference',
+      callMoment: 'Preferred time to call',
+      note: 'Note',
+      tip: 'Tip from a fellow entrepreneur'
+    },
     photoFollows: 'Photo to follow',
     skipLink: 'Skip to content',
     mainNav: 'Main navigation',
@@ -418,6 +445,7 @@ window.AJAR_CONTENT_EN = {
   },
 
   sample: {
+    waPrefill: 'Hello, I would like to request a free sample of AJAR olive oil for my business.',
     hero: {
       kicker: 'Free sample',
       title: 'Taste AJAR first — then we talk',
