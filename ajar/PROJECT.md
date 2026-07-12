@@ -101,8 +101,14 @@ onder de olijf** een witte waas rondom, waardoor de olijf anders oogde dan het o
   én letters onaangeroerd). Footer wijst hiernaar; header blijft `ajar-header.svg` mét schaduw
   (op crème hoort die er juist bij). CSS-filter `brightness(0) invert(1)` ongewijzigd.
 - Gemaakt door de olijf-WebP uit het logo te decoderen, alpha te thresholden en terug te
-  base64-embedden (eenmalige bewerking; geen generator nodig). Geverifieerd: footer-olijf nu een
-  strak wit silhouet zonder waas, header ongewijzigd, geen JS-fouten.
+  base64-embedden (eenmalige bewerking; geen generator nodig).
+- **Correctie (zelfde dag):** de eerste drempel (alpha<200→0) haalde de vage grondwaas weg maar
+  liet het dichtste deel van de **slagschaduw van de olijf zelf** (alpha 200–244) staan — dat
+  werd bij het wit maken een lelijke uitstulping onderaan de olijf. De vrucht+bladeren zijn
+  volledig ondoorzichtig (alpha 245–255), de schaduw is semi-transparant → drempel verhoogd naar
+  **246** haalt álle schaduw weg en houdt alleen de echte olijf over; binnenste gaatjes in de
+  vrucht dichtgevuld (flood-fill vanaf de rand). Olijf is nu een strak wit ovaal.
+- Geverifieerd: footer-olijf strak wit zonder schaduw/waas, header ongewijzigd, geen JS-fouten.
 
 ### v17 — Compact op mobiel: swipe-carrousels + inklapbare footer (12 juli 2026)
 
