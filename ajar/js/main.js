@@ -278,7 +278,9 @@
       '<span class="footer-wordmark" aria-hidden="true">AJAR</span>' +
       '<div class="wrap footer-inner">' +
         '<div class="footer-col footer-brand">' +
-          '<img src="assets/logo/ajar-header.svg" alt="' + esc(cfg.brandName) + '" class="footer-logo">' +
+          /* v18: eigen inline-merk (witte AJAR + groen vector-olijfje) i.p.v. de
+             wit-gefilterde bitmap, waarvan het olijfje tot een lelijke witte vlek verviel */
+          '<svg xmlns="http://www.w3.org/2000/svg" class="footer-brand-mark" viewBox="0 0 214 72" role="img" aria-label="AJAR"><defs><radialGradient id="fbmOlive" cx=".36" cy=".28" r=".95"><stop offset="0" stop-color="#C9C878"/><stop offset=".45" stop-color="#9BA04F"/><stop offset="1" stop-color="#6E7736"/></radialGradient><linearGradient id="fbmLeafA" x1="0" y1="1" x2=".3" y2="0"><stop offset="0" stop-color="#5A6E3B"/><stop offset="1" stop-color="#8CA05E"/></linearGradient><linearGradient id="fbmLeafB" x1="0" y1="1" x2=".3" y2="0"><stop offset="0" stop-color="#6E8340"/><stop offset="1" stop-color="#9AAD6A"/></linearGradient></defs><text x="2" y="58" class="fbm-word" fill="#F3F0E8" font-size="52">AJAR</text><g class="fbm-olive" transform="translate(74 25) scale(1.02) rotate(0)"><path d="M 3.6 -0.3 C 9.6 -0.9 16.4 0.4 22.4 3.4 Q 23.9 4.3 22.6 5.3 C 15.6 2.0 8.8 0.6 3.6 0.3 Z" fill="#B8934A" opacity=".92"/><path d="M 15.1 -0.3 C 9.9 -6.0 6.8 -14.8 7.4 -24.1 C 12.5 -16.8 14.8 -8.0 15.1 -0.3 Z" fill="url(#fbmLeafA)"/><path d="M 14.6 -2.0 Q 9.9 -10.7 8.0 -22.4" fill="none" stroke="#B8C48A" stroke-width="0.6" stroke-linecap="round" opacity=".75"/><path d="M 15.1 -0.3 C 15.6 -8.8 17.3 -18.2 21.3 -27.0 C 22.7 -15.9 19.9 -6.0 15.1 -0.3 Z" fill="url(#fbmLeafB)"/><path d="M 15.2 -2.0 Q 17.6 -12.8 20.6 -25.3" fill="none" stroke="#C3D096" stroke-width="0.6" stroke-linecap="round" opacity=".75"/><g transform="rotate(-14)"><ellipse cx="0" cy="0" rx="8.2" ry="6.8" fill="url(#fbmOlive)"/><ellipse cx="-3.0" cy="-2.6" rx="2.1" ry="1.3" fill="#F3F0E0" opacity=".7"/></g></g></svg>' +
           '<p>' + esc(f.aboutLine) + '</p>' +
         '</div>' +
         '<div class="footer-col footer-contactcol">' +

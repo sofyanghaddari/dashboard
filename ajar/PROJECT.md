@@ -89,6 +89,23 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v18 — Footer-merk: lelijk wit olijf-blobje vervangen door een echt vector-olijfje (12 juli 2026)
+
+Soef: het olijfje op de "AJAR" met witte letters in de footer zag er lelijk uit. Oorzaak: het
+footer-logo was de header-**bitmap** (`ajar-header.svg`, ingebedde WebP) met
+`filter: brightness(0) invert(1)`, wat álles — letters én het gedetailleerde olijftakje op de
+J — pl=platslaat tot puur wit; het olijfje werd zo een vormeloze witte vlek.
+
+- **Fix:** het footer-logo is nu een **eigen inline SVG** (`renderFooter`): witte "AJAR" in de
+  site-serif (Fraunces, consistent met de grote fluister-"AJAR"-watermark eronder) + een echt
+  **groen vector-olijfje** op de J — zelfde olijf-palet als de CTA-tak (radial #C9C878→#9BA04F→
+  #6E7736, twee groene blad-gradiënten, gouden twijg, kleine highlight). Scherp op elk formaat,
+  geen bitmap-blob meer. Generator/tuneables: `tools/gen-footer-merk.mjs`; CSS `.footer-brand-mark`
+  / `.fbm-word` verving de oude `.footer-logo`-filter.
+- De **header** (bovenaan, op crème) blijft de bestaande bitmap — daar staat het olijfje op een
+  lichte achtergrond en oogt het gewoon goed; alleen de footer had het wit-blob-probleem.
+- Geverifieerd desktop + iPhone (0 overflow, geen JS-fouten). /ajar/ buiten SW → geen cache-bump.
+
 ### v17 — Compact op mobiel: swipe-carrousels + inklapbare footer (12 juli 2026)
 
 Op verzoek van Soef (met twee gkazas.com-screenshots als referentie): te veel tekst om
