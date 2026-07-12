@@ -89,14 +89,20 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
-### v18 — Footer-logo (12 juli 2026)
+### v18 — Footer-logo: origineel behouden, wit, zónder de olijf-slagschaduw (12 juli 2026)
 
-Korte iteratie: eerst het footer-olijfje hertekend als eigen inline-SVG (witte Fraunces-"AJAR"
-+ groen vector-olijfje), maar Soef wilde dat NIET — hij wil het **originele header-logo behouden,
-alleen wit gemaakt voor de footer, meer niet**. Definitieve stand: het footer-logo is weer de
-`<img src="assets/logo/ajar-header.svg" class="footer-logo">` met `filter: brightness(0) invert(1)`
-(exact zoals vóór deze ronde). De redraw + `tools/gen-footer-merk.mjs` zijn teruggedraaid.
-Les voor een volgende sessie: het merk niet zelf hertekenen — origineel logo respecteren.
+Iteratie in drie stappen: (1) footer-olijfje eerst hertekend als eigen inline-SVG — Soef wilde
+dat NIET, het **originele logo moet blijven, alleen wit voor de footer**; teruggedraaid. (2) Bij
+het wit maken (`brightness(0) invert(1)`) van het originele logo werd de zachte **slagschaduw
+onder de olijf** een witte waas rondom, waardoor de olijf anders oogde dan het origineel.
+- **Oplossing:** het logo bestaat uit twee raster-lagen (letters + losse olijf-twijg). Nieuw
+  bestand **`assets/logo/ajar-footer.svg`** = exacte kopie van `ajar-header.svg`, maar in de
+  olijf-afbeelding is de zachte schaduw weggehaald (alpha < 200 → transparant; olijf-/blad-vorm
+  én letters onaangeroerd). Footer wijst hiernaar; header blijft `ajar-header.svg` mét schaduw
+  (op crème hoort die er juist bij). CSS-filter `brightness(0) invert(1)` ongewijzigd.
+- Gemaakt door de olijf-WebP uit het logo te decoderen, alpha te thresholden en terug te
+  base64-embedden (eenmalige bewerking; geen generator nodig). Geverifieerd: footer-olijf nu een
+  strak wit silhouet zonder waas, header ongewijzigd, geen JS-fouten.
 
 ### v17 — Compact op mobiel: swipe-carrousels + inklapbare footer (12 juli 2026)
 

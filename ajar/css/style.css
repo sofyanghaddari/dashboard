@@ -758,7 +758,10 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 }
 .footer-col a:hover { color: #fff; }
 .footer-brand p { color: rgba(247,245,240,.7); max-width: 34ch; }
-/* Footer-logo: het originele header-logo, wit gemaakt voor de donkere footer. */
+/* Footer-logo: het originele logo, wit gemaakt voor de donkere footer.
+   Aparte bron (ajar-footer.svg): identiek aan het header-logo, alléén de zachte
+   slagschaduw onder de olijf is weggehaald — die werd bij het wit maken een witte
+   waas rond de olijf, waardoor die anders oogde dan het origineel. */
 .footer-logo {
   height: 40px;
   width: auto;

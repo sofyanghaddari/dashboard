@@ -278,7 +278,7 @@
       '<span class="footer-wordmark" aria-hidden="true">AJAR</span>' +
       '<div class="wrap footer-inner">' +
         '<div class="footer-col footer-brand">' +
-          '<img src="assets/logo/ajar-header.svg" alt="' + esc(cfg.brandName) + '" class="footer-logo">' +
+          '<img src="assets/logo/ajar-footer.svg" alt="' + esc(cfg.brandName) + '" class="footer-logo">' +
           '<p>' + esc(f.aboutLine) + '</p>' +
         '</div>' +
         '<div class="footer-col footer-contactcol">' +
