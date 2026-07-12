@@ -150,6 +150,11 @@ Vervolg op v13: Soef vond de olijftak als idee wél mooi, alleen niet realistisc
 eerst een voorbeeld zien vóór iets live gaat. Daarnaast: "werk met uiterste effort aan de overige
 kwaliteit, bekijk het vanuit de zakelijke klant".
 
+- **🌿 Olijftak — keuzeronde loopt (12 juli, avond):** Soef vindt de tak "best mooi" en wil
+  varianten zien. Zes kandidaten gegenereerd (`assets/art/varianten/variant-A..F.svg`,
+  generator `tools/gen-olijftak-varianten.mjs`): A origineel · B voller/rijker (8 olijven) ·
+  C rustig/minimaal · D boog (welft over de titel) · E hangende tak · F goud-duotone.
+  Vergelijkingsafbeelding naar Soef gestuurd — **wacht op zijn keuze; nog niets live.**
 - **🌿 Olijftak v3 — KANDIDAAT, staat nog NIET op de site:** volledig nieuwe, realistische
   vector-illustratie naar Soefs referentiefoto — gekleurde lansvormige blaadjes met askromming
   (sage-groen boven, zilvergrijze onderkant, middennerf), gelaagd loof (gedimde dieptelaag),
