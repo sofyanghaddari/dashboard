@@ -584,18 +584,18 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 }
 .process-step h3 { font-size: 1.08rem; margin-bottom: .35em; }
 .process-step p { color: var(--ink-soft); font-size: .9rem; margin: 0; }
+/* v12: grote gedempte serif-cijfers ("01") i.p.v. kleine cirkel-badges —
+   klassieke magazine-nummering; het cijfer wordt deel van het zetsel. */
 .process-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  margin-bottom: 12px;
-  border-radius: 50%;
-  border: 1px solid var(--gold);
-  color: var(--gold);
+  display: inline-block;
+  margin-bottom: 10px;
   font-family: var(--serif);
-  font-size: .95rem;
+  font-size: 2.5rem;
+  font-weight: 340;
+  line-height: 1;
+  letter-spacing: .02em;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--gold) 42%, transparent);
 }
 
 /* ---------- Product: specs ---------- */
@@ -979,14 +979,18 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   border: 2px solid var(--gold);
 }
 .timeline-item:last-child .timeline-dot { background: var(--gold); }
+/* v12: jaartallen groot in serif (boekstijl) i.p.v. klein sans-label —
+   het jaartal ís het anker van elk tijdlijn-item, dus het mag dragen. */
 .timeline-year {
-  display: inline-block;
-  font-size: .74rem;
-  font-weight: 600;
-  letter-spacing: .16em;
-  text-transform: uppercase;
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 420;
+  letter-spacing: .02em;
+  font-variant-numeric: tabular-nums;
   color: var(--gold);
-  margin-bottom: .4em;
+  margin-bottom: .2em;
+  line-height: 1.1;
 }
 .timeline-item h3 { font-size: 1.15rem; margin-bottom: .3em; }
 .timeline-item p { color: var(--ink-soft); font-size: .93rem; margin: 0; }
@@ -1251,13 +1255,29 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   margin-right: auto;
 }
 
-/* ---------- B2B: eerlijke prijs + proeverij ---------- */
-.pricing-fair {
-  margin: 1.1em auto 0;
-  max-width: 48ch;
+/* ---------- B2B: eerlijke prijs + proeverij ----------
+   v12: de eerlijke-prijzen-zin als "manifest"-moment — groot gecentreerd serif-zetsel
+   op smalle maat met een klein goudlijntje erboven (klassiek luxemerk-statement). */
+.pricing-fair, .pricing-inline p.pricing-fair {
+  position: relative;
+  margin: 2.2rem auto 1.6rem;
+  padding-top: 1.9rem;
+  max-width: 38ch;
   font-family: var(--serif);
-  font-size: 1.02rem;
+  font-size: clamp(1.2rem, 1.02rem + .9vw, 1.45rem);
+  font-weight: 420;
+  line-height: 1.55;
   color: var(--olive);
+  text-wrap: balance;
+}
+.pricing-fair::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  width: 30px; height: 2px;
+  margin-left: -15px;
+  border-radius: 2px;
+  background: var(--gold);
 }
 /* ---------- Sample-pagina ---------- */
 .sample-usp { margin-bottom: 1.2em !important; }
@@ -1388,11 +1408,12 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
     transform-origin: left;
   }
 }
-.process .process-num { transition: background .5s var(--ease), color .5s var(--ease); }
+/* Cijfers "lichten op" in volgorde zodra de rij in beeld komt (v12: via kleur, geen badge meer) */
+.process .process-num { transition: color .5s var(--ease); }
 .process.in .process-step:nth-child(2) .process-num { transition-delay: .35s; }
 .process.in .process-step:nth-child(3) .process-num { transition-delay: .6s; }
 .process.in .process-step:nth-child(4) .process-num { transition-delay: .85s; }
-.process.in .process-num { background: rgba(184,147,74,.1); }
+.process.in .process-num { color: color-mix(in srgb, var(--gold) 72%, transparent); }
 
 /* ── Nav-underline groeit vanuit het midden (desktop) ── */
 .site-nav a:not(.btn) { position: relative; }
@@ -2058,11 +2079,16 @@ body.nav-open .site-header { transform: none !important; }
 .om-end-b { text-align: right; }
 .origin-steps { list-style: none; margin: 26px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; counter-reset: none; }
 .origin-step { position: relative; padding-top: 6px; }
+/* v12: zelfde editorial nummering als de processtappen, één maat kleiner */
 .origin-step-num {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; border-radius: 50%; margin-bottom: 10px;
-  background: color-mix(in srgb, var(--olive) 10%, transparent);
-  color: var(--olive); font-weight: 600; font-size: .9rem;
+  display: inline-block;
+  margin-bottom: 8px;
+  font-family: var(--serif);
+  font-size: 1.9rem;
+  font-weight: 340;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--gold) 55%, transparent);
 }
 .origin-step h3 { font-size: 1rem; margin: 0 0 4px; }
 .origin-step p { font-size: .86rem; color: var(--ink-soft); margin: 0; }
@@ -2247,12 +2273,12 @@ body.nav-open .site-header { transform: none !important; }
   border-color: rgba(184,147,74,.5);
   box-shadow: 0 16px 40px rgba(30,30,28,.13), 0 0 0 1px rgba(184,147,74,.18);
 }
-.process-journey .process-num { transition: background .45s var(--ease), color .45s var(--ease), border-color .45s var(--ease), transform .45s var(--ease); }
-.process-journey .step-done .process-num { background: rgba(184,147,74,.14); }
+/* v12: badge-vulling vervangen door kleur/schaal op de grote serif-cijfers */
+.process-journey .process-num { transition: color .45s var(--ease), transform .45s var(--ease); transform-origin: left bottom; }
+.process-journey .step-done .process-num { color: color-mix(in srgb, var(--gold) 68%, transparent); }
 .process-journey .step-active .process-num {
-  background: var(--gold); color: #fff; border-color: var(--gold);
+  color: var(--gold-bright);
   transform: scale(1.08);
-  box-shadow: 0 6px 16px rgba(184,147,74,.4);
 }
 .process-journey .proc-media img { transition: filter .5s var(--ease), transform .6s var(--ease); filter: saturate(.72) brightness(.96); }
 .process-journey .step-active .proc-media img,
@@ -2428,3 +2454,89 @@ body.nav-open .site-header { transform: none !important; }
   .btn-primary:hover::after, .btn-primary:focus-visible::after { animation: none; }
   .sheen-card.reveal.in::after { animation: none; }
 }
+
+/* ============================================================
+   📖 KLASSIEKE LUXE-LAAG v12 (12 juli 2026)
+   Boek- en tijdschrifttypografie op bestaande content — geen nieuwe
+   claims, geen beweging (dus geen reduced-motion nodig): initiaal,
+   lead-alinea's, Nº-nummering, fleuron, colofon, dubbele haarlijnen.
+   De grote serif-cijfers (.process-num/.origin-step-num/.timeline-year)
+   en het manifest (.pricing-fair) staan bij hun eigen secties.
+   ============================================================ */
+
+/* ── Lead-alinea (standfirst): de eerste alinea van een pagina/sectie in
+   groter, rustiger serif-zetsel — tijdschrift-hiërarchie zonder één woord
+   te wijzigen. Klasse gezet in main.js (home-intro, eerste Over ons-blok,
+   kennis-intro). ── */
+.lead {
+  font-family: var(--serif);
+  font-size: 1.16rem;
+  font-weight: 420;
+  line-height: 1.62;
+  color: var(--ink-soft);
+}
+
+/* ── Initiaal (drop cap): klassieke boekopening van het familieverhaal —
+   de eerste letter van "Onze opa vertrok…" drie regels hoog in goud. ── */
+.story-item:first-child p::first-letter {
+  float: left;
+  font-family: var(--serif);
+  font-size: 3.3em;
+  line-height: .82;
+  padding: .04em .13em 0 0;
+  font-weight: 460;
+  color: var(--gold);
+}
+
+/* ── Nº-nummering in sectiekickers (Product + Zakelijk, via initKickerNumbers) ──
+   Serif-cursief "Nº 01" vóór de uppercase kicker, gescheiden door een middot. */
+.kicker-no {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 480;
+  font-size: .92rem;
+  letter-spacing: .05em;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+.kicker-no::after {
+  content: '·';
+  margin: 0 .6em;
+  font-style: normal;
+  color: color-mix(in srgb, var(--gold) 55%, transparent);
+}
+
+/* ── Fleuron: hoofdstuk-slotornament (haarlijnen + blaadjespaar + olijfje) ──
+   Onder het familieverhaal, de kennisbank en de juridische pagina's. */
+.fleuron-wrap { display: flex; justify-content: center; padding: 26px 0 0; }
+.fleuron { width: 150px; height: auto; }
+.fleuron .fl-line { stroke: var(--line); stroke-width: 1; }
+.fleuron .fl-leaf {
+  stroke: var(--gold);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  fill: rgba(201,162,39,.16);
+}
+.fleuron .fl-olive { stroke: var(--gold); stroke-width: 1.2; fill: rgba(201,162,39,.5); }
+
+/* ── Colofon: het importeursblok op Contact als klassiek drukwerk-colofon —
+   gecentreerd tussen dubbele haarlijnen, als een stempel op briefpapier. ── */
+.colophon {
+  text-align: center;
+  padding: 24px 16px;
+  border-top: 4px double color-mix(in srgb, var(--gold) 55%, transparent);
+  border-bottom: 4px double color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.colophon h3 {
+  font-family: var(--sans);
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 .9em;
+}
+.colophon .footer-legal { color: var(--ink-soft); font-size: .88rem; line-height: 1.95; margin: 0; }
+
+/* ── Dubbele haarlijn boven de footer (briefpapier-detail) ── */
+.site-footer { border-top: 4px double color-mix(in srgb, var(--gold) 45%, transparent); }

@@ -87,6 +87,21 @@
       '</div></section>';
   }
 
+  /* Fleuron: klein statisch olijftak-ornament als klassiek hoofdstuk-slot (boektypografie).
+     Twee haarlijntjes met in het midden een blaadjespaar + olijfje. Puur decoratief. */
+  function fleuron() {
+    return '<div class="fleuron-wrap" aria-hidden="true"><svg class="fleuron" viewBox="0 0 140 26" fill="none">' +
+      '<path class="fl-line" d="M2 13 H 48"/>' +
+      '<path class="fl-line" d="M92 13 H 138"/>' +
+      '<path class="fl-leaf" d="M70 13 Q 61 10.5 55.5 4 Q 65.5 4.5 70 13 Z"/>' +
+      '<path class="fl-leaf" d="M70 13 Q 79 10.5 84.5 4 Q 74.5 4.5 70 13 Z"/>' +
+      '<circle class="fl-olive" cx="70" cy="17.5" r="3.2"/>' +
+    '</svg></div>';
+  }
+
+  /* Editorial nummering: "01" i.p.v. "1" op processtappen (klassieke magazine-nummering) */
+  const pad2 = (n) => String(n).padStart(2, '0');
+
   /* Vloeiende olie-scheidingslijn tussen twee grote secties: een zachte golf waar langzaam een
      gouden lichtdruppel doorheen "stroomt" (offset-path), als traag vloeiende olie. Puur decoratief
      (aria-hidden), staat stil bij reduced-motion. Bewust spaarzaam ingezet — één per pagina op een
@@ -420,7 +435,7 @@
         '<div class="split-media reveal">' + imgSlot(h.intro.image, 'ConservAjar SARL, de fabriek in Taourirt', '') + '</div>' +
         '<div class="split-text reveal">' +
           '<p class="kicker">' + esc(h.intro.kicker) + '</p>' +
-          '<p>' + esc(h.intro.text) + '</p>' +
+          '<p class="lead">' + esc(h.intro.text) + '</p>' +
           '<a class="text-link" href="' + esc(h.intro.linkHref) + '">' + esc(h.intro.linkLabel) + ' →</a>' +
         '</div>' +
       '</div></section>' +
@@ -544,14 +559,16 @@
   function aboutBlock(b, i) {
     const idAttr = b.anchor ? ' id="' + esc(b.anchor) + '"' : '';
     const media = b.image ? '<div class="split-media reveal">' + imgSlot(b.image, b.title, '') + '</div>' : '';
+    /* Eerste blok = binnenkomer van de pagina → lead-zetsel (grotere serif-alinea) */
+    const pCls = i === 0 ? ' class="lead"' : '';
     if (media) {
       return '<section class="section split' + (i % 2 ? ' split-rev' : '') + '"' + idAttr + '><div class="wrap split-inner">' +
         media +
-        '<div class="split-text reveal"><h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div>' +
+        '<div class="split-text reveal"><h2 class="section-title">' + esc(b.title) + '</h2><p' + pCls + '>' + esc(b.text) + '</p></div>' +
         '</div></section>';
     }
     return '<section class="section"' + idAttr + '><div class="wrap wrap-narrow prose reveal">' +
-      '<h2 class="section-title">' + esc(b.title) + '</h2><p>' + esc(b.text) + '</p></div></section>';
+      '<h2 class="section-title">' + esc(b.title) + '</h2><p' + pCls + '>' + esc(b.text) + '</p></div></section>';
   }
 
   /* "Onze familie" — kort persoonlijk verhaal, ná het vertrouwensblok (ISO). Géén jaartallen
@@ -566,6 +583,7 @@
           '<h3>' + esc(b.title) + '</h3><p>' + esc(b.text) + '</p>' +
         '</li>').join('') +
       '</ol>' +
+      fleuron() +
     '</div></section>';
   }
 
@@ -619,7 +637,7 @@
         '</div>' +
       '</div>' +
       '<ol class="origin-steps">' + o.steps.map((s, i) =>
-        '<li class="origin-step reveal"><span class="origin-step-num">' + (i + 1) + '</span>' +
+        '<li class="origin-step reveal"><span class="origin-step-num">' + pad2(i + 1) + '</span>' +
         '<h3>' + esc(s.title) + '</h3><p>' + esc(s.text) + '</p></li>').join('') +
       '</ol>' +
     '</div></section>';
@@ -691,7 +709,7 @@
         '<ol class="process process-journey" data-anim>' + p.process.steps.map((s, i) =>
           '<li class="process-step reveal">' +
             processMedia(s.image, s.icon, s.title) +
-            '<span class="process-num">' + (i + 1) + '</span>' +
+            '<span class="process-num">' + pad2(i + 1) + '</span>' +
             '<h3>' + esc(s.title) + '</h3><p>' + esc(s.text) + '</p>' +
           '</li>').join('') +
         '</ol>' +
@@ -784,7 +802,7 @@
         '<div class="section-head reveal">' + kickerTitle(b.how.kicker, b.how.title) + '</div>' +
         '<ol class="process process-3" data-anim>' + b.how.steps.map((s, i) =>
           '<li class="process-step reveal">' +
-            '<span class="process-num">' + (i + 1) + '</span>' +
+            '<span class="process-num">' + pad2(i + 1) + '</span>' +
             '<h3>' + esc(s.title) + '</h3><p>' + esc(s.text) + '</p>' +
           '</li>').join('') +
         '</ol>' +
@@ -958,7 +976,8 @@
             waTopicsBlock(c.direct) +
           '</div>' +
           saveCard(c.save) +
-          '<div class="card reveal">' +
+          /* Importeursblok als klassiek colofon: gecentreerd tussen dubbele haarlijnen */
+          '<div class="colophon reveal">' +
             '<h3>' + esc(C.importer.label) + '</h3>' +
             '<p class="footer-legal">' + esc(C.importer.name) + '<br>' + esc(C.importer.address) + '<br>' +
               esc(C.importer.postalCity) + '<br>' + esc(C.importer.country) + '<br>' +
@@ -988,7 +1007,7 @@
       '<section class="section"><div class="wrap">' +
         '<ol class="process process-3" data-anim>' + s.how.steps.map((st, i) =>
           '<li class="process-step reveal">' +
-            '<span class="process-num">' + (i + 1) + '</span>' +
+            '<span class="process-num">' + pad2(i + 1) + '</span>' +
             '<h3>' + esc(st.title) + '</h3><p>' + esc(st.text) + '</p>' +
           '</li>').join('') +
         '</ol>' +
@@ -1059,6 +1078,7 @@
       p.sections.map(s =>
         '<div class="reveal privacy-block"><h2 class="privacy-title">' + esc(s.title) + '</h2><p>' + esc(s.body) + '</p></div>'
       ).join('') +
+      fleuron() +
       '</div></section>';
   }
   function renderPrivacy() { return renderLegal(C.privacy); }
@@ -1069,7 +1089,7 @@
     const k = C.knowledge;
     return pageHero(k.hero) +
       (k.intro
-        ? '<section class="section"><div class="wrap wrap-narrow prose reveal"><p>' + esc(k.intro) + '</p></div></section>'
+        ? '<section class="section"><div class="wrap wrap-narrow prose reveal"><p class="lead">' + esc(k.intro) + '</p></div></section>'
         : '') +
       '<section class="section section-tint" id="kennis"><div class="wrap wrap-narrow">' +
         '<div class="faq reveal">' + k.items.map(it =>
@@ -1078,6 +1098,7 @@
             '<div class="faq-body"><p>' + esc(it.a) + '</p></div>' +
           '</details>').join('') +
         '</div>' +
+        fleuron() +
       '</div></section>' +
       ctaBand(k.cta);
   }
@@ -2176,6 +2197,18 @@
     }
   }
 
+  /* ---------- Nº-nummering in de sectiekickers (Product + Zakelijk) ----------
+     Apothekers-/atelierstijl: "Nº 01 · De olijf" — geeft de dossier-achtige pagina's de
+     structuur van een document. Alleen op de twee "dossier"-pagina's; verhaalpagina's
+     (home, over-ons) blijven nummerloos. Taalneutraal (Nº werkt in NL/EN/FR). */
+  function initKickerNumbers() {
+    if (page !== 'product' && page !== 'zakelijk') return;
+    document.querySelectorAll('#site-main .section .kicker').forEach((k, i) => {
+      k.insertAdjacentHTML('afterbegin',
+        '<span class="kicker-no">Nº ' + String(i + 1).padStart(2, '0') + '</span>');
+    });
+  }
+
   /* ---------- WhatsApp-tik-bevestiging ----------
      WhatsApp opent in een ander tabblad — een korte ripple vanaf het tikpunt + een even
      oplichtend vinkje maken duidelijk dat de tik geregistreerd is. Tekstloos (universeel icoon),
@@ -2234,4 +2267,5 @@
   initHeroTilt();
   initNavIndicator();
   initWhatsappFeedback();
+  initKickerNumbers();
 })();

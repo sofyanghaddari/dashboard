@@ -78,6 +78,40 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v12 — Klassieke luxe-laag: boek- en tijdschrifttypografie (12 juli 2026)
+
+Op verzoek van Soef ("meer klassieke manieren om de site een luxe draai te geven, met de dingen
+die al op de site staan") — zeven klassieke typografische ingrepen op bestaande content, géén
+nieuwe claims of teksten. CSS-sectie "📖 KLASSIEKE LUXE-LAAG v12" onderaan `style.css` (de
+hernummerde cijfers/jaartallen/manifest staan bij hun eigen secties); kleine hulpfuncties in
+`main.js` (`fleuron()`, `pad2()`, `initKickerNumbers()`). Alles statisch — geen beweging, dus
+geen nieuwe reduced-motion-regels nodig.
+
+1. **Initiaal (drop cap):** de eerste letter van het familieverhaal op Over ons ("Onze opa
+   vertrok…") staat als klassieke boekopening drie regels hoog in goud-serif (`::first-letter`
+   op `.story-item:first-child p`).
+2. **Lead-alinea's (standfirst):** de eerste alinea van home-intro, het eerste Over ons-blok en
+   de kennis-intro in groter serif-zetsel (`.lead`, 1.16rem Fraunces) — tijdschrift-hiërarchie.
+3. **Nº-nummering (Product + Zakelijk):** `initKickerNumbers()` zet vóór elke sectiekicker een
+   serif-cursief "Nº 01/02/…" met middot — apothekers-/dossierstijl. Alleen op de twee
+   dossier-pagina's; verhaalpagina's blijven nummerloos. Taalneutraal (Nº werkt in NL/EN/FR).
+4. **Grote gedempte serif-cijfers:** de kleine cirkel-badges op processtappen (Product/Zakelijk/
+   Sample) en herkomststappen vervangen door groot editorial "01"-zetsel in transparant goud
+   (`pad2()`); het scrollytelling-actief-effect werkt nu via kleur/schaal i.p.v. badge-vulling.
+   **Tijdlijn-jaartallen** ("Begin jaren '90", "2026") groot in serif-goud i.p.v. klein sans-label.
+5. **Manifest-moment:** de eerlijke-prijzen-zin op Zakelijk (`.pricing-fair`) als gecentreerd
+   statement — groot serif op 38ch met klein goudlijntje erboven (luxemerk-stijl). Bewust déze
+   zin: staat al op de site, feitelijk, geen zelfprijzing (het familiecitaat blijft weg, zie v5).
+6. **Fleuron:** klein statisch olijftak-ornament (haarlijnen + blaadjespaar + olijfje) als
+   klassiek hoofdstuk-slot onder het familieverhaal, de kennisbank-FAQ en de juridische pagina's.
+7. **Dubbele haarlijnen:** boven de footer, en het importeursblok op Contact is nu een klassiek
+   **colofon** — gecentreerd tussen dubbele gouden haarlijnen, als een stempel op briefpapier
+   (geen kaart meer, dus ook geen 3D-tilt erop).
+
+- Geverifieerd (headless Chromium, 375px + 1280px): drop cap, jaartallen, Nº-kickers, grote
+  stapcijfers, manifest, colofon, fleurons en footer-lijn allemaal visueel gecheckt; geen
+  JS-fouten op alle 9 pagina's.
+
 ### v11 — Animatie-kwaliteitsronde: lelijke effecten hersteld (12 juli 2026)
 
 Op verzoek van Soef ("sommige animaties zien er lelijk en amateuristisch uit") — volledige audit
