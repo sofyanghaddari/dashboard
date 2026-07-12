@@ -127,6 +127,29 @@ window.AJAR_CONTENT = {
      zaken die al elders op de site staan — geen nieuwe claims. */
   ctaFacts: ['Gratis en zonder verplichtingen', 'Vanaf één doos', 'Direct contact met de importeur'],
 
+  /* UI-teksten (v14): foutmeldingen, aria-labels en vaste kopjes — per taal,
+     zodat de EN/FR-versie geen Nederlands meer lekt. Gelezen via T() in main.js. */
+  ui: {
+    photoFollows: 'Foto volgt',
+    skipLink: 'Direct naar de inhoud',
+    mainNav: 'Hoofdnavigatie',
+    subTopics: 'onderwerpen',
+    navHeading: 'Navigatie',
+    contactHeading: 'Contact',
+    footerWa: 'WhatsApp — snelste route',
+    errEmail: 'Vul een geldig e-mailadres in.',
+    errSample: 'Vul minimaal bedrijfsnaam, contactpersoon, e-mailadres en bezorgadres in.',
+    errContact: 'Vul minimaal naam, bedrijfsnaam en een geldig e-mailadres in.',
+    privacyLink: 'Privacyverklaring',
+    linkCopied: 'Link gekopieerd',
+    toTop: 'Terug naar boven',
+    close: 'Sluiten',
+    prevPhoto: 'Vorige foto',
+    nextPhoto: 'Volgende foto',
+    galleryLabel: 'Foto’s uit de fabriek — tik voor de volgende',
+    photoWord: 'Foto'
+  },
+
   /* ---------- Cookiebanner ---------- */
   cookies: {
     text: 'We gebruiken anonieme bezoekersstatistieken (Google Analytics) om te zien hoe de site wordt gebruikt. U kiest zelf of u dat goed vindt.',

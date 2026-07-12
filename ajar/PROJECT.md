@@ -87,6 +87,33 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v14 — Realistische olijftak (kandidaat) + kwaliteitsronde: performance & i18n-gaten (12 juli 2026)
+
+Vervolg op v13: Soef vond de olijftak als idee wél mooi, alleen niet realistisch genoeg — en wil
+eerst een voorbeeld zien vóór iets live gaat. Daarnaast: "werk met uiterste effort aan de overige
+kwaliteit, bekijk het vanuit de zakelijke klant".
+
+- **🌿 Olijftak v3 — KANDIDAAT, staat nog NIET op de site:** volledig nieuwe, realistische
+  vector-illustratie naar Soefs referentiefoto — gekleurde lansvormige blaadjes met askromming
+  (sage-groen boven, zilvergrijze onderkant, middennerf), gelaagd loof (gedimde dieptelaag),
+  taps toelopende steel met zijtwijgen, hangende olijfclusters met spotlicht. Gegenereerd uit
+  data via `tools/gen-olijftak.mjs` (blad/olijf-posities als arrays — makkelijk itereren);
+  het resultaat staat klaar als `assets/art/olijftak.svg`. **Pas inzetten (CTA-band boven de
+  titel, ±210px) na expliciet akkoord van Soef** — voorbeeld is hem als afbeelding gestuurd.
+- **⚡ Performance (grootste meetbare tekortkoming):** alle gebruikte foto's gedownscaled naar
+  max 1600px + opnieuw gecomprimeerd (q78, progressive, **EXIF-copyright behouden** — zie v9):
+  totaal ±775 KB lichter. De home-hero (`sfeer-09.jpg`, de LCP) extra: 1800px/509 KB →
+  1200px/254 KB. Visueel gecontroleerd: geen zichtbaar verlies. `decoding="async"` op alle
+  foto's. NB: `hero-01.jpg`, `story-02.jpg`, `stock-hero-orchard.jpg` (samen 4,3 MB) zijn
+  ongebruikt — bewust niet aangeraakt/verwijderd (staat in LANCERING-CHECKLIST als Soefs keuze).
+- **🌐 i18n-gaten gedicht (EN/FR lekte Nederlands):** nieuw `ui{}`-blok in content.js/en/fr +
+  `T()`-helper in main.js voor alle hardcoded UI-teksten: footer-kopjes (Navigatie/Contact),
+  "WhatsApp — snelste route", skip-link, formulier-foutmeldingen (contact/sample/nieuwsbrief/
+  presentatie), "Privacyverklaring"-linkjes, "Link gekopieerd", lightbox/naar-boven/fotostapel
+  aria-labels. NL blijft overal de fallback.
+- Geverifieerd: EN-footer toont "NAVIGATION/fastest route", EN-formulier geeft Engelse
+  foutmelding + veld-shake, hero scherp na compressie, geen JS-fouten op alle 9 pagina's.
+
 ### v13 — Decoratie eruit, zekerheden erin (12 juli 2026)
 
 Correctie na feedback van Soef (met foto van een échte olijftak): de getekende

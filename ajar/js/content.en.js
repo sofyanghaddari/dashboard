@@ -61,6 +61,27 @@ window.AJAR_CONTENT_EN = {
   /* Reassurances under the CTA buttons (v13) — facts that already appear elsewhere on the site */
   ctaFacts: ['Free and without obligation', 'From a single box', 'Direct contact with the importer'],
 
+  ui: {
+    photoFollows: 'Photo to follow',
+    skipLink: 'Skip to content',
+    mainNav: 'Main navigation',
+    subTopics: 'topics',
+    navHeading: 'Navigation',
+    contactHeading: 'Contact',
+    footerWa: 'WhatsApp — fastest route',
+    errEmail: 'Please enter a valid e-mail address.',
+    errSample: 'Please fill in at least your company name, contact person, e-mail address and delivery address.',
+    errContact: 'Please fill in at least your name, company name and a valid e-mail address.',
+    privacyLink: 'Privacy statement',
+    linkCopied: 'Link copied',
+    toTop: 'Back to top',
+    close: 'Close',
+    prevPhoto: 'Previous photo',
+    nextPhoto: 'Next photo',
+    galleryLabel: 'Photos from the factory — tap for the next one',
+    photoWord: 'Photo'
+  },
+
   cookies: {
     text: 'We use anonymous visitor statistics (Google Analytics) to see how the site is used. You decide whether that is OK.',
     accept: 'Accept',

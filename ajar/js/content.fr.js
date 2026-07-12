@@ -61,6 +61,27 @@ window.AJAR_CONTENT_FR = {
   /* Garanties sous les boutons CTA (v13) — des faits déjà présents ailleurs sur le site */
   ctaFacts: ["Gratuit et sans engagement", "Dès un carton", "Contact direct avec l’importateur"],
 
+  ui: {
+    photoFollows: "Photo à venir",
+    skipLink: "Aller au contenu",
+    mainNav: "Navigation principale",
+    subTopics: "rubriques",
+    navHeading: "Navigation",
+    contactHeading: "Contact",
+    footerWa: "WhatsApp — le plus rapide",
+    errEmail: "Veuillez saisir une adresse e-mail valide.",
+    errSample: "Veuillez renseigner au minimum le nom de l’entreprise, le contact, l’e-mail et l’adresse de livraison.",
+    errContact: "Veuillez renseigner au minimum votre nom, votre entreprise et une adresse e-mail valide.",
+    privacyLink: "Déclaration de confidentialité",
+    linkCopied: "Lien copié",
+    toTop: "Retour en haut",
+    close: "Fermer",
+    prevPhoto: "Photo précédente",
+    nextPhoto: "Photo suivante",
+    galleryLabel: "Photos de l’usine — touchez pour la suivante",
+    photoWord: "Photo"
+  },
+
   cookies: {
     text: "Nous utilisons des statistiques de visite anonymes (Google Analytics) pour voir comment le site est utilisé. C’est vous qui décidez si cela vous convient.",
     accept: "Accepter",

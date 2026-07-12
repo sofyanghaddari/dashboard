@@ -20,6 +20,10 @@
   const esc = (s) => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+  /* UI-tekstje in de actieve taal (C.ui in content.js/en/fr), met NL-fallback —
+     dicht de vertaalgaten: foutmeldingen, aria-labels, footer-kopjes etc. (v14) */
+  const T = (key, fallback) => (C.ui && C.ui[key]) || fallback;
+
   function waLink(text) {
     return 'https://wa.me/' + cfg.whatsappNumber + '?text=' + encodeURIComponent(text || '');
   }
@@ -41,10 +45,10 @@
     if (!file) return '';
     const load = eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
     return '<figure class="img-slot ' + (cls || '') + '" data-file="' + esc(file) + '">' +
-      '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" ' + load + ' ' +
+      '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" decoding="async" ' + load + ' ' +
       'onload="this.classList.add(\'imgok\')" ' +
       'onerror="this.closest(\'.img-slot\').classList.add(\'empty\');this.remove()">' +
-      '<span class="img-slot-note">Foto volgt · ' + esc(file) + '</span>' +
+      '<span class="img-slot-note">' + esc(T('photoFollows', 'Foto volgt')) + ' · ' + esc(file) + '</span>' +
       '</figure>';
   }
 
@@ -117,7 +121,7 @@
         return '<div class="nav-item has-sub">' +
           '<a href="' + esc(n.href) + '"' + activeAttr + '>' + esc(n.label) + '</a>' +
           '<button type="button" class="nav-sub-toggle" aria-expanded="false" aria-controls="' + subId + '" ' +
-            'aria-label="' + esc(n.label) + ' — onderwerpen">' + NAV_CARET + '</button>' +
+            'aria-label="' + esc(n.label) + ' — ' + esc(T('subTopics', 'onderwerpen')) + '">' + NAV_CARET + '</button>' +
           '<div class="nav-sub" id="' + subId + '" role="menu">' + subLinks + '</div>' +
         '</div>';
       }
@@ -137,7 +141,7 @@
     /* Skip-link voor toetsenbord/screenreader: als allereerste focusbaar element */
     if (!document.querySelector('.skip-link')) {
       document.body.insertAdjacentHTML('afterbegin',
-        '<a class="skip-link" href="#site-main">Direct naar de inhoud</a>');
+        '<a class="skip-link" href="#site-main">' + esc(T('skipLink', 'Direct naar de inhoud')) + '</a>');
     }
 
     document.getElementById('site-header').innerHTML =
@@ -145,7 +149,7 @@
         '<a class="brand" href="index.html" aria-label="' + esc(cfg.brandName) + ' — home">' +
           '<img src="assets/logo/ajar-header.svg" alt="' + esc(cfg.brandName) + '" class="brand-logo">' +
         '</a>' +
-        '<nav class="site-nav" id="site-nav" aria-label="Hoofdnavigatie">' + links +
+        '<nav class="site-nav" id="site-nav" aria-label="' + esc(T('mainNav', 'Hoofdnavigatie')) + '">' + links +
           /* Op sample.html zelf is "Gratis sample aanvragen" een dode link naar de eigen pagina —
              toon daar in plaats daarvan de logische vervolgstap "Offerte aanvragen". */
           (page === 'sample'
@@ -257,13 +261,13 @@
           newsletterBlock() +
         '</div>' +
         '<div class="footer-col">' +
-          '<h3>Navigatie</h3><nav class="footer-nav">' + navLinks +
+          '<h3>' + esc(T('navHeading', 'Navigatie')) + '</h3><nav class="footer-nav">' + navLinks +
           '<a href="privacy.html">' + esc(f.privacyLabel) + '</a>' +
           '<a href="voorwaarden.html">' + esc(f.termsLabel) + '</a></nav>' +
         '</div>' +
         '<div class="footer-col">' +
-          '<h3>Contact</h3>' +
-          '<a class="footer-wa" href="' + waLink(C.contact.direct.whatsappPrefill) + '" target="_blank" rel="noopener" data-ga-event="whatsapp_click">WhatsApp — snelste route</a>' +
+          '<h3>' + esc(T('contactHeading', 'Contact')) + '</h3>' +
+          '<a class="footer-wa" href="' + waLink(C.contact.direct.whatsappPrefill) + '" target="_blank" rel="noopener" data-ga-event="whatsapp_click">' + esc(T('footerWa', 'WhatsApp — snelste route')) + '</a>' +
           (C.contact.direct.phoneDisplay ? '<a href="tel:+' + esc(cfg.whatsappNumber) + '">' + esc(C.contact.direct.phoneDisplay) + '</a>' : '') +
           (cfg.email ? '<a href="mailto:' + esc(cfg.email) + '">' + esc(cfg.email) + '</a>' : '') +
           (socials.length ? '<div class="footer-socials">' + socials.map(s =>
@@ -311,7 +315,7 @@
       e.preventDefault();
       const v = formVals(form);
       if (!/.+@.+\..+/.test(v.email)) {
-        showMsg(form, 'error', 'Vul een geldig e-mailadres in.');
+        showMsg(form, 'error', T('errEmail', 'Vul een geldig e-mailadres in.'));
         return;
       }
       v._subject = n.emailSubject;
@@ -429,12 +433,12 @@
     return '<section class="section factory-gallery"><div class="wrap">' +
       '<p class="kicker reveal">' + esc(g.kicker) + '</p>' +
       '<p class="factory-gallery-text reveal">' + esc(g.text) + '</p>' +
-      '<div class="stack-gallery reveal" id="stack-gallery" role="group" aria-label="Foto’s uit de fabriek — tik voor de volgende">' +
+      '<div class="stack-gallery reveal" id="stack-gallery" role="group" aria-label="' + esc(T('galleryLabel', 'Foto’s uit de fabriek — tik voor de volgende')) + '">' +
         g.images.map((im, i) =>
           '<div class="stack-card" data-pos="' + i + '">' + imgSlot(im.file, im.alt, '') + '</div>').join('') +
       '</div>' +
       '<div class="stack-dots">' + g.images.map((_, i) =>
-        '<button type="button" class="stack-dot' + (i === 0 ? ' on' : '') + '" data-i="' + i + '" aria-label="Foto ' + (i + 1) + '"></button>').join('') +
+        '<button type="button" class="stack-dot' + (i === 0 ? ' on' : '') + '" data-i="' + i + '" aria-label="' + esc(T('photoWord', 'Foto')) + ' ' + (i + 1) + '"></button>').join('') +
       '</div>' +
     '</div></section>';
   }
@@ -918,7 +922,7 @@
           '<div class="form-actions">' +
             '<button type="submit" class="btn btn-primary" id="form-submit" data-ga-event="offerte_aanvraag">' + esc(cfg.formspreeId ? f.submit : f.submitWhatsApp) + '</button>' +
           '</div>' +
-          '<p class="form-note">' + esc(f.privacyNote) + ' <a href="privacy.html">Privacyverklaring</a></p>' +
+          '<p class="form-note">' + esc(f.privacyNote) + ' <a href="privacy.html">' + esc(T('privacyLink', 'Privacyverklaring')) + '</a></p>' +
           '<p class="form-error" data-role="error" hidden></p>' +
           '<p class="form-success" data-role="success" hidden></p>' +
         '</form>' +
@@ -987,7 +991,7 @@
           '<div class="form-actions">' +
             '<button type="submit" class="btn btn-primary" data-ga-event="sample_aanvraag">' + esc(f.submit) + '</button>' +
           '</div>' +
-          '<p class="form-note">' + esc(C.contact.form.privacyNote) + ' <a href="privacy.html">Privacyverklaring</a></p>' +
+          '<p class="form-note">' + esc(C.contact.form.privacyNote) + ' <a href="privacy.html">' + esc(T('privacyLink', 'Privacyverklaring')) + '</a></p>' +
           '<p class="form-error" data-role="error" hidden></p>' +
           '<p class="form-success" data-role="success" hidden></p>' +
         '</form>' +
@@ -1013,7 +1017,7 @@
       e.preventDefault();
       const v = formVals(form);
       if (!v.naam || !v.bedrijf || !/.+@.+\..+/.test(v.email) || !v.adres) {
-        showMsg(form, 'error', 'Vul minimaal bedrijfsnaam, contactpersoon, e-mailadres en bezorgadres in.');
+        showMsg(form, 'error', T('errSample', 'Vul minimaal bedrijfsnaam, contactpersoon, e-mailadres en bezorgadres in.'));
         return;
       }
       v._subject = f.emailSubject + ' — ' + v.bedrijf;
@@ -1276,7 +1280,7 @@
       e.preventDefault();
       const v = formVals(form);
       if (!v.naam || !v.bedrijf || !/.+@.+\..+/.test(v.email)) {
-        showMsg(form, 'error', 'Vul minimaal naam, bedrijfsnaam en een geldig e-mailadres in.');
+        showMsg(form, 'error', T('errContact', 'Vul minimaal naam, bedrijfsnaam en een geldig e-mailadres in.'));
         return;
       }
       const volume = labelOf(f.volumeOptions, v.volume);
@@ -1338,8 +1342,8 @@
         } else if (navigator.clipboard && navigator.clipboard.writeText) {
           try {
             await navigator.clipboard.writeText(location.href);
-            if (window.ajarToast) window.ajarToast('Link gekopieerd');
-            else sBtn.textContent = 'Link gekopieerd';
+            if (window.ajarToast) window.ajarToast(T('linkCopied', 'Link gekopieerd'));
+            else sBtn.textContent = T('linkCopied', 'Link gekopieerd');
           } catch (_) {
             window.open('mailto:?subject=' + encodeURIComponent(cfg.brandName) + '&body=' + encodeURIComponent(data.text + ' ' + location.href));
           }
@@ -1393,7 +1397,7 @@
       e.preventDefault();
       const v = formVals(form);
       if (!v.naam || !v.bedrijf || !/.+@.+\..+/.test(v.email)) {
-        showMsg(form, 'error', 'Vul minimaal naam, bedrijfsnaam en een geldig e-mailadres in.');
+        showMsg(form, 'error', T('errContact', 'Vul minimaal naam, bedrijfsnaam en een geldig e-mailadres in.'));
         return;
       }
       v._subject = 'Aanvraag bedrijfspresentatie ' + cfg.brandName;
@@ -1675,7 +1679,7 @@
     /* terug-naar-boven */
     let toTop = document.createElement('button');
     toTop.className = 'to-top';
-    toTop.setAttribute('aria-label', 'Terug naar boven');
+    toTop.setAttribute('aria-label', T('toTop', 'Terug naar boven'));
     toTop.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
     document.body.appendChild(toTop);
     toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }));
@@ -1851,9 +1855,9 @@
       box = document.createElement('div');
       box.className = 'lightbox' + (multi ? ' lb-multi' : '');
       box.innerHTML =
-        '<button class="lightbox-close" aria-label="Sluiten">✕</button>' +
-        (multi ? '<button class="lb-nav lb-prev" aria-label="Vorige foto">‹</button>' +
-                 '<button class="lb-nav lb-next" aria-label="Volgende foto">›</button>' : '') +
+        '<button class="lightbox-close" aria-label="' + esc(T('close', 'Sluiten')) + '">✕</button>' +
+        (multi ? '<button class="lb-nav lb-prev" aria-label="' + esc(T('prevPhoto', 'Vorige foto')) + '">‹</button>' +
+                 '<button class="lb-nav lb-next" aria-label="' + esc(T('nextPhoto', 'Volgende foto')) + '">›</button>' : '') +
         '<figure class="lb-figure"><img alt=""><figcaption class="lightbox-cap"></figcaption></figure>' +
         (multi ? '<span class="lb-counter" aria-hidden="true"></span>' : '');
       document.body.appendChild(box);
