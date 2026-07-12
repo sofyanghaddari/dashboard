@@ -263,6 +263,16 @@
     const navLinks = C.nav.map(n => '<a href="' + esc(n.href) + '">' + esc(n.label) + '</a>').join('');
     const socials = (f.socials || []).filter(s => s && s.href);
 
+    /* Inklapbare groep (v17): op mobiel een accordeon met +-toggle (gkazas-stijl,
+       op verzoek van Soef — de footer was op de telefoon erg lang); op desktop
+       gedraagt de kop zich als gewone kolomkop (toggle uitgeschakeld via CSS). */
+    const accGroup = (extraCls, label, bodyHtml) =>
+      '<div class="footer-col ftr-acc ' + extraCls + '">' +
+        '<h3 class="ftr-h"><button type="button" class="ftr-toggle" aria-expanded="false">' +
+          esc(label) + '<span class="ftr-plus" aria-hidden="true">+</span></button></h3>' +
+        '<div class="ftr-body"><div class="ftr-body-in">' + bodyHtml + '</div></div>' +
+      '</div>';
+
     document.getElementById('site-footer').innerHTML =
       /* Fluister-wordmark: reusachtige outline-"AJAR" als stille achtergrondlaag */
       '<span class="footer-wordmark" aria-hidden="true">AJAR</span>' +
@@ -270,14 +280,8 @@
         '<div class="footer-col footer-brand">' +
           '<img src="assets/logo/ajar-header.svg" alt="' + esc(cfg.brandName) + '" class="footer-logo">' +
           '<p>' + esc(f.aboutLine) + '</p>' +
-          newsletterBlock() +
         '</div>' +
-        '<div class="footer-col">' +
-          '<h3>' + esc(T('navHeading', 'Navigatie')) + '</h3><nav class="footer-nav">' + navLinks +
-          '<a href="privacy.html">' + esc(f.privacyLabel) + '</a>' +
-          '<a href="voorwaarden.html">' + esc(f.termsLabel) + '</a></nav>' +
-        '</div>' +
-        '<div class="footer-col">' +
+        '<div class="footer-col footer-contactcol">' +
           '<h3>' + esc(T('contactHeading', 'Contact')) + '</h3>' +
           '<a class="footer-wa" href="' + waLink(C.contact.direct.whatsappPrefill) + '" target="_blank" rel="noopener" data-ga-event="whatsapp_click">' + esc(T('footerWa', 'WhatsApp — snelste route')) + '</a>' +
           (C.contact.direct.phoneDisplay ? '<a href="tel:+' + esc(cfg.whatsappNumber) + '">' + esc(C.contact.direct.phoneDisplay) + '</a>' : '') +
@@ -285,6 +289,13 @@
           (socials.length ? '<div class="footer-socials">' + socials.map(s =>
             '<a href="' + esc(s.href) + '" target="_blank" rel="noopener">' + esc(s.label) + '</a>').join('') + '</div>' : '') +
         '</div>' +
+        accGroup('footer-navcol', T('navHeading', 'Navigatie'),
+          '<nav class="footer-nav">' + navLinks +
+          '<a href="privacy.html">' + esc(f.privacyLabel) + '</a>' +
+          '<a href="voorwaarden.html">' + esc(f.termsLabel) + '</a></nav>') +
+        (C.newsletter && C.newsletter.enabled
+          ? accGroup('footer-news', C.newsletter.title, newsletterBlock())
+          : '') +
       '</div>' +
       '<div class="wrap footer-bottom">' +
         '<span>© ' + new Date().getFullYear() + ' ' + esc(cfg.brandName) + ' · ' + esc(cfg.tagline) +
@@ -306,7 +317,6 @@
     const n = C.newsletter;
     if (!n || !n.enabled) return '';
     return '<form class="newsletter" id="newsletter-form" novalidate>' +
-      '<p class="newsletter-title">' + esc(n.title) + '</p>' +
       '<p class="newsletter-text">' + esc(n.text) + '</p>' +
       '<input type="text" name="_gotcha" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<div class="newsletter-row">' +
@@ -2054,6 +2064,7 @@
   function initProcessJourney() {
     const ol = document.querySelector('.process-journey');
     if (!ol) return;
+    if (window.matchMedia('(max-width: 700px)').matches) return; /* v17: mobiel bestuurt de carrousel de stappen */
     const steps = Array.from(ol.querySelectorAll('.process-step'));
     if (!steps.length) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2181,6 +2192,70 @@
     }
   }
 
+  /* ---------- Footer-accordeon (mobiel) ----------
+     De +-koppen klappen hun groep in/uit; op desktop is de toggle via CSS
+     uitgeschakeld en staat alles gewoon open. */
+  function initFooterAccordion() {
+    document.querySelectorAll('.ftr-acc .ftr-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const grp = btn.closest('.ftr-acc');
+        const open = grp.classList.toggle('open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    });
+  }
+
+  /* ---------- Mobiele swipe-carrousels (v17, gkazas-inspiratie van Soef) ----------
+     Op ≤700px worden de processtappen-rijen en 3-kaarts USP-rijen horizontaal
+     swipebaar (scroll-snap) met ‹ ›-knoppen en dots — één kaart tegelijk i.p.v.
+     een lange verticale tekstkolom. Desktop blijft het gewone grid. */
+  function initMobileCarousels() {
+    if (!window.matchMedia('(max-width: 700px)').matches) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('#site-main .process, #site-main .grid-3').forEach(list => {
+      const cards = Array.from(list.children);
+      if (cards.length < 2) return;
+      list.classList.add('mcar');
+      const nav = document.createElement('div');
+      nav.className = 'mcar-nav';
+      nav.innerHTML =
+        '<button type="button" class="mcar-btn mcar-prev" aria-label="' + esc(T('prev', 'Vorige')) + '">‹</button>' +
+        '<div class="mcar-dots">' + cards.map((_, i) =>
+          '<button type="button" class="mcar-dot' + (i === 0 ? ' on' : '') + '" aria-label="' + (i + 1) + '"></button>').join('') + '</div>' +
+        '<button type="button" class="mcar-btn mcar-next" aria-label="' + esc(T('next', 'Volgende')) + '">›</button>';
+      list.insertAdjacentElement('afterend', nav);
+      const dots = Array.from(nav.querySelectorAll('.mcar-dot'));
+      const prevB = nav.querySelector('.mcar-prev');
+      const nextB = nav.querySelector('.mcar-next');
+      const step = () => (cards.length > 1 ? Math.max(1, cards[1].offsetLeft - cards[0].offsetLeft) : list.clientWidth);
+      let cur = 0;
+      function setActive(i) {
+        cur = Math.max(0, Math.min(cards.length - 1, i));
+        dots.forEach((d, j) => d.classList.toggle('on', j === cur));
+        prevB.disabled = cur === 0;
+        nextB.disabled = cur === cards.length - 1;
+        /* scrollytelling-rij: het gesnapte kaartje is de actieve stap */
+        if (list.classList.contains('process-journey')) {
+          cards.forEach((c, j) => {
+            c.classList.toggle('step-active', j === cur);
+            c.classList.toggle('step-done', j < cur);
+          });
+        }
+      }
+      const goTo = (i) => list.scrollTo({ left: step() * Math.max(0, Math.min(cards.length - 1, i)), behavior: reduce ? 'auto' : 'smooth' });
+      prevB.addEventListener('click', () => goTo(cur - 1));
+      nextB.addEventListener('click', () => goTo(cur + 1));
+      dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+      let tick = false;
+      list.addEventListener('scroll', () => {
+        if (tick) return;
+        tick = true;
+        requestAnimationFrame(() => { tick = false; setActive(Math.round(list.scrollLeft / step())); });
+      }, { passive: true });
+      setActive(0);
+    });
+  }
+
   /* ---------- Nº-nummering in de sectiekickers (Product + Zakelijk) ----------
      Apothekers-/atelierstijl: "Nº 01 · De olijf" — geeft de dossier-achtige pagina's de
      structuur van een document. Alleen op de twee "dossier"-pagina's; verhaalpagina's
@@ -2252,4 +2327,6 @@
   initNavIndicator();
   initWhatsappFeedback();
   initKickerNumbers();
+  initFooterAccordion();
+  initMobileCarousels();
 })();

@@ -68,6 +68,8 @@ window.AJAR_CONTENT_FR = {
   ctaFacts: ["Gratuit et sans engagement", "Dès un carton", "Contact direct avec l’importateur"],
 
   ui: {
+    prev: "Précédent",
+    next: "Suivant",
     privacyShort: "Confidentialité",
     priceOnRequest: "Prix sur demande (B2B)",
     lbl: {

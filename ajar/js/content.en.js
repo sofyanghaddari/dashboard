@@ -69,6 +69,8 @@ window.AJAR_CONTENT_EN = {
   ctaFacts: ['Free and without obligation', 'From a single box', 'Direct contact with the importer'],
 
   ui: {
+    prev: 'Previous',
+    next: 'Next',
     privacyShort: 'Privacy',
     priceOnRequest: 'Price on request (B2B)',
     lbl: {

@@ -89,6 +89,30 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v17 — Compact op mobiel: swipe-carrousels + inklapbare footer (12 juli 2026)
+
+Op verzoek van Soef (met twee gkazas.com-screenshots als referentie): te veel tekst om
+doorheen te scrollen op mobiel — liever horizontaal swipen door tekstblokken, en de footer
+was te lang.
+
+- **Swipe-carrousels (≤700px, `initMobileCarousels()`):** alle processtappen-rijen
+  (Product "Van boom tot fles", Zakelijk + Sample "Hoe het werkt") én de 3-kaarts USP-rijen
+  (`.grid-3`: Product "Waarom deze olie", Zakelijk "Voor wie"/"Waarom nu") worden op mobiel
+  één kaart tegelijk met een piek van de volgende (scroll-snap), plus ‹ ›-knoppen en dots
+  (gkazas-stijl). De scrollytelling-rij: het gesnapte kaartje = de actieve stap (nummer-accent
+  volgt de dot; `initProcessJourney()` doet op mobiel niets meer). Grid-2-rijen en het
+  documentatieblok (bevat een formulier) bewust NIET — 2 kaarten zijn geen carrousel waard.
+  Desktop: exact het oude grid, geen carrousel-DOM.
+- **Footer-accordeon (≤819px):** footer herbouwd in 4 blokken met grid-areas (desktop
+  onveranderd 3 kolommen). Mobiel: logo + intro + **Contact altijd zichtbaar** (WhatsApp/
+  telefoon/e-mail = de B2B-levensader), daaronder "Navigatie +" en "Op de hoogte blijven? +"
+  als inklapbare groepen tussen haarlijnen (+ draait naar × bij openen, max-height-transitie).
+  De nieuwsbrieftitel is de accordeonkop geworden (newsletter-title-regel opgeruimd).
+- i18n: `ui.prev/next` in NL/EN/FR voor de carrouselknoppen; koppen hergebruiken bestaande
+  vertaalde strings. Reduced-motion: geen smooth-scroll, geen transities.
+- Geverifieerd (iPhone + desktop, alle 9 pagina's): carrousel-state klopt (dot=stap, 0 overflow),
+  3 carrousels op Zakelijk, 0 carrousel-DOM op desktop, footer klapt correct, geen JS-fouten.
+
 ### v16 — Olijftak-boog live in de CTA-band + vallende-olijven-animatie (12 juli 2026)
 
 Soef koos variant D (boog) uit de zes kandidaten, met twee aanwijzingen: de olijven leken

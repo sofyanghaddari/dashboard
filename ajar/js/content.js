@@ -130,6 +130,8 @@ window.AJAR_CONTENT = {
   /* UI-teksten (v14): foutmeldingen, aria-labels en vaste kopjes — per taal,
      zodat de EN/FR-versie geen Nederlands meer lekt. Gelezen via T() in main.js. */
   ui: {
+    prev: 'Vorige',
+    next: 'Volgende',
     privacyShort: 'Privacy',
     priceOnRequest: 'Prijs op aanvraag (B2B)',
     /* labels in de opgebouwde WhatsApp-/e-mailberichten (v15) */

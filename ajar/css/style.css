@@ -728,7 +728,18 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   padding-top: clamp(2.6rem, 5vw, 4rem);
   padding-bottom: 2.4rem;
 }
-@media (min-width: 820px) { .footer-inner { grid-template-columns: 1.3fr 1fr 1fr; gap: 40px; } }
+@media (min-width: 820px) {
+  .footer-inner {
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 12px 40px;
+    grid-template-areas: "brand nav contact" "news nav contact";
+    align-items: start;
+  }
+  .footer-brand { grid-area: brand; }
+  .footer-news { grid-area: news; }
+  .footer-navcol { grid-area: nav; }
+  .footer-contactcol { grid-area: contact; }
+}
 .footer-col h3 {
   color: var(--gold);
   font-family: var(--sans);
@@ -762,7 +773,6 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .footer-socials a { display: inline; }
 /* Nieuwsbrief-inschrijving in de footer */
 .newsletter { margin-top: 22px; max-width: 34ch; }
-.newsletter-title { color: #fff; font-weight: 600; margin: 0 0 4px; }
 .newsletter-text { color: rgba(247,245,240,.7); font-size: .86rem; margin: 0 0 12px; }
 .newsletter-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .newsletter-row input[type=email] {
@@ -2560,3 +2570,128 @@ body.nav-open .site-header { transform: none !important; }
 
 /* ── Dubbele haarlijn boven de footer (briefpapier-detail) ── */
 .site-footer { border-top: 4px double color-mix(in srgb, var(--gold) 45%, transparent); }
+
+
+/* ============================================================
+   📱 COMPACT OP MOBIEL v17 (12 juli 2026, gkazas-inspiratie van Soef)
+   1. Footer-accordeons: Navigatie + Nieuwsbrief klappen in achter een
+      +-kop (Contact blijft altijd zichtbaar — de B2B-levensader).
+   2. Swipe-carrousels: processtappen en 3-kaarts USP-rijen worden op
+      ≤700px horizontaal swipebaar (scroll-snap) met ‹ ›-knoppen en dots.
+   Desktop blijft in beide gevallen exact zoals het was.
+   ============================================================ */
+
+/* ── Footer-accordeon ── */
+.ftr-h { margin: 0; }
+.ftr-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: default;
+  /* zelfde zetsel als de andere footer-koppen */
+  color: var(--gold);
+  font-family: var(--sans);
+  font-size: .74rem;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  text-align: left;
+  margin: 0 0 .9em;
+}
+.ftr-plus { display: none; }
+@media (max-width: 819px) {
+  .footer-inner { gap: 0; }
+  .footer-brand { order: 0; margin-bottom: 20px; }
+  .footer-contactcol { order: 1; padding-bottom: 22px; }
+  .footer-navcol { order: 2; }
+  .footer-news { order: 3; border-bottom: 1px solid rgba(247,245,240,.16); }
+  .ftr-acc { border-top: 1px solid rgba(247,245,240,.16); }
+  .ftr-toggle { cursor: pointer; padding: 17px 2px; margin: 0; }
+  .ftr-plus {
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 400;
+    line-height: 1;
+    color: rgba(247,245,240,.75);
+    transition: transform .3s var(--ease);
+  }
+  .ftr-acc.open .ftr-plus { transform: rotate(45deg); }
+  .ftr-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height .4s var(--ease);
+  }
+  .ftr-acc.open .ftr-body { max-height: 520px; }
+  .ftr-body-in { padding: 2px 2px 20px; }
+}
+
+/* ── Mobiele swipe-carrousel ── */
+@media (max-width: 700px) {
+  .mcar {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mcar::-webkit-scrollbar { display: none; }
+  .mcar > * {
+    flex: 0 0 84%;
+    scroll-snap-align: center;
+    margin: 0;
+  }
+  .mcar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 16px;
+  }
+  .mcar-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--olive);
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: opacity .25s var(--ease), transform .15s var(--ease);
+  }
+  .mcar-btn:active { transform: scale(.94); }
+  .mcar-btn:disabled { opacity: .35; }
+  .mcar-dots { display: flex; gap: 7px; }
+  .mcar-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 0;
+    padding: 0;
+    background: color-mix(in srgb, var(--gold) 32%, transparent);
+    cursor: pointer;
+    transition: background .25s var(--ease), transform .25s var(--ease);
+  }
+  .mcar-dot.on { background: var(--gold-ink); transform: scale(1.3); }
+  /* scrollytelling-rij in carrousel-modus: geen gedimde kaarten, nummer-accent volgt de dot */
+  .process-journey.mcar .process-step,
+  .process-journey.mcar .process-step.step-done { opacity: 1; transform: none; }
+}
+@media (min-width: 701px) {
+  .mcar-nav { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ftr-body { transition: none; }
+  .ftr-plus { transition: none; }
+  .mcar { scroll-behavior: auto; }
+  .mcar-dot, .mcar-btn { transition: none; }
+}
