@@ -109,6 +109,13 @@ onder de olijf** een witte waas rondom, waardoor de olijf anders oogde dan het o
   **246** haalt álle schaduw weg en houdt alleen de echte olijf over; binnenste gaatjes in de
   vrucht dichtgevuld (flood-fill vanaf de rand). Olijf is nu een strak wit ovaal.
 - Geverifieerd: footer-olijf strak wit zonder schaduw/waas, header ongewijzigd, geen JS-fouten.
+- **Vervolg (zelfde dag):** Soef vond de olijf-vrucht nog te groot t.o.v. de tekst (twijg/blad
+  waren wél goed). Aanpak: in `ajar-footer.svg` de vrucht volledig uit de olijf-afbeelding gewist
+  (harde verticale snede x<84 = puur vruchtgebied; steel+blad rechts blijven exact) en de olijf
+  opnieuw getekend als een strak, kleiner `<ellipse>` (rx37/ry25, -14° gekanteld, aangesloten op
+  de steel). Onder het `brightness(0) invert(1)`-filter wordt de ellips vanzelf wit, net als de
+  rest. Alléén de vrucht is nu kleiner; twijg/blaadjes ongewijzigd. Verticale-snede-methode
+  vermeed de spookrandjes van de eerdere kleur-gebaseerde pixelseparatie. Header onaangeroerd.
 
 ### v17 — Compact op mobiel: swipe-carrousels + inklapbare footer (12 juli 2026)
 
