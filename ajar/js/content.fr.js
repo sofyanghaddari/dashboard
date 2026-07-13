@@ -68,6 +68,12 @@ window.AJAR_CONTENT_FR = {
   ctaFacts: ["Gratuit et sans engagement", "Dès un carton", "Contact direct avec l’importateur"],
 
   ui: {
+    copyLabel: "Copier",
+    draftRestored: "Brouillon restauré — vos informations précédentes sont de retour.",
+    draftClear: "effacer le brouillon",
+    qrShow: "Afficher le QR code",
+    qrCaption: "Scannez pour ouvrir cette conversation sur votre téléphone",
+    qrClose: "Fermer",
     prev: "Précédent",
     next: "Suivant",
     privacyShort: "Confidentialité",

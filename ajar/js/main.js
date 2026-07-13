@@ -31,6 +31,32 @@
     return 'https://wa.me/' + cfg.whatsappNumber + '?text=' + encodeURIComponent(text || '');
   }
 
+  /* ---------- Kopieerknopje voor zakelijke gegevens (v19) ---------- */
+  const COPY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>';
+  const COPY_CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4L19 7"/></svg>';
+  /* KvK/BTW-nummers en e-mailadres moeten inkopers letterlijk overtikken in hun
+     crediteurensysteem — één tik kopieert i.p.v. handmatig selecteren. */
+  function copyChip(value) {
+    return '<button type="button" class="copy-btn" data-copy="' + esc(value) + '" aria-label="' + esc(T('copyLabel', 'Kopiëren')) + '">' +
+      '<span class="copy-ic copy-ic-copy">' + COPY_ICON + '</span>' +
+      '<span class="copy-ic copy-ic-check">' + COPY_CHECK_ICON + '</span>' +
+    '</button>';
+  }
+  function initCopyButtons() {
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.copy-btn');
+      if (!btn) return;
+      const val = btn.dataset.copy;
+      if (!val || !navigator.clipboard || !navigator.clipboard.writeText) return;
+      try {
+        await navigator.clipboard.writeText(val);
+        btn.classList.add('copied');
+        clearTimeout(btn._copyT);
+        btn._copyT = setTimeout(() => btn.classList.remove('copied'), 1600);
+      } catch (e) {}
+    });
+  }
+
   /* Topbar-teksten: bevestigde feiten (topbar.items) + optioneel topbar.pendingItems
      (claims in afwachting van certificering, alleen zichtbaar zolang topbar.showPending
      niet expliciet op false staat — zie de toelichting bij topbar in content.js). */
@@ -588,7 +614,11 @@
 
       /* Familie-tijdlijn */
       '<section class="section section-tint" id="tijdlijn"><div class="wrap wrap-narrow">' +
-        '<div class="section-head reveal">' + kickerTitle(tl.kicker, tl.title) + '</div>' +
+        '<div class="section-head reveal">' + kickerTitle(tl.kicker, tl.title) +
+        (tl.counterFrom && tl.counterTo
+          ? '<span class="timeline-counter" aria-hidden="true" data-count-from="' + tl.counterFrom + '" data-count-to="' + tl.counterTo + '">' + tl.counterFrom + '</span>'
+          : '') +
+        '</div>' +
         '<ol class="timeline" data-anim>' + tl.items.map(t =>
           '<li class="timeline-item reveal' + (t.todo ? ' is-todo' : '') + '">' +
             '<span class="timeline-dot" aria-hidden="true"></span>' +
@@ -955,16 +985,21 @@
             '<p>' + esc(c.direct.text) + '</p>' +
             '<a class="btn btn-primary btn-wa" href="' + waLink(c.direct.whatsappPrefill) + '" target="_blank" rel="noopener" data-ga-event="whatsapp_click">' + esc(c.direct.whatsappLabel) + '</a>' +
             (c.direct.phoneDisplay ? '<p class="contact-phone">' + esc(c.direct.phoneNote) + ' <a href="tel:+' + esc(cfg.whatsappNumber) + '">' + esc(c.direct.phoneDisplay) + '</a></p>' : '') +
-            (cfg.email ? '<p class="contact-phone">E-mail: <a href="mailto:' + esc(cfg.email) + '">' + esc(cfg.email) + '</a></p>' : '') +
+            (cfg.email ? '<p class="contact-phone copy-row">' + esc(L('email', 'E-mail')) + ': <a href="mailto:' + esc(cfg.email) + '">' + esc(cfg.email) + '</a>' + copyChip(cfg.email) + '</p>' : '') +
             waTopicsBlock(c.direct) +
           '</div>' +
           saveCard(c.save) +
-          /* Importeursblok als klassiek colofon: gecentreerd tussen dubbele haarlijnen */
+          /* Importeursblok als klassiek colofon: gecentreerd tussen dubbele haarlijnen.
+             KvK/Btw krijgen elk een kopieerknopje (v19) — cijfers die een inkoper toch
+             letterlijk overtikt in zijn crediteurensysteem. */
           '<div class="colophon reveal">' +
             '<h3>' + esc(C.importer.label) + '</h3>' +
             '<p class="footer-legal">' + esc(C.importer.name) + '<br>' + esc(C.importer.address) + '<br>' +
-              esc(C.importer.postalCity) + '<br>' + esc(C.importer.country) + '<br>' +
-              'KvK: ' + esc(cfg.kvk) + (cfg.btw ? '<br>Btw: ' + esc(cfg.btw) : '') + '</p>' +
+              esc(C.importer.postalCity) + '<br>' + esc(C.importer.country) + '</p>' +
+            '<p class="footer-legal colophon-nums">' +
+              '<span class="copy-row">KvK: ' + esc(cfg.kvk) + copyChip(cfg.kvk) + '</span>' +
+              (cfg.btw ? '<span class="copy-row">Btw: ' + esc(cfg.btw) + copyChip(cfg.btw) + '</span>' : '') +
+            '</p>' +
           '</div>' +
         '</aside>' +
 
@@ -1035,6 +1070,7 @@
     const form = document.getElementById('sample-form');
     if (!form) return;
     const f = C.sample.form;
+    initFormMemory(form);
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const v = formVals(form);
@@ -1052,7 +1088,7 @@
         (v.bericht ? '\n' + L('note', 'Opmerking') + ': ' + v.bericht : '') +
         (v.tip ? '\n' + L('tip', 'Tip collega-ondernemer') + ': ' + v.tip : '');
       const ok = await submitLead(form, v, waText, f.success);
-      if (ok) gaEvent('sample_aanvraag', { tip: v.tip ? 'ja' : 'nee' });
+      if (ok) { gaEvent('sample_aanvraag', { tip: v.tip ? 'ja' : 'nee' }); clearFormDraft(form); }
     });
   }
 
@@ -1106,6 +1142,61 @@
     const d = new FormData(form), o = {};
     d.forEach((v, k) => { o[k] = String(v).trim(); });
     return o;
+  }
+
+  /* ---------- Formulier-geheugen (v19) ----------
+     Een inkoper die halverwege een offerte-/sample-aanvraag wegklikt (of wiens verbinding
+     wegvalt) is een gemiste lead. Concepten worden lokaal bewaard (localStorage, puur op dit
+     toestel — geen server, geen AVG-impact: het zijn dezelfde gegevens die hij toch al op het
+     punt stond te versturen) en bij terugkomst automatisch hersteld, met een kleine melding
+     + "wis concept". Wordt gewist zodra het formulier succesvol verzonden is. */
+  const draftKey = (form) => 'ajarDraft:' + form.id;
+
+  function saveFormDraft(form) {
+    const v = formVals(form);
+    delete v._gotcha;
+    const hasContent = Object.keys(v).some((k) => v[k]);
+    try {
+      if (hasContent) localStorage.setItem(draftKey(form), JSON.stringify(v));
+      else localStorage.removeItem(draftKey(form));
+    } catch (e) {}
+  }
+
+  function clearFormDraft(form) {
+    try { localStorage.removeItem(draftKey(form)); } catch (e) {}
+    const notice = form.querySelector('.form-draft-notice');
+    if (notice) notice.remove();
+  }
+
+  function showDraftNotice(form) {
+    if (form.querySelector('.form-draft-notice')) return;
+    const notice = document.createElement('p');
+    notice.className = 'form-draft-notice';
+    notice.innerHTML = esc(T('draftRestored', 'Concept hersteld — uw eerder ingevulde gegevens staan weer klaar.')) +
+      ' <button type="button" class="form-draft-clear">' + esc(T('draftClear', 'wis concept')) + '</button>';
+    form.prepend(notice);
+    notice.querySelector('.form-draft-clear').addEventListener('click', () => {
+      form.reset();
+      clearFormDraft(form);
+    });
+  }
+
+  function initFormMemory(form) {
+    if (!form || !form.id) return;
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(draftKey(form)) || 'null'); } catch (e) {}
+    if (saved) {
+      Object.keys(saved).forEach((name) => {
+        if (!saved[name]) return;
+        const el = form.elements.namedItem(name);
+        if (!el) return;
+        try { el.value = saved[name]; } catch (e) {}
+      });
+      showDraftNotice(form);
+    }
+    let t = null;
+    form.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => saveFormDraft(form), 500); });
+    form.addEventListener('change', () => saveFormDraft(form));
   }
 
   /* Zelf-tekenend succes-vinkje (stroke-draw via pathLength, zelfde stijl als de olijftak) */
@@ -1278,8 +1369,10 @@
     const form = document.getElementById('offer-form');
     if (!form) return;
     const f = C.contact.form;
+    initFormMemory(form);
 
     // Voorselectie via ?aanvraag=sample|offerte|proeverij|relatiegeschenk (CTA's van andere pagina's)
+    // (draait ná initFormMemory — een expliciete CTA-context wint bewust van een oud concept)
     const param = new URLSearchParams(location.search).get('aanvraag');
     if (param === 'sample') form.querySelector('select[name=volume]').value = 'sample';
     if (param === 'offerte') form.querySelector('select[name=volume]').value = 'maandelijks-vast';
@@ -1325,7 +1418,7 @@
         (v.bericht ? '\n\n' + v.bericht : '');
       v._subject = f.emailSubject + ' — ' + volume;
       const ok = await submitLead(form, v, waText, f.success);
-      if (ok) gaEvent('offerte_aanvraag', { volume: v.volume, type: v.type || '', frequentie: v.frequentie || '' });
+      if (ok) { gaEvent('offerte_aanvraag', { volume: v.volume, type: v.type || '', frequentie: v.frequentie || '' }); clearFormDraft(form); }
     });
   }
 
@@ -1420,6 +1513,7 @@
     const form = document.getElementById('pres-form');
     if (!form) return;
     const d = C.b2b.downloads.presentation;
+    initFormMemory(form);
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1438,6 +1532,7 @@
       const ok = await submitLead(form, v, waText, okMsg);
       if (ok) {
         gaEvent('presentatie_aanvraag', {});
+        clearFormDraft(form);
         if (cfg.presentationPdf) {
           const s = form.querySelector('[data-role=success]');
           s.innerHTML = OK_CHECK + esc(okMsg) + ' <a class="text-link" href="' + esc(cfg.presentationPdf) + '" download data-ga-event="presentatie_download">' + esc(d.downloadLabel) + '</a>';
@@ -1557,6 +1652,28 @@
           acceptedAnswer: { '@type': 'Answer', text: f.a }
         }))
       });
+    }
+    /* Breadcrumb-rich-result (v19): "AJAR › Product" e.d. in Google-zoekresultaten.
+       Homepage zelf krijgt geen breadcrumb (niets eronder om te tonen). Pagina's die niet
+       in C.nav staan (sample/privacy/voorwaarden — bereikbaar via CTA's/footer, niet de
+       hoofdnav) krijgen hun label/href expliciet. */
+    if (page !== 'home') {
+      const navItem = C.nav.find(n => n.id === page);
+      const extra = {
+        sample: { label: C.sampleCtaLabel, href: 'sample.html' },
+        privacy: { label: C.footer.privacyLabel, href: 'privacy.html' },
+        voorwaarden: { label: C.footer.termsLabel, href: 'voorwaarden.html' }
+      }[page];
+      const crumb = navItem ? { label: navItem.label, href: navItem.href } : extra;
+      if (crumb) {
+        objs.push({
+          '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: (C.nav.find(n => n.id === 'home') || {}).label || 'Home', item: cfg.domain },
+            { '@type': 'ListItem', position: 2, name: crumb.label, item: cfg.domain + crumb.href }
+          ]
+        });
+      }
     }
     objs.forEach(obj => {
       const s = document.createElement('script');
@@ -2268,6 +2385,144 @@
     });
   }
 
+  /* ---------- Tijdlijn-teller (v19) ----------
+     Telt van data-count-from naar data-count-to zodra de badge in beeld komt — loopt gelijk
+     op met de zelftekenende tijdlijn-lijn (CSS, 1.4s). Eigen IntersectionObserver (onafhankelijk
+     van initReveal) zodat de telling precies één keer start, ongeacht in welke volgorde de
+     reveal-klassen landen. Reduced-motion → meteen de eindwaarde, geen telling. */
+  function initTimelineCounter() {
+    const el = document.querySelector('.timeline-counter[data-count-from]');
+    if (!el) return;
+    const from = parseInt(el.dataset.countFrom, 10);
+    const to = parseInt(el.dataset.countTo, 10);
+    if (!isFinite(from) || !isFinite(to)) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !('IntersectionObserver' in window)) { el.textContent = to; return; }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        io.disconnect();
+        const dur = 1400, t0 = performance.now();
+        const tick = (t) => {
+          const p = Math.min((t - t0) / dur, 1);
+          const eased = 1 - Math.pow(1 - p, 2);
+          el.textContent = Math.round(from + (to - from) * eased);
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+    }, { threshold: .4 });
+    io.observe(el);
+  }
+
+  /* ---------- WhatsApp-QR op desktop (v19) ----------
+     Een deskbezoeker heeft WhatsApp op zijn telefoon, niet op zijn werk-pc. Naast elke
+     prominente WhatsApp-knop (.btn-wa, .footer-wa) komt op desktop een klein QR-knopje: tik
+     erop en er verschijnt een scanbare QR-code naar diezelfde wa.me-link (met hetzelfde
+     voorgevulde bericht) — scannen opent het gesprek meteen op de telefoon. Puur additief:
+     de bestaande WhatsApp-links en hun click-gedrag blijven volledig ongemoeid. Mobiel/touch:
+     niets van dit alles (CSS + JS-guard) — daar opent de knop toch al de eigen WhatsApp-app. */
+  let _qrLibPromise = null;
+  function loadQrLib() {
+    if (window.QRCode) return Promise.resolve();
+    if (_qrLibPromise) return _qrLibPromise;
+    _qrLibPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'js/vendor/qrcode.js';
+      s.onload = () => resolve();
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    return _qrLibPromise;
+  }
+
+  /* Bouwt een scherpe inline SVG-QR (geen canvas/img) uit de gevendorde qrcode.js —
+     leest de modulematrix rechtstreeks uit i.p.v. de ingebouwde canvas/table-tekenaar te
+     gebruiken, zodat de QR meeschaalt als vector en in de site-kleuren past. */
+  function buildWaQrSvg(text) {
+    const holder = document.createElement('div'); // nooit in de DOM gehangen — alleen als drager
+    const qr = new window.QRCode(holder, { text, correctLevel: window.QRCode.CorrectLevel.M });
+    const model = qr._oQRCode;
+    const n = model.getModuleCount();
+    const quiet = 3;
+    const size = n + quiet * 2;
+    const rects = [];
+    for (let r = 0; r < n; r++) {
+      let runStart = -1;
+      for (let c = 0; c <= n; c++) {
+        const dark = c < n && model.isDark(r, c);
+        if (dark && runStart === -1) runStart = c;
+        if (!dark && runStart !== -1) {
+          rects.push('<rect x="' + (runStart + quiet) + '" y="' + (r + quiet) + '" width="' + (c - runStart) + '" height="1"/>');
+          runStart = -1;
+        }
+      }
+    }
+    return '<svg viewBox="0 0 ' + size + ' ' + size + '" shape-rendering="crispEdges" role="img" aria-label="QR-code">' +
+      '<rect width="' + size + '" height="' + size + '" fill="#fff"/>' +
+      '<g fill="#232014">' + rects.join('') + '</g></svg>';
+  }
+
+  function initWaQr() {
+    if (!window.matchMedia('(min-width: 860px) and (pointer: fine)').matches) return;
+    const links = Array.from(document.querySelectorAll('a.btn-wa, a.footer-wa'))
+      .filter(a => /^https:\/\/wa\.me\//.test(a.getAttribute('href') || ''));
+    if (!links.length) return;
+
+    let openPop = null;
+    function closePop() {
+      if (!openPop) return;
+      openPop.pop.classList.remove('open');
+      openPop.trigger.setAttribute('aria-expanded', 'false');
+      openPop = null;
+    }
+
+    links.forEach((a) => {
+      const wrap = document.createElement('span');
+      wrap.className = 'wa-qr-wrap';
+      a.insertAdjacentElement('afterend', wrap);
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'wa-qr-trigger';
+      trigger.setAttribute('aria-label', T('qrShow', 'Toon QR-code'));
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v3M14 20h3M20 20v.01"/></svg>';
+
+      const pop = document.createElement('div');
+      pop.className = 'wa-qr-pop';
+      pop.innerHTML =
+        '<button type="button" class="wa-qr-pop-close" aria-label="' + esc(T('qrClose', 'Sluiten')) + '">✕</button>' +
+        '<div class="wa-qr-img"></div>' +
+        '<p class="wa-qr-cap">' + esc(T('qrCaption', 'Scan om dit gesprek op uw telefoon te openen')) + '</p>';
+
+      wrap.append(trigger, pop);
+
+      let built = false;
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openPop && openPop.trigger === trigger) { closePop(); return; }
+        closePop();
+        if (!built) {
+          loadQrLib().then(() => {
+            pop.querySelector('.wa-qr-img').innerHTML = buildWaQrSvg(a.getAttribute('href'));
+            built = true;
+          }).catch(() => {
+            pop.querySelector('.wa-qr-img').textContent = '';
+          });
+        }
+        pop.classList.add('open');
+        trigger.setAttribute('aria-expanded', 'true');
+        openPop = { trigger, pop };
+      });
+      pop.querySelector('.wa-qr-pop-close').addEventListener('click', (e) => { e.stopPropagation(); closePop(); });
+      pop.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    document.addEventListener('click', closePop);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePop(); });
+  }
+
   /* ---------- WhatsApp-tik-bevestiging ----------
      WhatsApp opent in een ander tabblad — een korte ripple vanaf het tikpunt + een even
      oplichtend vinkje maken duidelijk dat de tik geregistreerd is. Tekstloos (universeel icoon),
@@ -2327,6 +2582,9 @@
   initNavIndicator();
   initWhatsappFeedback();
   initKickerNumbers();
+  initTimelineCounter();
+  initWaQr();
+  initCopyButtons();
   initFooterAccordion();
   initMobileCarousels();
 })();

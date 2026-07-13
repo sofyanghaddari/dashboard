@@ -1012,6 +1012,24 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .timeline-item p { color: var(--ink-soft); font-size: .93rem; margin: 0; }
 .timeline-item.is-todo .timeline-year { font-style: italic; opacity: .8; }
 
+/* ── Tel-badge naast de tijdlijn-titel (v19) ──
+   Telt van counterFrom naar counterTo terwijl de lijn zich tekent (initTimelineCounter
+   in main.js) — voelbaar "drie generaties" zonder extra tekst. Puur cijfer, geen layout-
+   impact op de <ol> zelf (staat in de section-head, niet in de lijst). */
+.timeline-counter {
+  display: inline-block;
+  margin-left: .6em;
+  font-family: var(--serif);
+  font-weight: 420;
+  font-size: 1.05em;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-ink);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .5s var(--ease), transform .5s var(--ease);
+}
+.section-head.in .timeline-counter { opacity: .75; transform: none; }
+
 /* ---------- Kwaliteitscijfers ---------- */
 .quality-row { display: grid; gap: 16px; margin-bottom: 14px; }
 @media (min-width: 620px) { .quality-row { grid-template-columns: repeat(3, 1fr); } }
@@ -1725,11 +1743,12 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
 @keyframes mqScroll { to { transform: translateX(-50%); } }
 
 /* ── Olijftak-boog in de CTA-band (v16, gekozen variant D) ──
-   Realistische vector-tak die over de titel welft; entree = zachte fade-in
-   zodra de band in beeld komt. Twee olijven vallen periodiek (olvDrop):
+   Realistische vector-tak die over de titel welft; entree = de tak "tekent
+   zichzelf" van links naar rechts (clip-path-wipe) terwijl hij zacht opkomt
+   (v19: was alleen een fade-in). Twee olijven vallen periodiek (olvDrop):
    loslaten → versnellende vrije val → uitfaden vlak boven de titel → na een
-   poos rijpt er zachtjes een nieuwe aan. Puur transform/opacity; start pas
-   bij .cta-band.in en staat volledig uit bij reduced-motion. */
+   poos rijpt er zachtjes een nieuwe aan. Puur transform/opacity/clip-path;
+   start pas bij .cta-band.in en staat volledig uit bij reduced-motion. */
 .cta-tak {
   width: min(330px, 76vw);
   height: auto;
@@ -1738,9 +1757,11 @@ body.leaving { opacity: 0; transition: opacity .28s var(--ease); }
   overflow: visible;
   opacity: 0;
   transform: translateY(-8px);
-  transition: opacity .9s var(--ease) .15s, transform .9s var(--ease) .15s;
+  clip-path: inset(-40% 100% -40% -4%);
+  transition: opacity .5s var(--ease) .15s, transform .9s var(--ease) .15s,
+              clip-path 1.1s var(--ease) .2s;
 }
-.cta-band.in .cta-tak { opacity: 1; transform: none; }
+.cta-band.in .cta-tak { opacity: 1; transform: none; clip-path: inset(-40% -4% -40% -4%); }
 .cta-tak .olv-drop { transform-box: fill-box; transform-origin: center; }
 .cta-band.in .cta-tak .olv-a { animation: olvDrop 13s linear infinite; }
 .cta-band.in .cta-tak .olv-b { animation: olvDrop 17s linear 6s infinite; }
@@ -2001,7 +2022,7 @@ body.nav-open .site-header { transform: none !important; }
   .kernpunten-row li { opacity: 1; transform: none; transition: none; border-left-color: var(--line); }
   .marquee-track { animation: none; }
   .cta-facts li { opacity: 1; transform: none; transition: none; }
-  .cta-tak { opacity: 1; transform: none; transition: none; }
+  .cta-tak { opacity: 1; transform: none; clip-path: none; transition: none; }
   .cta-tak .olv-drop { animation: none !important; }
   .cta-band::before { animation: none; }
   .cursor-dot, .cursor-ring { display: none !important; }
@@ -2698,4 +2719,210 @@ body.nav-open .site-header { transform: none !important; }
   .ftr-plus { transition: none; }
   .mcar { scroll-behavior: auto; }
   .mcar-dot, .mcar-btn { transition: none; }
+}
+
+/* ============================================================
+   📱 WHATSAPP-QR OP DESKTOP (v19)
+   Klein QR-knopje naast de prominente WhatsApp-knoppen (.btn-wa/.footer-wa),
+   alleen op desktop met een echte muis — daar zit WhatsApp op de telefoon,
+   niet op de pc. Tikken toont een scanbare QR naar diezelfde wa.me-link.
+   ============================================================ */
+.wa-qr-wrap { display: none; }
+@media (min-width: 860px) and (pointer: fine) {
+  .wa-qr-wrap { position: relative; display: inline-block; margin-left: 8px; vertical-align: middle; }
+  .footer-wa + .wa-qr-wrap { display: block; margin: 6px 0 0; }
+}
+.wa-qr-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--olive);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: border-color .2s var(--ease), color .2s var(--ease), transform .15s var(--ease);
+}
+.footer-wa + .wa-qr-wrap .wa-qr-trigger {
+  width: auto;
+  height: auto;
+  border-radius: 999px;
+  padding: 5px 12px 5px 8px;
+  gap: 6px;
+  border-color: rgba(247,245,240,.3);
+  background: transparent;
+  color: rgba(247,245,240,.85);
+}
+.footer-wa + .wa-qr-wrap .wa-qr-trigger::after {
+  content: attr(aria-label);
+  font-size: .78rem;
+  font-weight: 500;
+}
+.wa-qr-trigger svg { width: 16px; height: 16px; flex: none; }
+.wa-qr-trigger:hover { border-color: var(--olive); color: var(--olive-deep); transform: translateY(-1px); }
+.footer-wa + .wa-qr-wrap .wa-qr-trigger:hover { border-color: rgba(247,245,240,.6); color: #fff; }
+
+.wa-qr-pop {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 200px;
+  padding: 16px 16px 14px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 48px rgba(30,30,28,.22);
+  opacity: 0;
+  transform: translateY(6px) scale(.97);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .22s var(--ease), transform .22s var(--ease), visibility .22s;
+}
+.wa-qr-pop.open { opacity: 1; transform: none; visibility: visible; pointer-events: auto; }
+.wa-qr-pop-close {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 22px; height: 22px;
+  border: 0;
+  background: none;
+  color: var(--ink-faint);
+  font-size: .8rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.wa-qr-pop-close:hover { color: var(--ink); background: var(--bg-tint); }
+.wa-qr-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--line) 35%, transparent);
+}
+.wa-qr-img svg { display: block; width: 100%; height: 100%; }
+.wa-qr-cap {
+  margin: 10px 0 0;
+  font-size: .74rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wa-qr-pop { transition: none; }
+  .wa-qr-trigger { transition: none; }
+  .wa-qr-trigger:hover { transform: none; }
+}
+
+/* ============================================================
+   📝 FORMULIER-GEHEUGEN (v19)
+   Melding bovenaan een formulier waarvan een eerder ingevuld concept
+   lokaal is teruggevonden — geen animatie nodig, gewoon vriendelijk zichtbaar.
+   ============================================================ */
+.form-draft-notice {
+  margin: 0 0 18px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--gold) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--gold) 30%, var(--line));
+  font-size: .84rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.form-draft-clear {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-left: 4px;
+  color: var(--gold-ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.form-draft-clear:hover { color: var(--olive-deep); }
+
+/* ============================================================
+   📋 KOPIEERKNOPJE (v19) — KvK, Btw, e-mailadres in colofon/contact
+   ============================================================ */
+.copy-row { display: inline-flex; align-items: center; gap: 6px; }
+.colophon-nums { display: flex; flex-direction: column; gap: 4px; align-items: center; margin-top: 4px; }
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color .2s var(--ease), background .2s var(--ease);
+}
+.copy-btn:hover { color: var(--olive); background: var(--bg-tint); }
+.copy-btn svg { width: 14px; height: 14px; }
+.copy-ic { display: block; }
+.copy-ic-check { display: none; color: var(--olive-soft); }
+.copy-btn.copied .copy-ic-copy { display: none; }
+.copy-btn.copied .copy-ic-check { display: block; }
+
+/* ============================================================
+   🖨️ AFDRUKVERSIE (v19)
+   Een inkoper print het productdossier/de zakelijke pagina écht — schoon
+   zwart-op-wit, zonder navigatie/footer-chrome/CTA-marketing, geen donkere
+   achtergronden die inkt verspillen, geen ingeklapte FAQ-antwoorden.
+   ============================================================ */
+@media print {
+  .site-header, .topbar, .mob-cta, .to-top, .scroll-progress, .cookie-banner,
+  .lightbox, .wa-qr-wrap, .footer-wordmark, .cursor-dot, .cursor-ring,
+  .marquee, .cta-band, .newsletter, .form-progress, .copy-btn,
+  .stack-dots, .lb-nav, .lb-counter, .nav-underline, .skip-link, .footer-socials,
+  .save-actions, .save-qr, .mcar-nav, .form-draft-notice,
+  .btn, a.footer-wa, .wa-chip, .dossier-actions { display: none !important; }
+
+  * { box-shadow: none !important; text-shadow: none !important; }
+  html, body { background: #fff !important; color: #000 !important; font-size: 11pt; }
+  a { color: #000 !important; text-decoration: underline; }
+  .wrap, .wrap-narrow { max-width: 100% !important; padding: 0 !important; }
+  .section, .page-hero { padding: 12px 0 !important; background: none !important; }
+  .card, .quality-tile, .cert-card, .dossier-item, .specs-card, .origin-map {
+    border: 1px solid #ccc !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+  .img-slot { break-inside: avoid; background: none !important; }
+  .img-slot::before { display: none !important; }
+  .site-footer { background: none !important; color: #000 !important; border-top: 1px solid #999; }
+  .site-footer * { color: #000 !important; }
+  h1, h2, h3, .section-title { color: #000 !important; }
+  .kicker, .kicker-no, .timeline-year, .process-num, .quality-value {
+    color: #444 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .reveal, [data-anim], .section-head .section-title, .page-hero h1,
+  .kernpunten-row li, .cta-facts li, .hero-text h1, .hero-text .hero-sub, .hero-text .hero-actions {
+    opacity: 1 !important; transform: none !important; clip-path: none !important;
+  }
+  /* Ingeklapte FAQ-antwoorden alsnog tonen — dichte content op papier is nutteloos */
+  .faq-item, .faq-item > * { display: block !important; height: auto !important; opacity: 1 !important; }
+  .faq-item summary::after { display: none !important; }
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: .8em;
+    font-weight: 400;
+    color: #555 !important;
+  }
+  a[href^="#"]::after, a[href^="mailto:"]::after, a[href^="tel:"]::after,
+  .site-footer a::after, .footer-nav a::after { content: ""; }
+  @page { margin: 16mm 14mm; }
 }

@@ -130,6 +130,12 @@ window.AJAR_CONTENT = {
   /* UI-teksten (v14): foutmeldingen, aria-labels en vaste kopjes — per taal,
      zodat de EN/FR-versie geen Nederlands meer lekt. Gelezen via T() in main.js. */
   ui: {
+    copyLabel: 'Kopiëren',
+    draftRestored: 'Concept hersteld — uw eerder ingevulde gegevens staan weer klaar.',
+    draftClear: 'wis concept',
+    qrShow: 'Toon QR-code',
+    qrCaption: 'Scan om dit gesprek op uw telefoon te openen',
+    qrClose: 'Sluiten',
     prev: 'Vorige',
     next: 'Volgende',
     privacyShort: 'Privacy',
@@ -318,7 +324,11 @@ window.AJAR_CONTENT = {
         { year: 'Jaartal volgt', title: 'ISO 22000-certificering (SGS)', text: 'De productie wordt gecertificeerd volgens ISO 22000 — voedselveiligheid en traceerbaarheid, extern getoetst door SGS.', todo: true },
         { year: '2026', title: 'Eerste officiële import in Nederland', text: 'AJAR komt vanuit Amsterdam voor het eerst officieel op de Nederlandse markt.', todo: false }
       ],
-      note: 'Namen en jaartallen van de generaties worden aangevuld na overleg met de familie.'
+      note: 'Namen en jaartallen van de generaties worden aangevuld na overleg met de familie.',
+      /* Tel-badge naast de tijdlijn (v19): loopt van counterFrom naar counterTo mee met de
+         zelftekenende lijn. Puur decoratief cijfer, geen vertaling nodig (EN/FR erven dit). */
+      counterFrom: 1990,
+      counterTo: 2026
     }
   },
 

@@ -89,6 +89,52 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v19 — Zeven kleine functies vanuit inkoper-perspectief (13 juli 2026)
+
+Op vraag van Soef: een lijst van 15 animatie-/functie-suggesties voorgelegd, hij koos er 8
+(#4/5/6/7/9/10/13/14). Alles gebouwd en geverifieerd (Playwright headless + echte QR-decode via
+`zbarimg`), geen van de bestaande, al goedgekeurde features aangeraakt.
+
+- **CTA-tak zelf-tekenende entree:** de olijftak-boog in de CTA-band (v16, blijft ongewijzigd qua
+  SVG) krijgt nu een `clip-path`-wipe erbij zodra de sectie in beeld scrollt — de tak "tekent
+  zichzelf" in plaats van alleen te faden. Geen wijziging aan de SVG zelf, dus geen risico op de
+  eerder afgeronde vallende-olijven-animatie.
+- **Tel-moment op de tijdlijn (Over ons):** het jaartal 1990 telt op naar 2026 zodra de tijdlijn-
+  sectie in beeld komt (`.timeline-counter`, `counterFrom`/`counterTo` in `content.js`). Als
+  sibling van `<ol class="timeline">` geplaatst (niet erin — anders ongeldige HTML).
+- **WhatsApp-QR op desktop:** desktop-bezoekers hebben WhatsApp op hun telefoon, niet op hun pc —
+  naast elke WA-knop (hero-CTA + footer) een "Toon QR-code"-trigger die een echte scanbare QR
+  rendert (SVG, geen `<img>`/canvas). QR-encoding = lokaal gevendorde
+  `js/vendor/qrcode.js` (davidshimjs/qrcodejs, MIT, wrapt Kazuhiko Arase's QR Code Model 2),
+  lazy geladen bij eerste klik — geen CDN, geen extra gewicht voor wie 'm niet gebruikt.
+  **Echt geverifieerd, niet alleen visueel:** gegenereerde QR's (NL/FR voorgevulde WhatsApp-tekst
+  + kale nummer-link) gedecodeerd met `zbarimg` — byte-exacte round-trip, inclusief de uiteindelijk
+  op de pagina gerenderde versie.
+- **Formulier-geheugen:** sample-, contact- en presentatie-formulier bewaren hun invoer live in
+  localStorage (debounced) en herstellen 'm bij een volgende bezoek — met een melding + "wis
+  concept"-link, en automatisch gewist na succesvolle verzending. AVG-veilig: het zijn dezelfde
+  gegevens die de bezoeker toch al op het punt stond te versturen, puur client-side.
+- **Kopieerknopjes zakelijke gegevens:** KvK, btw-nummer en e-mailadres (colofon + contactblok)
+  krijgen een kopieer-icoon — een inkoper typt deze gegevens toch over naar zijn eigen
+  crediteurenadministratie, dan is klikken sneller dan selecteren.
+- **Print-stylesheet productpagina (en de rest van de site):** inkoopafdelingen printen dit soort
+  B2B-dossiers daadwerkelijk uit. `@media print`-blok verbergt nav/footer-chrome/knoppen, forceert
+  zwart-wit met kaderlijnen om kaarten, klapt FAQ-`<details>` open, en zet de URL achter elke link
+  (`a[href]::after`) zodat een geprinte pagina nog bruikbaar is zonder de site erbij.
+- **Breadcrumb structured data:** `BreadcrumbList` JSON-LD toegevoegd aan `injectJsonLd()` voor
+  elke pagina behalve home (met expliciete fallback-namen voor sample/privacy/voorwaarden, die niet
+  in `C.nav` staan) — kan een breadcrumb-pad opleveren in Google-resultaten.
+- **#13 (eigen 404-pagina) bleek al gebouwd** — een eerdere sessie (commit 9eb8d9e, 3 juli 2026)
+  had `404.html` al volledig AJAR-gebrand. De oorspronkelijke suggestie was gebaseerd op een
+  onvolledige check (alleen bestandsnaam, niet inhoud); geen wijziging nodig, niet dubbel gebouwd.
+
+Geverifieerd: alle 7 functies end-to-end getest in headless Chromium (QR-decode met zbarimg,
+clipboard-permissies voor copy-knoppen, localStorage-cyclus voor formulier-geheugen inclusief wis,
+print-media-emulatie voor de stylesheet, JSON-LD-parse voor de breadcrumbs) — geen JS-fouten,
+geen regressie op bestaande features.
+
+---
+
 ### v18 — Footer-logo: origineel behouden, wit, zónder de olijf-slagschaduw (12 juli 2026)
 
 Iteratie in drie stappen: (1) footer-olijfje eerst hertekend als eigen inline-SVG — Soef wilde

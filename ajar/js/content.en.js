@@ -69,6 +69,12 @@ window.AJAR_CONTENT_EN = {
   ctaFacts: ['Free and without obligation', 'From a single box', 'Direct contact with the importer'],
 
   ui: {
+    copyLabel: 'Copy',
+    draftRestored: 'Draft restored — your previously entered details are back.',
+    draftClear: 'clear draft',
+    qrShow: 'Show QR code',
+    qrCaption: 'Scan to open this chat on your phone',
+    qrClose: 'Close',
     prev: 'Previous',
     next: 'Next',
     privacyShort: 'Privacy',
