@@ -1,7 +1,7 @@
 /* ============================================================
    AJAR — gedeelde site-logica.
    Rendert header, footer en pagina-inhoud uit js/content.js.
-   Regelt: cookiebanner + GA4 (alleen ná toestemming),
+   Regelt: bezoekersstatistieken (GoatCounter, cookieless),
    Formspree-formulieren met honeypot en WhatsApp-fallback,
    structured data (JSON-LD) en subtiele scroll-reveals.
    ============================================================ */
@@ -13,7 +13,6 @@
   if (!C) return;
   const cfg = C.config;
   const page = document.body.dataset.page || 'home';
-  const CONSENT_KEY = 'ajarCookieConsent'; // 'granted' | 'denied'
 
   /* ---------- Helpers ---------- */
 
@@ -70,11 +69,17 @@
 
   /* Vervangbare beeld-slot: toont de foto uit assets/images/ zodra die bestaat,
      anders een rustige olijfgroen/goud gradient-placeholder met de bestandsnaam. */
+  /* WebP-pad voor een foto uit assets/images/ (v21) — imgSrc() geeft altijd de .webp-variant
+     terug; wireImgSlots() valt automatisch terug op de .jpg als die .webp niet bestaat (bv. een
+     handmatig toegevoegde foto waarvoor nog geen WebP gemaakt is — geen build-stap, dus dit moet
+     zonder een aparte "welke foto's hebben een webp"-lijst werken). */
+  const webpOf = (file) => file.replace(/\.jpe?g$/i, '.webp');
+
   function imgSlot(file, alt, cls, eager) {
     if (!file) return '';
     const load = eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
     return '<figure class="img-slot ' + (cls || '') + '" data-file="' + esc(file) + '">' +
-      '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" decoding="async" ' + load + ' data-err-class="empty">' +
+      '<img src="assets/images/' + esc(webpOf(file)) + '" data-fallback="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" decoding="async" ' + load + ' data-err-class="empty">' +
       '<span class="img-slot-note">' + esc(T('photoFollows', 'Foto volgt')) + ' · ' + esc(file) + '</span>' +
       '</figure>';
   }
@@ -82,14 +87,22 @@
   /* Koppelt load/error aan elke .img-slot img via addEventListener i.p.v. inline onload/onerror
      (v20) — een strikte CSP zonder 'unsafe-inline' voor script-src blokkeert inline event-
      handler-attributen. img.complete vangt het geval dat de afbeelding al klaar was (cache)
-     vóórdat deze functie draait. */
+     vóórdat deze functie draait. Faalt de .webp (v21), dan probeert err() eerst de .jpg-
+     fallback vóórdat de lege placeholder-staat wordt getoond. */
   function wireImgSlots() {
     document.querySelectorAll('.img-slot img').forEach((img) => {
       if (img.dataset.wired) return;
       img.dataset.wired = '1';
       const errClass = img.dataset.errClass || 'empty';
       const ok = () => img.classList.add('imgok');
-      const err = () => { const slot = img.closest('.img-slot'); if (slot) slot.classList.add(errClass); img.remove(); };
+      const err = () => {
+        if (img.dataset.fallback && img.src !== new URL(img.dataset.fallback, location.href).href) {
+          img.src = img.dataset.fallback;
+          return;
+        }
+        const slot = img.closest('.img-slot'); if (slot) slot.classList.add(errClass);
+        img.remove();
+      };
       img.addEventListener('load', ok);
       img.addEventListener('error', err);
       if (img.complete) { if (img.naturalWidth > 0) ok(); else err(); }
@@ -341,16 +354,7 @@
       '<div class="wrap footer-bottom">' +
         '<span>© ' + new Date().getFullYear() + ' ' + esc(cfg.brandName) + ' · ' + esc(cfg.tagline) +
           (f.rightsLine ? ' · ' + esc(f.rightsLine) : '') + '</span>' +
-        /* Cookie-voorkeuren opnieuw kiezen — alleen zinvol als er iets te kiezen valt (GA aan) */
-        (cfg.gaId ? '<button type="button" class="footer-link-btn" id="cookie-prefs">' + esc(f.cookiePrefsLabel) + '</button>' : '') +
       '</div>';
-
-    const prefs = document.getElementById('cookie-prefs');
-    if (prefs) prefs.addEventListener('click', () => {
-      try { localStorage.removeItem(CONSENT_KEY); } catch (e) {}
-      document.querySelectorAll('.cookie-banner').forEach(el => el.remove());
-      initConsent();
-    });
   }
 
   /* Nieuwsbrief-inschrijving in de footer (zelfde Formspree→mailto-fallback als de formulieren). */
@@ -404,7 +408,7 @@
   /* Procesbeeld: toont de foto zodra die er is, anders een net gouden line-icoon (geen kale placeholder) */
   function processMedia(file, icon, alt) {
     return '<figure class="img-slot img-step proc-media" data-file="' + esc(file) + '">' +
-      (file ? '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" loading="lazy" data-err-class="noimg">' : '') +
+      (file ? '<img src="assets/images/' + esc(webpOf(file)) + '" data-fallback="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" loading="lazy" data-err-class="noimg">' : '') +
       '<span class="proc-icon">' + stepIcon(icon) + '</span>' +
       '</figure>';
   }
@@ -1557,53 +1561,28 @@
     });
   }
 
-  /* ---------- Cookiebanner + Google Analytics (GA4, alleen ná toestemming) ---------- */
+  /* ---------- Bezoekersstatistieken (GoatCounter, v21) ----------
+     Vervangt Google Analytics 4. GoatCounter plaatst geen cookies en slaat niets op het
+     apparaat van de bezoeker op (de bezoekersteller draait server-side op een dagelijks
+     geroteerde hash van IP+user-agent, geen persistente identifier) — daarom is er geen
+     toestemming/cookiebanner nodig en is die hier bewust verwijderd. Naam gaEvent() bleef
+     staan (25+ data-ga-event-attributen elders verwijzen ernaar) maar stuurt nu naar
+     GoatCounter's event-API i.p.v. gtag. */
 
   function gaEvent(name, params) {
-    if (typeof window.gtag === 'function') window.gtag('event', name, params || {});
+    if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+      window.goatcounter.count({ path: name, title: name, event: true });
+    }
   }
 
-  function loadGA() {
-    if (!cfg.gaId || window.gtag) return;
+  function loadAnalytics() {
+    if (!cfg.goatcounterCode || document.getElementById('gc-script')) return;
     const s = document.createElement('script');
+    s.id = 'gc-script';
     s.async = true;
-    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(cfg.gaId);
+    s.setAttribute('data-goatcounter', 'https://' + encodeURIComponent(cfg.goatcounterCode) + '.goatcounter.com/count');
+    s.src = 'https://gc.zgo.at/count.js';
     document.head.appendChild(s);
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function () { window.dataLayer.push(arguments); };
-    window.gtag('js', new Date());
-    // UTM-parameters (?utm_source=… van QR-codes) pikt GA4 automatisch op uit de URL
-    window.gtag('config', cfg.gaId, { anonymize_ip: true });
-  }
-
-  function initConsent() {
-    if (!cfg.gaId) return; // geen GA-ID → niets te meten, geen banner nodig
-
-    let choice = null;
-    try { choice = localStorage.getItem(CONSENT_KEY); } catch (e) {} /* v15: geblokkeerde storage mag de boot niet breken */
-    if (choice === 'granted') { loadGA(); return; }
-    if (choice === 'denied') return;
-
-    const k = C.cookies;
-    const el = document.createElement('div');
-    el.className = 'cookie-banner';
-    el.setAttribute('role', 'dialog');
-    el.setAttribute('aria-label', 'Cookies');
-    el.innerHTML =
-      '<p>' + esc(k.text) + ' <a href="privacy.html">' + esc(k.moreLabel) + '</a></p>' +
-      '<div class="cookie-actions">' +
-        '<button class="btn btn-primary" id="ck-accept">' + esc(k.accept) + '</button>' +
-        '<button class="btn btn-ghost" id="ck-decline">' + esc(k.decline) + '</button>' +
-      '</div>';
-    document.body.appendChild(el);
-    el.querySelector('#ck-accept').addEventListener('click', () => {
-      try { localStorage.setItem(CONSENT_KEY, 'granted'); } catch (e) {}
-      el.remove(); loadGA();
-    });
-    el.querySelector('#ck-decline').addEventListener('click', () => {
-      try { localStorage.setItem(CONSENT_KEY, 'denied'); } catch (e) {}
-      el.remove();
-    });
   }
 
   /* Eventtracking op alle CTA's/knoppen met data-ga-event (werkt pas na consent) */
@@ -2577,7 +2556,7 @@
   initContactForm();
   initSampleForm();
   initPresentationForm();
-  initConsent();
+  loadAnalytics();
   injectJsonLd();
   initReveal();
   initCountUp();

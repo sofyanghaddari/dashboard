@@ -13,7 +13,7 @@ window.AJAR_CONTENT = {
     tagline: 'Extra vierge olijfolie',
     payoff: 'Extra vierge olijfolie, rechtstreeks uit Marokko.',
 
-    gaId: '',                                 // TODO: GA4 measurement ID (bijv. 'G-XXXXXXXXXX') — leeg = GA uit, banner verborgen
+    goatcounterCode: '',                      // TODO: GoatCounter site-code (gratis account op goatcounter.com, geen creditcard — de code is het deel vóór ".goatcounter.com" in je dashboard-URL). Leeg = geen statistieken, geen script geladen. Cookieless, dus geen toestemmingsbanner nodig.
     formspreeId: 'mbdvnykk',                  // Formspree form-ID — formulieren versturen nu direct i.p.v. mailto/WhatsApp-fallback
     email: 'sofyanghaddari@gmail.com',        // zakelijk e-mailadres (voorlopig); formulieren mailen hierheen + zichtbaar in footer/contact
     whatsappNumber: '31640293567',            // internationaal formaat zonder + of spaties
@@ -180,13 +180,6 @@ window.AJAR_CONTENT = {
   },
 
   /* ---------- Cookiebanner ---------- */
-  cookies: {
-    text: 'We gebruiken anonieme bezoekersstatistieken (Google Analytics) om te zien hoe de site wordt gebruikt. U kiest zelf of u dat goed vindt.',
-    accept: 'Accepteren',
-    decline: 'Weigeren',
-    moreLabel: 'Privacyverklaring'
-  },
-
   /* ---------- Home ----------
      Verbeterronde (juli 2026): homepage teruggebracht naar MAX 4 secties — hero, 3 kernpunten,
      1 beeldsectie, slot-CTA. Alle verdieping (familieverhaal, ISO 22000, cultivar, werkwijze, FAQ)
@@ -794,7 +787,7 @@ window.AJAR_CONTENT = {
       title: 'Privacyverklaring',
       sub: 'Kort en duidelijk: welke gegevens we verwerken en waarom.'
     },
-    updated: 'Laatst bijgewerkt: 10 juli 2026',
+    updated: 'Laatst bijgewerkt: 13 juli 2026',
     sections: [
       {
         title: 'Wie is verantwoordelijk?',
@@ -802,7 +795,7 @@ window.AJAR_CONTENT = {
       },
       {
         title: 'Welke gegevens verzamelen we?',
-        body: 'Drie soorten. (1) Formuliergegevens: als u een sample, offerte of presentatie aanvraagt, ontvangen we de gegevens die u zelf invult — naam, bedrijfsnaam, e-mailadres, telefoonnummer, bezorgadres en uw bericht. (2) Nieuwsbrief: als u zich inschrijft, bewaren we alleen uw e-mailadres. (3) Bezoekersstatistieken: alléén als u dat accepteert via de cookiemelding, gebruiken we Google Analytics 4 om anoniem te zien hoe de site wordt gebruikt (bezochte pagina’s, herkomst van het bezoek). IP-adressen worden daarbij geanonimiseerd. Weigert u, dan wordt er niets gemeten.'
+        body: 'Drie soorten. (1) Formuliergegevens: als u een sample, offerte of presentatie aanvraagt, ontvangen we de gegevens die u zelf invult — naam, bedrijfsnaam, e-mailadres, telefoonnummer, bezorgadres en uw bericht. (2) Nieuwsbrief: als u zich inschrijft, bewaren we alleen uw e-mailadres. (3) Bezoekersstatistieken: we gebruiken GoatCounter, een privacyvriendelijke statistiekendienst die geen cookies plaatst en geen persoonsgegevens verzamelt, om anoniem te zien hoe de site wordt gebruikt (bezochte pagina’s, herkomst van het bezoek). Er wordt niets op uw apparaat opgeslagen, dus hiervoor is geen toestemming nodig.'
       },
       {
         title: 'Waarvoor gebruiken we die gegevens?',
@@ -810,11 +803,11 @@ window.AJAR_CONTENT = {
       },
       {
         title: 'Hoe lang bewaren we gegevens?',
-        body: 'Aanvragen bewaren we zolang dat nodig is voor het contact en maximaal 2 jaar na het laatste contactmoment, tenzij er een klantrelatie ontstaat (dan gelden de wettelijke administratietermijnen, zoals de fiscale bewaarplicht van 7 jaar voor facturen). Nieuwsbrief-adressen bewaren we tot u zich uitschrijft. Analytics-gegevens worden maximaal 14 maanden bewaard.'
+        body: 'Aanvragen bewaren we zolang dat nodig is voor het contact en maximaal 2 jaar na het laatste contactmoment, tenzij er een klantrelatie ontstaat (dan gelden de wettelijke administratietermijnen, zoals de fiscale bewaarplicht van 7 jaar voor facturen). Nieuwsbrief-adressen bewaren we tot u zich uitschrijft. Bezoekersstatistieken via GoatCounter zijn nooit tot een individuele bezoeker te herleiden — er is dus geen bewaartermijn die op een persoon betrekking heeft.'
       },
       {
         title: 'Wie verwerken er gegevens voor ons?',
-        body: 'De formulieren worden technisch verwerkt door Formspree; statistieken door Google (Google Analytics 4, alleen na uw toestemming). Met deze partijen gelden verwerkersvoorwaarden. De website wordt gehost op GitHub Pages (GitHub, Inc.); zoals bij elke webserver kan de hostingpartij daarbij tijdelijk technische loggegevens zoals IP-adressen verwerken. Lettertypen en alle andere onderdelen van de site laden we vanaf onze eigen hosting — daarvoor gaan geen gegevens naar externe partijen. Stuurt u een WhatsApp-bericht, dan gelden de voorwaarden van WhatsApp.'
+        body: 'De formulieren worden technisch verwerkt door Formspree; bezoekersstatistieken door GoatCounter. Met deze partijen gelden verwerkersvoorwaarden. De website wordt gehost op GitHub Pages (GitHub, Inc.); zoals bij elke webserver kan de hostingpartij daarbij tijdelijk technische loggegevens zoals IP-adressen verwerken. Lettertypen en alle andere onderdelen van de site laden we vanaf onze eigen hosting — daarvoor gaan geen gegevens naar externe partijen. Stuurt u een WhatsApp-bericht, dan gelden de voorwaarden van WhatsApp.'
       },
       {
         title: 'Uw rechten',
@@ -822,7 +815,7 @@ window.AJAR_CONTENT = {
       },
       {
         title: 'Cookies',
-        body: 'Deze site plaatst alleen cookies voor Google Analytics, en alléén nadat u daarvoor toestemming heeft gegeven via de cookiemelding. Uw keuze wordt lokaal in uw browser opgeslagen. U kunt uw keuze op elk moment aanpassen via de link "Cookie-voorkeuren" onderaan de site, of door de sitegegevens in uw browser te wissen. Zonder toestemming plaatst de site geen enkele cookie.'
+        body: 'Deze site plaatst geen enkele trackingcookie — ook onze statistiekendienst (GoatCounter) werkt zonder cookies. De enige gegevens die lokaal in uw browser worden opgeslagen zijn functioneel en blijven op uw eigen apparaat: uw taalkeuze, en als u een formulier halverwege invult, een concept van uw eigen invoer zodat u dat niet kwijtraakt. Die gegevens worden nergens naartoe verstuurd.'
       },
       {
         title: 'Beveiliging',
@@ -953,7 +946,6 @@ window.AJAR_CONTENT = {
     aboutLine: 'AJAR — extra vierge olijfolie uit Marokko. Rechtstreeks geïmporteerd voor de Nederlandse horeca, delicatessenzaak en retail.',
     privacyLabel: 'Privacyverklaring',
     termsLabel: 'Algemene voorwaarden',
-    cookiePrefsLabel: 'Cookie-voorkeuren',
     rightsLine: 'Alle rechten voorbehouden',
     socials: [
       /* Later invullen — leeg = niet getoond. Voorbeeld: { label:'Instagram', href:'https://instagram.com/…' } */

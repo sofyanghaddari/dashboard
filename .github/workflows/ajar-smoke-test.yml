@@ -1,0 +1,50 @@
+name: AJAR smoke-test
+
+# Laadt alle AJAR-pagina's + de gedeelde 404.html headless bij elke wijziging en faalt
+# zodra er iets kapot is: JS-fouten, CSP-violations, een foto-slot die vastloopt, of een
+# offerteformulier dat niet meer client-side valideert. Er is geen build-stap voor deze
+# statische site, dus dit is het enige vangnet vóór een vergissing live staat op
+# GitHub Pages. Zie ajar/tools/smoke-test.mjs voor de daadwerkelijke checks.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ajar/**'
+      - '404.html'
+      - '.github/workflows/ajar-smoke-test.yml'
+  pull_request:
+    paths:
+      - 'ajar/**'
+      - '404.html'
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Playwright + Chromium installeren
+        run: |
+          npm install playwright@1
+          npx playwright install --with-deps chromium
+
+      - name: Site serveren onder /dashboard/ (zoals GitHub Pages)
+        run: |
+          mkdir -p /tmp/pages-mirror
+          ln -s "$GITHUB_WORKSPACE" /tmp/pages-mirror/dashboard
+          cd /tmp/pages-mirror && python3 -m http.server 8000 &
+          for i in $(seq 1 20); do
+            curl -sf -o /dev/null http://localhost:8000/dashboard/ajar/index.html && break
+            sleep 0.5
+          done
+
+      - name: Smoke-test draaien
+        env:
+          SMOKE_BASE_URL: http://localhost:8000/dashboard
+        run: node ajar/tools/smoke-test.mjs

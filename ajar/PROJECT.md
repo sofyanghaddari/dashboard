@@ -89,6 +89,68 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v21 — GoatCounter i.p.v. GA4, foto's als WebP, CI-smoke-test, monitoring (13 juli 2026)
+
+Op verzoek van Soef ("doe alles wat handig is") na een ronde algemene-verbetersuggesties. Vier
+dingen gebouwd:
+
+- **Analytics: Google Analytics 4 → GoatCounter.** GA4 stond toch nog leeg (`gaId: ''`, nooit
+  ingevuld) en vereiste een cookiebanner; GoatCounter is gratis, plaatst geen cookies en verzamelt
+  geen persoonsgegevens (de bezoekersteller draait server-side op een dagelijks geroteerde
+  IP+UA-hash, niets op het apparaat van de bezoeker) — dus **de cookiebanner is volledig
+  verwijderd**, niet alleen verborgen (CSS/JS/content voor `.cookie-banner`, `initConsent()`,
+  `CONSENT_KEY`, de footer-"Cookie-voorkeuren"-knop en de bijbehorende content-sleutels
+  weggehaald). Nieuw config-veld `goatcounterCode` in `content.js` (leeg = niets geladen, zelfde
+  patroon als `gaId` had). `gaEvent()`/`loadGA()` blijven qua functienaam bestaan (25+
+  `data-ga-event`-attributen verspreid over main.js verwijzen ernaar) maar sturen nu naar
+  GoatCounter's event-API i.p.v. gtag — zie de code-comment bij de definitie. CSP `script-src`/
+  `connect-src` bijgewerkt naar `gc.zgo.at`/`*.goatcounter.com`. **Privacyverklaring herschreven**
+  in alle 3 talen (NL/EN/FR): de cookies-sectie legt nu uit dat er geen enkele trackingcookie
+  meer geplaatst wordt, en dat de enige lokale opslag functioneel is (taalkeuze +
+  formulier-geheugen uit v19, blijft op het apparaat). README + LANCERING-CHECKLIST.md
+  bijgewerkt.
+- **Foto's: WebP met JPG-fallback.** `imgSlot()`/`processMedia()` laden nu eerst
+  `assets/images/NAAM.webp`; faalt die (bv. een net toegevoegde foto zonder webp-versie), dan
+  schakelt de al-bestaande foutafhandeling (`wireImgSlots()`, v20) automatisch over op de
+  `.jpg` — geen `<picture>/<source>` nodig (die kiest vóór het laden op MIME-support, niet op of
+  het bestand echt bestaat, en zou dus een 404'ende webp nooit naar jpg terugvallen). Alle 15
+  daadwerkelijk gebruikte foto's kregen een `.webp`-versie (Pillow, kwaliteit 78, één uitzondering
+  op 65 voor een korrelige foto die anders groter uitpakte dan het jpg-origineel); drie foto's die
+  extreem groot waren zijn ook teruggeschaald naar max 1600px lange zijde vóór het webp'en.
+  **Correctie tijdens het werk:** in een eerste, te haastige pas had ik ook `hero-01.jpg`,
+  `story-02.jpg` en `stock-hero-orchard.jpg` verkleind — bleken bij nader inzien drie bewust
+  losgekoppelde "wees-bestanden" te zijn (nul keer gerefereerd in `content.js`, expliciet
+  gedocumenteerd in LANCERING-CHECKLIST.md C4 als "bewaren-of-weg, Soefs keuze"). Teruggezet naar
+  hun originele, ongewijzigde bytes — geen enkele diff op die drie bestanden in de commit. Les:
+  bestandsgrootte op disk zegt niets over paginagewicht als een bestand nergens gerefereerd wordt;
+  altijd eerst controleren of iets daadwerkelijk geladen wordt vóórdat je het "optimaliseert".
+  Netto resultaat op de 15 échte site-foto's: ~8,4 MB aan JPG → ~3,2 MB aan WebP wat browsers nu
+  daadwerkelijk laden.
+- **CI-smoke-test.** Nieuw `.github/workflows/ajar-smoke-test.yml` (push naar main + PR's die
+  `ajar/`/`404.html` raken) draait `ajar/tools/smoke-test.mjs`: laadt alle 9 pagina's + de
+  gedeelde 404.html headless onder een `/dashboard/`-subpath-mirror (zelfde layout als GitHub
+  Pages — anders 404'en de absolute `/dashboard/...`-paden in `404.html` in een lokale test),
+  scrollt om lazy-loaded foto's te forceren, en faalt op: JS-console-fouten, CSP-violations, een
+  HTTP-fout op wat dan ook behalve de bekende webp→jpg-fallbackketen voor nog-ontbrekende foto's,
+  een foto-slot dat noch de foto noch de placeholder-staat bereikt, of een offerteformulier
+  waarvan de client-side validatie of de tijdvak-chips (v19) kapot zijn. Getest op zowel het
+  groene pad als een opzettelijk kapotgemaakte CSS-link (ving de fout correct af) vóórdat het de
+  repo in ging. Er is geen build-stap voor deze site, dus dit is het enige vangnet vóór een
+  vergissing live staat.
+- **Uptime-monitoring + domein-CSP-notitie in README.** Stappenplan voor een gratis UptimeRobot-
+  monitor (README, geen code — vereist een account dat ik niet voor Soef kan aanmaken) + een regel
+  bij de bestaande domein-koppel-sectie dat de CSP (v20) bij een domeinwissel niet aangepast hoeft
+  te worden (gebruikt overal `'self'`, geen hardcoded domeinnaam).
+
+Geverifieerd: smoke-test lokaal groen op alle 10 pagina's (met een subpath-mirror-server die de
+GitHub Pages-layout nabootst) én bewezen dat hij een echte breuk (verwijderde CSS-link) correct
+laat falen; alle 15 geoptimaliseerde foto's handmatig gecontroleerd op zowel de webp-laadpad als
+de jpg-fallback; privacyverklaring in 3 talen doorgelezen op consistentie met de nieuwe
+GoatCounter-opzet; git diff gecontroleerd om te bevestigen dat de 3 wees-foto's ongewijzigd
+teruggezet zijn.
+
+---
+
 ### v20 — Content-Security-Policy + tijdvak-chips (13 juli 2026)
 
 Op verzoek van Soef een beveiligingsronde: volledige doorlichting op XSS/injectie, dataverlies en

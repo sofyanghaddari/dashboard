@@ -10,7 +10,7 @@ Alle teksten, contactgegevens en instellingen staan in `js/content.js`. De pagin
 | Sleutel | Wat | Status |
 |---|---|---|
 | `brandName` | Merknaam — wijzigt overal in één keer | AJAR |
-| `gaId` | GA4 measurement-ID (`G-XXXXXXXXXX`). Leeg = geen tracking én geen cookiebanner | **TODO** |
+| `goatcounterCode` | GoatCounter site-code (gratis, geen creditcard). Leeg = geen tracking geladen | **TODO** |
 | `formspreeId` | Formspree form-ID. Leeg = formulieren vallen netjes terug op WhatsApp met voorgevuld bericht | ✅ ingesteld |
 | `email` | Zakelijk e-mailadres. Leeg = nergens getoond, WhatsApp is primair kanaal | **TODO** |
 | `kvk` | KvK-nummer (footer toont "volgt" zolang leeg) | **TODO** |
@@ -52,12 +52,15 @@ Zet JPG's met de juiste bestandsnaam in `assets/images/` — zie `assets/images/
 2. Het form-ID (het deel achter `/f/`, bijv. `xqkrgwyz`) invullen bij `formspreeId` in `content.js`.
 3. Klaar — beide formulieren (offerte/sample + presentatie-aanvraag) posten er dan naartoe, met honeypot-antispamveld. Zonder ID openen ze WhatsApp met de ingevulde gegevens als bericht.
 
-## Google Analytics (GA4) instellen
+## Bezoekersstatistieken (GoatCounter) instellen
 
-1. GA4-property aanmaken → measurement-ID (`G-…`) bij `gaId` in `content.js`.
-2. GA laadt **alleen na "Accepteren"** in de cookiebanner (AVG). Bij "Weigeren" wordt niets geladen of gemeten.
-3. Events die al klaarstaan: `sample_cta_click`, `offerte_cta_click`, `offerte_aanvraag`, `specsheet_download`, `presentatie_aanvraag`, `whatsapp_click`.
-4. QR-codes: gebruik UTM-parameters, bijv. `…/ajar/?utm_source=visitekaartje` of `?utm_source=taxi-sample` — GA4 pikt die automatisch op, geen extra werk.
+Sinds v21 gebruikt de site **GoatCounter** in plaats van Google Analytics: gratis, geen cookies, geen persoonsgegevens — daarom is er ook geen cookiebanner meer (die is verwijderd, niet alleen verborgen).
+
+1. Gratis account op [goatcounter.com](https://www.goatcounter.com/) → kies een site-code (dat wordt `CODE.goatcounter.com`).
+2. De code (zonder `.goatcounter.com`) invullen bij `goatcounterCode` in `content.js`.
+3. Klaar — het script laadt vanaf dat moment op elke pagina, geen consent-stap nodig.
+4. Events die al klaarstaan (via `data-ga-event`, verstuurd als GoatCounter-"events"): `sample_cta_click`, `offerte_cta_click`, `offerte_aanvraag`, `specsheet_download`, `presentatie_aanvraag`, `whatsapp_click`.
+5. QR-codes: gebruik UTM-parameters, bijv. `…/ajar/?utm_source=visitekaartje` of `?utm_source=taxi-sample` — GoatCounter toont de referrer/campagne in het "Pages"-overzicht.
 
 ## Spec-sheet-PDF hergenereren
 
@@ -85,13 +88,40 @@ Claude Code-sessie ("hergenereer de bedrijfspresentatie").
 4. In GitHub Settings → Pages: custom domain invullen + **Enforce HTTPS** aanvinken (kan pas na DNS-propagatie).
 5. Daarna bijwerken: `domain` in `content.js`, en per HTML-pagina de `og:url`/`og:image`-tags én de `<link rel="canonical">` in de head (alle pagina's), plus `sitemap.xml` en `robots.txt`. Genereer ook de **QR-code opnieuw** (`assets/qr-site.svg`) zodat die naar het nieuwe domein wijst (bijv. met een `qrcode`-tool of vraag het in een Claude Code-sessie).
 
-Alle interne links zijn relatief, dus de site werkt ongewijzigd op beide domeinen.
+Alle interne links zijn relatief, dus de site werkt ongewijzigd op beide domeinen. De
+**Content-Security-Policy** (`<meta http-equiv="Content-Security-Policy">` in elke pagina-head,
+v20) hoeft bij een domeinwissel **niet** aangepast te worden — die verwijst naar het eigen domein
+altijd als `'self'`, nooit hardcoded naar `sofyanghaddari.github.io`.
 
 ## SEO-notities
 
 - `robots.txt` en `sitemap.xml` staan in deze map; op een *project*-site (github.io/dashboard/ajar/) leest Google robots.txt niet vanaf de domein-root — volledig effectief worden ze pas op het custom domein (eigen repo, stap hierboven).
 - OG-tags (voor mooie WhatsApp-previews) staan per pagina in de HTML-head met absolute URL's — bij domeinwissel dus even mee-updaten (zie stap 5 hierboven).
 - Structured data (Organization + Product) wordt door `main.js` uit `content.js` gegenereerd.
+
+## Site online houden (uptime-monitoring)
+
+GitHub Pages heeft al eens gehaperd (zie PROJECT.md v30). Een gratis externe monitor waarschuwt je
+zodra de site plat ligt — GitHub Pages meldt dat zelf niet.
+
+1. Gratis account op [uptimerobot.com](https://uptimerobot.com/) (geen creditcard).
+2. **+ New Monitor** → HTTP(s) → URL `https://sofyanghaddari.github.io/dashboard/ajar/` → interval
+   5 minuten (gratis plan).
+3. Onder **Alert Contacts**: je eigen e-mail (en optioneel de UptimeRobot-app voor push op je
+   telefoon) toevoegen aan de monitor.
+4. Klaar — je krijgt een melding zodra de site niet meer bereikbaar is (of weer online komt).
+
+Voeg na een domeinwissel een tweede monitor toe voor het nieuwe domein (of pas de URL van de
+bestaande monitor aan) — anders bewaakt hij straks een adres dat niemand meer gebruikt.
+
+## Automatische smoke-test (CI)
+
+`.github/workflows/ajar-smoke-test.yml` draait bij elke push naar `main` die `ajar/` of
+`404.html` raakt (en op elke pull request): laadt alle 9 pagina's + de 404-pagina headless en
+faalt zodra er iets kapot is (JS-fouten, CSP-violations, een vastgelopen foto-slot, een
+offerteformulier dat niet meer client-side valideert). Zie `ajar/tools/smoke-test.mjs` voor de
+checks zelf — ook lokaal te draaien (`node ajar/tools/smoke-test.mjs` met een lokale server via
+`SMOKE_BASE_URL`) vóórdat je pusht.
 
 ## Vervolgstappen (bewust buiten v1)
 

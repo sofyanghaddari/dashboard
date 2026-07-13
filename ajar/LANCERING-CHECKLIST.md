@@ -13,14 +13,14 @@
 |---|---|
 | 9 pagina's: Home, Over ons, Product, Kennis, Zakelijk, Contact, Sample, Privacy, **Algemene voorwaarden (nieuw)** | ✅ |
 | Alle teksten geschreven (geen lorem ipsum, geen verzonnen productdata) | ✅ |
-| Privacyverklaring (AVG-compleet: formulieren, nieuwsbrief, GA4, hosting, rechten, cookies) | ✅ |
+| Privacyverklaring (AVG-compleet: formulieren, nieuwsbrief, GoatCounter, hosting, rechten, cookies) | ✅ |
 | Algemene voorwaarden B2B (14 artikelen, gewone taal, incl. intellectueel eigendom) | ✅ — *wel punt C1 checken* |
-| Cookiebanner + GA4 pas ná toestemming + cookie-voorkeuren aanpasbaar (footer-link) | ✅ |
+| Bezoekersstatistieken via GoatCounter (cookieless — geen toestemmingsbanner meer nodig, v21) | ✅ |
 | Formulieren: offerte, sample, presentatie, nieuwsbrief — met WhatsApp/mailto-fallback | ✅ |
 | Spec-sheet-PDF (vrij) + bedrijfspresentatie-PDF (achter mini-formulier) | ✅ |
 | SEO: titels/descriptions per pagina, OG-tags, canonical, sitemap, robots, JSON-LD (Organization + Product + FAQ) | ✅ |
 | Lettertypen lokaal gehost (geen Google-CDN → AVG-veilig + sneller) | ✅ v7 |
-| Foto's geoptimaliseerd voor web (was ~16 MB aan beeld, nu ~4 MB) | ✅ v7 |
+| Foto's geoptimaliseerd voor web + WebP met JPG-fallback (~8,4 MB → ~3,2 MB aan geladen beeld) | ✅ v7, opnieuw v21 |
 | Toegankelijkheid: skip-link, focus-stijlen, reduced-motion overal, aria-labels | ✅ |
 | 404-pagina in AJAR-stijl (repo-root, dekt de hele site) | ✅ |
 
@@ -112,7 +112,7 @@
   Alle vier formulieren (offerte, sample, presentatie, nieuwsbrief) versturen nu echt i.p.v.
   mailto/WhatsApp. *Check bij Soef: staat het juiste e-mailadres ingesteld als ontvanger op
   formspree.io bij dit formulier?*
-- [ ] **GA4-ID** (`gaId`) — nu geen statistieken en geen cookiebanner.
+- [ ] **GoatCounter-code** (`goatcounterCode`) — nu geen statistieken. Gratis account op goatcounter.com.
 - [ ] **Zakelijk e-mailadres** — nu jouw persoonlijke Gmail; een adres op eigen domein
   (bijv. info@ajar-olijfolie.nl) oogt professioneler bij inkopers. Staat op meerdere plekken:
   `config.email` + de privacyverklaring-tekst.

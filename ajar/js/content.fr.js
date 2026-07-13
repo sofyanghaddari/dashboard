@@ -116,13 +116,6 @@ window.AJAR_CONTENT_FR = {
     photoWord: "Photo"
   },
 
-  cookies: {
-    text: "Nous utilisons des statistiques de visite anonymes (Google Analytics) pour voir comment le site est utilisé. C’est vous qui décidez si cela vous convient.",
-    accept: "Accepter",
-    decline: "Refuser",
-    moreLabel: "Déclaration de confidentialité"
-  },
-
   home: {
     hero: {
       title: "Huile d’olive extra vierge, directement du Maroc.",
@@ -604,15 +597,15 @@ window.AJAR_CONTENT_FR = {
       title: "Déclaration de confidentialité",
       sub: "Court et clair : quelles données nous traitons et pourquoi."
     },
-    updated: "Dernière mise à jour : juillet 2026",
+    updated: "Dernière mise à jour : 13 juillet 2026",
     sections: [
       { title: "Qui est responsable ?", body: "Le responsable du traitement pour ce site est AJAR (importateur de l’huile d’olive AJAR), établi au Jephtastraat 28H, 1055 JV Amsterdam, inscrit à la Chambre de commerce néerlandaise sous le numéro 77755170. Le contact se fait par e-mail (sofyanghaddari@gmail.com) ou WhatsApp (+31 6 40 29 35 67)." },
-      { title: "Quelles données collectons-nous ?", body: "Trois types. (1) Données de formulaire : lorsque vous demandez un échantillon, un devis ou une présentation, nous recevons les informations que vous saisissez vous-même — nom, nom de l’entreprise, adresse e-mail, numéro de téléphone, adresse de livraison et votre message. (2) Newsletter : si vous vous inscrivez, nous conservons uniquement votre adresse e-mail. (3) Statistiques de visite : uniquement si vous l’acceptez via l’avis de cookies, nous utilisons Google Analytics 4 pour voir de façon anonyme comment le site est utilisé (pages visitées, provenance de la visite). Les adresses IP sont anonymisées. Si vous refusez, rien n’est mesuré." },
+      { title: "Quelles données collectons-nous ?", body: "Trois types. (1) Données de formulaire : lorsque vous demandez un échantillon, un devis ou une présentation, nous recevons les informations que vous saisissez vous-même — nom, nom de l’entreprise, adresse e-mail, numéro de téléphone, adresse de livraison et votre message. (2) Newsletter : si vous vous inscrivez, nous conservons uniquement votre adresse e-mail. (3) Statistiques de visite : nous utilisons GoatCounter, un service de statistiques respectueux de la vie privée qui ne place aucun cookie et ne collecte aucune donnée personnelle, pour voir de façon anonyme comment le site est utilisé (pages visitées, provenance de la visite). Rien n’est stocké sur votre appareil, donc aucun consentement n’est requis pour cela." },
       { title: "À quoi servent ces données ?", body: "Nous utilisons les données de formulaire uniquement pour répondre à votre demande et assurer le suivi d’une éventuelle relation commerciale. Votre adresse newsletter sert uniquement à vous informer sur AJAR (comme la disponibilité du produit) ; vous pouvez vous désinscrire à tout moment en nous le signalant par e-mail ou WhatsApp. Les statistiques servent à améliorer le site et à voir quels canaux amènent des visiteurs. Nous ne vendons ni ne partageons jamais vos données avec des tiers à des fins de marketing." },
-      { title: "Combien de temps conservons-nous les données ?", body: "Nous conservons les demandes le temps nécessaire au contact et au maximum 2 ans après le dernier contact, sauf si une relation client se noue (les délais légaux de conservation s’appliquent alors, comme le délai fiscal de 7 ans pour les factures). Les adresses newsletter sont conservées jusqu’à la désinscription. Les données d’analyse sont conservées au maximum 14 mois." },
-      { title: "Qui traite des données pour nous ?", body: "Les formulaires sont traités techniquement par Formspree ; les statistiques par Google (Google Analytics 4, uniquement après votre consentement). Des conditions de sous-traitance s’appliquent avec ces parties. Le site est hébergé sur GitHub Pages (GitHub, Inc.) ; comme pour tout serveur web, l’hébergeur peut traiter temporairement des données techniques comme les adresses IP. Les polices de caractères et tous les autres éléments du site sont chargés depuis notre propre hébergement — aucune donnée ne part vers des tiers pour cela. Si vous envoyez un message WhatsApp, les conditions de WhatsApp s’appliquent." },
+      { title: "Combien de temps conservons-nous les données ?", body: "Nous conservons les demandes le temps nécessaire au contact et au maximum 2 ans après le dernier contact, sauf si une relation client se noue (les délais légaux de conservation s’appliquent alors, comme le délai fiscal de 7 ans pour les factures). Les adresses newsletter sont conservées jusqu’à la désinscription. Les statistiques de visite via GoatCounter ne peuvent jamais être rattachées à un visiteur individuel ; il n’y a donc pas de délai de conservation lié à une personne." },
+      { title: "Qui traite des données pour nous ?", body: "Les formulaires sont traités techniquement par Formspree ; les statistiques de visite par GoatCounter. Des conditions de sous-traitance s’appliquent avec ces parties. Le site est hébergé sur GitHub Pages (GitHub, Inc.) ; comme pour tout serveur web, l’hébergeur peut traiter temporairement des données techniques comme les adresses IP. Les polices de caractères et tous les autres éléments du site sont chargés depuis notre propre hébergement — aucune donnée ne part vers des tiers pour cela. Si vous envoyez un message WhatsApp, les conditions de WhatsApp s’appliquent." },
       { title: "Vos droits", body: "Vous avez le droit d’accéder à vos données, de les corriger et de les supprimer, un droit à la portabilité de vos données, et vous pouvez vous opposer au traitement. Envoyez pour cela un message par e-mail ou WhatsApp — nous répondons aussi vite que possible, au plus tard dans un délai d’un mois. Vous pouvez également déposer une plainte auprès de l’autorité de protection des données compétente (autoriteitpersoonsgegevens.nl)." },
-      { title: "Cookies", body: "Ce site ne place des cookies que pour Google Analytics, et uniquement après votre consentement via l’avis de cookies. Votre choix est stocké localement dans votre navigateur. Vous pouvez modifier votre choix à tout moment via le lien « Préférences cookies » en bas du site, ou en effaçant les données du site dans votre navigateur. Sans consentement, le site ne place aucun cookie." },
+      { title: "Cookies", body: "Ce site ne place aucun cookie de suivi — même notre service de statistiques (GoatCounter) fonctionne sans cookies. Les seules données stockées localement dans votre navigateur sont fonctionnelles et restent sur votre propre appareil : votre choix de langue, et si vous remplissez un formulaire à moitié, un brouillon de votre propre saisie pour que vous ne le perdiez pas. Ces données ne sont jamais envoyées où que ce soit." },
       { title: "Sécurité", body: "La connexion à ce site est chiffrée (HTTPS). Les demandes n’arrivent que chez l’importateur lui-même — il n’y a pas d’équipe commerciale externe ni de centre d’appels ayant accès à vos données." }
     ]
   },
@@ -666,7 +659,6 @@ window.AJAR_CONTENT_FR = {
     aboutLine: "AJAR — huile d’olive extra vierge du Maroc. Importée en direct pour la restauration, les épiceries fines et le commerce de détail néerlandais.",
     privacyLabel: "Déclaration de confidentialité",
     termsLabel: "Conditions générales",
-    cookiePrefsLabel: "Préférences cookies",
     rightsLine: "Tous droits réservés"
   }
 };

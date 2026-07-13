@@ -9,7 +9,8 @@ STAND VAN ZAKEN (juli 2026)
 ---------------------------
 ✗ hero-01.jpg    — NIET MEER IN GEBRUIK (op verzoek van Soef losgekoppeld, 4 juli 2026).
                    Bestand blijft hier staan voor het geval hij 'm terug wil.
-✓ story-02.jpg   — GEPLAATST: olijfboom in bloei (mei)
+✗ story-02.jpg   — NIET MEER IN GEBRUIK (inmiddels ook losgekoppeld, niet meer in content.js —
+                   zie LANCERING-CHECKLIST.md C4: blijft staan of mag weg, Soefs keuze)
 ✓ product-03.jpg — GEPLAATST: olijftak met groene olijven  ⚠ LAGE RESOLUTIE (768px) — stuur de originele foto voor scherp op groot scherm
 ✓ proces-04.jpg  — GEPLAATST: geoogste olijven (stap "Oogst")  ⚠ LAGERE RESOLUTIE (1200px) — origineel = scherper
 ✓ overons-08.jpg — GEPLAATST: bij "De eerste officiële importeur in Nederland" op Over ons
@@ -74,3 +75,8 @@ Tips
 - Voor de 2 lage-resolutie foto's (olijftak + geoogste olijven): stuur de
   originele versie rechtstreeks van de telefoon/camera (niet via WhatsApp,
   dat comprimeert) voor extreem scherp resultaat.
+- **WebP (v21, 13 juli 2026):** elke gebruikte foto heeft naast de .jpg ook een .webp-bestand
+  (zelfde naam, geschaald tot max 1600px lange zijde, kleiner formaat). De site laadt automatisch
+  eerst de .webp en valt terug op de .jpg als die (nog) ontbreekt — bij een nieuwe foto dus geen
+  probleem als je alleen de .jpg aanlevert, maar vraag gerust om ook een .webp te laten genereren
+  voor het kleinste bestand.

@@ -117,13 +117,6 @@ window.AJAR_CONTENT_EN = {
     photoWord: 'Photo'
   },
 
-  cookies: {
-    text: 'We use anonymous visitor statistics (Google Analytics) to see how the site is used. You decide whether that is OK.',
-    accept: 'Accept',
-    decline: 'Decline',
-    moreLabel: 'Privacy statement'
-  },
-
   home: {
     hero: {
       title: 'Extra virgin olive oil, straight from Morocco.',
@@ -605,15 +598,15 @@ window.AJAR_CONTENT_EN = {
       title: 'Privacy statement',
       sub: 'Short and clear: which data we process and why.'
     },
-    updated: 'Last updated: July 2026',
+    updated: 'Last updated: 13 July 2026',
     sections: [
       { title: 'Who is responsible?', body: 'The controller for this website is AJAR (importer of AJAR olive oil), based at Jephtastraat 28H, 1055 JV Amsterdam, registered with the Dutch Chamber of Commerce under number 77755170. Contact is via e-mail (sofyanghaddari@gmail.com) or WhatsApp (+31 6 40 29 35 67).' },
-      { title: 'Which data do we collect?', body: 'Three kinds. (1) Form data: when you request a sample, quote or presentation, we receive the details you fill in yourself — name, company name, e-mail address, phone number, delivery address and your message. (2) Newsletter: if you subscribe, we only keep your e-mail address. (3) Visitor statistics: only if you accept via the cookie notice do we use Google Analytics 4 to see anonymously how the site is used (pages visited, source of the visit). IP addresses are anonymised. If you decline, nothing is measured.' },
+      { title: 'Which data do we collect?', body: 'Three kinds. (1) Form data: when you request a sample, quote or presentation, we receive the details you fill in yourself — name, company name, e-mail address, phone number, delivery address and your message. (2) Newsletter: if you subscribe, we only keep your e-mail address. (3) Visitor statistics: we use GoatCounter, a privacy-friendly statistics service that places no cookies and collects no personal data, to see anonymously how the site is used (pages visited, source of the visit). Nothing is stored on your device, so no consent is required for this.' },
       { title: 'What do we use that data for?', body: 'We use form data solely to answer your request and to follow up any business relationship. We use your newsletter address only to inform you about AJAR (such as product availability); you can unsubscribe at any time by letting us know via e-mail or WhatsApp. We use statistics to improve the site and to see which channels bring visitors. We never sell or share your data with third parties for marketing.' },
-      { title: 'How long do we keep data?', body: 'We keep requests as long as needed for the contact and for a maximum of 2 years after the last contact, unless a customer relationship arises (then the statutory record-keeping periods apply, such as the 7-year tax retention period for invoices). Newsletter addresses are kept until you unsubscribe. Analytics data is kept for a maximum of 14 months.' },
-      { title: 'Who processes data for us?', body: 'The forms are technically processed by Formspree; statistics by Google (Google Analytics 4, only after your consent). Processor terms apply with these parties. The website is hosted on GitHub Pages (GitHub, Inc.); as with any web server, the hosting provider may temporarily process technical log data such as IP addresses. Fonts and every other part of the site load from our own hosting — no data goes to external parties for that. If you send a WhatsApp message, WhatsApp’s terms apply.' },
+      { title: 'How long do we keep data?', body: 'We keep requests as long as needed for the contact and for a maximum of 2 years after the last contact, unless a customer relationship arises (then the statutory record-keeping periods apply, such as the 7-year tax retention period for invoices). Newsletter addresses are kept until you unsubscribe. Visitor statistics via GoatCounter can never be traced back to an individual visitor, so there is no retention period that relates to a person.' },
+      { title: 'Who processes data for us?', body: 'The forms are technically processed by Formspree; visitor statistics by GoatCounter. Processor terms apply with these parties. The website is hosted on GitHub Pages (GitHub, Inc.); as with any web server, the hosting provider may temporarily process technical log data such as IP addresses. Fonts and every other part of the site load from our own hosting — no data goes to external parties for that. If you send a WhatsApp message, WhatsApp’s terms apply.' },
       { title: 'Your rights', body: 'You have the right to access, correct and delete your data, the right to data portability, and you can object to processing. Send a message via e-mail or WhatsApp for this — we respond as quickly as possible, within a month at the latest. You can also lodge a complaint with the Dutch Data Protection Authority (autoriteitpersoonsgegevens.nl).' },
-      { title: 'Cookies', body: 'This site only places cookies for Google Analytics, and only after you have given consent via the cookie notice. Your choice is stored locally in your browser. You can change your choice at any time via the "Cookie preferences" link at the bottom of the site, or by clearing your browser’s site data. Without consent, the site places no cookies at all.' },
+      { title: 'Cookies', body: 'This site places no tracking cookies at all — even our statistics service (GoatCounter) works without cookies. The only data stored locally in your browser is functional and stays on your own device: your language choice, and if you fill in a form partway, a draft of your own input so you don’t lose it. That data is never sent anywhere.' },
       { title: 'Security', body: 'The connection to this website is encrypted (HTTPS). Requests only reach the importer himself — there is no external sales team or call centre with access to your data.' }
     ]
   },
@@ -667,7 +660,6 @@ window.AJAR_CONTENT_EN = {
     aboutLine: 'AJAR — extra virgin olive oil from Morocco. Directly imported for Dutch hospitality, delicatessens and retail.',
     privacyLabel: 'Privacy statement',
     termsLabel: 'Terms and conditions',
-    cookiePrefsLabel: 'Cookie preferences',
     rightsLine: 'All rights reserved'
   }
 };

@@ -1326,25 +1326,6 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .privacy-block { margin-bottom: 1.6rem; }
 .privacy-title { font-size: 1.25rem; margin-bottom: .4em; }
 
-/* ---------- Cookiebanner ---------- */
-.cookie-banner {
-  position: fixed;
-  left: 16px; right: 16px;
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  z-index: 90;
-  max-width: 560px;
-  margin: 0 auto;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 18px 20px;
-  box-shadow: 0 8px 40px rgba(30,30,28,.18);
-}
-.cookie-banner p { font-size: .88rem; color: var(--ink-soft); margin: 0 0 14px; }
-.cookie-banner a { text-decoration: underline; text-underline-offset: 2px; }
-.cookie-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.cookie-actions .btn { padding: .6em 1.4em; font-size: .88rem; }
-
 /* ============================================================
    Animaties — subtiel, high-end. Fade/slide bij scroll,
    zachte hovers; geen bounce. Reduced-motion volledig gedekt.
@@ -1502,13 +1483,6 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
 .faq-body {
   overflow: hidden;
   transition: height .35s var(--ease), opacity .3s var(--ease);
-}
-
-/* ── Cookiebanner glijdt zacht binnen ── */
-.cookie-banner { animation: bannerIn .55s var(--ease) both; }
-@keyframes bannerIn {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: none; }
 }
 
 /* ── Succes-vinkje: tekent zichzelf bij een gelukte aanvraag (verving de gouden druppel) ── */
@@ -1990,7 +1964,7 @@ body.nav-open .site-header { transform: none !important; }
   .btn, .card, .text-link { transition: none; }
   [data-parallax], .split-media .img-slot { transform: none !important; }
   .img-slot::before, .btn-primary::after, .sheen-card::after,
-  .hdr-twig, .cookie-banner { animation: none !important; }
+  .hdr-twig { animation: none !important; }
   /* micro-interacties: eindstand direct tonen, geen beweging */
   .ok-check circle, .ok-check path { animation: none; stroke-dashoffset: 0; }
   .field-shake { animation: none; }
@@ -2881,7 +2855,7 @@ body.nav-open .site-header { transform: none !important; }
    achtergronden die inkt verspillen, geen ingeklapte FAQ-antwoorden.
    ============================================================ */
 @media print {
-  .site-header, .topbar, .mob-cta, .to-top, .scroll-progress, .cookie-banner,
+  .site-header, .topbar, .mob-cta, .to-top, .scroll-progress,
   .lightbox, .wa-qr-wrap, .footer-wordmark, .cursor-dot, .cursor-ring,
   .marquee, .cta-band, .newsletter, .form-progress, .copy-btn,
   .stack-dots, .lb-nav, .lb-counter, .nav-underline, .skip-link, .footer-socials,
