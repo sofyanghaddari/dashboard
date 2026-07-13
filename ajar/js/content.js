@@ -148,6 +148,7 @@ window.AJAR_CONTENT = {
       name: 'Naam',
       contactPerson: 'Contactpersoon',
       company: 'Bedrijf',
+      kvk: 'KvK-nummer',
       typeBusiness: 'Type zaak',
       email: 'E-mail',
       phone: 'Telefoon',
@@ -168,7 +169,7 @@ window.AJAR_CONTENT = {
     contactHeading: 'Contact',
     footerWa: 'WhatsApp — snelste route',
     errEmail: 'Vul een geldig e-mailadres in.',
-    errSample: 'Vul minimaal bedrijfsnaam, contactpersoon, e-mailadres en bezorgadres in.',
+    errSample: 'Vul bedrijfsnaam, contactpersoon, e-mailadres, een geldig KvK-nummer (8 cijfers) en bezorgadres in.',
     errContact: 'Vul minimaal naam, bedrijfsnaam en een geldig e-mailadres in.',
     privacyLink: 'Privacyverklaring',
     linkCopied: 'Link gekopieerd',
@@ -633,6 +634,10 @@ window.AJAR_CONTENT = {
     form: {
       title: 'Vraag uw proefflesje aan',
       companyLabel: 'Bedrijfsnaam',
+      /* KvK-nummer verplicht (v23) — zo bevestigen we dat de aanvrager een echt bedrijf is
+         en kunnen we één-sample-per-bedrijf bewaken. Placeholder legt uit waarom. */
+      kvkLabel: 'KvK-nummer',
+      kvkPlaceholder: '8 cijfers — verplicht voor zakelijke afnemers',
       nameLabel: 'Contactpersoon',
       emailLabel: 'E-mailadres',
       phoneLabel: 'Telefoonnummer',
@@ -807,7 +812,7 @@ window.AJAR_CONTENT = {
       },
       {
         title: 'Welke gegevens verzamelen we?',
-        body: 'Drie soorten. (1) Formuliergegevens: als u een sample, offerte of presentatie aanvraagt, ontvangen we de gegevens die u zelf invult — naam, bedrijfsnaam, e-mailadres, telefoonnummer, bezorgadres en uw bericht. (2) Nieuwsbrief: als u zich inschrijft, bewaren we alleen uw e-mailadres. (3) Bezoekersstatistieken: we gebruiken GoatCounter, een privacyvriendelijke statistiekendienst die geen cookies plaatst en geen persoonsgegevens verzamelt, om anoniem te zien hoe de site wordt gebruikt (bezochte pagina’s, herkomst van het bezoek). Er wordt niets op uw apparaat opgeslagen, dus hiervoor is geen toestemming nodig.'
+        body: 'Drie soorten. (1) Formuliergegevens: als u een sample, offerte of presentatie aanvraagt, ontvangen we de gegevens die u zelf invult — naam, bedrijfsnaam, KvK-nummer (bij een sample-aanvraag), e-mailadres, telefoonnummer, bezorgadres en uw bericht. (2) Nieuwsbrief: als u zich inschrijft, bewaren we alleen uw e-mailadres. (3) Bezoekersstatistieken: we gebruiken GoatCounter, een privacyvriendelijke statistiekendienst die geen cookies plaatst en geen persoonsgegevens verzamelt, om anoniem te zien hoe de site wordt gebruikt (bezochte pagina’s, herkomst van het bezoek). Er wordt niets op uw apparaat opgeslagen, dus hiervoor is geen toestemming nodig.'
       },
       {
         title: 'Waarvoor gebruiken we die gegevens?',
@@ -879,7 +884,7 @@ window.AJAR_CONTENT = {
       },
       {
         title: '8. Gratis samples',
-        body: 'Samples zijn kosteloos en verplichten u tot niets. Aan een sample kunnen geen rechten worden ontleend voor latere leveringen: de sample toont de olie van dat moment, en als natuurproduct kan een volgende partij licht afwijken binnen de extra vierge-norm. Samples zijn beschikbaar zolang de voorraad strekt, één per zaak.'
+        body: 'Samples zijn kosteloos en verplichten u tot niets. Aan een sample kunnen geen rechten worden ontleend voor latere leveringen: de sample toont de olie van dat moment, en als natuurproduct kan een volgende partij licht afwijken binnen de extra vierge-norm. Samples zijn beschikbaar zolang de voorraad strekt, één gratis sample per bedrijf. Om te bevestigen dat u een zakelijke afnemer bent, vragen we bij een sample-aanvraag uw KvK-nummer.'
       },
       {
         title: '9. Aansprakelijkheid',

@@ -1067,6 +1067,10 @@
             '<label class="form-field"><span>' + esc(f.emailLabel) + ' *</span><input type="email" name="email" required></label>' +
             '<label class="form-field"><span>' + esc(f.phoneLabel) + '</span><input type="tel" name="telefoon" inputmode="tel"></label>' +
           '</div>' +
+          /* KvK-nummer verplicht (v23) — bevestigt dat de aanvrager een echt bedrijf is en
+             maakt één-sample-per-bedrijf handhaafbaar. type=text + inputmode=numeric per
+             projectconventie (nooit type=number). */
+          '<label class="form-field"><span>' + esc(f.kvkLabel) + ' *</span><input type="text" name="kvk" inputmode="numeric" autocomplete="off" required placeholder="' + esc(f.kvkPlaceholder || '') + '"></label>' +
           '<label class="form-field"><span>' + esc(f.addressLabel) + ' *</span><input type="text" name="adres" required></label>' +
           '<label class="form-field"><span>' + esc(f.messageLabel) + '</span><textarea name="bericht" rows="3"></textarea></label>' +
           '<label class="form-field tip-field"><span>' + esc(f.tipLabel) + '</span>' +
@@ -1100,13 +1104,19 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const v = formVals(form);
-      if (!v.naam || !v.bedrijf || !/.+@.+\..+/.test(v.email) || !v.adres) {
+      /* KvK-nummer normaliseren naar 8 cijfers (v23) — punten/spaties eruit, dan lengte-check.
+         Bewust soepel op notatie, streng op inhoud, zodat een geldig nummer met opmaak niet
+         onterecht wordt geweigerd. */
+      const kvkDigits = (v.kvk || '').replace(/\D/g, '');
+      if (!v.naam || !v.bedrijf || !/.+@.+\..+/.test(v.email) || !v.adres || kvkDigits.length !== 8) {
         showMsg(form, 'error', T('errSample', 'Vul minimaal bedrijfsnaam, contactpersoon, e-mailadres en bezorgadres in.'));
         return;
       }
+      v.kvk = kvkDigits;
       v._subject = f.emailSubject + ' — ' + v.bedrijf;
       const waText = L('sampleRequest', 'Sample-aanvraag') + ' ' + cfg.brandName +
         '\n\n' + L('company', 'Bedrijf') + ': ' + v.bedrijf +
+        '\n' + L('kvk', 'KvK-nummer') + ': ' + v.kvk +
         '\n' + L('contactPerson', 'Contactpersoon') + ': ' + v.naam +
         '\n' + L('email', 'E-mail') + ': ' + v.email +
         (v.telefoon ? '\n' + L('phone', 'Telefoon') + ': ' + v.telefoon : '') +

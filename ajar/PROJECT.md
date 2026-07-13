@@ -89,6 +89,47 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v23 — KvK-nummer verplicht bij sample-aanvraag (fase 1 van sample-verificatie) (13 juli 2026)
+
+Soef wil op termijn de gratis-sample-afhandeling **automatiseren** (verzendlabel printen zonder
+zelf te checken wie de aanvrager is), maar dan moet wél vaststaan dat (a) de aanvrager een écht
+bedrijf is en (b) datzelfde bedrijf niet al een fles heeft gehad. Uitgebreid met hem besproken;
+het **KvK-nummer** is de sleutel die beide eisen tegelijk oplost (uniek per bedrijf → geschikt als
+"is dit een bedrijf?"-check én als dedup-sleutel voor één-sample-per-bedrijf). De volledige
+automatisering (validatie + dedup + label) vereist een backend (Cloudflare Worker + opslag, zoals
+de NS-proxy/grammatica-worker) en is bewust **nog niet gebouwd** — dit is fase 1: de data-invoer
+en de spelregel goed neerzetten, zodat de latere automatisering erop kan bouwen.
+
+- **KvK-nummer verplicht veld** op het sample-formulier (`sample.html`), full-width tussen de
+  contactgegevens en het bezorgadres. `type="text" inputmode="numeric"` (projectconventie — nooit
+  `type=number`), placeholder legt uit waarom ("8 cijfers — verplicht voor zakelijke afnemers").
+  Validatie: notatie-soepel, inhoud-streng — punten/spaties worden gestript en dan geldt een
+  harde lengte-check op 8 cijfers; het genormaliseerde nummer (bijv. `7775 5170` → `77755170`)
+  gaat mee in de Formspree-inzending, zodat je later schoon op KvK-nummer kunt dedupliceren.
+- **"Één gratis sample per bedrijf" expliciet in de voorwaarden** (artikel 8, 3 talen): was al
+  "één per zaak", nu aangescherpt naar "één gratis sample per bedrijf" + de zin dat we daarvoor
+  bij een sample-aanvraag het KvK-nummer vragen. De **"alleen verzenden naar het bij de KvK
+  geregistreerde adres"**-regel is bewust NOG NIET in de voorwaarden gezet — dat is een
+  fase-2-controle die pas operationeel wordt met de automatisering; een niet-gehandhaafde regel in
+  de voorwaarden zetten zou oneerlijk zijn.
+- **Privacyverklaring bijgewerkt** (3 talen): KvK-nummer toegevoegd aan de opsomming van welke
+  formuliergegevens we ontvangen (met "bij een sample-aanvraag"), zodat de verklaring blijft
+  kloppen met wat het formulier nu uitvraagt.
+- Vertaalsleutels `kvkLabel`/`kvkPlaceholder` (sample.form) en `kvk` (ui.lbl, voor het
+  WhatsApp-/e-mailbericht) in NL/EN/FR; `errSample` in 3 talen aangevuld met het KvK-vereiste.
+
+**Nog te beslissen door Soef (fase 2, backend):** verificatiebron — **BTW-nummer via VIES**
+(gratis EU-dienst) óf de **KvK API** (levert ook het officiële adres, maar pricing/free-tier moet
+ik nog uitzoeken — geen bedragen gegokt). Daarna pas: Worker + KV/D1 voor dedup + Sendcloud/PostNL
+voor labels.
+
+Geverifieerd: KvK-veld in NL/EN/FR met correcte labels/placeholders; lege én te-korte invoer
+worden geweigerd met de juiste gelokaliseerde foutmelding; een geldig nummer mét opmaak
+("7775 5170") wordt genormaliseerd naar 8 cijfers en komt zo (zonder spatie) in de
+Formspree-POST; volledige smoke-test groen.
+
+---
+
 ### v22 — Vier kleine B2B-vertrouwenssignalen + externe vindbaarheid (13 juli 2026)
 
 Vervolg op een "wat kunnen we nog verbeteren voor een zakelijke klant"-ronde; Soef koos 1/2/3/4
