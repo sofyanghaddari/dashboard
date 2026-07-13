@@ -21,6 +21,7 @@ window.AJAR_CONTENT = {
     btw: 'NL003042226B35',                    // btw-identificatienummer
     domain: 'https://sofyanghaddari.github.io/dashboard/ajar/',  // later: custom domain (zie README.md)
 
+    sampleVerifyUrl: '',                      // TODO: URL van de VIES-sample-verificatie-Worker (proxy/sample-verify-worker.js). Leeg = geen automatische controle; het sample-formulier werkt dan als voorheen (handmatige check). Zie proxy/README-sample-verify-worker.md.
     showPartners: false,                      // true zodra er echte verkooppunten/logo's zijn ("Verkrijgbaar bij")
     presentationPdf: 'assets/ajar-presentatie.pdf', // bedrijfspresentatie (gegenereerd uit deze content — zie README.md)
     specsheetPdf: 'assets/ajar-specsheet.pdf' // vrij downloadbaar spec-sheet (gegenereerd uit deze content, zie README.md)
@@ -148,6 +149,7 @@ window.AJAR_CONTENT = {
       name: 'Naam',
       contactPerson: 'Contactpersoon',
       company: 'Bedrijf',
+      btw: 'BTW-nummer',
       kvk: 'KvK-nummer',
       typeBusiness: 'Type zaak',
       email: 'E-mail',
@@ -169,7 +171,10 @@ window.AJAR_CONTENT = {
     contactHeading: 'Contact',
     footerWa: 'WhatsApp — snelste route',
     errEmail: 'Vul een geldig e-mailadres in.',
-    errSample: 'Vul bedrijfsnaam, contactpersoon, e-mailadres, een geldig KvK-nummer (8 cijfers) en bezorgadres in.',
+    errSample: 'Vul bedrijfsnaam, contactpersoon, e-mailadres, een geldig BTW-nummer en bezorgadres in.',
+    verifyingBtw: 'Bedrijf controleren…',
+    errInvalidBtw: 'Dit BTW-nummer herkennen we niet bij de EU-controle (VIES). Controleer het — bijvoorbeeld NL123456789B01.',
+    errDuplicateSample: 'Dit bedrijf heeft al een gratis sample ontvangen. Vragen? Stuur ons gerust een WhatsApp-bericht.',
     errContact: 'Vul minimaal naam, bedrijfsnaam en een geldig e-mailadres in.',
     privacyLink: 'Privacyverklaring',
     linkCopied: 'Link gekopieerd',
@@ -634,10 +639,14 @@ window.AJAR_CONTENT = {
     form: {
       title: 'Vraag uw proefflesje aan',
       companyLabel: 'Bedrijfsnaam',
-      /* KvK-nummer verplicht (v23) — zo bevestigen we dat de aanvrager een echt bedrijf is
-         en kunnen we één-sample-per-bedrijf bewaken. Placeholder legt uit waarom. */
+      /* BTW-nummer verplicht (v24) — dit is het veld dat we automatisch valideren bij VIES
+         (EU) én waarop we één-sample-per-bedrijf bewaken. */
+      btwLabel: 'BTW-nummer',
+      btwPlaceholder: 'Bijv. NL123456789B01 — verplicht voor zakelijke afnemers',
+      /* KvK-nummer is sinds v24 optioneel (VIES valideert het BTW-nummer, niet het KvK-nummer);
+         we vragen het nog wel voor onze eigen administratie. */
       kvkLabel: 'KvK-nummer',
-      kvkPlaceholder: '8 cijfers — verplicht voor zakelijke afnemers',
+      kvkPlaceholder: '8 cijfers (optioneel)',
       nameLabel: 'Contactpersoon',
       emailLabel: 'E-mailadres',
       phoneLabel: 'Telefoonnummer',
@@ -812,7 +821,7 @@ window.AJAR_CONTENT = {
       },
       {
         title: 'Welke gegevens verzamelen we?',
-        body: 'Drie soorten. (1) Formuliergegevens: als u een sample, offerte of presentatie aanvraagt, ontvangen we de gegevens die u zelf invult — naam, bedrijfsnaam, KvK-nummer (bij een sample-aanvraag), e-mailadres, telefoonnummer, bezorgadres en uw bericht. (2) Nieuwsbrief: als u zich inschrijft, bewaren we alleen uw e-mailadres. (3) Bezoekersstatistieken: we gebruiken GoatCounter, een privacyvriendelijke statistiekendienst die geen cookies plaatst en geen persoonsgegevens verzamelt, om anoniem te zien hoe de site wordt gebruikt (bezochte pagina’s, herkomst van het bezoek). Er wordt niets op uw apparaat opgeslagen, dus hiervoor is geen toestemming nodig.'
+        body: 'Drie soorten. (1) Formuliergegevens: als u een sample, offerte of presentatie aanvraagt, ontvangen we de gegevens die u zelf invult — naam, bedrijfsnaam, BTW-nummer en (optioneel) KvK-nummer bij een sample-aanvraag, e-mailadres, telefoonnummer, bezorgadres en uw bericht. (2) Nieuwsbrief: als u zich inschrijft, bewaren we alleen uw e-mailadres. (3) Bezoekersstatistieken: we gebruiken GoatCounter, een privacyvriendelijke statistiekendienst die geen cookies plaatst en geen persoonsgegevens verzamelt, om anoniem te zien hoe de site wordt gebruikt (bezochte pagina’s, herkomst van het bezoek). Er wordt niets op uw apparaat opgeslagen, dus hiervoor is geen toestemming nodig.'
       },
       {
         title: 'Waarvoor gebruiken we die gegevens?',
@@ -824,7 +833,7 @@ window.AJAR_CONTENT = {
       },
       {
         title: 'Wie verwerken er gegevens voor ons?',
-        body: 'De formulieren worden technisch verwerkt door Formspree; bezoekersstatistieken door GoatCounter. Met deze partijen gelden verwerkersvoorwaarden. De website wordt gehost op GitHub Pages (GitHub, Inc.); zoals bij elke webserver kan de hostingpartij daarbij tijdelijk technische loggegevens zoals IP-adressen verwerken. Lettertypen en alle andere onderdelen van de site laden we vanaf onze eigen hosting — daarvoor gaan geen gegevens naar externe partijen. Stuurt u een WhatsApp-bericht, dan gelden de voorwaarden van WhatsApp.'
+        body: 'De formulieren worden technisch verwerkt door Formspree; bezoekersstatistieken door GoatCounter. Met deze partijen gelden verwerkersvoorwaarden. Bij een sample-aanvraag controleren we het opgegeven BTW-nummer via VIES, de officiële validatiedienst van de Europese Commissie; om te voorkomen dat hetzelfde bedrijf meerdere gratis samples aanvraagt bewaren we daarbij alléén een versleutelde (gehashte) verwijzing — niet het BTW-nummer zelf. De website wordt gehost op GitHub Pages (GitHub, Inc.); zoals bij elke webserver kan de hostingpartij daarbij tijdelijk technische loggegevens zoals IP-adressen verwerken. Lettertypen en alle andere onderdelen van de site laden we vanaf onze eigen hosting — daarvoor gaan geen gegevens naar externe partijen. Stuurt u een WhatsApp-bericht, dan gelden de voorwaarden van WhatsApp.'
       },
       {
         title: 'Uw rechten',
@@ -884,7 +893,7 @@ window.AJAR_CONTENT = {
       },
       {
         title: '8. Gratis samples',
-        body: 'Samples zijn kosteloos en verplichten u tot niets. Aan een sample kunnen geen rechten worden ontleend voor latere leveringen: de sample toont de olie van dat moment, en als natuurproduct kan een volgende partij licht afwijken binnen de extra vierge-norm. Samples zijn beschikbaar zolang de voorraad strekt, één gratis sample per bedrijf. Om te bevestigen dat u een zakelijke afnemer bent, vragen we bij een sample-aanvraag uw KvK-nummer.'
+        body: 'Samples zijn kosteloos en verplichten u tot niets. Aan een sample kunnen geen rechten worden ontleend voor latere leveringen: de sample toont de olie van dat moment, en als natuurproduct kan een volgende partij licht afwijken binnen de extra vierge-norm. Samples zijn beschikbaar zolang de voorraad strekt, één gratis sample per bedrijf. Om te bevestigen dat u een zakelijke afnemer bent, vragen we bij een sample-aanvraag uw BTW-nummer, dat we controleren via VIES (de validatiedienst van de Europese Commissie).'
       },
       {
         title: '9. Aansprakelijkheid',

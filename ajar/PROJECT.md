@@ -89,6 +89,52 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v24 — Automatische sample-verificatie via VIES (fase 2, gratis) (13 juli 2026)
+
+Fase 2 van het sample-verificatieplan, gebouwd nadat Soef koos voor de **gratis** route ("ik wil
+alleen gratis"). Onderzocht: de KvK-API kost ~€6,40/mnd, **VIES** (BTW-validatie van de Europese
+Commissie) is volledig gratis en geeft voor NL óók naam + adres terug. Correctie op een eerdere
+bewering van mij: VIES gééft voor NL wél het adres (eerder ten onrechte gezegd van niet). Dus:
+verificatie via **BTW-nummer + VIES**, dedup op het BTW-nummer.
+
+- **Cloudflare Worker** `proxy/sample-verify-worker.js` (+ deploygids `README-sample-verify-worker.md`
+  + unit-test `test-sample-verify-worker.mjs`, 15 checks, mockt VIES/KV). Eén POST-endpoint:
+  normaliseert een NL-BTW-nummer (soepel op notatie, streng op `\d{9}B\d{2}`), valideert live bij
+  VIES, en dedupt in **Cloudflare KV**. Antwoordt met één status: `verified` (+ naam/adres) /
+  `invalid` / `duplicate` / `unavailable`. **Nooit gokken:** bij een onbekende VIES-respons of
+  fout → `unavailable` (niet fout-positief goedkeuren of fout-negatief weigeren). **AVG:** in KV
+  komt alléén een **SHA-256-hash** van het BTW-nummer + datum — niet het nummer zelf, niet de
+  VIES-naam/-adres. Origin-allowlist + daglimiet (default 300) als vangnet. Zonder KV gebonden:
+  verifieert nog wél, dedupt niet (fail-open, met `warning`).
+- **Formulier-koppeling, uit-by-default:** nieuw `config.sampleVerifyUrl` (leeg = niets verandert,
+  formulier werkt als voorheen). Zodra de Worker-URL is ingevuld, controleert het sample-formulier
+  elke aanvraag: geldig+nieuw → door (met de VIES-bedrijfsnaam in de lead), ongeldig/duplicaat →
+  nette foutmelding + géén verzending, **VIES onbereikbaar → tóch door** naar Formspree met een
+  "handmatig controleren"-notitie (nooit een echte lead verliezen door VIES-downtime).
+- **Sample-formulier gewijzigd:** het **BTW-nummer** is nu het verplichte, gevalideerde veld;
+  het **KvK-nummer uit v23 is optioneel** geworden (VIES kan geen KvK checken, maar handig voor
+  de eigen administratie). Client-side dezelfde BTW-normalisatie als de Worker. Voorwaarden
+  (artikel 8) + privacyverklaring (welke gegevens / wie verwerken) in NL/EN/FR bijgewerkt: BTW
+  i.p.v. KvK als verificatiemiddel, VIES als verwerker, en de hash-only-opslag expliciet benoemd.
+- **CSP:** `https://*.workers.dev` toegevoegd aan `connect-src` op alle 9 pagina's, zodat de
+  fetch naar de Worker mag zodra de URL gezet is. Custom-domein-Worker → dat domein zelf toevoegen
+  (staat in de deploygids). Inert zolang `sampleVerifyUrl` leeg is.
+
+**Deploystappen liggen bij Soef** (eenmalig, gratis): Worker plakken bij Cloudflare, KV-namespace
+`ajar-samples` binden als `SAMPLES`, testen met `dryRun`, en de URL in `content.js` zetten. Alles
+staat in `proxy/README-sample-verify-worker.md`.
+
+**Nog buiten scope (fase 3, betaald):** automatisch verzendlabel printen (Sendcloud/PostNL) — deze
+Worker doet alleen verifiëren + dedup.
+
+Geverifieerd: Worker-unit-test 15/15 (verified/invalid/duplicate/unavailable/format/dedup/hash-only/
+dryRun/origin) met mock-VIES; front-end 29/29 in headless Chromium met een gemockte workers.dev-
+Worker + gemockte Formspree — alle vier de statussen correct afgehandeld, KvK optioneel, geen-URL-
+pad gedraagt zich als voorheen, ongeldig BTW-formaat blokkeert lokaal zonder VIES-call, nul
+CSP-violations; volledige smoke-test groen.
+
+---
+
 ### v23 — KvK-nummer verplicht bij sample-aanvraag (fase 1 van sample-verificatie) (13 juli 2026)
 
 Soef wil op termijn de gratis-sample-afhandeling **automatiseren** (verzendlabel printen zonder

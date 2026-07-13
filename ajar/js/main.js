@@ -1067,10 +1067,13 @@
             '<label class="form-field"><span>' + esc(f.emailLabel) + ' *</span><input type="email" name="email" required></label>' +
             '<label class="form-field"><span>' + esc(f.phoneLabel) + '</span><input type="tel" name="telefoon" inputmode="tel"></label>' +
           '</div>' +
-          /* KvK-nummer verplicht (v23) — bevestigt dat de aanvrager een echt bedrijf is en
-             maakt één-sample-per-bedrijf handhaafbaar. type=text + inputmode=numeric per
-             projectconventie (nooit type=number). */
-          '<label class="form-field"><span>' + esc(f.kvkLabel) + ' *</span><input type="text" name="kvk" inputmode="numeric" autocomplete="off" required placeholder="' + esc(f.kvkPlaceholder || '') + '"></label>' +
+          /* BTW-nummer verplicht (v24) — dit veld valideren we automatisch bij VIES (EU) en
+             gebruiken we voor een-sample-per-bedrijf. KvK-nummer is optioneel geworden (VIES
+             kan geen KvK checken), maar blijft handig voor de eigen administratie. */
+          '<div class="form-grid">' +
+            '<label class="form-field"><span>' + esc(f.btwLabel) + ' *</span><input type="text" name="btw" autocomplete="off" required placeholder="' + esc(f.btwPlaceholder || '') + '"></label>' +
+            '<label class="form-field"><span>' + esc(f.kvkLabel) + '</span><input type="text" name="kvk" inputmode="numeric" autocomplete="off" placeholder="' + esc(f.kvkPlaceholder || '') + '"></label>' +
+          '</div>' +
           '<label class="form-field"><span>' + esc(f.addressLabel) + ' *</span><input type="text" name="adres" required></label>' +
           '<label class="form-field"><span>' + esc(f.messageLabel) + '</span><textarea name="bericht" rows="3"></textarea></label>' +
           '<label class="form-field tip-field"><span>' + esc(f.tipLabel) + '</span>' +
@@ -1096,6 +1099,13 @@
       '</div></section>';
   }
 
+  /* NL BTW-nummer normaliseren (v24): "nl 0030.42226 b35" -> "003042226B35", of '' bij ongeldig.
+     Zelfde regel als in de Worker: soepel op notatie, streng op inhoud (9 cijfers + B + 2 cijfers). */
+  function normalizeNlBtw(raw) {
+    const s = String(raw == null ? '' : raw).toUpperCase().replace(/[\s.\-]/g, '').replace(/^NL/, '');
+    return /^\d{9}B\d{2}$/.test(s) ? s : '';
+  }
+
   function initSampleForm() {
     const form = document.getElementById('sample-form');
     if (!form) return;
@@ -1104,25 +1114,53 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const v = formVals(form);
-      /* KvK-nummer normaliseren naar 8 cijfers (v23) — punten/spaties eruit, dan lengte-check.
-         Bewust soepel op notatie, streng op inhoud, zodat een geldig nummer met opmaak niet
-         onterecht wordt geweigerd. */
-      const kvkDigits = (v.kvk || '').replace(/\D/g, '');
-      if (!v.naam || !v.bedrijf || !/.+@.+\..+/.test(v.email) || !v.adres || kvkDigits.length !== 8) {
-        showMsg(form, 'error', T('errSample', 'Vul minimaal bedrijfsnaam, contactpersoon, e-mailadres en bezorgadres in.'));
+      const btw = normalizeNlBtw(v.btw);              // verplicht + VIES-gevalideerd (v24)
+      const kvkDigits = (v.kvk || '').replace(/\D/g, ''); // optioneel; als ingevuld moet het 8 cijfers zijn
+      if (!v.naam || !v.bedrijf || !/.+@.+\..+/.test(v.email) || !v.adres || !btw || (v.kvk && kvkDigits.length !== 8)) {
+        showMsg(form, 'error', T('errSample', 'Vul minimaal bedrijfsnaam, contactpersoon, e-mailadres, een geldig BTW-nummer en bezorgadres in.'));
         return;
       }
-      v.kvk = kvkDigits;
+      v.btw = 'NL' + btw;
+      v.kvk = kvkDigits; // '' als leeg gelaten
+
+      /* Automatische bedrijfsverificatie via de VIES-Worker — alléén als geconfigureerd.
+         Zonder cfg.sampleVerifyUrl gedraagt het formulier zich precies als voorheen. Bij een
+         onbereikbare VIES gaat de aanvraag gewoon door (met een handmatig-checken-notitie), zodat
+         een echte lead nooit verloren gaat door VIES-downtime. Zie proxy/sample-verify-worker.js. */
+      if (cfg.sampleVerifyUrl) {
+        const btn = form.querySelector('[type=submit]');
+        const old = btn ? btn.textContent : '';
+        if (btn) { btn.disabled = true; btn.textContent = T('verifyingBtw', 'Bedrijf controleren…'); btn.classList.add('btn-loading'); }
+        let res = null;
+        try {
+          const r = await fetch(cfg.sampleVerifyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ btw: v.btw }),
+          });
+          res = await r.json();
+        } catch (_) { res = { status: 'unavailable' }; }
+        if (btn) { btn.disabled = false; btn.textContent = old; btn.classList.remove('btn-loading'); }
+
+        const status = res && res.status;
+        if (status === 'invalid') { showMsg(form, 'error', T('errInvalidBtw', 'Dit BTW-nummer herkennen we niet.')); return; }
+        if (status === 'duplicate') { showMsg(form, 'error', T('errDuplicateSample', 'Dit bedrijf heeft al een gratis sample ontvangen.')); return; }
+        if (status === 'verified') v.verificatie = res.name ? ('VIES ✓ — ' + res.name) : 'VIES ✓';
+        else v.verificatie = 'VIES niet bereikbaar — handmatig controleren';
+      }
+
       v._subject = f.emailSubject + ' — ' + v.bedrijf;
       const waText = L('sampleRequest', 'Sample-aanvraag') + ' ' + cfg.brandName +
         '\n\n' + L('company', 'Bedrijf') + ': ' + v.bedrijf +
-        '\n' + L('kvk', 'KvK-nummer') + ': ' + v.kvk +
+        '\n' + L('btw', 'BTW-nummer') + ': ' + v.btw +
+        (v.kvk ? '\n' + L('kvk', 'KvK-nummer') + ': ' + v.kvk : '') +
         '\n' + L('contactPerson', 'Contactpersoon') + ': ' + v.naam +
         '\n' + L('email', 'E-mail') + ': ' + v.email +
         (v.telefoon ? '\n' + L('phone', 'Telefoon') + ': ' + v.telefoon : '') +
         '\n' + L('address', 'Bezorgadres') + ': ' + v.adres +
         (v.bericht ? '\n' + L('note', 'Opmerking') + ': ' + v.bericht : '') +
-        (v.tip ? '\n' + L('tip', 'Tip collega-ondernemer') + ': ' + v.tip : '');
+        (v.tip ? '\n' + L('tip', 'Tip collega-ondernemer') + ': ' + v.tip : '') +
+        (v.verificatie ? '\n' + L('verification', 'Verificatie') + ': ' + v.verificatie : '');
       const ok = await submitLead(form, v, waText, f.success);
       if (ok) { gaEvent('sample_aanvraag', { tip: v.tip ? 'ja' : 'nee' }); clearFormDraft(form); }
     });
