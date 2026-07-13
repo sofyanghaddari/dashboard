@@ -74,11 +74,26 @@
     if (!file) return '';
     const load = eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
     return '<figure class="img-slot ' + (cls || '') + '" data-file="' + esc(file) + '">' +
-      '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" decoding="async" ' + load + ' ' +
-      'onload="this.classList.add(\'imgok\')" ' +
-      'onerror="this.closest(\'.img-slot\').classList.add(\'empty\');this.remove()">' +
+      '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" decoding="async" ' + load + ' data-err-class="empty">' +
       '<span class="img-slot-note">' + esc(T('photoFollows', 'Foto volgt')) + ' · ' + esc(file) + '</span>' +
       '</figure>';
+  }
+
+  /* Koppelt load/error aan elke .img-slot img via addEventListener i.p.v. inline onload/onerror
+     (v20) — een strikte CSP zonder 'unsafe-inline' voor script-src blokkeert inline event-
+     handler-attributen. img.complete vangt het geval dat de afbeelding al klaar was (cache)
+     vóórdat deze functie draait. */
+  function wireImgSlots() {
+    document.querySelectorAll('.img-slot img').forEach((img) => {
+      if (img.dataset.wired) return;
+      img.dataset.wired = '1';
+      const errClass = img.dataset.errClass || 'empty';
+      const ok = () => img.classList.add('imgok');
+      const err = () => { const slot = img.closest('.img-slot'); if (slot) slot.classList.add(errClass); img.remove(); };
+      img.addEventListener('load', ok);
+      img.addEventListener('error', err);
+      if (img.complete) { if (img.naturalWidth > 0) ok(); else err(); }
+    });
   }
 
   function kickerTitle(kicker, title, sub) {
@@ -389,9 +404,7 @@
   /* Procesbeeld: toont de foto zodra die er is, anders een net gouden line-icoon (geen kale placeholder) */
   function processMedia(file, icon, alt) {
     return '<figure class="img-slot img-step proc-media" data-file="' + esc(file) + '">' +
-      (file ? '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" loading="lazy" ' +
-        'onload="this.classList.add(\'imgok\')" ' +
-        'onerror="this.closest(\'.img-slot\').classList.add(\'noimg\');this.remove()">' : '') +
+      (file ? '<img src="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" loading="lazy" data-err-class="noimg">' : '') +
       '<span class="proc-icon">' + stepIcon(icon) + '</span>' +
       '</figure>';
   }
@@ -957,14 +970,16 @@
             selectField('type', f.typeLabel, f.typeOptions) +
             selectField('volume', f.volumeLabel, f.volumeOptions) +
           '</div>' +
-          '<div class="form-grid">' +
-            selectField('frequentie', f.frequencyLabel, f.frequencyOptions) +
-            '<label class="form-field"><span>' + esc(f.callTimeLabel) + '</span>' +
-              '<input type="text" name="belmoment" placeholder="' + esc(f.callTimePlaceholder) + '"></label>' +
-          '</div>' +
+          selectField('frequentie', f.frequencyLabel, f.frequencyOptions) +
           '<fieldset class="form-field choice-field"><legend>' + esc(f.channelLabel) + '</legend>' +
             '<div class="choice-row">' + f.channelOptions.map((o, i) =>
               '<label class="choice"><input type="radio" name="kanaal" value="' + esc(o.value) + '"' + (i === 0 ? ' checked' : '') + '>' +
+              '<span>' + esc(o.label) + '</span></label>').join('') +
+            '</div>' +
+          '</fieldset>' +
+          '<fieldset class="form-field choice-field"><legend>' + esc(f.callTimeLabel) + '</legend>' +
+            '<div class="choice-row">' + f.callTimeOptions.map((o, i) =>
+              '<label class="choice"><input type="radio" name="belmoment" value="' + esc(o.value) + '"' + (i === 0 ? ' checked' : '') + '>' +
               '<span>' + esc(o.label) + '</span></label>').join('') +
             '</div>' +
           '</fieldset>' +
@@ -1405,6 +1420,7 @@
       const type = v.type ? labelOf(f.typeOptions, v.type) : '';
       const freq = v.frequentie ? labelOf(f.frequencyOptions, v.frequentie) : '';
       const kanaal = v.kanaal ? labelOf(f.channelOptions, v.kanaal) : '';
+      const belmoment = v.belmoment ? labelOf(f.callTimeOptions, v.belmoment) : '';
       const waText = L('request', 'Aanvraag') + ' ' + cfg.brandName +
         '\n\n' + L('name', 'Naam') + ': ' + v.naam +
         '\n' + L('company', 'Bedrijf') + ': ' + v.bedrijf +
@@ -1414,7 +1430,7 @@
         '\n' + L('volume', 'Gewenst volume') + ': ' + volume +
         (freq ? '\n' + L('frequency', 'Leverfrequentie') + ': ' + freq : '') +
         (kanaal ? '\n' + L('channel', 'Contactvoorkeur') + ': ' + kanaal : '') +
-        (v.belmoment ? '\n' + L('callMoment', 'Gewenst belmoment') + ': ' + v.belmoment : '') +
+        (belmoment ? '\n' + L('callMoment', 'Gewenst belmoment') + ': ' + belmoment : '') +
         (v.bericht ? '\n\n' + v.bericht : '');
       v._subject = f.emailSubject + ' — ' + volume;
       const ok = await submitLead(form, v, waText, f.success);
@@ -2557,6 +2573,7 @@
   renderHeader();
   document.getElementById('site-main').innerHTML = (renderers[page] || renderHome)();
   renderFooter();
+  wireImgSlots();
   initContactForm();
   initSampleForm();
   initPresentationForm();

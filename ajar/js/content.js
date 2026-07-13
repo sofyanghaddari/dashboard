@@ -700,8 +700,16 @@ window.AJAR_CONTENT = {
         { value: 'whatsapp', label: 'WhatsApp' },
         { value: 'bellen', label: 'Bel me terug' }
       ],
+      /* Tijdvak-chips i.p.v. vrij tekstveld (v20) — sneller invullen op mobiel, en levert
+         een gestructureerd antwoord op i.p.v. vrije tekst die je zelf moet interpreteren. */
       callTimeLabel: 'Schikt een moment? (optioneel)',
-      callTimePlaceholder: 'Bijv. doordeweeks na 15:00',
+      callTimeOptions: [
+        { value: '', label: 'Geen voorkeur' },
+        { value: 'ochtend', label: 'Ochtend (9–12u)' },
+        { value: 'middag', label: 'Middag (12–15u)' },
+        { value: 'na-15', label: 'Na 15:00u' },
+        { value: 'weekend', label: 'Weekend' }
+      ],
       messageLabel: 'Bericht',
       messagePlaceholder: 'Vertel kort iets over uw zaak en waar u de olie voor wilt gebruiken…',
       submit: 'Verstuur aanvraag',

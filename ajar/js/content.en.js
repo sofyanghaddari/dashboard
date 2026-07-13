@@ -532,7 +532,13 @@ window.AJAR_CONTENT_EN = {
         { value: 'bellen', label: 'Call me back' }
       ],
       callTimeLabel: 'A time that suits? (optional)',
-      callTimePlaceholder: 'E.g. weekdays after 3pm',
+      callTimeOptions: [
+        { value: '', label: 'No preference' },
+        { value: 'ochtend', label: 'Morning (9am–12pm)' },
+        { value: 'middag', label: 'Afternoon (12–3pm)' },
+        { value: 'na-15', label: 'After 3pm' },
+        { value: 'weekend', label: 'Weekend' }
+      ],
       messageLabel: 'Message',
       messagePlaceholder: 'Tell us briefly about your business and what you want to use the oil for…',
       submit: 'Send request',

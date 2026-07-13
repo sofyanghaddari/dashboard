@@ -531,7 +531,13 @@ window.AJAR_CONTENT_FR = {
         { value: "bellen", label: "Rappelez-moi" }
       ],
       callTimeLabel: "Un moment qui vous convient ? (facultatif)",
-      callTimePlaceholder: "Ex. en semaine après 15 h",
+      callTimeOptions: [
+        { value: "", label: "Sans préférence" },
+        { value: "ochtend", label: "Matin (9h–12h)" },
+        { value: "middag", label: "Après-midi (12h–15h)" },
+        { value: "na-15", label: "Après 15h" },
+        { value: "weekend", label: "Week-end" }
+      ],
       messageLabel: "Message",
       messagePlaceholder: "Parlez-nous brièvement de votre établissement et de l’usage prévu de l’huile…",
       submit: "Envoyer la demande",

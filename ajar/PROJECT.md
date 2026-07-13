@@ -89,6 +89,54 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v20 — Content-Security-Policy + tijdvak-chips (13 juli 2026)
+
+Op verzoek van Soef een beveiligingsronde: volledige doorlichting op XSS/injectie, dataverlies en
+lekken. Geen echte kwetsbaarheden gevonden (alle dynamische tekst loopt door `esc()`, alle
+`target="_blank"`-links hebben `rel="noopener"`, geen geheimen in de repo, gist-backups staan al
+op `public: false`). Twee dingen gekozen om te bouwen, plus een correctie:
+
+- **Content-Security-Policy als vangnet:** `<meta http-equiv="Content-Security-Policy">` op alle
+  9 AJAR-pagina's + het gedeelde `404.html`. `script-src 'self' https://www.googletagmanager.com`
+  — geen `'unsafe-inline'`, dus een eventueel geïnjecteerd `<script>`- of `onerror=`-payload wordt
+  door de browser zelf geblokkeerd, ook als er ooit ergens een escape-fout zou insluipen.
+  `style-src` staat wél `'unsafe-inline'` toe (één stagger-delay-stijl + de `<noscript>`-fallback;
+  CSS-injectie is een véél kleiner risico dan script-injectie). `connect-src` staat alleen
+  Formspree + Google Analytics toe, `object-src`/`frame-src` staan op `'none'` (geen embeds nodig).
+  **Voorwaarde om dit zónder `'unsafe-inline'` voor scripts te kunnen doen:** de twee foto-
+  placeholders (`imgSlot()`/`processMedia()`) gebruikten inline `onload=`/`onerror=`-attributen
+  om te wisselen tussen foto/lege-staat — dat telt als inline script en zou een strikte CSP
+  breken. Herschreven naar `wireImgSlots()`: één `addEventListener`-pass ná elke render die
+  `img.complete` afvangt (voor afbeeldingen die al uit cache kwamen vóór de listener draaide).
+  Gedraaid met een `securitypolicyviolation`-listener in headless Chromium over alle 9 pagina's +
+  het contactformulier (indienen, Formspree-fetch) + de cookiebanner/GA-laadpad + de WhatsApp-QR
+  (v19) — nul violations.
+  **Bewust buiten scope:** het dashboard zelf (root `index.html`) niet meegenomen — dat laadt
+  CDN's (Tesseract.js, jsPDF, pdf.js, Google Identity Services) en heeft een eigen, grotere
+  CSP-oefening nodig; dit is puur de AJAR-site.
+- **"Schikt een moment?" — chips i.p.v. vrij tekstveld:** het `belmoment`-veld in het
+  offerteformulier was een open tekstinvoer ("Bijv. doordeweeks na 15:00"); nu vijf keuze-chips
+  (Geen voorkeur / Ochtend 9–12u / Middag 12–15u / Na 15:00u / Weekend, `callTimeOptions` in
+  content.js, ook vertaald in EN/FR) in dezelfde `.choice-field`-stijl als het bestaande
+  contactkanaal-keuzeveld — sneller op mobiel, en levert een gestructureerd antwoord op i.p.v.
+  vrije tekst. De WhatsApp-/e-mailtekst gebruikt de bestaande `labelOf()`-helper zodat de volledige
+  label ("Na 15:00u") in het bericht komt, niet de interne waarde.
+- **Correctie:** de derde gekozen suggestie (vCard-downloadknop "Bewaar onze gegevens") bleek al
+  volledig gebouwd en werkend — `saveCard()`/`initSaveShare()` bestonden al, inclusief een
+  domeinonafhankelijke `URL:`-regel (leest `cfg.domain` uit content.js, dus geen handmatige
+  update nodig zodra het eigen domein er is). Geen wijziging nodig, niet dubbel gebouwd.
+- **Voor het moment dat het eigen domein er is:** met opzet niets gebouwd dat dan zou vervallen.
+  `cfg.domain` is al de enige plek waar de URL vandaan komt (vCard, canonical, OG-tags, JSON-LD) —
+  domeinwissel = één regel aanpassen in `content.js`, verder niets hier hoeft opnieuw.
+
+Geverifieerd: alle 9 AJAR-pagina's + 404.html geladen in headless Chromium met een CSP-
+violation-listener (nul violations), formulier-indienen getest (fetch naar formspree.io correct
+toegestaan door `connect-src`), foto-placeholder-wiring gecontroleerd op alle pagina's (elke
+`.img-slot img` krijgt `imgok`/`empty`/`noimg` via JS, geen inline handlers meer over), tijdvak-
+chips visueel + functioneel getest (select, submit, correcte label in bericht).
+
+---
+
 ### v19 — Zeven kleine functies vanuit inkoper-perspectief (13 juli 2026)
 
 Op vraag van Soef: een lijst van 15 animatie-/functie-suggesties voorgelegd, hij koos er 8
