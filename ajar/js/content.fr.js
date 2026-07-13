@@ -93,6 +93,7 @@ window.AJAR_CONTENT_FR = {
       frequency: "Fréquence de livraison",
       channel: "Préférence de contact",
       callMoment: "Moment d’appel souhaité",
+      reference: "Numéro de référence/bon de commande",
       note: "Remarque",
       tip: "Recommandation d’un confrère"
     },
@@ -531,6 +532,7 @@ window.AJAR_CONTENT_FR = {
         { value: "na-15", label: "Après 15h" },
         { value: "weekend", label: "Week-end" }
       ],
+      poLabel: "Votre numéro de référence ou de bon de commande (facultatif)",
       messageLabel: "Message",
       messagePlaceholder: "Parlez-nous brièvement de votre établissement et de l’usage prévu de l’huile…",
       submit: "Envoyer la demande",
@@ -555,6 +557,10 @@ window.AJAR_CONTENT_FR = {
         { label: "Planifier une dégustation", prefill: "Bonjour, je souhaiterais planifier une dégustation d’huile d’olive AJAR dans mon établissement.", ga: "wa_topic_proeverij" },
         { label: "Cadeau d’affaires", prefill: "Bonjour, je suis intéressé(e) par l’huile d’olive AJAR comme cadeau d’affaires. Pouvez-vous m’en dire plus ?", ga: "wa_topic_gift" }
       ]
+    },
+    nextSteps: {
+      title: "Comment ça se passe ensuite",
+      steps: ["Directement chez l’importateur", "Réponse, généralement le jour même", "Échantillon ou devis suit"]
     },
     save: {
       title: "Enregistrez nos coordonnées",

@@ -94,6 +94,7 @@ window.AJAR_CONTENT_EN = {
       frequency: 'Delivery frequency',
       channel: 'Contact preference',
       callMoment: 'Preferred time to call',
+      reference: 'Reference/PO number',
       note: 'Note',
       tip: 'Tip from a fellow entrepreneur'
     },
@@ -532,6 +533,7 @@ window.AJAR_CONTENT_EN = {
         { value: 'na-15', label: 'After 3pm' },
         { value: 'weekend', label: 'Weekend' }
       ],
+      poLabel: 'Your reference or PO number (optional)',
       messageLabel: 'Message',
       messagePlaceholder: 'Tell us briefly about your business and what you want to use the oil for…',
       submit: 'Send request',
@@ -556,6 +558,10 @@ window.AJAR_CONTENT_EN = {
         { label: 'Plan a tasting',    prefill: 'Hello, I would like to plan an AJAR olive oil tasting at my business.', ga: 'wa_topic_proeverij' },
         { label: 'Corporate gift',    prefill: 'Hello, I am interested in AJAR olive oil as a corporate gift. Could you tell me more?', ga: 'wa_topic_gift' }
       ]
+    },
+    nextSteps: {
+      title: 'What happens next',
+      steps: ['Straight to the importer', 'Reply, usually same day', 'Sample or quote follows']
     },
     save: {
       title: 'Save our details',

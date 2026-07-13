@@ -987,12 +987,16 @@
               '<span>' + esc(o.label) + '</span></label>').join('') +
             '</div>' +
           '</fieldset>' +
+          field('referentie', f.poLabel, 'text', false) +
           '<label class="form-field"><span>' + esc(f.messageLabel) + '</span>' +
             '<textarea name="bericht" rows="4" placeholder="' + esc(f.messagePlaceholder) + '"></textarea>' +
           '</label>' +
           '<div class="form-actions">' +
             '<button type="submit" class="btn btn-primary" id="form-submit" data-ga-event="offerte_aanvraag">' + esc(cfg.formspreeId ? f.submit : f.submitWhatsApp) + '</button>' +
           '</div>' +
+          /* Kort stappenplan (v22) — neemt de "wat gebeurt er nu?"-onzekerheid weg, incl.
+             een zachte reactietijd-belofte. Eén compacte regel i.p.v. een aparte kaart. */
+          (c.nextSteps ? '<p class="form-note next-steps">' + esc(c.nextSteps.title) + ': ' + c.nextSteps.steps.map(esc).join(' → ') + '</p>' : '') +
           '<p class="form-note">' + esc(f.privacyNote) + ' <a href="privacy.html">' + esc(T('privacyLink', 'Privacyverklaring')) + '</a></p>' +
           '<p class="form-error" data-role="error" hidden></p>' +
           '<p class="form-success" data-role="success" hidden></p>' +
@@ -1016,7 +1020,10 @@
             '<p class="footer-legal">' + esc(C.importer.name) + '<br>' + esc(C.importer.address) + '<br>' +
               esc(C.importer.postalCity) + '<br>' + esc(C.importer.country) + '</p>' +
             '<p class="footer-legal colophon-nums">' +
-              '<span class="copy-row">KvK: ' + esc(cfg.kvk) + copyChip(cfg.kvk) + '</span>' +
+              /* KvK-nummer klikbaar naar het officiële, openbare Handelsregister (v22) — een
+                 inkoper kan in twee klikken verifiëren dat het bedrijf echt bestaat, i.p.v.
+                 alleen platte tekst te moeten vertrouwen. */
+              '<span class="copy-row">KvK: <a href="https://www.kvk.nl/zoeken/" target="_blank" rel="noopener">' + esc(cfg.kvk) + '</a>' + copyChip(cfg.kvk) + '</span>' +
               (cfg.btw ? '<span class="copy-row">Btw: ' + esc(cfg.btw) + copyChip(cfg.btw) + '</span>' : '') +
             '</p>' +
           '</div>' +
@@ -1435,6 +1442,7 @@
         (freq ? '\n' + L('frequency', 'Leverfrequentie') + ': ' + freq : '') +
         (kanaal ? '\n' + L('channel', 'Contactvoorkeur') + ': ' + kanaal : '') +
         (belmoment ? '\n' + L('callMoment', 'Gewenst belmoment') + ': ' + belmoment : '') +
+        (v.referentie ? '\n' + L('reference', 'Referentie/PO-nummer') + ': ' + v.referentie : '') +
         (v.bericht ? '\n\n' + v.bericht : '');
       v._subject = f.emailSubject + ' — ' + volume;
       const ok = await submitLead(form, v, waText, f.success);

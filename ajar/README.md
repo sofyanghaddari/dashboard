@@ -111,6 +111,28 @@ zodra de site plat ligt — GitHub Pages meldt dat zelf niet.
    telefoon) toevoegen aan de monitor.
 4. Klaar — je krijgt een melding zodra de site niet meer bereikbaar is (of weer online komt).
 
+## Vindbaarheid buiten de site (Google & LinkedIn)
+
+Voor een B2B-leverancier weegt dit vaak zwaarder dan de website zelf — een inkoper checkt dit vóór
+hij WhatsApt. Geen code, kost samen een uurtje.
+
+**Google Bedrijfsprofiel** (gratis, [google.com/business](https://www.google.com/business/)):
+1. Profiel aanmaken met naam "AJAR", categorie "Olijfolieleverancier"/"Importeur", adres
+   Jephtastraat 28H, 1055 JV Amsterdam, telefoonnummer en website-URL.
+2. Verificatie via een postkaart of telefoon (Google bepaalt de optie op basis van je adres).
+3. Zodra geverifieerd: eerste review(s) vragen aan een tevreden klant — een B2B-leverancier met
+   écht een paar Google-reviews wekt aanzienlijk meer vertrouwen dan een zonder.
+4. Dit is meteen ook waar "olijfolie leverancier Amsterdam"-achtige zoekopdrachten op landen —
+   sterker voor vindbaarheid dan verdere SEO-tweaks aan de site zelf.
+
+**LinkedIn-bedrijfspagina** (gratis, [linkedin.com/company/setup/new](https://www.linkedin.com/company/setup/new/)):
+1. Bedrijfspagina aanmaken (geen persoonlijk profiel nodig als koppeling, al helpt dat wel voor
+   bereik) met naam, logo (`assets/logo/ajar-header.svg` exporteren als PNG) en de payoff-tekst
+   uit `content.js` (`config.payoff`).
+2. Eén introductiepost is genoeg om 'm niet leeg te laten ogen.
+3. Link naar de site in het profiel; zet de LinkedIn-URL daarna in `content.js` onder `socials`
+   (zelfde patroon als een toekomstige Instagram-link) zodat 'm in de footer verschijnt.
+
 Voeg na een domeinwissel een tweede monitor toe voor het nieuwe domein (of pas de URL van de
 bestaande monitor aan) — anders bewaakt hij straks een adres dat niemand meer gebruikt.
 

@@ -89,6 +89,40 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v22 — Vier kleine B2B-vertrouwenssignalen + externe vindbaarheid (13 juli 2026)
+
+Vervolg op een "wat kunnen we nog verbeteren voor een zakelijke klant"-ronde; Soef koos 1/2/3/4
+("in het klein en kort") + 8/9 uit die lijst, en bevestigde beursaanwezigheid (Parijs e.a.) voor
+punt 10 — details daarvoor nog navragen, niet gebouwd om geen feiten te verzinnen.
+
+- **Reactietijd + stappenplan samengevoegd** tot één compacte regel onder de "Verstuur
+  aanvraag"-knop (`c.nextSteps` in content.js): "Zo gaat het verder: Aanvraag bij de importeur
+  zelf → Reactie, meestal dezelfde werkdag → Sample of offerte volgt." Bewust geen concreet
+  aantal uren verzonnen (geen SLA die niet hard te maken is) — "meestal dezelfde werkdag" is een
+  realistische belofte voor WhatsApp-first, één-op-één contact. Hergebruikt de bestaande
+  `.form-note`-stijl, geen nieuwe CSS nodig.
+- **Referentie/PO-nummer-veld** (optioneel) in het offerteformulier — sommige inkoopafdelingen
+  moeten intern al een ordernummer meesturen; komt nu automatisch mee in het WhatsApp-/
+  e-mailbericht i.p.v. achteraf nagestuurd te moeten worden.
+- **KvK-nummer klikbaar** naar het officiële, openbare Handelsregister (`kvk.nl/zoeken/`) — een
+  inkoper kan nu in twee klikken verifiëren dat het bedrijf echt bestaat i.p.v. alleen platte
+  tekst te vertrouwen. Bewust géén diepe deeplink met kvknummer-queryparameter gebruikt: kon de
+  exacte werkende URL-vorm niet verifiëren (kvk.nl en openkvk.nl blokkeerden de fetch-poging),
+  en een gegokte/kapotte link op een vertrouwens-pagina is erger dan geen link. De algemene
+  zoekpagina is wél bevestigd bereikbaar.
+- **Vindbaarheid buiten de site:** twee nieuwe README-secties (geen code, Soef moet de accounts
+  zelf aanmaken) — een Google Bedrijfsprofiel-stappenplan (weegt voor een lokale B2B-leverancier
+  vaak zwaarder dan de site zelf: reviews, "olijfolie leverancier Amsterdam"-vindbaarheid) en een
+  LinkedIn-bedrijfspagina-stappenplan, met een verwijzing naar het al bestaande `socials`-array
+  in content.js zodra de LinkedIn-URL er is.
+
+Geverifieerd: smoke-test groen op alle 10 pagina's; PO-veld/KvK-link/stappenplan-tekst met
+Playwright gecontroleerd (inclusief dat het referentienummer daadwerkelijk in de Formspree-POST
+terechtkomt); KvK-link computed style gecontroleerd (was onzichtbaar als link tussen platte tekst
+— alsnog een underline toegevoegd).
+
+---
+
 ### v21 — GoatCounter i.p.v. GA4, foto's als WebP, CI-smoke-test, monitoring (13 juli 2026)
 
 Op verzoek van Soef ("doe alles wat handig is") na een ronde algemene-verbetersuggesties. Vier

@@ -156,6 +156,7 @@ window.AJAR_CONTENT = {
       frequency: 'Leverfrequentie',
       channel: 'Contactvoorkeur',
       callMoment: 'Gewenst belmoment',
+      reference: 'Referentie/PO-nummer',
       note: 'Opmerking',
       tip: 'Tip collega-ondernemer'
     },
@@ -703,6 +704,9 @@ window.AJAR_CONTENT = {
         { value: 'na-15', label: 'Na 15:00u' },
         { value: 'weekend', label: 'Weekend' }
       ],
+      /* Referentie/PO-nummer (v22) — sommige inkoopafdelingen willen dit meteen kunnen
+         koppelen aan hun eigen inkooporder, i.p.v. dat achteraf in een los bericht na te sturen. */
+      poLabel: 'Uw referentie- of PO-nummer (optioneel)',
       messageLabel: 'Bericht',
       messagePlaceholder: 'Vertel kort iets over uw zaak en waar u de olie voor wilt gebruiken…',
       submit: 'Verstuur aanvraag',
@@ -729,6 +733,14 @@ window.AJAR_CONTENT = {
         { label: 'Proeverij plannen', prefill: 'Hallo, ik wil graag een proeverij van AJAR olijfolie plannen in mijn zaak.', ga: 'wa_topic_proeverij' },
         { label: 'Relatiegeschenk',  prefill: 'Hallo, ik heb interesse in AJAR olijfolie als relatiegeschenk. Kunt u me meer vertellen?', ga: 'wa_topic_gift' }
       ]
+    },
+    /* Kort stappenplan ná een aanvraag (v22) — neemt de "wat gebeurt er nu?"-onzekerheid van
+       een offerteaanvraag weg, inclusief een zachte reactietijd-belofte. Bewust vaag over het
+       exacte aantal uren (geen hard cijfer verzinnen) — "meestal dezelfde werkdag" is een
+       realistische belofte voor WhatsApp-first, één-op-één contact. */
+    nextSteps: {
+      title: 'Zo gaat het verder',
+      steps: ['Aanvraag bij de importeur zelf', 'Reactie, meestal dezelfde werkdag', 'Sample of offerte volgt']
     },
     /* Bewaar/deel — vCard (gaat in Contacten op iPhone/Android), Web Share en QR-code.
        (Een echte Apple Wallet-pass vereist Apple-certificaten + ondertekening — niet mogelijk

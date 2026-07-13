@@ -2826,6 +2826,8 @@ body.nav-open .site-header { transform: none !important; }
    ============================================================ */
 .copy-row { display: inline-flex; align-items: center; gap: 6px; }
 .colophon-nums { display: flex; flex-direction: column; gap: 4px; align-items: center; margin-top: 4px; }
+/* KvK-nummer klikbaar naar het Handelsregister (v22) — anders onzichtbaar als link tussen platte tekst */
+.colophon-nums a { text-decoration: underline; text-underline-offset: 2px; }
 .copy-btn {
   display: inline-flex;
   align-items: center;
