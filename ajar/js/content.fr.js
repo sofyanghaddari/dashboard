@@ -101,6 +101,9 @@ window.AJAR_CONTENT_FR = {
     },
     photoFollows: "Photo à venir",
     skipLink: "Aller au contenu",
+    announcement: "Annonce",
+    contactHeading2: "Demande et coordonnées",
+    sampleStepsHeading: "Comment ça marche",
     mainNav: "Navigation principale",
     subTopics: "rubriques",
     navHeading: "Navigation",
@@ -204,6 +207,7 @@ window.AJAR_CONTENT_FR = {
         { year: "Début des années 90", title: "Fondation de l’entreprise familiale", text: "L’entreprise familiale commence à presser les olives de ses propres oliveraies.", todo: false },
         { year: "Année à venir", title: "Enregistrée officiellement sous ConservAjar SARL", text: "L’entreprise grandit et est enregistrée officiellement sous le nom ConservAjar SARL, avec sa propre marque AJAR.", todo: true },
         { year: "Année à venir", title: "Certification ISO 22000 (SGS)", text: "La production est certifiée ISO 22000 — sécurité des aliments et traçabilité, auditée en externe par SGS.", todo: true },
+        { year: "Octobre 2024", title: "AJAR au SIAL Paris", text: "AJAR présente l’huile au SIAL Paris à Paris Nord Villepinte — le plus grand salon international de l’alimentation au monde. Une première rencontre avec le marché européen.", todo: false },
         { year: "2026", title: "Première importation officielle aux Pays-Bas", text: "AJAR arrive officiellement pour la première fois sur le marché néerlandais, depuis Amsterdam.", todo: false }
       ],
       note: "Les noms et dates des générations seront ajoutés après concertation avec la famille."

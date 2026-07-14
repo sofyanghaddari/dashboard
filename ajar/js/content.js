@@ -165,6 +165,9 @@ window.AJAR_CONTENT = {
     },
     photoFollows: 'Foto volgt',
     skipLink: 'Direct naar de inhoud',
+    announcement: 'Aankondiging',
+    contactHeading2: 'Aanvraag en contactgegevens',
+    sampleStepsHeading: 'Zo werkt het',
     mainNav: 'Hoofdnavigatie',
     subTopics: 'onderwerpen',
     navHeading: 'Navigatie',
@@ -322,6 +325,7 @@ window.AJAR_CONTENT = {
         { year: "Begin jaren '90", title: 'Oprichting van het familiebedrijf', text: 'Het familiebedrijf begint met het persen van olijven uit de eigen boomgaarden.', todo: false },
         { year: 'Jaartal volgt', title: 'Formeel geregistreerd als ConservAjar SARL', text: 'Het bedrijf groeit en wordt formeel geregistreerd onder de naam ConservAjar SARL, met het eigen merk AJAR.', todo: true },
         { year: 'Jaartal volgt', title: 'ISO 22000-certificering (SGS)', text: 'De productie wordt gecertificeerd volgens ISO 22000 — voedselveiligheid en traceerbaarheid, extern getoetst door SGS.', todo: true },
+        { year: 'Oktober 2024', title: 'AJAR op SIAL Paris', text: 'AJAR presenteert de olie op SIAL Paris in Paris Nord Villepinte — ’s werelds grootste internationale voedingsvakbeurs. Een eerste kennismaking met de Europese markt.', todo: false },
         { year: '2026', title: 'Eerste officiële import in Nederland', text: 'AJAR komt vanuit Amsterdam voor het eerst officieel op de Nederlandse markt.', todo: false }
       ],
       note: 'Namen en jaartallen van de generaties worden aangevuld na overleg met de familie.',

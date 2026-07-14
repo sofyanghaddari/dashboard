@@ -89,6 +89,44 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v25 — SIAL Paris 2024 op de tijdlijn + VIES-adrescontrole + toegankelijkheidsaudit (13 juli 2026)
+
+Drie dingen in één ronde ("doe alles wat jij kan doen").
+
+- **SIAL Paris 2024 in de tijdlijn (Over ons).** Soef leverde een kaartscreenshot (Paris Nord
+  Villepinte) + datum 23 oktober 2024. Geverifieerd via websearch: **SIAL Paris 2024 = 19–23
+  oktober 2024, Paris Nord Villepinte** — 's werelds grootste voedingsvakbeurs. Dat past exact, dus
+  een tijdlijn-item "Oktober 2024 · AJAR op SIAL Paris" toegevoegd (vóór het 2026-item) in NL/EN/FR.
+  Sterk, verifieerbaar B2B-vertrouwenssignaal. De maps-screenshot + het genoemde filmpje zijn niet
+  bruikbaar als site-beeld (screenshot = kaart-UI met een minuscule productthumbnail; video = zwaar
+  + aparte hosting-beslissing) — een echte standfoto kan er later bij.
+- **VIES-adrescontrole afgemaakt.** De Worker gaf het geregistreerde adres al terug; de front-end
+  zet het nu in de sample-lead (`geregistreerdAdres`) náást het ingetikte bezorgadres, zodat je in
+  één oogopslag ziet of iemand naar een ánder adres laat sturen (anti-fraude — nog een oogtoets, geen
+  harde blokkade; adresnotatie verschilt te veel om automatisch te matchen). `registeredAddress`-label
+  toegevoegd (fallback, EN/FR erven NL).
+- **Toegankelijkheidsaudit (axe-core) + fixes.** Alle 9 pagina's × 3 talen gescand, in normale én
+  reduced-motion-staat. Gevonden en gefixt:
+  - *link-in-text-block* (serious): de "Privacyverklaring"-link in `.form-note` leunde alleen op
+    kleur → onderstreping toegevoegd (`.form-note a`).
+  - *region* (alle pagina's): de promo-topbar viel buiten alle landmarks → in een
+    `<aside aria-label>` gewikkeld (scrolt nog steeds mee weg zoals voorheen).
+  - *heading-order* (contact + sample): h1→h3-sprong → onzichtbare `<h2 class="sr-only">`
+    sectiekoppen toegevoegd (+ nieuwe `.sr-only`-helper).
+  - *color-contrast* (serious): de flauwe gouden stapnummers (`.process-num`, ~2:1), de
+    actieve-stap-highlight, de "volgt"-cert-badge, het cursieve "formaat volgt"-label en twee labels
+    op de fles-mockup zaten onder de norm → allemaal naar `--gold-ink`/donkerder gebracht zodat ze
+    3:1 (grote tekst) resp. 4.5:1 (kleine tekst) halen, met behoud van de gouden toon. **Eén bewuste
+    non-fix:** een hero-sub-melding bleek een axe-timingartefact (scan mídden in de fade-in-reveal);
+    in ruststand haalt `--ink-soft` op crème ~6.5:1 — dus terecht niet aangepast.
+  - Eindresultaat: **nul axe-violations** op alle pagina's/talen, beide bewegingsstaten.
+
+Geverifieerd: front-end sample-test 30/30 (incl. dat het geregistreerde adres in de lead komt),
+axe-audit volledig schoon, tijdlijn toont SIAL correct tussen ISO en 2026, stapnummers visueel
+gecontroleerd (leesbaar goud, ontwerp intact), volledige smoke-test groen.
+
+---
+
 ### v24 — Automatische sample-verificatie via VIES (fase 2, gratis) (13 juli 2026)
 
 Fase 2 van het sample-verificatieplan, gebouwd nadat Soef koos voor de **gratis** route ("ik wil

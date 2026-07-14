@@ -198,10 +198,15 @@
        Rouleert door topbarItems(); eerste item = de sample-CTA. */
     const tbItems = topbarItems();
     if (tbItems.length && page !== 'sample') {
+      /* In een <aside>-landmark met naam gewikkeld (a11y, v25): anders valt de promo-balk
+         buiten alle landmarks (axe "region"). De aside zit vóór de sticky header en scrolt
+         gewoon mee weg zoals voorheen. */
       document.getElementById('site-header').insertAdjacentHTML('beforebegin',
-        '<a class="topbar" href="' + esc(C.topbar.href) + '" data-ga-event="sample_cta_click">' +
-          '<span class="tb-text">' + esc(tbItems[0]) + '</span>' +
-        '</a>');
+        '<aside class="topbar-wrap" aria-label="' + esc(T('announcement', 'Aankondiging')) + '">' +
+          '<a class="topbar" href="' + esc(C.topbar.href) + '" data-ga-event="sample_cta_click">' +
+            '<span class="tb-text">' + esc(tbItems[0]) + '</span>' +
+          '</a>' +
+        '</aside>');
     }
 
     /* Skip-link voor toetsenbord/screenreader: als allereerste focusbaar element */
@@ -961,6 +966,9 @@
     const c = C.contact, f = c.form;
     return pageHero(c.hero) +
       '<section class="section"><div class="wrap contact-inner">' +
+        /* Onzichtbare sectie-kop (a11y, v25): voorkomt een h1->h3-sprong voor schermlezers,
+           want de aside-kaarten hieronder beginnen met <h3>. */
+        '<h2 class="sr-only">' + esc(T('contactHeading2', 'Aanvraag en contactgegevens')) + '</h2>' +
 
         '<form class="card contact-form reveal" id="offer-form" novalidate>' +
           '<input type="text" name="_gotcha" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">' +
@@ -1049,6 +1057,9 @@
         : '') +
 
       '<section class="section"><div class="wrap">' +
+        /* Onzichtbare sectie-kop (a11y, v25): de processtappen hieronder zijn <h3>; zonder een
+           voorafgaande h2 zou dat een h1->h3-sprong zijn voor schermlezers. */
+        '<h2 class="sr-only">' + esc(T('sampleStepsHeading', 'Zo werkt het')) + '</h2>' +
         '<ol class="process process-3" data-anim>' + s.how.steps.map((st, i) =>
           '<li class="process-step reveal">' +
             '<span class="process-num">' + pad2(i + 1) + '</span>' +
@@ -1145,8 +1156,16 @@
         const status = res && res.status;
         if (status === 'invalid') { showMsg(form, 'error', T('errInvalidBtw', 'Dit BTW-nummer herkennen we niet.')); return; }
         if (status === 'duplicate') { showMsg(form, 'error', T('errDuplicateSample', 'Dit bedrijf heeft al een gratis sample ontvangen.')); return; }
-        if (status === 'verified') v.verificatie = res.name ? ('VIES ✓ — ' + res.name) : 'VIES ✓';
-        else v.verificatie = 'VIES niet bereikbaar — handmatig controleren';
+        if (status === 'verified') {
+          /* Naam + het bij VIES geregistreerde bedrijfsadres in de lead zetten, zodat je het kunt
+             vergelijken met het ingetikte bezorgadres (verzend een gratis sample bij voorkeur naar
+             het geregistreerde adres — anti-fraude). Nog géén harde blokkade: adresnotatie
+             verschilt te veel om automatisch op te matchen; dit is een oogtoets voor jou. */
+          v.verificatie = 'VIES ✓' + (res.name ? ' — ' + res.name : '');
+          if (res.address) v.geregistreerdAdres = res.address;
+        } else {
+          v.verificatie = 'VIES niet bereikbaar — handmatig controleren';
+        }
       }
 
       v._subject = f.emailSubject + ' — ' + v.bedrijf;
@@ -1160,7 +1179,8 @@
         '\n' + L('address', 'Bezorgadres') + ': ' + v.adres +
         (v.bericht ? '\n' + L('note', 'Opmerking') + ': ' + v.bericht : '') +
         (v.tip ? '\n' + L('tip', 'Tip collega-ondernemer') + ': ' + v.tip : '') +
-        (v.verificatie ? '\n' + L('verification', 'Verificatie') + ': ' + v.verificatie : '');
+        (v.verificatie ? '\n' + L('verification', 'Verificatie') + ': ' + v.verificatie : '') +
+        (v.geregistreerdAdres ? '\n' + L('registeredAddress', 'Geregistreerd adres (VIES)') + ': ' + v.geregistreerdAdres : '');
       const ok = await submitLead(form, v, waText, f.success);
       if (ok) { gaEvent('sample_aanvraag', { tip: v.tip ? 'ja' : 'nee' }); clearFormDraft(form); }
     });
