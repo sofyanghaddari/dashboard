@@ -89,6 +89,42 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v28 — Nuttige animaties + functie-polish (17 juli 2026)
+
+Vervolg op de mega-ronde ("verbeter functies die er al zijn, voeg nuttige animaties toe").
+Elke animatie hier communiceert iets — laadstatus, positie, bevestiging. CSS-sectie
+"✨ NUTTIGE ANIMATIES & FUNCTIE-POLISH v28"; JS-wijzigingen in `main.js`.
+
+**Functie-verbeteringen:**
+- **Toast-systeem** (`window.ajarToast`): werd al aangeroepen vanuit bewaar/deel maar bestond
+  nooit (dode fallback veranderde de knoptekst). Nu een rustige donkere pill met gouden vinkje,
+  onderin, `role="status"`, verdwijnt vanzelf; herbruikbaar voor elke bevestiging.
+- **Fotostapel: swipe + pijltjestoetsen**: horizontale veeg bladert vooruit/terug (terug = de
+  vorige foto komt van links terug de stapel op, `stack-entering`); ← / → op het toetsenbord doen
+  hetzelfde. De click-ná-swipe wordt onderdrukt (capture-listener) zodat een veeg niet dubbel telt.
+- **Lightbox: buurfoto's voorgeladen** bij elke paint → bladeren voelt instant.
+- **BTW/KvK format-validatie** in `initFieldChecks`: het vinkje + de voortgangsbalk verschijnen
+  pas bij een écht bruikbaar nummer (EU-BTW: landcode + 8-12 tekens; KvK: precies 8 cijfers) —
+  minder onbruikbare sample-aanvragen. VIES blijft de echte controle bij verzenden.
+- **Topbar-rotatie pauzeert** bij hover/focus (leesbaar).
+- **Prefetch ook op focusin** (toetsenbord-navigatie even instant als muis).
+- **A11y: formulier-meldingen zijn live-regions** (`role="alert"`/`role="status"` bij boot gezet,
+  vóór de eerste melding — vereist voor betrouwbare screenreader-aankondiging).
+
+**Nuttige animaties:**
+- **Laad-shimmer** op foto-placeholders tot de foto er is; stopt via `slot-loaded`-klasse op de
+  figure (gezet in `wireImgSlots`/`initEnhancements` — geen `:has()`-afhankelijkheid). `.empty`
+  (placeholder-icoon) en `.noimg` (proces-icoontegels) shimmeren niet.
+- **Positie-dots worden een pill** op de actieve stand (fotostapel 22px, carrousel 20px) —
+  leesbaarder dan een grotere stip.
+- **Copy-knop pop** bij gelukt kopiëren; **FAQ-antwoord glijdt zacht mee omhoog** bij openen.
+
+Getest: alle bestaande suites groen (e2e 7 pagina's × 2 breedtes, interactie-audit, officiële
+smoke-test) + gerichte v28-tests (toast incl. auto-verdwijnen, live-region-rollen, BTW/KvK
+goed/fout, swipe vooruit+terug symmetrisch, shimmer stopt op geladen foto, pill-dots) + EN-spotcheck.
+
+---
+
 ### v27 — Mega-audit + design-verfijning: hele site nagelopen, 3 échte bugs gefixt (17 juli 2026)
 
 Vervolg op v26, opdracht Soef: "mega update, controleer ALLES grondig — elke pagina, elke animatie,

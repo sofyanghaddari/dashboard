@@ -3201,6 +3201,103 @@ p, li { text-wrap: pretty; }
 }
 
 /* ============================================================
+   ✨ NUTTIGE ANIMATIES & FUNCTIE-POLISH v28 (17 juli 2026)
+   Functionele beweging: elke animatie hier communiceert iets
+   (laadstatus, positie, bevestiging). Reduced-motion onderaan.
+   ============================================================ */
+
+/* ── 1. Toast: bevestigings-pill onderin (window.ajarToast) ── */
+.ajar-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 16px);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  background: rgba(30, 36, 20, .94);
+  color: #F7F5F0;
+  font-size: .88rem;
+  font-weight: 500;
+  letter-spacing: .01em;
+  box-shadow: 0 10px 34px rgba(30, 30, 28, .3);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1500;
+  transition: opacity .35s var(--ease-out), transform .45s var(--ease-out);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.ajar-toast svg { width: 17px; height: 17px; color: var(--gold-bright); flex: none; }
+.ajar-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ── 2. Fotostapel: terugbladeren — vorige foto komt van links terug ── */
+.stack-card.stack-entering { animation: stackIn .5s var(--ease-out); }
+@keyframes stackIn {
+  from { transform: translateX(-56%) rotate(-6deg); opacity: 0; }
+  to { transform: rotate(-1.2deg); opacity: 1; }
+}
+
+/* ── 3. Laad-shimmer: placeholder "ademt" tot de foto er is ──
+   Communiceert dat er iets onderweg is; stopt vanzelf (laag onder de foto). */
+.img-slot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(247, 245, 240, .16) 50%, transparent 70%);
+  background-size: 220% 100%;
+  animation: slotShimmer 2.2s ease-in-out infinite;
+}
+.img-slot.slot-loaded::after, .img-slot.noimg::after { animation: none; opacity: 0; }
+/* .empty gebruikt ::after al voor het placeholder-icoon (eigen background/opacity
+   winnen op specificiteit) — alleen de shimmer-animatie uitzetten */
+.img-slot.empty::after { animation: none; }
+@keyframes slotShimmer {
+  from { background-position: 130% 0; }
+  to { background-position: -80% 0; }
+}
+
+/* ── 4. Positie-dots worden een pill op de actieve stand ──
+   Leesbaarder dan een iets grotere stip: je ziet meteen wáár je bent. */
+.stack-dot, .mcar-dot { transition: background .3s var(--ease), width .35s var(--ease-out), transform .3s var(--ease); }
+.stack-dot.on { width: 22px; border-radius: 999px; transform: none; }
+.mcar-dot.on { width: 20px; border-radius: 999px; transform: none; }
+
+/* ── 5. Copy-knop: kleine pop bij gelukt kopiëren ── */
+.copy-btn.copied { animation: copyPop .35s var(--ease-out); }
+@keyframes copyPop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* ── 6. FAQ: het antwoord zelf glijdt zacht mee omhoog bij openen ── */
+.faq-item[open] .faq-body > p { animation: faqBodyIn .5s var(--ease-out) both; }
+@keyframes faqBodyIn {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Reduced motion: alles direct in eindstand */
+@media (prefers-reduced-motion: reduce) {
+  .ajar-toast { transition: opacity .2s ease; transform: translate(-50%, 0); }
+  .stack-card.stack-entering { animation: none; }
+  .img-slot::after { animation: none; opacity: 0; }
+  .img-slot.empty::after { opacity: .35; }
+  .stack-dot, .mcar-dot { transition: none; }
+  .copy-btn.copied { animation: none; }
+  .faq-item[open] .faq-body > p { animation: none; }
+}
+@media print {
+  .ajar-toast { display: none !important; }
+  .img-slot::after { display: none !important; }
+}
+
+/* ============================================================
    🖨️ AFDRUKVERSIE (v19)
    Een inkoper print het productdossier/de zakelijke pagina écht — schoon
    zwart-op-wit, zonder navigatie/footer-chrome/CTA-marketing, geen donkere

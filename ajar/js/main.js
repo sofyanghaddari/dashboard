@@ -94,7 +94,12 @@
       if (img.dataset.wired) return;
       img.dataset.wired = '1';
       const errClass = img.dataset.errClass || 'empty';
-      const ok = () => img.classList.add('imgok');
+      /* v28: ook een klasse op de figure — de laad-shimmer (CSS) stopt daarop,
+         zonder :has()-afhankelijkheid */
+      const ok = () => {
+        img.classList.add('imgok');
+        const slot = img.closest('.img-slot'); if (slot) slot.classList.add('slot-loaded');
+      };
       const err = () => {
         if (img.dataset.fallback && img.src !== new URL(img.dataset.fallback, location.href).href) {
           img.src = img.dataset.fallback;
@@ -551,10 +556,42 @@
        bevroor de hele stapel. De wissel zelf (480ms) mag altijd afmaken. */
     function stop() { clearInterval(timer); timer = null; }
 
+    /* v28: terugbladeren — de vorige foto komt van links terug bovenop de stapel */
+    function retreat() {
+      if (busy) return;
+      order.unshift(order.pop());
+      const top = cards[order[0]];
+      if (!reduce) {
+        busy = true;
+        top.classList.add('stack-entering');
+        leaveTimer = setTimeout(() => { top.classList.remove('stack-entering'); busy = false; }, 520);
+      }
+      apply();
+    }
+
     g.addEventListener('click', () => { advance(); stop(); start(); });
     g.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advance(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); advance(); stop(); start(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); retreat(); stop(); start(); }
     });
+    /* v28: horizontale veeg bladert door de stapel (zoals een stapel foto's op tafel) */
+    let swX = 0, swY = 0, swOn = false;
+    g.addEventListener('touchstart', (e) => {
+      const t = e.changedTouches[0]; swX = t.clientX; swY = t.clientY; swOn = true;
+    }, { passive: true });
+    g.addEventListener('touchend', (e) => {
+      if (!swOn) return; swOn = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - swX, dy = t.clientY - swY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+        dx < 0 ? advance() : retreat();
+        stop(); start();
+        g._swiped = true;                    /* de click ná een veeg overslaan */
+        setTimeout(() => { g._swiped = false; }, 400);
+      }
+    }, { passive: true });
+    g.addEventListener('click', (e) => { if (g._swiped) e.stopImmediatePropagation(); }, true);
     g.setAttribute('tabindex', '0');
     dots.forEach(d => d.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -581,9 +618,16 @@
     const items = topbarItems();
     if (!el || items.length < 2) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    /* v28: stilstaan zolang de bezoeker de balk aanwijst of focust — leesbaar */
+    let hold = false;
+    const bar = el.closest('.topbar') || el;
+    bar.addEventListener('pointerenter', () => { hold = true; });
+    bar.addEventListener('pointerleave', () => { hold = false; });
+    bar.addEventListener('focusin', () => { hold = true; });
+    bar.addEventListener('focusout', () => { hold = false; });
     let i = 0;
     setInterval(() => {
-      if (document.hidden) return;
+      if (document.hidden || hold) return;
       i = (i + 1) % items.length;
       el.classList.add('tb-swap');
       setTimeout(() => {
@@ -1353,6 +1397,13 @@
       const val = inp.value.trim();
       if (inp.type === 'email') return /.+@.+\..+/.test(val);
       if (inp.type === 'tel') return val.length > 0 && (val.replace(/\D/g, '').length >= 8);
+      /* v28: format-bewuste checks — het vinkje (en de voortgangsbalk) verschijnt
+         pas bij een écht bruikbaar nummer, niet bij twee willekeurige tekens. */
+      if (inp.name === 'btw') {
+        const vat = val.replace(/[\s.\-]/g, '').toUpperCase();
+        return /^[A-Z]{2}[A-Z0-9]{8,12}$/.test(vat); /* EU-BTW: landcode + 8-12 tekens (NL: NL…B..) */
+      }
+      if (inp.name === 'kvk') return /^\d{8}$/.test(val.replace(/[\s.]/g, '')); /* KvK = precies 8 cijfers */
       if (inp.hasAttribute('required')) return val.length > 1;
       return false;
     };
@@ -1954,7 +2005,10 @@
 
     /* Blur-up: reeds-gecachte foto's meteen scherp tonen (onload vuurt dan soms niet) */
     document.querySelectorAll('.img-slot img').forEach(im => {
-      if (im.complete && im.naturalWidth > 0) im.classList.add('imgok');
+      if (im.complete && im.naturalWidth > 0) {
+        im.classList.add('imgok');
+        const slot = im.closest('.img-slot'); if (slot) slot.classList.add('slot-loaded');
+      }
     });
 
     /* Scroll-voortgangslijn (dun goud, bovenaan) */
@@ -2112,6 +2166,13 @@
       capEl.textContent = it.alt || '';
       capEl.style.display = it.alt ? '' : 'none';
       if (counterEl) counterEl.textContent = (cur + 1) + ' / ' + gallery.length;
+      /* v28: buurfoto's alvast in de browsercache — bladeren voelt instant */
+      if (gallery.length > 1) {
+        [cur + 1, cur - 1].forEach(n => {
+          const nb = gallery[(n + gallery.length) % gallery.length];
+          if (!nb._pre) { nb._pre = new Image(); nb._pre.src = nb.src; }
+        });
+      }
     }
 
     /* Schuif-overgang naar een andere foto: huidige glijdt weg, nieuwe glijdt van de andere kant in. */
@@ -2683,6 +2744,36 @@
     });
   }
 
+  /* ---------- A11y: formulier-meldingen als live-regions (v28) ----------
+     Succes/fout verschijnt visueel onder het formulier maar werd door
+     screenreaders niet omgeroepen. De regions bestaan al bij het laden
+     (vereist voor betrouwbare aankondiging), dus alleen rollen toekennen. */
+  function initA11yLive() {
+    document.querySelectorAll('[data-role=error]').forEach(el => el.setAttribute('role', 'alert'));
+    document.querySelectorAll('[data-role=success]').forEach(el => el.setAttribute('role', 'status'));
+  }
+
+  /* ---------- Toast: kleine bevestigings-pill onderin (v28) ----------
+     Werd al aangeroepen vanuit bewaar/deel (window.ajarToast) maar bestond nog
+     niet — de fallback veranderde toen de knoptekst. Eén rustige donkere pill
+     met gouden vinkje, glijdt van onder in, verdwijnt vanzelf. Eén tegelijk. */
+  let _toastT = null;
+  window.ajarToast = function (msg) {
+    let el = document.querySelector('.ajar-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'ajar-toast';
+      el.setAttribute('role', 'status');
+      document.body.appendChild(el);
+    }
+    el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4L19 7"/></svg>' + esc(msg);
+    clearTimeout(_toastT);
+    el.classList.remove('show');
+    void el.offsetWidth; /* herstart de entree bij snel achter elkaar tonen */
+    el.classList.add('show');
+    _toastT = setTimeout(() => el.classList.remove('show'), 2400);
+  };
+
   /* ---------- Prefetch: pagina's laden vóór de klik (v27) ----------
      Zodra een bezoeker een interne link aanwijst (of aanraakt op mobiel) wordt
      die pagina alvast opgehaald — de navigatie voelt daarna instant. Zelfde
@@ -2709,6 +2800,7 @@
     };
     document.addEventListener('pointerover', onHint, { passive: true });
     document.addEventListener('touchstart', onHint, { passive: true });
+    document.addEventListener('focusin', onHint); /* v28: ook bij tab-navigatie */
   }
 
   /* ---------- Boot ---------- */
@@ -2748,6 +2840,7 @@
   initNavIndicator();
   initWhatsappFeedback();
   initPrefetch();
+  initA11yLive();
   initKickerNumbers();
   initTimelineCounter();
   initWaQr();
