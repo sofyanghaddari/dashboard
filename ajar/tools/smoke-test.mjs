@@ -125,7 +125,37 @@ async function check404Page(browser, url) {
   await page.close();
 }
 
+/* Statische consistentie-check (v30): de LCP-preload in index.html moet naar dezelfde
+   foto wijzen als home.hero.image in content.js (webp-variant). Wisselt Soef de hero-foto
+   in content.js zonder de preload aan te passen, dan faalt de test hier — vóór er live een
+   nutteloze preload (en een niet-gepreloade hero) staat. Leest de bestanden direct van disk,
+   dus geen browser nodig. */
+async function checkHeroPreloadConsistency() {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const vm = await import('node:vm');
+  const dir = path.dirname(new URL(import.meta.url).pathname);
+  const html = fs.readFileSync(path.join(dir, '..', 'index.html'), 'utf8');
+  const pre = html.match(/rel="preload" href="assets\/images\/([^"]+)" as="image"/);
+  if (!pre) { fail('index', 'hero-preload ontbreekt in index.html'); return; }
+  let heroImage = null;
+  try {
+    const ctx = { window: {} };
+    vm.createContext(ctx);
+    vm.runInContext(fs.readFileSync(path.join(dir, '..', 'js', 'content.js'), 'utf8'), ctx);
+    heroImage = ctx.window.AJAR_CONTENT.home.hero.image;
+  } catch (e) {
+    fail('index', 'content.js kon niet gelezen worden voor de preload-check: ' + e.message);
+    return;
+  }
+  const expected = String(heroImage || '').replace(/\.jpe?g$/i, '.webp');
+  if (pre[1] !== expected) {
+    fail('index', 'hero-preload (' + pre[1] + ') wijst niet naar home.hero.image (' + expected + ') — pas de <link rel="preload"> in index.html aan');
+  }
+}
+
 (async () => {
+  await checkHeroPreloadConsistency();
   const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM || undefined });
 
   for (const p of PAGES) {

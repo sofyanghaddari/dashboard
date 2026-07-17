@@ -89,6 +89,55 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v30 — Professionele site-audit: snelheid, veiligheid, SEO, i18n (17 juli 2026)
+
+Volledige audit op verzoek van Soef ("controleer op snelheid, veiligheid, efficiëntie — alles
+waar een perfecte site aan voldoet, en verbeter het"). Acht bevindingen, alle doorgevoerd:
+
+1. **CSP: GoatCounter-beacon toekomstvast gemaakt.** `img-src` miste `https://*.goatcounter.com`.
+   GoatCounter telt primair via `navigator.sendBeacon` (gedekt door connect-src), maar valt bij een
+   falende sendBeacon terug op een `<img>`-beacon — hun broncode noemt dat pad expliciet de
+   CSP-workaround. Die fallback zou stil geblokkeerd zijn zodra Soef `goatcounterCode` invult.
+   Toegevoegd aan alle 9 shells; geverifieerd dat vreemde domeinen geblokkeerd blijven.
+2. **Sitemap: noindex-pagina's eruit.** privacy.html en voorwaarden.html dragen `noindex` maar
+   stonden (sinds v27b — dat was dus een vergissing) in sitemap.xml; dat levert Search
+   Console-meldingen "ingediende URL heeft noindex" op. Verwijderd, met uitleg-comment in de XML.
+3. **LCP: hero-preload op home.** De hero-foto werd pas ontdekt ná CSS+5 JS-bestanden (JS-gerenderde
+   site). `<link rel="preload" as="image">` voor `sfeer-09.webp` met `fetchpriority="high"` in
+   index.html. **De smoke-test bewaakt nu dat de preload gelijk blijft aan `home.hero.image`**
+   (checkHeroPreloadConsistency, leest content.js via node:vm) — wisselt de hero-foto zonder
+   preload-aanpassing, dan faalt CI. Getest: precies 1 request, hergebruikt door de `<img>`.
+4. **Vertaalgat gedicht:** `lbl.verification` + `lbl.registeredAddress` (VIES-regels in het
+   WhatsApp-/e-mailbericht van het sample-formulier) ontbraken in alle drie de taalbestanden.
+5. **Alt-teksten meertalig:** 5 hardcoded-NL alt-teksten in main.js (home-hero, fabriek-intro,
+   cultivar, sample-proeffoto, concept-etiket) + het "QR-code naar"-voorvoegsel gaan nu via
+   `ui`-sleutels (altHeroHome/altIntroFactory/altCultivar/altSampleTasting/altConceptLabel/
+   qrAltPrefix) met EN/FR-vertalingen — schermlezers en Google Afbeeldingen kregen op EN/FR
+   Nederlandse omschrijvingen.
+6. **`:has()`-risico weggenomen:** de icoon-tegel-stijlen hingen op selector-lijsten met
+   `.proc-media:not(:has(img))` — één niet-ondersteunde :has() laat een browser de héle regel
+   vallen, inclusief het `.noimg`-deel. processMedia() zet `noimg` nu direct in de markup als er
+   geen bestand is; de :has()-varianten zijn uit de CSS.
+7. **Interne tool-templates noindex:** tools/specsheet.html + tools/presentatie.html kregen
+   `<meta name="robots" content="noindex, nofollow">` — het robots.txt in de ajar-submap wordt
+   door crawlers niet gelezen (moet op domein-root staan, zie README), dus dit is de enige
+   werkende afscherming.
+8. **2,5 MB dood gewicht weg:** `stock-hero-orchard.jpg` (ongebruikte stockfoto) verwijderd;
+   LEES-MIJ.txt + LANCERING-CHECKLIST bijgewerkt. Soefs éigen ongebruikte foto's (hero-01,
+   story-02) blijven bewust staan.
+
+**Gecontroleerd en in orde bevonden (geen wijziging nodig):** alle backdrop-filters hebben hun
+-webkit-prefix (grep-telling was misleidend — comments), fonts gesubset+preload+swap, safe-area-
+insets overal, alle in-gebruik-foto's hebben WebP, alle T()/L()-sleutels bestaan nu in NL/EN/FR
+(scriptmatig gecheckt), ankers Product/Zakelijk kloppen, esc() op alle interpolaties, honeypots,
+form-action/connect-src sluitend, aspect-ratio's tegen CLS, proces-06/07-404's zijn bewust
+placeholder-gedrag. **Getest:** officiële smoke-test groen (10 pagina's, CI-opzet met
+/dashboard/-prefix), eigen v30-script (EN/FR-rendering + vertaalde alts, CSP-beacon-test in twee
+richtingen, noimg-tegels, anker-integriteit, preload-hergebruik, screenshots mobiel+desktop).
+Geen SW-cache-bump nodig (ajar wordt door de SW genegeerd).
+
+---
+
 ### v29 — Dossier-navigatie: scrollspy-rail op Product & Zakelijk (17 juli 2026)
 
 Slotstuk van de mega-ronde. De twee lange "dossier"-pagina's kregen op desktop (≥1200px) een

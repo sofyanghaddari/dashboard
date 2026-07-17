@@ -161,7 +161,9 @@ window.AJAR_CONTENT = {
       callMoment: 'Gewenst belmoment',
       reference: 'Referentie/PO-nummer',
       note: 'Opmerking',
-      tip: 'Tip collega-ondernemer'
+      tip: 'Tip collega-ondernemer',
+      verification: 'Verificatie',
+      registeredAddress: 'Geregistreerd adres (VIES)'
     },
     photoFollows: 'Foto volgt',
     skipLink: 'Direct naar de inhoud',
@@ -187,7 +189,16 @@ window.AJAR_CONTENT = {
     prevPhoto: 'Vorige foto',
     nextPhoto: 'Volgende foto',
     galleryLabel: 'Foto’s uit de fabriek — tik voor de volgende',
-    photoWord: 'Foto'
+    photoWord: 'Foto',
+    /* Alt-teksten van foto's die main.js zelf plaatst (v30) — stonden hardcoded
+       Nederlands in main.js, waardoor EN/FR-bezoekers met een schermlezer (en
+       Google Afbeeldingen) Nederlandse omschrijvingen kregen. */
+    altHeroHome: 'Olijfgaard in noordoost-Marokko',
+    altIntroFactory: 'ConservAjar SARL, de fabriek in Taourirt',
+    altCultivar: 'Verse olijven, Picholine Marocaine',
+    altSampleTasting: 'Olijfolie proeven bij vers brood, sfeerbeeld',
+    altConceptLabel: 'AJAR (concept-etiket)',
+    qrAltPrefix: 'QR-code naar'
   },
 
   /* ---------- Cookiebanner ---------- */

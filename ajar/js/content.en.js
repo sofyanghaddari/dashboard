@@ -98,7 +98,9 @@ window.AJAR_CONTENT_EN = {
       callMoment: 'Preferred time to call',
       reference: 'Reference/PO number',
       note: 'Note',
-      tip: 'Tip from a fellow entrepreneur'
+      tip: 'Tip from a fellow entrepreneur',
+      verification: 'Verification',
+      registeredAddress: 'Registered address (VIES)'
     },
     photoFollows: 'Photo to follow',
     skipLink: 'Skip to content',
@@ -124,7 +126,13 @@ window.AJAR_CONTENT_EN = {
     prevPhoto: 'Previous photo',
     nextPhoto: 'Next photo',
     galleryLabel: 'Photos from the factory — tap for the next one',
-    photoWord: 'Photo'
+    photoWord: 'Photo',
+    altHeroHome: 'Olive orchard in northeast Morocco',
+    altIntroFactory: 'ConservAjar SARL, the factory in Taourirt',
+    altCultivar: 'Fresh olives, Picholine Marocaine',
+    altSampleTasting: 'Tasting olive oil with fresh bread, ambience photo',
+    altConceptLabel: 'AJAR (concept label)',
+    qrAltPrefix: 'QR code to'
   },
 
   home: {

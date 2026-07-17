@@ -97,7 +97,9 @@ window.AJAR_CONTENT_FR = {
       callMoment: "Moment d’appel souhaité",
       reference: "Numéro de référence/bon de commande",
       note: "Remarque",
-      tip: "Recommandation d’un confrère"
+      tip: "Recommandation d’un confrère",
+      verification: "Vérification",
+      registeredAddress: "Adresse enregistrée (VIES)"
     },
     photoFollows: "Photo à venir",
     skipLink: "Aller au contenu",
@@ -123,7 +125,13 @@ window.AJAR_CONTENT_FR = {
     prevPhoto: "Photo précédente",
     nextPhoto: "Photo suivante",
     galleryLabel: "Photos de l’usine — touchez pour la suivante",
-    photoWord: "Photo"
+    photoWord: "Photo",
+    altHeroHome: "Oliveraie dans le nord-est du Maroc",
+    altIntroFactory: "ConservAjar SARL, l’usine de Taourirt",
+    altCultivar: "Olives fraîches, Picholine Marocaine",
+    altSampleTasting: "Dégustation d’huile d’olive avec du pain frais, photo d’ambiance",
+    altConceptLabel: "AJAR (étiquette concept)",
+    qrAltPrefix: "QR code vers"
   },
 
   home: {

@@ -417,9 +417,12 @@
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (paths[name] || '') + '</svg>';
   }
 
-  /* Procesbeeld: toont de foto zodra die er is, anders een net gouden line-icoon (geen kale placeholder) */
+  /* Procesbeeld: toont de foto zodra die er is, anders een net gouden line-icoon (geen kale placeholder).
+     v30: zonder file krijgt de figure de noimg-klasse direct in de markup — vroeger hing dat
+     op een `:not(:has(img))`-CSS-selector, maar één niet-ondersteunde :has() in een selector-
+     lijst laat browsers de héle regel (dus ook het .noimg-deel) laten vallen. */
   function processMedia(file, icon, alt) {
-    return '<figure class="img-slot img-step proc-media" data-file="' + esc(file) + '">' +
+    return '<figure class="img-slot img-step proc-media' + (file ? '' : ' noimg') + '" data-file="' + esc(file) + '">' +
       (file ? '<img src="assets/images/' + esc(webpOf(file)) + '" data-fallback="assets/images/' + esc(file) + '" alt="' + esc(alt || '') + '" loading="lazy" data-err-class="noimg">' : '') +
       '<span class="proc-icon">' + stepIcon(icon) + '</span>' +
       '</figure>';
@@ -461,7 +464,7 @@
               '<a class="btn btn-primary" href="' + esc(C.sampleCtaHref) + '" data-ga-event="sample_cta_click">' + esc(C.sampleCtaLabel) + '</a>' +
             '</div>' +
           '</div>' +
-          '<div class="hero-media reveal" data-parallax>' + imgSlot(h.hero.image, 'Olijfgaard in noordoost-Marokko', 'img-hero', true) + '</div>' +
+          '<div class="hero-media reveal" data-parallax>' + imgSlot(h.hero.image, T('altHeroHome', 'Olijfgaard in noordoost-Marokko'), 'img-hero', true) + '</div>' +
         '</div>' +
       '</section>' +
 
@@ -475,7 +478,7 @@
 
       /* 3. Eén beeldsectie: fabriek/bomen + één zin + link naar Over ons */
       '<section class="section split"><div class="wrap split-inner">' +
-        '<div class="split-media reveal">' + imgSlot(h.intro.image, 'ConservAjar SARL, de fabriek in Taourirt', '') + '</div>' +
+        '<div class="split-media reveal">' + imgSlot(h.intro.image, T('altIntroFactory', 'ConservAjar SARL, de fabriek in Taourirt'), '') + '</div>' +
         '<div class="split-text reveal">' +
           '<p class="kicker">' + esc(h.intro.kicker) + '</p>' +
           '<p class="lead">' + esc(h.intro.text) + '</p>' +
@@ -749,7 +752,7 @@
       (p.cultivar
         ? '<section class="section" id="de-olijf"><div class="wrap">' +
           '<div class="split-inner cultivar-head">' +
-            (p.cultivar.image ? '<div class="split-media reveal">' + imgSlot(p.cultivar.image, 'Verse olijven, Picholine Marocaine', '') + '</div>' : '') +
+            (p.cultivar.image ? '<div class="split-media reveal">' + imgSlot(p.cultivar.image, T('altCultivar', 'Verse olijven, Picholine Marocaine'), '') + '</div>' : '') +
             '<div class="split-text reveal">' + kickerTitle(p.cultivar.kicker, p.cultivar.title, p.cultivar.text) + '</div>' +
           '</div>' +
           uspGrid(p.cultivar.points, 'grid-2') +
@@ -832,7 +835,7 @@
         '<span class="bm-cap" aria-hidden="true"></span>' +
         '<span class="bm-neck" aria-hidden="true"></span>' +
         '<span class="bm-body" aria-hidden="true">' +
-          '<span class="bm-label"><img src="assets/logo/ajar-wordmark.svg" alt="AJAR (concept-etiket)" loading="lazy"></span>' +
+          '<span class="bm-label"><img src="assets/logo/ajar-wordmark.svg" alt="' + esc(T('altConceptLabel', 'AJAR (concept-etiket)')) + '" loading="lazy"></span>' +
           '<span class="bm-shine"></span>' +
         '</span>' +
       '</div>' +
@@ -1007,7 +1010,7 @@
           esc(save.shareLabel) + '</button>' +
       '</div>' +
       '<figure class="save-qr">' +
-        '<img src="assets/qr-site.svg" alt="QR-code naar ' + esc(cfg.brandName) + '" width="120" height="120" loading="lazy">' +
+        '<img src="assets/qr-site.svg" alt="' + esc(T('qrAltPrefix', 'QR-code naar')) + ' ' + esc(cfg.brandName) + '" width="120" height="120" loading="lazy">' +
         '<figcaption>' + esc(save.qrLabel) + '</figcaption>' +
       '</figure>' +
     '</div>';
@@ -1103,7 +1106,7 @@
 
       (s.hero.image
         ? '<section class="section sample-media-sec"><div class="wrap wrap-narrow">' +
-          '<div class="reveal">' + imgSlot(s.hero.image, 'Olijfolie proeven bij vers brood, sfeerbeeld', '') + '</div>' +
+          '<div class="reveal">' + imgSlot(s.hero.image, T('altSampleTasting', 'Olijfolie proeven bij vers brood, sfeerbeeld'), '') + '</div>' +
           '</div></section>'
         : '') +
 

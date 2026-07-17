@@ -41,8 +41,9 @@ ons, naast de ene toegestane assortiment-zin. Zie `about.factoryGallery` in cont
 
 NOG STOCKFOTO'S — TIJDELIJK, VERVANG ZODRA MOGELIJK
 -----------------------------------------------------------------------
-⚠ stock-hero-orchard.jpg    — NIET MEER IN GEBRUIK sinds de homepage-verbeterronde (de sectie waar
-                              hij in stond bestaat niet meer). Mag weg of hergebruikt worden.
+✗ stock-hero-orchard.jpg    — VERWIJDERD (audit-ronde v30, 17 juli 2026): ongebruikte stockfoto
+                              van 2,5 MB, nergens meer gerefereerd. Terug te halen uit de
+                              git-historie mocht dat ooit nodig zijn.
 ⚠ proces-05.jpg              — GEPLAATST: stap 2 "Persing" (olie die in een bak gegoten wordt) —
                               nog een stockfoto; een echte persfoto van de olijfolie zelf (niet de
                               conserven-productielijn hierboven) zou dit vervolledigen

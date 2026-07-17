@@ -7,6 +7,7 @@
   <url><loc>https://sofyanghaddari.github.io/dashboard/ajar/zakelijk.html</loc><priority>0.9</priority></url>
   <url><loc>https://sofyanghaddari.github.io/dashboard/ajar/contact.html</loc><priority>0.8</priority></url>
   <url><loc>https://sofyanghaddari.github.io/dashboard/ajar/sample.html</loc><priority>0.9</priority></url>
-  <url><loc>https://sofyanghaddari.github.io/dashboard/ajar/privacy.html</loc><priority>0.3</priority></url>
-  <url><loc>https://sofyanghaddari.github.io/dashboard/ajar/voorwaarden.html</loc><priority>0.3</priority></url>
+  <!-- privacy.html en voorwaarden.html staan bewust NIET in de sitemap: die pagina's
+       dragen "noindex" en een sitemap hoort alleen indexeerbare URL's te bevatten
+       (anders meldt Search Console "ingediende URL heeft noindex"). -->
 </urlset>

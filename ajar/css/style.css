@@ -874,17 +874,21 @@ a.card:hover, .grid-3 .card:hover, .grid-2 .card:hover {
   justify-content: center;
 }
 .proc-icon svg { width: 40%; max-width: 88px; height: auto; color: var(--gold); opacity: .9; }
-/* geen foto → toon icoon op een rustige crème/olijf-tint i.p.v. donkere placeholder */
-.proc-media.noimg, .proc-media:not(:has(img)) {
+/* geen foto → toon icoon op een rustige crème/olijf-tint i.p.v. donkere placeholder.
+   v30: alleen nog .noimg — main.js zet die klasse nu al in de markup als er geen file is
+   (en bij een laadfout via JS), dus de :not(:has(img))-varianten zijn overbodig. Die waren
+   bovendien riskant: één niet-ondersteunde :has() in een selector-lijst laat de browser de
+   volledige regel vallen, inclusief het .noimg-deel. */
+.proc-media.noimg {
   background:
     radial-gradient(120% 120% at 30% 20%, rgba(184,147,74,.12), transparent 60%),
     var(--bg-tint);
   border: 1px solid var(--line);
   box-shadow: none;
 }
-.proc-media.noimg::before, .proc-media:not(:has(img))::before { display: none; } /* geen olie-glans op icoon-tegel */
-.proc-media.noimg .proc-icon, .proc-media:not(:has(img)) .proc-icon { display: flex; }
-.proc-media.noimg .img-slot-note, .proc-media:not(:has(img)) .img-slot-note { display: none; }
+.proc-media.noimg::before { display: none; } /* geen olie-glans op icoon-tegel */
+.proc-media.noimg .proc-icon { display: flex; }
+.proc-media.noimg .img-slot-note { display: none; }
 
 /* ---------- CTA-band: dubbele knoppen ---------- */
 .cta-band-actions { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }

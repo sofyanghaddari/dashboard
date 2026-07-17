@@ -103,8 +103,9 @@
 - [ ] **Echte flesfoto** zodra fles + etiket klaar zijn (vervangt de "Concept"-mockup op Zakelijk).
 - [ ] Echte foto van de **eigen boomgaarden in Debdou** (vervangt `stock-cultivar-olives.jpg`).
 - [ ] Echte foto van de **perserij** (vervangt stockfoto `proces-05.jpg`).
-- [ ] Ongebruikte bestanden in `assets/images/`: `hero-01.jpg`, `story-02.jpg`,
-  `stock-hero-orchard.jpg` — mogen weg of bewaren voor later, jouw keuze.
+- [ ] Ongebruikte bestanden in `assets/images/`: `hero-01.jpg` en `story-02.jpg` (jouw eigen
+  foto's) staan er nog — bewaren of weghalen, jouw keuze. `stock-hero-orchard.jpg` (ongebruikte
+  stockfoto, 2,5 MB) is in de audit-ronde v30 verwijderd; staat nog in de git-historie.
 
 ### C5. Techniek & config (5 minuten werk per stuk)
 
