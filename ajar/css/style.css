@@ -3282,8 +3282,59 @@ p, li { text-wrap: pretty; }
   to { opacity: 1; transform: none; }
 }
 
+/* ── 7. Dossier-navigatie: scrollspy-rail rechts (v29, desktop ≥1200px) ──
+   Dot per genummerde sectie; actieve dot rekt tot een gouden pill en toont
+   z'n label. Verschijnt pas na wat scrollen — nooit bovenop de hero. */
+.spy-rail {
+  position: fixed;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .45s var(--ease-out);
+}
+.spy-rail.show { opacity: 1; pointer-events: auto; }
+.spy-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 5px 2px;
+  border-radius: 8px;
+}
+.spy-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #CFC9B8;
+  flex: none;
+  transition: background .3s var(--ease), height .35s var(--ease-out);
+}
+.spy-label {
+  font-size: .66rem;
+  font-weight: 600;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity .3s var(--ease-out), transform .3s var(--ease-out);
+}
+.spy-item:hover .spy-dot { background: var(--gold); }
+.spy-item:hover .spy-label, .spy-item.on .spy-label { opacity: 1; transform: none; }
+.spy-item.on .spy-dot { background: var(--gold-ink); height: 22px; }
+.spy-item.on .spy-label { color: var(--gold-ink); }
+@media (max-width: 1199px) { .spy-rail { display: none; } }
+
 /* Reduced motion: alles direct in eindstand */
 @media (prefers-reduced-motion: reduce) {
+  .spy-rail, .spy-dot, .spy-label { transition: none; }
   .ajar-toast { transition: opacity .2s ease; transform: translate(-50%, 0); }
   .stack-card.stack-entering { animation: none; }
   .img-slot::after { animation: none; opacity: 0; }
@@ -3295,6 +3346,7 @@ p, li { text-wrap: pretty; }
 @media print {
   .ajar-toast { display: none !important; }
   .img-slot::after { display: none !important; }
+  .spy-rail { display: none !important; }
 }
 
 /* ============================================================

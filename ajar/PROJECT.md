@@ -89,6 +89,20 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v29 — Dossier-navigatie: scrollspy-rail op Product & Zakelijk (17 juli 2026)
+
+Slotstuk van de mega-ronde. De twee lange "dossier"-pagina's kregen op desktop (≥1200px) een
+slanke **scrollspy-rail** rechts in beeld: een dot per genummerde sectie, de actieve dot rekt
+tot een gouden pill met het sectielabel ernaast (labels = de bestaande sectie-kickers, dus
+automatisch vertaald in EN/FR), hover toont elk label, klik scrolt er soepel heen via de
+bestaande ankernavigatie (incl. sectie-oplichting). Verschijnt pas na 300px scrollen (nooit
+bovenop de hero), verborgen op < 1200px, in print en deels bij reduced-motion (geen transities).
+`initSectionSpy()` in main.js + CSS-blok in de v28-sectie; nieuwe ui-sleutel `onThisPage`
+(NL/EN/FR) voor het aria-label. Getest: 5 items op Product / 9 op Zakelijk, actieve tracking,
+klik-scroll, EN "On this page" / FR "Sur cette page", alle bestaande suites + smoke-test groen.
+
+---
+
 ### v28 — Nuttige animaties + functie-polish (17 juli 2026)
 
 Vervolg op de mega-ronde ("verbeter functies die er al zijn, voeg nuttige animaties toe").

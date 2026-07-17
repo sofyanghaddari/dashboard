@@ -2744,6 +2744,48 @@
     });
   }
 
+  /* ---------- Dossier-navigatie: scrollspy-rail (v29) ----------
+     Op de lange dossier-pagina's (Product/Zakelijk, desktop) een slanke rail
+     rechts met een dot per genummerde sectie: je ziet waar je bent, het label
+     verschijnt bij hover/actief, klik scrolt er soepel heen (via de bestaande
+     ankernavigatie). Verschijnt pas na wat scrollen, verdwijnt op smal scherm. */
+  function initSectionSpy() {
+    if (page !== 'product' && page !== 'zakelijk') return;
+    if (!window.matchMedia('(min-width: 1200px)').matches) return;
+    const secs = Array.from(document.querySelectorAll('#site-main section[id]'))
+      .map(s => {
+        const k = s.querySelector('.kicker');
+        const label = k ? k.textContent.replace(/^Nº\s*\d+\s*/, '').trim() : '';
+        return { s, label };
+      })
+      .filter(x => x.label);
+    if (secs.length < 3) return;
+
+    const rail = document.createElement('nav');
+    rail.className = 'spy-rail';
+    rail.setAttribute('aria-label', T('onThisPage', 'Op deze pagina'));
+    rail.innerHTML = secs.map(x =>
+      '<a class="spy-item" href="#' + esc(x.s.id) + '">' +
+        '<span class="spy-label">' + esc(x.label) + '</span>' +
+        '<span class="spy-dot" aria-hidden="true"></span>' +
+      '</a>').join('');
+    document.body.appendChild(rail);
+    const items = Array.from(rail.querySelectorAll('.spy-item'));
+
+    let tick = false;
+    const update = () => {
+      tick = false;
+      const focus = window.innerHeight * .4;
+      let active = -1;
+      secs.forEach((x, i) => { if (x.s.getBoundingClientRect().top <= focus) active = i; });
+      items.forEach((it, i) => it.classList.toggle('on', i === active));
+      rail.classList.toggle('show', window.scrollY > 300);
+    };
+    window.addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(update); } }, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
+  }
+
   /* ---------- A11y: formulier-meldingen als live-regions (v28) ----------
      Succes/fout verschijnt visueel onder het formulier maar werd door
      screenreaders niet omgeroepen. De regions bestaan al bij het laden
@@ -2842,6 +2884,7 @@
   initPrefetch();
   initA11yLive();
   initKickerNumbers();
+  initSectionSpy();
   initTimelineCounter();
   initWaQr();
   initCopyButtons();

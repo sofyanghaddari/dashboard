@@ -106,6 +106,7 @@ window.AJAR_CONTENT_FR = {
     sampleStepsHeading: "Comment ça marche",
     mainNav: "Navigation principale",
     subTopics: "rubriques",
+    onThisPage: "Sur cette page",
     navHeading: "Navigation",
     contactHeading: "Contact",
     footerWa: "WhatsApp — le plus rapide",

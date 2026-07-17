@@ -170,6 +170,7 @@ window.AJAR_CONTENT = {
     sampleStepsHeading: 'Zo werkt het',
     mainNav: 'Hoofdnavigatie',
     subTopics: 'onderwerpen',
+    onThisPage: 'Op deze pagina',
     navHeading: 'Navigatie',
     contactHeading: 'Contact',
     footerWa: 'WhatsApp — snelste route',
