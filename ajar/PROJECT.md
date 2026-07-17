@@ -89,6 +89,47 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v26 — Animatie-regie: chique kwaliteitsronde over het hele bewegingssysteem (17 juli 2026)
+
+Opdracht van Soef: "maak de kwaliteit van alle animaties netter, chiquer, cooler — grote upgrade,
+kijk als professionele designer van een miljoenen-B2B-site". Geen nieuwe effecten-hagel, maar
+**regie en verfijning** bovenop de bestaande lagen (v8/v9/luxe-laag). Alles in één nieuwe
+CSS-sectie "✨ ANIMATIE-REGIE v26" onderaan `style.css` (vóór het print-blok) + twee JS-verfijningen.
+
+- **Eén dure easing-taal:** nieuwe tokens `--ease-out` (expo-out, `cubic-bezier(.16,1,.3,1)`) en
+  `--ease-io`. Reveals, titel-maskers en foto-wipes landen nu tergend zacht i.p.v. de kortere v8-curve.
+- **Auto-stagger in `initReveal`:** elementen die in dezelfde observer-batch binnenkomen (drie kaarten
+  naast elkaar, de hele eerste viewport) krijgen een oplopende inline delay (70ms/stuk, max 420ms) die
+  ná de entree weer wordt weggehaald (anders vertraagt hij hover-overgangen). Secties komen nu als
+  gedirigeerde cascade op i.p.v. tegelijk te ploppen.
+- **Hero- en CTA-choreografie:** kicker → titel → subregel → knoppen komen ná elkaar op (child-stagger
+  in CSS; de container beweegt zelf niet meer). Zelfde cascade in de CTA-band; de olijftak houdt z'n
+  eigen teken-entree (expliciete override, anders dubbel geschoven).
+- **Goudglans dóór de CTA-titel:** éénmalige lichtveeg door de letters via `background-clip: text`
+  (achter een `@supports`-guard; print-safe want print verbergt `.cta-band` al volledig).
+- **Mobiel-carrousel-reveal-fix (échte bug):** kaarten in `.mcar`-carrousels lagen horizontaal buiten
+  beeld en kwamen vroeger pas bij het swipen op (oogde als hapering). Nu onthult de hele rij zich als
+  cascade zodra de carrousel in beeld schuift. In een `setTimeout(0)` — `.mcar` wordt pas ná
+  `initReveal` gezet (bootvolgorde).
+- **Fotostapel met échte diepte:** onderliggende kaarten iets kleiner + donkerder (`scale`/`brightness`
+  per `data-pos`), wissel landt op de expo-curve, wegglijden versnelt juist (`--ease-io`).
+- **Menu-choreografie:** desktop-dropdownitems druppelen na elkaar binnen (45ms/stuk); het mobiele
+  volscherm-menu laat de grote serif-items als cascade omhoog glijden (`navItemIn`, 50ms/stuk).
+- **Verfijnde hovers:** editorial foto-zoom (3,5% over 1,4s) op split/spec-foto's (desktop),
+  kaart-goudlijn groeit 34→52px + rand warmt op, kwaliteitstegels liften + goudstreepje tekent zich
+  onder het cijfer bij reveal.
+- **Klein maar voelbaar:** marquee pauzeert op hover (lezen), scroll-voortgangslijn kreeg een gloeiende
+  punt, pagina-overgangen (View Transitions) zijn nu een gebaar (oud wijkt omhoog, nieuw landt van
+  onder), footer daagt op via scroll-driven `animation-timeline: view()` (progressive enhancement,
+  geen JS), count-up-cijfers op expo-out met 1,5s.
+- **Reduced-motion:** eigen uitzet-blok ONDERAAN de v26-sectie — bewust ná alle nieuwe regels, want die
+  zouden anders het oudere reduced-blok halverwege het bestand overrulen (cascade-les!).
+- **Getest** (headless Chromium, 375px + 1440px, alle 7 pagina's): alle reveals triggeren, geen
+  horizontale overflow, geen JS-fouten, reduced-motion toont alles direct, inline delays worden
+  opgeruimd. Screenshots van hero/CTA/menu visueel gecontroleerd.
+
+---
+
 ### v25 — SIAL Paris 2024 op de tijdlijn + VIES-adrescontrole + toegankelijkheidsaudit (13 juli 2026)
 
 Drie dingen in één ronde ("doe alles wat jij kan doen").

@@ -1763,12 +1763,47 @@
       els.forEach(el => el.classList.add('in'));
       return;
     }
+    /* v26: elementen die in dezelfde batch binnenkomen (bv. drie kaarten naast
+       elkaar, of de hele eerste viewport bij het laden) krijgen een oplopende
+       delay — een gedirigeerde cascade i.p.v. alles tegelijk. De inline delay
+       wordt na de entree weer weggehaald zodat hover-overgangen direct blijven. */
     const io = new IntersectionObserver((entries) => {
+      let i = 0;
       entries.forEach(en => {
-        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+        if (!en.isIntersecting) return;
+        const el = en.target;
+        if (i > 0 && !el.style.transitionDelay) {
+          el.style.transitionDelay = Math.min(i * 70, 420) + 'ms';
+          setTimeout(() => { el.style.transitionDelay = ''; }, 1600);
+        }
+        el.classList.add('in');
+        io.unobserve(el);
+        i++;
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
     els.forEach(el => io.observe(el));
+
+    /* v26: kaarten in een horizontale mobiel-carrousel staan grotendeels buiten
+       beeld en kwamen vroeger pas bij het swipen op (oogde als een hapering).
+       Nu onthult de hele rij zich als cascade zodra de carrousel in beeld schuift.
+       In een setTimeout: de .mcar-class wordt pas later in de boot gezet
+       (initMobileCarousels draait ná initReveal). */
+    setTimeout(() => document.querySelectorAll('.mcar').forEach(mc => {
+      const kids = Array.from(mc.querySelectorAll('.reveal'));
+      if (!kids.length) return;
+      kids.forEach(k => io.unobserve(k));
+      new IntersectionObserver((es, o) => {
+        if (!es.some(e => e.isIntersecting)) return;
+        o.disconnect();
+        kids.forEach((k, i) => {
+          if (i > 0) {
+            k.style.transitionDelay = Math.min(i * 70, 420) + 'ms';
+            setTimeout(() => { k.style.transitionDelay = ''; }, 1700);
+          }
+          k.classList.add('in');
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }).observe(mc);
+    }), 0);
 
     /* Hero-parallax + licht na-ijlen van split-foto's (alleen desktop, echte muis) */
     const hero = document.querySelector('[data-parallax]');
@@ -1811,10 +1846,11 @@
         const raw = el.dataset.raw || String(target);
         const decimals = (raw.split(/[.,]/)[1] || '').length;
         const comma = raw.includes(',');
-        const t0 = performance.now(), dur = 1100;
+        const t0 = performance.now(), dur = 1500;
         const tick = (t) => {
           const p = Math.min((t - t0) / dur, 1);
-          const eased = 1 - Math.pow(1 - p, 3);
+          /* v26: expo-out — cijfers razen op gang en landen tergend zacht */
+          const eased = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
           let out = (target * eased).toFixed(decimals);
           if (comma) out = out.replace('.', ',');
           el.textContent = p < 1 ? out : raw;
