@@ -136,6 +136,8 @@
 
   function ctaBand(cta) {
     return '<section class="cta-band reveal">' +
+      /* v27: goudstof — zeven trage deeltjes die in de band opstijgen */
+      '<div class="cta-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>' +
       '<div class="wrap cta-band-inner">' +
       ctaTak() +
       '<h2>' + esc(cta.title) + '</h2>' +
@@ -542,7 +544,12 @@
       }, 480);
     }
     function start() { if (!timer && !reduce && !document.hidden) timer = setInterval(advance, 4200); }
-    function stop() { clearInterval(timer); timer = null; clearTimeout(leaveTimer); }
+    /* v27-bugfix: stop() cleart alléén de auto-rotatie. Vroeger killde hij ook
+       leaveTimer — maar de klik-handler doet advance(); stop(); start(), dus de
+       net gestarte wissel werd meteen afgebroken: de bovenste foto bleef
+       onzichtbaar (stack-leaving) hangen en busy bleef eeuwig true → één tik
+       bevroor de hele stapel. De wissel zelf (480ms) mag altijd afmaken. */
+    function stop() { clearInterval(timer); timer = null; }
 
     g.addEventListener('click', () => { advance(); stop(); start(); });
     g.addEventListener('keydown', (e) => {
@@ -1602,7 +1609,14 @@
     if ('IntersectionObserver' in window) {
       new IntersectionObserver((es) => es.forEach(e => e.isIntersecting ? start() : stop()), { threshold: 0.2 }).observe(map);
     } else start();
-    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
+    /* v27-bugfix: bij terugkeer naar het tabblad weer starten als de kaart in beeld
+       staat — de observer vuurt dan niet opnieuw, dus vroeger bleef de marker
+       bevroren tot je de kaart uit en weer in beeld scrolde. */
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { stop(); return; }
+      const r = map.getBoundingClientRect();
+      if (r.bottom > 0 && r.top < window.innerHeight) start();
+    });
   }
 
   function initPresentationForm() {
@@ -1782,6 +1796,22 @@
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
     els.forEach(el => io.observe(el));
+
+    /* v27-vangnet: bij een héél snelle veeg/sprong (momentum-scroll, anker-link)
+       kan de observer een element tussen twee checks overslaan — dat bleef dan
+       onzichtbaar tot je terugscrolde. Een goedkope na-ijl-veegcheck onthult
+       alles dat inmiddels (deels) in beeld staat. */
+    let sweepT = null;
+    const sweep = () => {
+      sweepT = null;
+      const vh = window.innerHeight;
+      els.forEach(el => {
+        if (el.classList.contains('in')) return;
+        const r = el.getBoundingClientRect();
+        if (r.top < vh * .95 && r.bottom > 0) { el.classList.add('in'); io.unobserve(el); }
+      });
+    };
+    window.addEventListener('scroll', () => { if (!sweepT) sweepT = setTimeout(sweep, 200); }, { passive: true });
 
     /* v26: kaarten in een horizontale mobiel-carrousel staan grotendeels buiten
        beeld en kwamen vroeger pas bij het swipen op (oogde als een hapering).
@@ -2653,6 +2683,34 @@
     });
   }
 
+  /* ---------- Prefetch: pagina's laden vóór de klik (v27) ----------
+     Zodra een bezoeker een interne link aanwijst (of aanraakt op mobiel) wordt
+     die pagina alvast opgehaald — de navigatie voelt daarna instant. Zelfde
+     link-filter als de fade-navigatie in initEnhancements; slaat over bij
+     Data Saver. */
+  function initPrefetch() {
+    if (navigator.connection && navigator.connection.saveData) return;
+    const done = new Set();
+    const onHint = (e) => {
+      const a = e.target.closest('a');
+      if (!a) return;
+      const href = a.getAttribute('href') || '';
+      if (!/\.html($|\?|#)/.test(href) && href !== 'index.html') return;
+      if (/^https?:|^mailto:|^tel:|^#/.test(href)) return;
+      let u; try { u = new URL(href, location.href); } catch (_) { return; }
+      if (u.origin !== location.origin || u.pathname === location.pathname) return;
+      if (done.has(u.pathname)) return;
+      done.add(u.pathname);
+      const l = document.createElement('link');
+      l.rel = 'prefetch';
+      l.href = u.pathname;
+      l.as = 'document';
+      document.head.appendChild(l);
+    };
+    document.addEventListener('pointerover', onHint, { passive: true });
+    document.addEventListener('touchstart', onHint, { passive: true });
+  }
+
   /* ---------- Boot ---------- */
 
   const renderers = {
@@ -2689,6 +2747,7 @@
   initHeroTilt();
   initNavIndicator();
   initWhatsappFeedback();
+  initPrefetch();
   initKickerNumbers();
   initTimelineCounter();
   initWaQr();

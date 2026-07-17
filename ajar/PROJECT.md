@@ -89,6 +89,60 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v27 — Mega-audit + design-verfijning: hele site nagelopen, 3 échte bugs gefixt (17 juli 2026)
+
+Vervolg op v26, opdracht Soef: "mega update, controleer ALLES grondig — elke pagina, elke animatie,
+elke functie, ook wat ik vergeten ben". Volledige audit (interacties, EN/FR, code, visueel, print,
+reduced-motion) + een design-verfijningslaag. Alle bevindingen gefixt en hertest.
+
+**Drie échte bugs gevonden en gefixt:**
+1. **Fotostapel bevroor permanent na één tik** (over-ons): de klik-handler doet `advance(); stop();
+   start()`, maar `stop()` clearde óók de `leaveTimer` die `advance()` net gezet had → de bovenste
+   foto bleef onzichtbaar (`stack-leaving`) hangen, `busy` bleef eeuwig `true`, en tik/dots/auto-
+   rotatie deden daarna niets meer. Fix: `stop()` cleart alleen nog de auto-rotatie; een lopende
+   wissel (480ms) maakt altijd af. Getest: tikken, dots, auto-rotatie — alles wisselt weer.
+2. **Herkomstkaart bevroor na tab-wissel** (product): `visibilitychange` stopte de marker maar
+   startte nooit opnieuw (de IntersectionObserver vuurt niet opnieuw als de kaart al in beeld
+   staat). Fix: bij terugkeer naar het tabblad weer starten als de kaart in de viewport staat.
+3. **Reveal-elementen konden permanent onzichtbaar blijven bij snelle scroll-sprongen**
+   (momentum-veeg, anker-link): de observer kan een element tussen twee checks overslaan. Fix:
+   na-ijl-veegcheck op scroll (200ms debounce) die alles onthult dat inmiddels in beeld staat.
+   Getest met 1800px-sprongen over alle 9 pagina's: geen enkel element blijft meer hangen.
+
+**Design-verfijning (CSS-sectie "✨ DESIGN-VERFIJNING v27"):**
+- Typografisch materiaal: goudgetinte `::selection` (aparte variant op donkere vlakken),
+  `text-wrap: pretty`, `tabular-nums` op tellende cijfers (geen breedte-jitter).
+- Foto-afwerking: hairline-ring + subtiele toplicht-lijn op elke foto (op de bestaande sheen-laag,
+  geen extra element) — gedrukte-editorial gevoel.
+- Tekstlinks: geveegde goud-onderstreping (vaste lichte lijn; hover vult een gold-ink-lijn van
+  links) i.p.v. statische border.
+- Primaire knop: olijf-materiaal-gradient in dezelfde taal als de CTA-band (de gouden band-knop
+  wint op specificiteit en blijft goud) + iets meer letterspacing.
+- Partnerlogo's: grayscale kleurt in bij hover.
+- **Goudstof in de CTA-band**: zeven trage deeltjes stijgen op ("stof in avondlicht"), per stuk
+  eigen baan/tempo via nth-child; alleen `animation-play-state` toggelt op `.in` zodat de
+  nth-child-tempo's blijven gelden. Reduced-motion: display none.
+- **Hover/touch-prefetch** (`initPrefetch`): interne pagina's laden vóór de klik → navigatie voelt
+  instant. Zelfde link-filter als de fade-navigatie; slaat over bij Data Saver.
+- Subpagina-hero's: subregel + knoppen komen ná de gemaskerde titel op (zelfde choreografie-taal
+  als de home-hero) — met print- en reduced-motion-vangnetten.
+
+**Audit-resultaten (alles groen):**
+- Interacties: mobiel menu + sub-accordeons, fotostapel (tik/dots/auto), FAQ open/dicht,
+  lightbox (open/pijlen/Escape, lazy-load-activatie klopt), mobiele carrousels (reveal-groep +
+  swipe + dots), footer-accordeon, formulieren (contact 3 verplichte velden, sample incl. KvK-veld
+  + voortgangsbalk vult), copy-knoppen, to-top, anchor-flash, desktop-dropdown + cascade,
+  nav-underline, custom cursor, magnetische knoppen, taalwissel NL→EN→FR→NL.
+- EN/FR: sleutel-diff NL/EN/FR — vertalingen compleet (de 39 "ontbrekende" sleutels zijn bewust
+  taalonafhankelijk: config/URL's/afbeeldingen); alle 9 pagina's × 2 talen × 2 breedtes zonder
+  fouten/overflow.
+- Count-up heeft momenteel géén live gebruik (kwaliteitscijfers staan nog op "Volgt" — content-todo
+  van Soef, geen codefout).
+- Volledige-pagina-screenshots van alle 9 pagina's op 375px + 1440px visueel gecontroleerd.
+- Officiële CI-smoke-test (ajar/tools/smoke-test.mjs, 10 pagina's incl. 404) lokaal groen.
+
+---
+
 ### v26 — Animatie-regie: chique kwaliteitsronde over het hele bewegingssysteem (17 juli 2026)
 
 Opdracht van Soef: "maak de kwaliteit van alle animaties netter, chiquer, cooler — grote upgrade,
