@@ -104,16 +104,26 @@ Twee ingrepen:
 
 1. **Homepage-hero (`home.hero.sub`).** De dienstzin ("Koudgeperste olijfolie … rechtstreeks naar
    de Nederlandse horeca en speciaalzaak") herschreven: eerst kort wát (koudgeperst, één familie,
-   Marokko, geïmporteerd voor horeca/speciaalzaak), dan de brug naar de lezer met de drie sterkste
-   herkenningspunten (kwaliteit > literprijs, verhaal vertellen, vaste leverancier). De hero-**titel**
-   blijft de "wát"-zin, zodat de vijf-seconden-test (extra vierge, uit Marokko) intact blijft.
+   Marokko, geïmporteerd voor horeca/speciaalzaak), dan een korte brug naar de lezer met de twee
+   sterkste zakelijke herkenningspunten (kwaliteit > literprijs, vaste leverancier). Bewust kort
+   gehouden zodat de "wát" vooropstaat. De hero-**titel** blijft de "wát"-zin, zodat de
+   vijf-seconden-test (extra vierge, uit Marokko) intact blijft.
 
 2. **B2B-pagina, `b2b.audiences` (sectie `#voor-wie`).** Herschreven van segment-opsomming
-   ("Wie we beleveren": Horeca / Delicatessen / Retail) naar herkenning: titel "Past AJAR bij jouw
-   zaak?" met de vijf punten als beschrijving van de lezer (jij/you/vous), niet als eisenlijst. Geen
-   nieuwe sectie (de pagina is in v2c juist ontdubbeld) en geen duplicatie. De segment-info blijft
-   aanwezig in `b2b.hero.sub` ("keuken of schap"), de contactform-opties en de footer. Bestaande
-   sectie-CTA-structuur ongemoeid. Renderer (`uspGrid`, grid-3) verwerkt 5 kaarten zonder wijziging.
+   ("Wie we beleveren": Horeca / Delicatessen / Retail) naar herkenning: titel "Past AJAR bij uw
+   zaak?" met de vijf punten als beschrijving van de lezer, niet als eisenlijst. Geen nieuwe sectie
+   (de pagina is in v2c juist ontdubbeld) en geen duplicatie. De segment-info blijft aanwezig in
+   `b2b.hero.sub` ("keuken of schap"), de contactform-opties en de footer. Bestaande sectie-CTA-
+   structuur ongemoeid. Renderer (`uspGrid`, grid-3) verwerkt 5 kaarten zonder wijziging.
+   Het familie-/verhaal-punt is **zakelijk** geformuleerd (verkoopargument/marge i.p.v. emotie —
+   "het verhaal is een verkoopargument waar u marge op maakt"): een B2B-inkoper zoekt business, geen
+   sentiment.
+
+3. **Aanspreekvorm consequent "u/uw" (op verzoek van Soef).** De hele site spreekt de klant nu
+   uniform formeel aan — geen "je/jij". De nieuwe teksten (hero + #voor-wie) staan in "u", en de
+   bestaande Over-ons-titel "Kwaliteit die je kunt controleren" is gecorrigeerd naar "…die u kunt
+   controleren" (de enige overgebleven informele zichtbare tekst). EN (you) en FR (vous) kennen dit
+   onderscheid niet; daar bleef de aanspreekvorm ongewijzigd.
 
 Harde regels gerespecteerd: niemand weggejaagd (één zachte, impliciete afbakening — "niet de
 goedkoopste vulling van het schap" — binnen punt 1, verder puur positief); productinformatie en

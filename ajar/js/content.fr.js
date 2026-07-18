@@ -137,7 +137,7 @@ window.AJAR_CONTENT_FR = {
   home: {
     hero: {
       title: "Huile d’olive extra vierge, directement du Maroc.",
-      sub: "Pressée à froid par une seule famille au Maroc, importée directement pour la restauration et les épiceries fines néerlandaises. Vous apprécierez sans doute de travailler avec AJAR si vous placez la qualité avant le prix au litre le plus bas, si vous racontez l’histoire derrière vos produits et si vous cherchez un fournisseur durable plutôt qu’une affaire ponctuelle."
+      sub: "Pressée à froid par une seule famille au Maroc, importée directement pour la restauration et les épiceries fines néerlandaises. Un bon choix si vous placez la qualité avant le prix au litre le plus bas et cherchez un fournisseur durable, pas une affaire ponctuelle."
     },
     kernpunten: {
       kicker: "Pourquoi AJAR",
@@ -341,8 +341,8 @@ window.AJAR_CONTENT_FR = {
       title: "AJAR est-elle faite pour votre établissement ?",
       items: [
         { title: "Vous choisissez la qualité plutôt que le prix au litre le plus bas", text: "Vous voulez une huile que vous assumez et que vous servez en confiance — pas le remplissage le moins cher du rayon." },
-        { title: "Vous racontez l’histoire à vos clients", text: "L’origine, la famille et le savoir-faire sont pour vous des arguments de vente, pas un détail — une huile avec un visage correspond à votre établissement." },
-        { title: "Vous cherchez un fournisseur durable", text: "Vous préférez bâtir une relation avec quelqu’un que vous connaissez et qui tient ses promesses, plutôt que d’enchaîner les affaires ponctuelles." },
+        { title: "Vous gagnez grâce à l’histoire derrière l’huile", text: "Une huile à la provenance réelle, une seule famille et un savoir-faire se vend mieux qu’une bouteille anonyme — l’histoire est un argument de vente sur lequel vous faites de la marge." },
+        { title: "Vous cherchez un fournisseur durable", text: "Vous préférez bâtir une relation avec un interlocuteur unique qui tient ses promesses, plutôt que d’enchaîner les affaires ponctuelles." },
         { title: "Vous voulez d’abord goûter", text: "Vous faites confiance à votre palais et à celui de vos clients, et vous décidez seulement après avoir goûté l’huile vous-même." },
         { title: "Vous tenez à une chaîne courte et traçable", text: "Une famille, un verger, un importateur — directement dans votre établissement, sans intermédiaires anonymes." }
       ]

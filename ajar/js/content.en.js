@@ -138,7 +138,7 @@ window.AJAR_CONTENT_EN = {
   home: {
     hero: {
       title: 'Extra virgin olive oil, straight from Morocco.',
-      sub: 'Cold-pressed by one family in Morocco, imported directly for Dutch restaurants and specialty stores. You’ll probably enjoy working with AJAR if you put quality before the lowest price per litre, tell the story behind your products, and want a lasting supplier rather than a one-off deal.'
+      sub: 'Cold-pressed by one family in Morocco, imported directly for Dutch restaurants and specialty stores. A good fit if you put quality before the lowest price per litre and want a lasting supplier, not a one-off deal.'
     },
     kernpunten: {
       kicker: 'Why AJAR',
@@ -342,8 +342,8 @@ window.AJAR_CONTENT_EN = {
       title: 'Is AJAR right for your business?',
       items: [
         { title: 'You choose quality over the lowest price per litre', text: 'You want an oil you stand behind and pour with confidence — not the cheapest filler on the shelf.' },
-        { title: 'You tell your customers the story', text: 'Provenance, family and craft are selling points for you, not an afterthought — an oil with a face fits your business.' },
-        { title: 'You want a lasting supplier', text: 'You would rather build a relationship with someone you know and who delivers what they promise than jump from deal to deal.' },
+        { title: 'You profit from the story behind it', text: 'An oil with real provenance, one family and craft sells better than an anonymous bottle — the story is a selling point you earn margin on.' },
+        { title: 'You want a lasting supplier', text: 'You would rather build a relationship with one point of contact who delivers what they promise than jump from deal to deal.' },
         { title: 'You want to taste first', text: 'You trust your own palate and that of your guests, and you decide only after tasting the oil yourself.' },
         { title: 'You value a short, traceable chain', text: 'One family, one grove, one importer — straight into your business, without anonymous middlemen.' }
       ]
