@@ -13,7 +13,7 @@ window.AJAR_CONTENT = {
     tagline: 'Extra vierge olijfolie',
     payoff: 'Extra vierge olijfolie, rechtstreeks uit Marokko.',
 
-    goatcounterCode: '',                      // TODO: GoatCounter site-code (gratis account op goatcounter.com, geen creditcard — de code is het deel vóór ".goatcounter.com" in je dashboard-URL). Leeg = geen statistieken, geen script geladen. Cookieless, dus geen toestemmingsbanner nodig.
+    goatcounterCode: 'ajar',                  // GoatCounter site-code — https://ajar.goatcounter.com (ingesteld 18 juli 2026). Cookieless, dus geen toestemmingsbanner nodig.
     formspreeId: 'mbdvnykk',                  // Formspree form-ID — formulieren versturen nu direct i.p.v. mailto/WhatsApp-fallback
     email: 'sofyanghaddari@gmail.com',        // zakelijk e-mailadres (voorlopig); formulieren mailen hierheen + zichtbaar in footer/contact
     whatsappNumber: '31640293567',            // internationaal formaat zonder + of spaties

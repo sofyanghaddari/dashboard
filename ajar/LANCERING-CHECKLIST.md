@@ -113,7 +113,8 @@
   Alle vier formulieren (offerte, sample, presentatie, nieuwsbrief) versturen nu echt i.p.v.
   mailto/WhatsApp. *Check bij Soef: staat het juiste e-mailadres ingesteld als ontvanger op
   formspree.io bij dit formulier?*
-- [ ] **GoatCounter-code** (`goatcounterCode`) — nu geen statistieken. Gratis account op goatcounter.com.
+- [x] **GoatCounter-code** (`goatcounterCode`) — ✅ ingevuld (18 juli 2026): `ajar`. Statistieken
+  zichtbaar op https://ajar.goatcounter.com.
 - [ ] **Zakelijk e-mailadres** — nu jouw persoonlijke Gmail; een adres op eigen domein
   (bijv. info@ajar-olijfolie.nl) oogt professioneler bij inkopers. Staat op meerdere plekken:
   `config.email` + de privacyverklaring-tekst.
