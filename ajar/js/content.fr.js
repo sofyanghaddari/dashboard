@@ -270,6 +270,7 @@ window.AJAR_CONTENT_FR = {
     compare: {
       kicker: "La différence",
       title: "AJAR face à l’huile de supermarché",
+      intro: "Chaque bouteille anonyme sur votre carte ou votre rayon est une histoire que vous ne vendez pas.",
       colA: "AJAR",
       colB: "Huile d’olive de supermarché courante",
       rows: [
@@ -312,7 +313,7 @@ window.AJAR_CONTENT_FR = {
     origin: {
       kicker: "Origine",
       title: "De Debdou à votre établissement",
-      text: "Une chaîne courte et vérifiable : récoltée et pressée à froid dans notre propre usine à Taourirt, mise en bouteille à la source, et importée directement à Amsterdam.",
+      text: "Une chaîne courte et vérifiable : récoltée et pressée à froid dans notre propre usine à Taourirt, mise en bouteille à la source, et importée directement à Amsterdam. Une récolte par an — le verger n’en donne pas davantage.",
       from: { label: "Taourirt · Debdou", sub: "Nord-est du Maroc" },
       to: { label: "Amsterdam", sub: "Pays-Bas" },
       steps: [
@@ -371,7 +372,7 @@ window.AJAR_CONTENT_FR = {
     },
     pricing: {
       title: "Prix sur demande",
-      text: "Nous ne publions volontairement pas de tarif : les prix B2B dépendent du volume, de la fréquence et des modalités de livraison. Un court échange suffit à y voir clair.",
+      text: "Nous ne publions volontairement pas de tarif : les prix B2B dépendent du volume, de la fréquence et des modalités de livraison. Un court échange suffit à y voir clair. Et en cuisine : la différence entre une huile moyenne et une huile excellente se joue à quelques centimes par assiette.",
       fair: "Un principe reste ferme : des prix justes pour tous les maillons — la famille derrière l’huile, vous en tant qu’entrepreneur, et votre client.",
       packaging: "Livraison par carton de 12 × 500 ml (contenu définitif du carton à venir).",
       packagingTodo: true
@@ -381,7 +382,7 @@ window.AJAR_CONTENT_FR = {
       title: "Parmi les premiers, avec une attention personnelle",
       items: [
         { title: "Contact direct, pas de centre d’appels", text: "Vous avez un interlocuteur fixe — l’importateur lui-même. Les questions sur un lot ou une livraison reçoivent une réponse immédiate." },
-        { title: "Livraison convenue à l’avance", text: "Nous convenons du volume et de la fréquence à l’avance, pour que votre livraison soit assurée — sans surprises." },
+        { title: "Livraison convenue à l’avance", text: "Nous convenons du volume et de la fréquence à l’avance — votre part de la récolte est ainsi réservée, sans surprises." },
         { title: "Grandir ensemble dès le départ", text: "En tant que l’un des premiers clients, vous bénéficiez d’une attention personnelle, et nous réfléchissons avec vous à ce qui convient le mieux à votre établissement." }
       ]
     },

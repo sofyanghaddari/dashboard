@@ -271,6 +271,7 @@ window.AJAR_CONTENT_EN = {
     compare: {
       kicker: 'The difference',
       title: 'AJAR next to supermarket olive oil',
+      intro: 'Every anonymous bottle on your menu or shelf is a story you don’t get to sell.',
       colA: 'AJAR',
       colB: 'Typical supermarket olive oil',
       rows: [
@@ -313,7 +314,7 @@ window.AJAR_CONTENT_EN = {
     origin: {
       kicker: 'Origin',
       title: 'From Debdou to your business',
-      text: 'One short, verifiable chain: harvested and cold-pressed in our own factory in Taourirt, bottled at source, and imported directly to Amsterdam.',
+      text: 'One short, verifiable chain: harvested and cold-pressed in our own factory in Taourirt, bottled at source, and imported directly to Amsterdam. One harvest a year — the grove gives no more.',
       from: { label: 'Taourirt · Debdou', sub: 'North-eastern Morocco' },
       to: { label: 'Amsterdam', sub: 'The Netherlands' },
       steps: [
@@ -372,7 +373,7 @@ window.AJAR_CONTENT_EN = {
     },
     pricing: {
       title: 'Price on request',
-      text: 'We deliberately publish no price list: B2B prices depend on volume, frequency and delivery arrangements. One short conversation and you know where you stand.',
+      text: 'We deliberately publish no price list: B2B prices depend on volume, frequency and delivery arrangements. One short conversation and you know where you stand. And for the kitchen: the difference between average and excellent oil comes down to cents per plate.',
       fair: 'One principle stands firm: fair prices for everyone in the chain — the family behind the oil, you as the entrepreneur, and your customer.',
       packaging: 'Delivery per case of 12 × 500 ml (final case count to follow).',
       packagingTodo: true
@@ -382,7 +383,7 @@ window.AJAR_CONTENT_EN = {
       title: 'In early, with personal attention',
       items: [
         { title: 'Direct contact, no call centre', text: 'You have one fixed point of contact — the importer himself. Questions about a batch or delivery are answered right away.' },
-        { title: 'Delivery agreed in advance', text: 'We agree volume and frequency with you beforehand, so your delivery is assured — no surprises.' },
+        { title: 'Delivery agreed in advance', text: 'We agree volume and frequency with you beforehand — securing your share of the harvest, no surprises.' },
         { title: 'Growing together from the start', text: 'As one of the first customers you get personal attention, and we think along about what suits your business best.' }
       ]
     },

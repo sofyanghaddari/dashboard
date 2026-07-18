@@ -89,6 +89,35 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v32 — Drie eerlijke overtuigingsprincipes in de copy (18 juli 2026)
+
+Vervolg op v31, op verzoek van Soef ("welke psychologische marketingtechnieken kunnen we nog
+gebruiken?"). Uit een bredere analyse zijn drie technieken gekozen die géén nieuw materiaal
+vereisen en volledig binnen de bestaande feiten blijven; de rest (social proof, labcijfers,
+oogstfoto's) wacht op echt bewijs en is bewust NIET gefaket. Alles in NL/EN/FR, "u"-vorm.
+
+1. **Verlies-framing (loss aversion), één keer.** Nieuwe intro-regel boven de vergelijkingstabel
+   op Product ("Het verschil"): "Elke anonieme fles op uw kaart of schap is een verhaal dat u
+   niet verkoopt." Mensen vermijden verlies sterker dan ze winst zoeken; dit staat precies waar
+   de anonieme supermarktfles al ter sprake komt. Technisch: nieuwe sleutel `product.compare.intro`
+   + main.js geeft die door als derde argument aan `kickerTitle` (bestond al als optionele param —
+   ontbreekt de sleutel, dan rendert er niets; backwards-compatibel).
+2. **Eerlijke seizoensschaarste.** (a) Herkomst-sectie Product: "Eén oogst per jaar — meer geeft
+   de boomgaard niet." — feitelijk (olijven kennen één oogst per jaar; eigen boomgaarden = eindige
+   voorraad), geen nep-urgentie, geen voorraadclaims. (b) B2B "Waarom nu instappen" →
+   "Leverafspraken vooraf" herformuleerd: "— zo ligt uw deel van de oogst vast, zonder
+   verrassingen" (reservation-framing van een bestaande, ware afspraak).
+3. **Prijs-herkadering per bord.** Toegevoegd aan de "Prijs op aanvraag"-tekst op B2B: "En voor
+   de keuken geldt: het verschil tussen middelmatige en uitstekende olie is per bord een kwestie
+   van centen." Verkleint de gevoelsmatige prijsdrempel voor horeca zonder prijzen te noemen —
+   prijslogica ("op aanvraag") onaangetast.
+
+Bewust NIET gedaan: afteltimers, voorraadtellers, verzonnen reviews/logo's — botst met het merk
+(rustig, eerlijk, B2B) en met ACM-regels rond misleidende schaarste. Partnerwall (`showPartners`)
+blijft wachten op échte afnemers. Geen SW-cache-bump nodig (ajar genegeerd door de SW).
+
+---
+
 ### v31 — Positionering: van dienstbeschrijving naar klantbeschrijving (18 juli 2026)
 
 Gerichte positioneringsingreep op verzoek van Soef: de site verschuiven van "beschrijven wát wij

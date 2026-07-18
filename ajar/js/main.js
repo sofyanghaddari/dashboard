@@ -783,7 +783,7 @@
 
       /* Vergelijkingsblok */
       '<section class="section"><div class="wrap wrap-narrow">' +
-        '<div class="section-head reveal">' + kickerTitle(p.compare.kicker, p.compare.title) + '</div>' +
+        '<div class="section-head reveal">' + kickerTitle(p.compare.kicker, p.compare.title, p.compare.intro) + '</div>' +
         '<div class="compare card reveal">' +
           '<div class="compare-head"><span></span><span class="compare-col-a">' + esc(p.compare.colA) + '</span><span>' + esc(p.compare.colB) + '</span></div>' +
           p.compare.rows.map(r =>

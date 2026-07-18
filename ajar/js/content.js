@@ -403,10 +403,12 @@ window.AJAR_CONTENT = {
         { title: 'Directe import', text: 'Eén importeur, één producent. Vragen over een partij of levering worden direct beantwoord — niet via drie schakels.' }
       ]
     },
-    /* Vergelijkingsblok — alléén feitelijke claims. */
+    /* Vergelijkingsblok — alléén feitelijke claims. v32: intro-regel met verlies-framing
+       (loss aversion) — één keer, subtiel, precies waar de anonieme fles ter sprake komt. */
     compare: {
       kicker: 'Het verschil',
       title: 'AJAR naast supermarkt-olijfolie',
+      intro: 'Elke anonieme fles op uw kaart of schap is een verhaal dat u niet verkoopt.',
       colA: 'AJAR',
       colB: 'Gangbare supermarkt-olijfolie',
       rows: [
@@ -451,7 +453,7 @@ window.AJAR_CONTENT = {
     origin: {
       kicker: 'Herkomst',
       title: 'Van Debdou naar uw zaak',
-      text: 'Eén korte, controleerbare keten: geoogst en koud geperst in de eigen fabriek in Taourirt, gebotteld aan de bron, en rechtstreeks geïmporteerd naar Amsterdam.',
+      text: 'Eén korte, controleerbare keten: geoogst en koud geperst in de eigen fabriek in Taourirt, gebotteld aan de bron, en rechtstreeks geïmporteerd naar Amsterdam. Eén oogst per jaar — meer geeft de boomgaard niet.',
       from: { label: 'Taourirt · Debdou', sub: 'Noordoost-Marokko' },
       to: { label: 'Amsterdam', sub: 'Nederland' },
       steps: [
@@ -526,7 +528,7 @@ window.AJAR_CONTENT = {
     },
     pricing: {
       title: 'Prijs op aanvraag',
-      text: 'We publiceren bewust geen prijslijst: B2B-prijzen hangen af van volume, frequentie en afspraken over levering. In één kort gesprek weet u waar u aan toe bent.',
+      text: 'We publiceren bewust geen prijslijst: B2B-prijzen hangen af van volume, frequentie en afspraken over levering. In één kort gesprek weet u waar u aan toe bent. En voor de keuken geldt: het verschil tussen middelmatige en uitstekende olie is per bord een kwestie van centen.',
       fair: 'Eén uitgangspunt staat vast: eerlijke prijzen voor iedereen in de keten — de familie achter de olie, u als ondernemer, en uw klant.',
       /* B2B rekent in dozen, niet in flessen. Definitieve doosinhoud volgt. */
       packaging: 'Levering per doos à 12 × 500 ml (definitieve doosinhoud volgt).',
@@ -538,7 +540,7 @@ window.AJAR_CONTENT = {
       title: 'Vroeg erbij, met persoonlijke aandacht',
       items: [
         { title: 'Direct contact, geen callcenter', text: 'U heeft één vast aanspreekpunt — de importeur zelf. Vragen over een partij of levering worden meteen beantwoord.' },
-        { title: 'Leverafspraken vooraf', text: 'Volume en frequentie spreken we van tevoren met u af, zodat u verzekerd bent van uw levering — geen verrassingen.' },
+        { title: 'Leverafspraken vooraf', text: 'Volume en frequentie spreken we van tevoren met u af — zo ligt uw deel van de oogst vast, zonder verrassingen.' },
         { title: 'Meegroeien vanaf het begin', text: 'Als een van de eerste afnemers krijgt u persoonlijke aandacht en denken we mee over wat het beste bij uw zaak past.' }
       ]
     },
