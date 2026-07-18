@@ -214,7 +214,7 @@ window.AJAR_CONTENT = {
   home: {
     hero: {
       title: 'Extra vierge olijfolie, rechtstreeks uit Marokko.',
-      sub: 'Koudgeperste olijfolie van een familiebedrijf in Marokko, rechtstreeks naar de Nederlandse horeca en speciaalzaak.',
+      sub: 'Koudgeperst bij één familie in Marokko, rechtstreeks geïmporteerd voor de Nederlandse horeca en speciaalzaak. Je werkt waarschijnlijk graag met AJAR als je kwaliteit boven de laagste literprijs stelt, het verhaal achter je producten vertelt, en een vaste leverancier zoekt in plaats van een eenmalige deal.',
       image: 'sfeer-09.jpg'
     },
     /* Drie kernpunten, elk max 6 woorden — geen kaarten met uitleg, dat staat al op de subpagina's.
@@ -478,13 +478,19 @@ window.AJAR_CONTENT = {
       title: 'Rechtstreeks inkopen bij de bron',
       sub: 'AJAR levert uitsluitend B2B — aan zaken die weten wat goede olie voor hun keuken of schap betekent. Eerst proeven, dan praten.'
     },
+    /* v31 — positioneringsingreep: van "wie we beleveren" (segmenten) naar "voor wie is AJAR"
+       (herkenning). De vijf punten beschrijven de lezer, niet een eisenlijst. De segment-info
+       (horeca/deli/retail) blijft in de hero, het contactformulier en de footer. Zachte impliciete
+       afbakening staat bewust binnen punt 1 ("niet de goedkoopste vulling") — verder puur positief. */
     audiences: {
       kicker: 'Voor wie',
-      title: 'Wie we beleveren',
+      title: 'Past AJAR bij jouw zaak?',
       items: [
-        { title: 'Horeca', text: 'Restaurants en cateraars die een herkenbare, constante olie op tafel en in de keuken willen — met een verhaal dat het menu versterkt.' },
-        { title: 'Delicatessenzaken', text: 'Speciaalzaken die hun klanten een olie met echte herkomst willen bieden, van één producent, met het gezicht van de maker erbij.' },
-        { title: 'Kleinere retailers', text: 'Zelfstandige winkels en foodconcepten die zich willen onderscheiden van het standaard schap.' }
+        { title: 'Je kiest kwaliteit boven de laagste literprijs', text: 'Je zoekt een olie waar je achter staat en die je met een gerust hart schenkt — niet de goedkoopste vulling van het schap.' },
+        { title: 'Je vertelt het verhaal aan je klanten', text: 'Herkomst, familie en ambacht zijn voor jou verkoopargumenten, geen bijzaak — een olie met een gezicht past bij je zaak.' },
+        { title: 'Je zoekt een vaste leverancier', text: 'Je bouwt liever een relatie op met iemand die je kent en die levert wat hij belooft, dan dat je van deal naar deal springt.' },
+        { title: 'Je wilt eerst proeven', text: 'Je vertrouwt je eigen smaak en die van je gasten, en beslist pas nadat je de olie zelf hebt geproefd.' },
+        { title: 'Je hecht aan een korte, traceerbare keten', text: 'Eén familie, één boomgaard, één importeur — rechtstreeks in je zaak, zonder anonieme tussenhandel.' }
       ]
     },
     how: {

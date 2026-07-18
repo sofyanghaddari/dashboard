@@ -89,6 +89,41 @@ Deze principes zijn tijdens het hele project leidend geweest — **respecteer ze
 
 ---
 
+### v31 — Positionering: van dienstbeschrijving naar klantbeschrijving (18 juli 2026)
+
+Gerichte positioneringsingreep op verzoek van Soef: de site verschuiven van "beschrijven wát wij
+leveren" naar "beschrijven vóór wie wij het leveren". Bezoekers moeten zichzelf herkennen en zich
+zo zelf kwalificeren — de verkeerde lezer haakt vanzelf af, zonder dat iemand wordt weggestuurd.
+Géén herschrijving van de site; alleen positioneringstekst, in alle drie talen (NL/EN/FR) synchroon.
+
+De ideale AJAR-klant (bron voor alle teksten): stelt kwaliteit boven de laagste literprijs;
+vertelt het verhaal achter zijn producten; zoekt een vaste leverancier i.p.v. een eenmalige deal;
+wil eerst proeven; hecht aan een korte, traceerbare keten.
+
+Twee ingrepen:
+
+1. **Homepage-hero (`home.hero.sub`).** De dienstzin ("Koudgeperste olijfolie … rechtstreeks naar
+   de Nederlandse horeca en speciaalzaak") herschreven: eerst kort wát (koudgeperst, één familie,
+   Marokko, geïmporteerd voor horeca/speciaalzaak), dan de brug naar de lezer met de drie sterkste
+   herkenningspunten (kwaliteit > literprijs, verhaal vertellen, vaste leverancier). De hero-**titel**
+   blijft de "wát"-zin, zodat de vijf-seconden-test (extra vierge, uit Marokko) intact blijft.
+
+2. **B2B-pagina, `b2b.audiences` (sectie `#voor-wie`).** Herschreven van segment-opsomming
+   ("Wie we beleveren": Horeca / Delicatessen / Retail) naar herkenning: titel "Past AJAR bij jouw
+   zaak?" met de vijf punten als beschrijving van de lezer (jij/you/vous), niet als eisenlijst. Geen
+   nieuwe sectie (de pagina is in v2c juist ontdubbeld) en geen duplicatie. De segment-info blijft
+   aanwezig in `b2b.hero.sub` ("keuken of schap"), de contactform-opties en de footer. Bestaande
+   sectie-CTA-structuur ongemoeid. Renderer (`uspGrid`, grid-3) verwerkt 5 kaarten zonder wijziging.
+
+Harde regels gerespecteerd: niemand weggejaagd (één zachte, impliciete afbakening — "niet de
+goedkoopste vulling van het schap" — binnen punt 1, verder puur positief); productinformatie en
+5-sec-"wát" blijven staan; contactgegevens, prijslogica, CTA-structuur en paginastructuur
+onaangetast; geen nieuwe feiten/cijfers/certificeringen verzonnen. Geen SW-cache-bump nodig (ajar
+wordt door de service worker genegeerd). Wijzigingen in `js/content.js` (NL), `content.en.js` (EN),
+`content.fr.js` (FR); alle drie `node --check`-schoon.
+
+---
+
 ### v30 — Professionele site-audit: snelheid, veiligheid, SEO, i18n (17 juli 2026)
 
 Volledige audit op verzoek van Soef ("controleer op snelheid, veiligheid, efficiëntie — alles

@@ -138,7 +138,7 @@ window.AJAR_CONTENT_EN = {
   home: {
     hero: {
       title: 'Extra virgin olive oil, straight from Morocco.',
-      sub: 'Cold-pressed olive oil from a family business in Morocco, delivered directly to Dutch restaurants and specialty stores.'
+      sub: 'Cold-pressed by one family in Morocco, imported directly for Dutch restaurants and specialty stores. You’ll probably enjoy working with AJAR if you put quality before the lowest price per litre, tell the story behind your products, and want a lasting supplier rather than a one-off deal.'
     },
     kernpunten: {
       kicker: 'Why AJAR',
@@ -339,11 +339,13 @@ window.AJAR_CONTENT_EN = {
     },
     audiences: {
       kicker: 'Who for',
-      title: 'Who we supply',
+      title: 'Is AJAR right for your business?',
       items: [
-        { title: 'Restaurants & catering', text: 'Restaurants and caterers who want a recognisable, consistent oil on the table and in the kitchen — with a story that strengthens the menu.' },
-        { title: 'Delicatessens', text: 'Specialty stores that want to offer their customers an oil with real provenance, from one producer, with the face of the maker behind it.' },
-        { title: 'Smaller retailers', text: 'Independent shops and food concepts looking to stand out from the standard shelf.' }
+        { title: 'You choose quality over the lowest price per litre', text: 'You want an oil you stand behind and pour with confidence — not the cheapest filler on the shelf.' },
+        { title: 'You tell your customers the story', text: 'Provenance, family and craft are selling points for you, not an afterthought — an oil with a face fits your business.' },
+        { title: 'You want a lasting supplier', text: 'You would rather build a relationship with someone you know and who delivers what they promise than jump from deal to deal.' },
+        { title: 'You want to taste first', text: 'You trust your own palate and that of your guests, and you decide only after tasting the oil yourself.' },
+        { title: 'You value a short, traceable chain', text: 'One family, one grove, one importer — straight into your business, without anonymous middlemen.' }
       ]
     },
     how: {
