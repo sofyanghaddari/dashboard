@@ -34,7 +34,10 @@ const ETIKET = {
     zijkant:   74,     // breedte van het linker- én rechterpaneel
     barcode: 35.4,     // 35,4 mm = 80 % vergroting: de EAN-13 ondergrens om
                        // betrouwbaar te scannen. Niet kleiner maken.
-    boogFractie: 109.4/2442, // hoogte van de boog t.o.v. de etikethoogte (gemeten in de foto)
+    // Boog, gemeten op de gouden rand van het middenblad (dus zonder de witte
+    // franje die in de bronafbeelding om het etiket heen zat).
+    boogRand: 120.6/2442,  // hoe diep de boog op de vouwlijn zit
+    boogTop:   16.0/2442,  // hoe diep het hoogste punt van de boog zit
   },
 
   /* ═══ LINKERPANEEL ═════════════════════════════════════════════════════ */
@@ -198,7 +201,7 @@ body{
   width:var(--w-mid);
   /* Boog exact langs de bovenrand die in de foto zit — 80 meetpunten,
      zodat er geen grijze achtergrond van de bronafbeelding overblijft. */
-  clip-path:polygon(0.0% 4.543%, 1.247% 4.317%, 2.494% 4.147%, 3.74% 3.964%, 4.987% 3.813%, 6.234% 3.514%, 7.481% 3.331%, 8.727% 3.211%, 9.974% 2.985%, 11.273% 2.815%, 12.519% 2.666%, 13.766% 2.496%, 15.013% 2.292%, 16.26% 2.229%, 17.506% 2.059%, 18.753% 1.951%, 20.0% 1.737%, 21.247% 1.64%, 22.494% 1.545%, 23.74% 1.46%, 24.987% 1.353%, 26.234% 1.284%, 27.481% 1.23%, 28.727% 1.164%, 30.026% 1.041%, 31.273% 0.934%, 32.519% 0.902%, 33.766% 0.871%, 35.013% 0.83%, 36.26% 0.758%, 37.506% 0.717%, 38.753% 0.632%, 40.0% 0.562%, 41.247% 0.512%, 42.494% 0.471%, 43.74% 0.446%, 44.987% 0.376%, 46.234% 0.392%, 47.481% 0.389%, 48.727% 0.329%, 49.974% 0.329%, 51.273% 0.247%, 52.519% 0.37%, 53.766% 0.37%, 55.013% 0.386%, 56.26% 0.458%, 57.506% 0.471%, 58.753% 0.531%, 60.0% 0.622%, 61.247% 0.628%, 62.494% 0.691%, 63.74% 0.758%, 64.987% 0.827%, 66.234% 0.836%, 67.481% 0.981%, 68.727% 1.047%, 70.026% 1.151%, 71.273% 1.167%, 72.519% 1.312%, 73.766% 1.422%, 75.013% 1.507%, 76.26% 1.551%, 77.506% 1.671%, 78.753% 1.822%, 80.0% 1.936%, 81.247% 2.059%, 82.494% 2.194%, 83.74% 2.295%, 84.987% 2.452%, 86.234% 2.673%, 87.481% 2.846%, 88.727% 2.947%, 89.974% 3.174%, 91.273% 3.344%, 92.519% 3.526%, 93.766% 3.706%, 95.013% 3.895%, 96.26% 4.087%, 97.506% 4.317%, 98.753% 4.484%, 100.0% 4.537%, 100% 100%, 0% 100%);
+  clip-path:polygon(0.0% 4.9186%, 1.091% 4.7454%, 2.234% 4.5455%, 3.325% 4.36%, 4.468% 4.1914%, 5.558% 4.0011%, 6.649% 3.7915%, 7.792% 3.594%, 8.883% 3.4567%, 9.974% 3.3049%, 11.117% 3.1242%, 12.208% 2.9629%, 13.351% 2.8159%, 14.442% 2.6882%, 15.532% 2.5582%, 16.675% 2.3871%, 17.766% 2.2908%, 18.909% 2.2017%, 20.0% 2.0764%, 21.091% 1.9728%, 22.234% 1.8885%, 23.325% 1.7946%, 24.468% 1.6982%, 25.558% 1.6139%, 26.649% 1.5441%, 27.792% 1.4911%, 28.883% 1.4453%, 30.026% 1.3923%, 31.117% 1.3345%, 32.208% 1.2695%, 33.351% 1.2116%, 34.442% 1.1466%, 35.532% 1.0984%, 36.675% 1.0238%, 37.766% 0.9828%, 38.909% 0.9274%, 40.0% 0.8672%, 41.091% 0.819%, 42.234% 0.7853%, 43.325% 0.7708%, 44.468% 0.7154%, 45.558% 0.6962%, 46.649% 0.6841%, 47.792% 0.6552%, 48.883% 0.6552%, 49.974% 0.6552%, 51.117% 0.6552%, 52.208% 0.6697%, 53.351% 0.6962%, 54.442% 0.6865%, 55.532% 0.7202%, 56.675% 0.7564%, 57.766% 0.7997%, 58.909% 0.8335%, 60.0% 0.8624%, 61.091% 0.9009%, 62.234% 0.9298%, 63.325% 1.0045%, 64.468% 1.0623%, 65.558% 1.1273%, 66.649% 1.1851%, 67.792% 1.2646%, 68.883% 1.3778%, 70.026% 1.4333%, 71.117% 1.5007%, 72.208% 1.5489%, 73.351% 1.6549%, 74.442% 1.7344%, 75.532% 1.8355%, 76.675% 1.9391%, 77.766% 2.033%, 78.909% 2.1125%, 80.0% 2.2233%, 81.091% 2.3149%, 82.234% 2.4209%, 83.325% 2.5341%, 84.468% 2.6858%, 85.558% 2.8376%, 86.649% 2.9677%, 87.792% 3.1483%, 88.883% 3.2784%, 89.974% 3.4229%, 91.117% 3.5795%, 92.208% 3.7505%, 93.351% 3.9577%, 94.442% 4.1263%, 95.532% 4.2998%, 96.675% 4.4708%, 97.766% 4.7068%, 98.909% 4.8441%, 100.0% 4.9595%, 100% 100%, 0% 100%);
 }
 .paneel--mid img{ display:block; width:100%; height:100%; object-fit:fill; }
 
@@ -271,7 +274,7 @@ body{
 
 /* ── Rechterpaneel: ingrediënten ──────────────────────────────────────── */
 .ing{ flex:none; border:.3mm solid var(--lijn); border-radius:1.4mm; padding:1.4mm 1.9mm; background:#FDFBF4 }
-.ing-blok + .ing-blok{ margin-top:.85mm }
+.ing-blok + .ing-blok{ margin-top:.8mm }
 .ing-blok h3{
   font-size:1.68mm; font-weight:700; color:var(--groen); letter-spacing:.03mm;
   text-align:center; margin-bottom:.35mm;
@@ -299,7 +302,7 @@ body{
 }
 
 /* ── Barcode ──────────────────────────────────────────────────────────── */
-.barcode{ flex:none; margin-top:auto; padding-top:1.1mm; display:flex; justify-content:center }
+.barcode{ flex:none; margin-top:auto; padding-top:.8mm; display:flex; justify-content:center }
 .barcode svg{ width:var(--w-bar); height:auto; display:block }
 
 /* ── Schermgereedschap (niet zichtbaar bij afdrukken) ─────────────────── */
@@ -347,10 +350,11 @@ body{
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
   /* ── Maten + boog ───────────────────────────────────────────────────── */
-  // De boog van het middenblad zit al in de foto (36 px van 814 px hoog).
-  // Alle drie de panelen krijgen een even hoge boog. Zo eindigt elke boog op de
-  // vouwlijn op dezelfde hoogte als zijn buur en loopt de bovenrand door.
-  const boogZij = A.hoogte * A.boogFractie;
+  // De zijpanelen krijgen exact dezelfde boog als het middenblad: even diep op
+  // de vouwlijn én even hoog in het midden. Zo loopt de bovenrand door over de
+  // vouwlijnen en steekt er nergens wit boven uit.
+  const boogZij = A.hoogte * A.boogRand;      // diepte op de vouwlijn
+  const boogTop = A.hoogte * A.boogTop;       // diepte van het hoogste punt
 
   const r = document.documentElement.style;
   r.setProperty('--h',        A.hoogte  + 'mm');
@@ -359,17 +363,19 @@ body{
   r.setProperty('--w-bar',    A.barcode + 'mm');
   r.setProperty('--boog-zij', boogZij.toFixed(2) + 'mm');
 
-  // clip-path in objectBoundingBox: kwadratische bézier piekt exact op y = 0
-  const f = (boogZij / A.hoogte).toFixed(5);
+  // Kwadratische bézier: het middelpunt van de curve ligt op (P0 + 2C + P2)/4,
+  // dus met C = 2·top − rand komt de top exact op de gewenste hoogte uit.
+  const fR = A.boogRand, fT = A.boogTop, fC = (2*fT - fR);
   document.getElementById('boogZijPad')
-    .setAttribute('d', `M0,${f} Q0.5,${-f} 1,${f} L1,1 L0,1 Z`);
+    .setAttribute('d', `M0,${fR.toFixed(5)} Q0.5,${fC.toFixed(5)} 1,${fR.toFixed(5)} L1,1 L0,1 Z`);
 
   // sierrand-svg per zijpaneel, in mm (viewBox = werkelijke maten)
-  const W = A.zijkant, H = A.hoogte, bz = boogZij;
+  const W = A.zijkant, H = A.hoogte;
+  const ctrl = d => (2*(boogTop + d) - (boogZij + d)).toFixed(2);   // stuurpunt bij offset d
   const deco = `
     <svg class="deco" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
-      <path class="band" d="M0,${(bz + .55).toFixed(2)} Q${W/2},${(-bz + .55).toFixed(2)} ${W},${(bz + .55).toFixed(2)}"/>
-      <path class="rand" d="M2.2,${(bz + 2.1).toFixed(2)} Q${W/2},${(-bz + 2.1).toFixed(2)} ${(W-2.2).toFixed(2)},${(bz + 2.1).toFixed(2)}
+      <path class="band" d="M0,${(boogZij + .55).toFixed(2)} Q${W/2},${ctrl(.55)} ${W},${(boogZij + .55).toFixed(2)}"/>
+      <path class="rand" d="M2.2,${(boogZij + 2.1).toFixed(2)} Q${W/2},${ctrl(2.1)} ${(W-2.2).toFixed(2)},${(boogZij + 2.1).toFixed(2)}
                             L${(W-2.2).toFixed(2)},${(H-2.2).toFixed(2)} L2.2,${(H-2.2).toFixed(2)} Z"/>
     </svg>`;
 
