@@ -1385,6 +1385,21 @@ op **Over ons**, precies zoals de opdracht voorschrijft: **ná** het vertrouwens
 
 ## 4. Wat is er gebouwd (v1, af)
 
+- **Potetiket (`tools/etiket.html`, v31)** — wikkeletiket voor de olijvenpot, los van de website.
+  Drie panelen (234,75 × 110 mm), elk met een **ronde bovenrand**; geen witranden, zodat het
+  gesneden kan worden. Middenblad = de originele ontwerpafbeelding op 564 dpi
+  (`assets/etiket/ajar-etiket-midden.jpg`), enkel het olijfje boven de J is bordeaux → olijfgroen;
+  de boog van het middenblad is met 80 meetpunten uitgelezen en als `clip-path` overgenomen, de
+  zijpanelen gebruiken diezelfde booghoogte zodat de bovenrand over de vouwlijnen doorloopt.
+  Linker- en rechterpaneel zijn opnieuw opgebouwd met de **echte potgegevens** (zie foto's van de
+  pot): voedingswaarden 3-talig, uitlekgewicht 160 g 5-talig, ONSSA/FOODEX-codes, THT-tekst,
+  ingrediënten in 6 talen, ConservAjar-adres, EAN-13 `6111264714986`. Alle tekst staat in het
+  `ETIKET`-object bovenin het bestand. Barcode wordt uit het nummer gegenereerd inclusief
+  rustzones, controlecijfer-check en 80 %-vergroting. Arabisch via lokaal gevendorde
+  **Noto Naskh Arabic**. **Open punten:** echte potmaten ontbreken (huidige maat is aanname),
+  x-hoogte van de kleine tekst haalt de EU-eis van 1,2 mm niet, ONSSA/FOODEX/ConservAjar-logo's
+  zijn nog tekstblokken resp. een nagetekend merkje, en het middenblad zegt nog "POIDS NET 130 g"
+  terwijl het uitlekgewicht 160 g is.
 - **8 pagina's:** Home, Over ons, Product, Kennis (v6g), Zakelijke klanten, Contact, Sample-landingspagina, Privacy.
 - **Sample-landing (`sample.html`)** als QR-doel met UTM-per-kanaal + "tip een collega"-veld.
 - **Formulieren** (offerte/sample + presentatie-aanvraag) met honeypot, Formspree- of WhatsApp-fallback.
