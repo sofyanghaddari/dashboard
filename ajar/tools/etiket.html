@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>AJAR — etiket (olives vertes dénoyautées)</title>
+<!--
+  AJAR ETIKET — wikkeletiket voor de pot, 3 panelen naast elkaar.
+
+  ▸ ALLE TEKST EN WAARDES STAAN IN HET `ETIKET`-OBJECT HIERONDER.
+    Wil je een voedingswaarde, adres of ingrediënt wijzigen? Pas dáár de tekst aan,
+    verder niets. De opmaak volgt automatisch.
+
+  ▸ Het MIDDENBLAD is de originele afbeelding (../assets/etiket/ajar-etiket-midden.jpg)
+    en blijft ongewijzigd — alleen het olijfje boven de J is groen gemaakt.
+
+  ▸ Afdrukken: ⌘P / Ctrl+P → "Opslaan als PDF", marges op "Geen",
+    achtergrondafbeeldingen AAN. Het formaat staat vast in mm (zie afmetingen).
+-->
+<script>
+const ETIKET = {
+
+  /* ── Formaat in millimeters ───────────────────────────────────────────── */
+  afmetingen: {
+    hoogte:   110,   // hoogte van het hele etiket
+    midden:  87.2,   // breedte middenblad = hoogte × 0,7926 (verhouding van de foto)
+    zijkant:   60,   // breedte van het linker- én rechterpaneel
+    barcode: 35.4,   // breedte barcode-blok — 35,4 mm = 80 % vergroting, de EAN-13
+                     // ondergrens voor betrouwbaar scannen. Niet kleiner maken.
+  },
+
+  /* ── LINKERPANEEL ─────────────────────────────────────────────────────── */
+  links: {
+    nutriTitel:    'VALEURS NUTRITIONNELLES',
+    nutriSubtitel: 'pour 100 g',
+
+    // sub: true  →  ingesprongen regel ("dont …")
+    nutriRijen: [
+      { label: 'Énergie',                  waarde: '595 kJ / 142 kcal' },
+      { label: 'Matières grasses',         waarde: '13,9 g' },
+      { label: 'dont acides gras saturés', waarde: '1,9 g',  sub: true },
+      { label: 'Glucides',                 waarde: '1,3 g' },
+      { label: 'dont sucres',              waarde: '1,0 g',  sub: true },
+      { label: 'Fibres alimentaires',      waarde: '3,2 g' },
+      { label: 'Protéines',                waarde: '1,0 g' },
+      { label: 'Sel',                      waarde: '3,0 g' },
+    ],
+
+    ingrediëntenTitel: 'INGRÉDIENTS :',
+    ingrediënten:      'Olives vertes dénoyautées, eau, sel, acidifiant : acide lactique.',
+
+    bewaren: [
+      'À conserver dans un endroit frais et sec.',
+      'Après ouverture, à conserver au réfrigérateur et consommer sous 7 jours.',
+    ],
+
+    triTitel: 'PENSEZ AU TRI !',
+    triItems: [
+      { icoon: 'bocal',    regel1: 'BOCAL',     regel2: 'VERRE'  },
+      { icoon: 'deksel',   regel1: 'COUVERCLE', regel2: 'MÉTAL'  },
+      { icoon: 'etiquette',regel1: 'ÉTIQUETTE', regel2: 'PAPIER' },
+    ],
+    triVoet: 'À JETER DANS LES BACS DE TRI',
+  },
+
+  /* ── RECHTERPANEEL ────────────────────────────────────────────────────── */
+  rechts: {
+    kop:  'Le goût de la tradition',
+    tekst: 'Chez AJAR, nous sélectionnons avec soin les meilleures olives pour vous '
+         + 'offrir un goût authentique et naturel. Préparées selon des méthodes '
+         + 'traditionnelles, nos olives sont le choix parfait pour sublimer vos '
+         + 'repas au quotidien.',
+
+    // icoon: 'blad' | 'hart' | 'bestek' | 'medaille'
+    punten: [
+      { icoon: 'blad',     regels: ['Récoltées à maturité'] },
+      { icoon: 'hart',     regels: ['Riche en antioxydants'] },
+      { icoon: 'bestek',   regels: ['Parfait pour toutes', 'vos recettes'] },
+      { icoon: 'medaille', regels: ['Qualité garantie', 'Sélection premium'] },
+    ],
+
+    herkomst: 'Produit du Maroc',
+
+    afzenderTitel: 'Conditionné par :',
+    afzender: [
+      { tekst: 'AJAR SARL', vet: true },
+      { tekst: 'Lotissement Industriel, Lot 123' },
+      { tekst: 'Marrakech – Maroc' },
+      { tekst: 'Tél. : +212 6 00 00 00 00' },
+      { tekst: 'www.ajar.ma' },
+    ],
+
+    ean: '6123456789012',   // 13 cijfers — controlecijfer wordt gecontroleerd
+  },
+};
+</script>
+
+<style>
+/* ── Merkfonts (lokaal, geen CDN) ─────────────────────────────────────── */
+@font-face{font-family:'Fraunces';src:url('../assets/fonts/fraunces-latin.woff2') format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'Fraunces';src:url('../assets/fonts/fraunces-latin-ext.woff2') format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+0100-024F,U+0259,U+1E00-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:'Inter';src:url('../assets/fonts/inter-latin.woff2') format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'Inter';src:url('../assets/fonts/inter-latin-ext.woff2') format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+0100-024F,U+0259,U+1E00-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+
+:root{
+  --h: 105mm;         /* wordt door JS overschreven vanuit ETIKET.afmetingen */
+  --w-mid: 81mm;
+  --w-side: 60mm;
+  --w-bar: 35.4mm;
+
+  --creme:      #F8F3E6;
+  --creme-diep: #F1E9D6;
+  --goud:       #B8934A;
+  --groen:      #35512A;
+  --groen-diep: #2A4020;
+  --inkt:       #26251F;
+  --inkt-zacht: #4E4A41;
+  --lijn:       rgba(184,147,74,.45);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:#5B5A54;
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color:var(--inkt);
+  display:flex; flex-direction:column; align-items:center;
+  padding:24px 12px 60px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── Het etiket zelf ──────────────────────────────────────────────────── */
+.etiket{
+  display:flex;
+  height:var(--h);
+  background:var(--creme);
+  box-shadow:0 18px 50px rgba(0,0,0,.45);
+  transform-origin:top center;
+}
+.paneel{ position:relative; height:100%; }
+.paneel--zij{
+  width:var(--w-side);
+  background:
+    linear-gradient(180deg,#FBF7EC 0%, var(--creme) 42%, var(--creme-diep) 100%);
+  padding:4mm 4.2mm 3.2mm;
+  display:flex; flex-direction:column;
+}
+.paneel--mid{ width:var(--w-mid); }
+.paneel--mid img{ display:block; width:100%; height:100%; object-fit:cover; }
+
+/* vouwlijnen: dunne goudlijn op de scheiding */
+.paneel--mid::before,.paneel--mid::after{
+  content:''; position:absolute; top:0; bottom:0; width:.35mm;
+  background:linear-gradient(180deg,transparent,var(--goud) 12%,var(--goud) 88%,transparent);
+  opacity:.55; z-index:2;
+}
+.paneel--mid::before{ left:-.18mm } .paneel--mid::after{ right:-.18mm }
+
+/* sierrand binnen de zijpanelen */
+.zijrand{
+  position:absolute; inset:2.2mm;
+  border:.28mm solid var(--lijn); border-radius:1.4mm;
+  pointer-events:none;
+}
+
+/* ── Voedingswaardetabel ──────────────────────────────────────────────── */
+.nutri{
+  flex:none;
+  border:.3mm solid var(--lijn); border-radius:1.6mm; overflow:hidden; background:#FDFBF4;
+}
+.nutri-kop{
+  background:linear-gradient(180deg,var(--groen),var(--groen-diep));
+  color:#F6F1E2; text-align:center; padding:1.3mm 1mm 1.4mm;
+}
+.nutri-kop b{ display:block; font-size:2.4mm; font-weight:700; letter-spacing:.04mm; }
+.nutri-kop span{ display:block; font-size:1.95mm; opacity:.82; margin-top:.3mm; }
+.nutri table{ width:100%; border-collapse:collapse; }
+.nutri td{
+  font-size:2.05mm; padding:.95mm 1.8mm; border-bottom:.2mm solid rgba(184,147,74,.28);
+  color:var(--inkt); line-height:1.25;
+}
+.nutri tr:last-child td{ border-bottom:0 }
+.nutri td.w{ text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.nutri tr.sub td{
+  font-size:1.9mm; color:var(--inkt-zacht); padding-top:.6mm; padding-bottom:.7mm;
+  border-bottom-color:rgba(184,147,74,.18);
+}
+.nutri tr.sub td:first-child{ padding-left:3.8mm }
+
+/* ── Ingrediënten & bewaren ───────────────────────────────────────────── */
+.blok{ flex:none; margin-top:2.8mm }
+.blok-titel{
+  font-size:2.1mm; font-weight:700; letter-spacing:.1mm; color:var(--inkt);
+  margin-bottom:.9mm;
+}
+.blok p{ font-size:2mm; line-height:1.45; color:var(--inkt-zacht); }
+.blok p + p{ margin-top:1.2mm }
+
+/* ── Pensez au tri ────────────────────────────────────────────────────── */
+.tri{
+  flex:none; margin-top:auto;
+  border:.3mm solid var(--lijn); border-radius:1.6mm;
+  padding:1.6mm 1.4mm 1.2mm; background:#FDFBF4;
+}
+.tri-titel{ font-size:2mm; font-weight:700; letter-spacing:.1mm; margin-bottom:1.4mm }
+.tri-rij{ display:flex; justify-content:space-around; align-items:flex-start; gap:1mm }
+.tri-item{ flex:1; text-align:center; position:relative }
+.tri-item + .tri-item::before{
+  content:''; position:absolute; left:-.5mm; top:.6mm; bottom:1mm;
+  border-left:.2mm solid rgba(184,147,74,.35);
+}
+.tri-item svg{ width:5.4mm; height:5.4mm; color:var(--groen); display:block; margin:0 auto .8mm }
+.tri-item b{ display:block; font-size:1.6mm; font-weight:700; letter-spacing:.04mm }
+.tri-item span{ display:block; font-size:1.6mm; color:var(--inkt-zacht) }
+.tri-voet{
+  margin-top:1.4mm; padding-top:1.1mm; border-top:.2mm solid rgba(184,147,74,.3);
+  text-align:center; font-size:1.6mm; letter-spacing:.06mm; color:var(--inkt-zacht);
+}
+
+/* ── Rechterpaneel ────────────────────────────────────────────────────── */
+.r-kop{ display:flex; align-items:center; gap:1.6mm; margin-bottom:.6mm }
+.r-kop svg{ width:4.4mm; height:4.4mm; color:var(--groen); flex:none }
+.r-kop h2{
+  font-family:'Fraunces',Georgia,serif; font-style:italic; font-weight:600;
+  font-size:3.2mm; letter-spacing:.02mm; color:var(--inkt);
+}
+.r-lijn{ flex:none; height:.28mm; background:linear-gradient(90deg,var(--goud),rgba(184,147,74,0)); margin-bottom:1.8mm }
+.r-tekst{ flex:none; font-size:1.95mm; line-height:1.36; color:var(--inkt-zacht) }
+
+.usp{ flex:none; margin-top:2.2mm; padding-top:2mm; border-top:.25mm solid var(--lijn) }
+.usp-rij{ display:flex; align-items:center; gap:1.9mm; margin-bottom:1.35mm }
+.usp-rij:last-child{ margin-bottom:0 }
+.usp-ic{
+  width:5.2mm; height:5.2mm; border-radius:50%; flex:none;
+  border:.3mm solid var(--lijn); background:#FDFBF4;
+  display:flex; align-items:center; justify-content:center;
+}
+.usp-ic svg{ width:3mm; height:3mm; color:var(--groen) }
+.usp-tx{ font-size:1.95mm; line-height:1.28; color:var(--inkt) }
+
+.herkomst{
+  flex:none; margin-top:2mm; padding-top:1.8mm; border-top:.25mm solid var(--lijn);
+  display:flex; align-items:center; gap:2mm; font-size:1.95mm;
+}
+.vlag{ width:5.6mm; height:3.75mm; border-radius:.5mm; flex:none; box-shadow:0 0 0 .2mm rgba(0,0,0,.12) }
+
+.afzender{ flex:none; margin-top:1.5mm; font-size:1.9mm; line-height:1.35; color:var(--inkt-zacht) }
+.afzender .t{ margin-bottom:.4mm }
+.afzender .vet{ font-weight:700; color:var(--inkt) }
+
+.barcode{ flex:none; margin-top:auto; padding-top:1.2mm; display:flex; justify-content:center }
+.barcode svg{ width:var(--w-bar); height:auto; display:block }
+.ean-waarschuwing{ margin-top:8px; color:#FFC9C9 }
+
+/* ── Schermgereedschap (verdwijnt bij afdrukken) ──────────────────────── */
+.bar{
+  color:#EDE7D8; font-size:13px; line-height:1.6; max-width:900px;
+  margin:0 0 18px; text-align:center;
+}
+.bar b{ color:#fff }
+.bar code{ background:rgba(0,0,0,.3); padding:1px 5px; border-radius:4px }
+
+@media print{
+  @page{ size:auto; margin:0 }
+  body{ background:#fff; padding:0; display:block }
+  .bar{ display:none }
+  .etiket{ box-shadow:none; transform:none !important }
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <b>AJAR — wikkeletiket.</b> Waardes wijzigen? Open dit bestand en pas het
+  <code>ETIKET</code>-object bovenin aan.<br>
+  Afdrukken naar PDF: ⌘P / Ctrl+P → marges <b>Geen</b>, achtergronden <b>aan</b>.
+</div>
+
+<div class="etiket" id="etiket">
+  <!-- LINKS -->
+  <section class="paneel paneel--zij" id="links"><span class="zijrand"></span></section>
+
+  <!-- MIDDEN (originele afbeelding — ongewijzigd) -->
+  <section class="paneel paneel--mid">
+    <img src="../assets/etiket/ajar-etiket-midden.jpg"
+         alt="AJAR — olives vertes dénoyautées, face avant de l’étiquette">
+  </section>
+
+  <!-- RECHTS -->
+  <section class="paneel paneel--zij" id="rechts"><span class="zijrand"></span></section>
+</div>
+
+<script>
+(() => {
+  const E = ETIKET;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  /* Formaat toepassen */
+  const r = document.documentElement.style;
+  r.setProperty('--h',      E.afmetingen.hoogte  + 'mm');
+  r.setProperty('--w-mid',  E.afmetingen.midden  + 'mm');
+  r.setProperty('--w-side', E.afmetingen.zijkant + 'mm');
+  r.setProperty('--w-bar',  E.afmetingen.barcode + 'mm');
+
+  /* ── Iconen (line-stijl, currentColor) ──────────────────────────────── */
+  const ICO = {
+    bocal:    '<path d="M8 3h8M9 3v2.2c0 .8-.3 1.5-.8 2.1L7 9a4 4 0 0 0-1 2.6V19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-7.4A4 4 0 0 0 17 9l-1.2-1.7A3.4 3.4 0 0 1 15 5.2V3"/>',
+    deksel:   '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="5.2"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/>',
+    etiquette:'<path d="M5 4h9l5 5v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14 4v5h5"/><path d="M8 13h7M8 17h5"/>',
+    blad:     '<path d="M20 4c0 8-5 13-12 13-2 0-4-.6-4-.6"/><path d="M4 20c2-7 7-11 13-12"/>',
+    hart:     '<path d="M12 20s-7-4.4-7-9.4A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.6c0 5-7 9.4-7 9.4z"/>',
+    bestek:   '<path d="M7 3v7a2 2 0 0 0 4 0V3M9 10v11"/><path d="M17 3c-1.6 1-2.4 3-2.4 5.2 0 1.4.8 2.4 2.4 2.4M17 10.6V21"/>',
+    medaille: '<circle cx="12" cy="9" r="5"/><path d="M9.2 13.4 7.5 21l4.5-2.4L16.5 21l-1.7-7.6"/>',
+    olijftak: '<path d="M3 20C7 12 13 7 21 5"/><ellipse cx="8.4" cy="13.6" rx="2.3" ry="1.7" transform="rotate(-35 8.4 13.6)"/><ellipse cx="14.6" cy="8.6" rx="2.3" ry="1.7" transform="rotate(-35 14.6 8.6)"/>',
+  };
+  const svg = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[n] || ''}</svg>`;
+
+  /* ── EAN-13 barcode ─────────────────────────────────────────────────── */
+  const L = ['0001101','0011001','0010011','0111101','0100011','0110001','0101111','0111011','0110111','0001011'];
+  const G = ['0100111','0110011','0011011','0100001','0011101','0111001','0000101','0010001','0001001','0010111'];
+  const R2= ['1110010','1100110','1101100','1000010','1011100','1001110','1010000','1000100','1001000','1110100'];
+  const PAR = ['LLLLLL','LLGLGG','LLGGLG','LLGGGL','LGLLGG','LGGLLG','LGGGLL','LGLGLG','LGLGGL','LGGLGL'];
+
+  function eanCheck(d12){
+    let s = 0;
+    for (let i = 0; i < 12; i++) s += (+d12[i]) * (i % 2 ? 3 : 1);
+    return (10 - s % 10) % 10;
+  }
+
+  function barcode(code){
+    const d = String(code).replace(/\D/g,'');
+    if (d.length !== 13) return { html:'', fout:'EAN moet 13 cijfers zijn (nu ' + d.length + ')' };
+    const fout = (+d[12] !== eanCheck(d)) ? 'Let op: controlecijfer klopt niet — zou ' + eanCheck(d) + ' moeten zijn' : '';
+
+    let bits = '101';
+    const par = PAR[+d[0]];
+    for (let i = 1; i <= 6; i++) bits += (par[i-1] === 'L' ? L : G)[+d[i]];
+    bits += '01010';
+    for (let i = 7; i <= 12; i++) bits += R2[+d[i]];
+    bits += '101';
+
+    // rustzones volgens EAN-13: 11 modules links, 7 rechts
+    const ML = 11, MR = 7, H = 68, HG = 74, W = bits.length + ML + MR;
+    const guard = i => (i < 3) || (i >= 45 && i < 50) || (i >= 92);
+    let bars = '';
+    for (let i = 0; i < bits.length; i++) {
+      if (bits[i] === '1') bars += `<rect x="${i+ML}" y="0" width="1" height="${guard(i) ? HG : H}"/>`;
+    }
+    const txt = (x, t, anchor) =>
+      `<text x="${x}" y="${HG + 8}" text-anchor="${anchor}" font-family="Inter,monospace"
+        font-size="9" letter-spacing=".6">${t}</text>`;
+
+    return {
+      fout,
+      html:
+        `<svg viewBox="0 0 ${W} ${HG + 11}" role="img" aria-label="Code-barres ${d}">
+           <rect width="${W}" height="${HG + 11}" fill="#FDFBF4"/>
+           <g fill="#1A1A18">${bars}
+             ${txt(ML - 2, d[0], 'end')}
+             ${txt(ML + 3 + 21, d.slice(1,7), 'middle')}
+             ${txt(ML + 50 + 21, d.slice(7,13), 'middle')}
+           </g>
+         </svg>`
+    };
+  }
+
+  /* ── Linkerpaneel ───────────────────────────────────────────────────── */
+  const l = E.links;
+  document.getElementById('links').insertAdjacentHTML('beforeend', `
+    <div class="nutri">
+      <div class="nutri-kop">
+        <b>${esc(l.nutriTitel)}</b><span>${esc(l.nutriSubtitel)}</span>
+      </div>
+      <table><tbody>
+        ${l.nutriRijen.map(x => `
+          <tr class="${x.sub ? 'sub' : ''}">
+            <td>${esc(x.label)}</td><td class="w">${esc(x.waarde)}</td>
+          </tr>`).join('')}
+      </tbody></table>
+    </div>
+
+    <div class="blok">
+      <div class="blok-titel">${esc(l.ingrediëntenTitel)}</div>
+      <p>${esc(l.ingrediënten)}</p>
+    </div>
+
+    <div class="blok">
+      ${l.bewaren.map(t => `<p>${esc(t)}</p>`).join('')}
+    </div>
+
+    <div class="tri">
+      <div class="tri-titel">${esc(l.triTitel)}</div>
+      <div class="tri-rij">
+        ${l.triItems.map(i => `
+          <div class="tri-item">${svg(i.icoon)}
+            <b>${esc(i.regel1)}</b><span>${esc(i.regel2)}</span>
+          </div>`).join('')}
+      </div>
+      <div class="tri-voet">${esc(l.triVoet)}</div>
+    </div>
+  `);
+
+  /* ── Rechterpaneel ──────────────────────────────────────────────────── */
+  const rr = E.rechts;
+  const bc = barcode(rr.ean);
+  const vlag = `<svg class="vlag" viewBox="0 0 30 20" role="img" aria-label="Maroc">
+      <rect width="30" height="20" fill="#C1272D"/>
+      <path d="M15 5.6 16.6 10.4 20.8 10.4 17.4 13.4 18.7 18.2 15 15.3 11.3 18.2 12.6 13.4 9.2 10.4 13.4 10.4Z"
+            fill="none" stroke="#006233" stroke-width="1.05" stroke-linejoin="round"/>
+    </svg>`;
+
+  document.getElementById('rechts').insertAdjacentHTML('beforeend', `
+    <div class="r-kop">${svg('olijftak')}<h2>${esc(rr.kop)}</h2></div>
+    <div class="r-lijn"></div>
+    <p class="r-tekst">${esc(rr.tekst)}</p>
+
+    <div class="usp">
+      ${rr.punten.map(p => `
+        <div class="usp-rij">
+          <span class="usp-ic">${svg(p.icoon)}</span>
+          <span class="usp-tx">${p.regels.map(esc).join('<br>')}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="herkomst"><span>${esc(rr.herkomst)}</span>${vlag}</div>
+
+    <div class="afzender">
+      <div class="t">${esc(rr.afzenderTitel)}</div>
+      ${rr.afzender.map(a => `<div class="${a.vet ? 'vet' : ''}">${esc(a.tekst)}</div>`).join('')}
+    </div>
+
+    <div class="barcode-wrap barcode">${bc.html}</div>
+  `);
+
+  /* EAN-melding hoort niet op het etiket zelf — alleen op het scherm */
+  if (bc.fout) {
+    document.querySelector('.bar').insertAdjacentHTML('beforeend',
+      `<div class="ean-waarschuwing">⚠ Barcode: ${esc(bc.fout)}</div>`);
+  }
+
+  /* ── Overloop-controle: waarschuw zodra tekst niet meer past ────────── */
+  const teVol = ['links','rechts'].filter(id => {
+    const p = document.getElementById(id);
+    return p.scrollHeight - p.clientHeight > 1;
+  });
+  if (teVol.length) {
+    document.querySelector('.bar').insertAdjacentHTML('beforeend',
+      `<div style="margin-top:8px;color:#FFC9C9">⚠ Te veel tekst voor het
+       ${teVol.join(' + ')}paneel — kort de tekst in of maak
+       <code>afmetingen.zijkant</code> / <code>afmetingen.hoogte</code> groter.</div>`);
+  }
+
+  /* ── Schaal het etiket op scherm zodat het altijd past ──────────────── */
+  const et = document.getElementById('etiket');
+  function pas(){
+    et.style.transform = 'none';
+    const breed = et.getBoundingClientRect().width;
+    const ruimte = Math.min(window.innerWidth - 24, 1400);
+    const f = Math.min(1, ruimte / breed);
+    et.style.transform = `scale(${f})`;
+    et.style.marginBottom = `${-(1 - f) * et.getBoundingClientRect().height / f}px`;
+  }
+  pas();
+  addEventListener('resize', pas);
+})();
+</script>
+</body>
+</html>
