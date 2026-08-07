@@ -38,26 +38,32 @@ const ETIKET = {
   },
 
   /* ═══ LINKERPANEEL ═════════════════════════════════════════════════════ */
+  /* Alle tekst is letterlijk overgenomen van de huidige pot, inclusief de
+     schrijfwijze die daar staat. Zie het commentaar bij de regels waar de pot
+     zelf een fout heeft. */
   links: {
     nutriTitel: [
-      'Information Nutritionnelle par 100 g',
-      'Nutritional information per 100 g',
-      'Información Nutricional por 100 g',
+      'Information Nutritionnelles par 100g',
+      'Nutritional information per 100g',
+      'Información Nutricional por 100g',
     ],
 
-    // labels: [frans, engels, spaans]   ·   sub: true → ingesprongen "dont …"
+    // labels: [frans, engels, spaans]   ·   sub: true → ingesprongen "Dont …"
     nutriRijen: [
-      { labels: ['Valeur énergétique', 'Energetic value', 'Valor energético'],
-        waarde: '595 kJ / 145 kcal' },
+      { labels: ['Valeur energétique', 'Energetic value', 'Valor energético'],
+        waarde: '595Kj / 145Kcal' },
       { labels: ['Lipides', 'Fat', 'Grasas'],
         waarde: '13,9 g' },
-      { labels: ['dont saturés', 'of which saturates', 'de las cuales saturadas'],
+      { labels: ['Dont saturé', 'Saturated', 'De las cuales saturadas'],
         waarde: '1,99 g', sub: true },
-      { labels: ['Glucides', 'Carbohydrates', 'Hidratos de carbono'],
+      { labels: ['Glucides', 'Carbohydrates', 'Hidratos de carbonos'],
         waarde: '1,32 g' },
-      { labels: ['dont sucres', 'of which sugars', 'de los cuales azúcares'],
+      // Op de pot staat hier óók "Dont saturé, Saturated" terwijl het om suikers
+      // gaat (het Spaans zegt wel "azúcares"). Letterlijk overgenomen.
+      // Verbeterd zou zijn: ['Dont sucres', 'Of which sugars', 'De los cuales azúcares']
+      { labels: ['Dont saturé', 'Saturated', 'De los cuales azúcares'],
         waarde: '< 0,2 g', sub: true },
-      { labels: ['Protéines', 'Proteins', 'Proteínas'],
+      { labels: ['Proteines', 'Proteins', 'Proteinas'],
         waarde: '1,02 g' },
       { labels: ['Sel', 'Salt', 'Sal'],
         waarde: '3,8 g' },
@@ -68,7 +74,7 @@ const ETIKET = {
       'Poids net égoutté',
       'Net drained weight',
       'Peso netto sgocciolato',
-      'Peso neto escurrido',
+      'Peso netto escurrido',   // pot: Italiaans/Spaans door elkaar; correct Spaans = "Peso neto escurrido"
     ],
     gewicht: '160 g',
 
@@ -82,22 +88,35 @@ const ETIKET = {
       { tekst: 'À CONSOMMER DE PRÉFÉRENCE AVANT LA DATE FIGURANT SUR LE COUVERCLE' },
       { tekst: 'PREFERABLY CONSUME BEFORE THE DATE ON THE LID' },
       { tekst: 'PREFERIBLEMENTE CONSUMIR ANTES DE LA FECHA EN LA TAPA' },
-      { tekst: 'PREFERIBILMENTE CONSUMARSI ENTRO LA DATA RIPORTATA SUL COPERCHIO' },
+      { tekst: 'CONSUMARSI PREFERIBILMENTE ENTRO LA DATA RIPORTATA SUL COPERCHIO' },
     ],
+  },
+
+  /* ═══ MIDDENBLAD ═══════════════════════════════════════════════════════
+     De voorkant is de originele afbeelding. Daarop stond "POIDS NET 130 g",
+     wat niet klopt bij een uitlekgewicht van 160 g — uitlekgewicht kan nooit
+     hoger zijn dan nettogewicht. Die tekst is uit de afbeelding weggeschilderd;
+     hieronder staat wat ervoor in de plaats komt. Zet `midden: null` om er
+     helemaal niets te zetten.                                                 */
+  midden: {
+    label:  'POIDS NET ÉGOUTTÉ',
+    waarde: '160 g',
+    // vlak dat overgeschilderd wordt, in % van de afbeelding
+    vlak: { links: 15.4, boven: 93.4, breedte: 16, hoogte: 6 },
   },
 
   /* ═══ RECHTERPANEEL ════════════════════════════════════════════════════ */
   rechts: {
     ingredienten: [
       { titel: 'OLIVES VERTES DÉNOYAUTÉES',
-        tekst: 'Ingrédients : olives vertes, saumure (eau, sel), '
-             + 'correcteur d’acidité : (E330, E270), antioxydant : E300' },
+        tekst: 'Ingrédients : olives vertes, saumure (eau, sel) correcteur '
+             + 'd’acidité : (E330, E270), antioxydant : E300' },
       { titel: 'PITTED GREEN OLIVES',
-        tekst: 'Ingredients: green olives, brine (water, salt), '
-             + 'acidity regulator: (E330, E270), antioxidant: E300' },
+        tekst: 'Ingredients: green olives, brine (water, salt), acidity '
+             + 'regulator: (E330, E270), antioxidant: E300' },
       { titel: 'OLIVE VERDI SNOCCIOLATE',
-        tekst: 'Ingredienti: olive verdi, salamoia (acqua, sale), '
-             + 'correttori di acidità: (E330, E270), antiossidante: E300' },
+        tekst: 'Ingredienti: olive verdi, salamoia (acqua, sale) correttori '
+             + 'di acidità: (E330, E270), antiossidante: E300' },
       { titel: 'ENTKERNTE GRÜNE OLIVEN',
         tekst: 'Zutaten: grüne Oliven, Salzlake (Wasser, Salz), '
              + 'Säurekorrektor: (E330, E270), Antioxidans: E300' },
@@ -112,10 +131,10 @@ const ETIKET = {
     herkomst: 'Produit du Maroc / Product of Morocco / إنتاج المغرب',
 
     bedrijf:    'CONSERVAJAR S.A.R.L',
-    bedrijfSub: 'Conserve de Fruits et Légumes (Olives, Abricots, Citrons, Piments…)',
+    bedrijfSub: 'Conserve de Fruits et Légumes (Olives, Abricots, Citrons, Piments...)',
     adres: [
-      'Adresse : Lot N° 107 Zone industrielle BP : 768 — 65800 Taourirt / Maroc',
-      'Tél : +212 5 36 69 43 16  ·  +212 5 36 67 96 36',
+      'Adresse : Lot N°107 Zone industriel BP:768 65800 Taourirt / Maroc',
+      'Tél : +212 5 36 69 43 16 + +212 5 36 67 96 36',
       'E-mail : conservajar@gmail.com',
     ],
     web: 'www.ajar.ma',
@@ -149,7 +168,7 @@ const ETIKET = {
 
   /* tekstmaten — hier stel je de leesbaarheid bij */
   --t-mini:  1.45mm;   /* certificaatcodes, THT-regels   */
-  --t-klein: 1.55mm;   /* ingrediënten, adres            */
+  --t-klein: 1.5mm;   /* ingrediënten, adres            */
   --t-basis: 1.85mm;   /* voedingswaardetabel            */
 }
 
@@ -239,9 +258,20 @@ body{
 .tht div{ font-size:var(--t-mini); line-height:1.4; color:var(--inkt-zacht); letter-spacing:.01mm }
 .tht div.ar{ font-family:'Naskh',serif; font-size:1.8mm; direction:rtl; margin-bottom:.5mm; color:var(--inkt) }
 
+/* ── Gewichtsvermelding op de voorkant ────────────────────────────────── */
+.midden-gewicht{
+  position:absolute; z-index:3;
+  display:flex; flex-direction:column; justify-content:center;
+  /* de oude tekst is al uit de afbeelding weggeschilderd, dus geen vlak nodig */
+  color:#F4F0E2;
+}
+.midden-gewicht b{ font-size:1.35mm; font-weight:600; letter-spacing:.03mm; opacity:.93; white-space:nowrap }
+.midden-gewicht span{ font-size:3.5mm; font-weight:700; letter-spacing:-.03mm; margin-top:.3mm; white-space:nowrap }
+.midden-gewicht span i{ font-style:normal; font-weight:400; font-size:2.2mm; margin-left:.6mm; opacity:.9 }
+
 /* ── Rechterpaneel: ingrediënten ──────────────────────────────────────── */
-.ing{ flex:none; border:.3mm solid var(--lijn); border-radius:1.4mm; padding:1.6mm 2mm; background:#FDFBF4 }
-.ing-blok + .ing-blok{ margin-top:1mm }
+.ing{ flex:none; border:.3mm solid var(--lijn); border-radius:1.4mm; padding:1.4mm 1.9mm; background:#FDFBF4 }
+.ing-blok + .ing-blok{ margin-top:.85mm }
 .ing-blok h3{
   font-size:1.68mm; font-weight:700; color:var(--groen); letter-spacing:.03mm;
   text-align:center; margin-bottom:.35mm;
@@ -252,8 +282,8 @@ body{
 .ing-blok.rtl p{ font-family:'Naskh',serif; font-size:1.8mm; line-height:1.45 }
 
 /* ── Bedrijfsgegevens ─────────────────────────────────────────────────── */
-.bedrijf{ flex:none; margin-top:1.7mm; text-align:center }
-.merkje{ display:block; width:9mm; height:auto; margin:0 auto .5mm }
+.bedrijf{ flex:none; margin-top:1.4mm; text-align:center }
+.merkje{ display:block; width:8.5mm; height:auto; margin:0 auto .5mm }
 .merkje-tx{
   font-size:1.5mm; font-weight:700; letter-spacing:.35mm; color:var(--groen-diep);
   margin-bottom:1.1mm;
@@ -262,7 +292,7 @@ body{
 .herkomst .ar{ font-family:'Naskh',serif; font-size:1.8mm }
 .bedrijf-naam{ font-size:2.5mm; font-weight:700; letter-spacing:.14mm; color:var(--inkt) }
 .bedrijf-sub{ font-size:1.5mm; color:var(--inkt-zacht); margin:.25mm 0 .6mm }
-.bedrijf-adres div{ font-size:var(--t-mini); line-height:1.34; color:var(--inkt-zacht) }
+.bedrijf-adres div{ font-size:var(--t-mini); line-height:1.3; color:var(--inkt-zacht) }
 .bedrijf-web{
   font-family:'Fraunces',Georgia,serif; font-size:2.3mm; letter-spacing:.5mm;
   color:var(--groen); margin-top:.8mm;
@@ -305,6 +335,7 @@ body{
   <section class="paneel paneel--mid">
     <img src="../assets/etiket/ajar-etiket-midden.jpg"
          alt="AJAR — olives vertes dénoyautées, face avant de l’étiquette">
+    <div class="midden-gewicht" id="midden-gewicht" hidden></div>
   </section>
 
   <section class="paneel paneel--zij" id="rechts"></section>
@@ -418,13 +449,9 @@ body{
   const rr = E.rechts;
   const bc = barcode(rr.ean);
 
-  // beeldmerk: olijfblad-paar, in de stijl van het merk
-  const merk = `
-    <svg class="merkje" viewBox="0 0 48 26" aria-hidden="true">
-      <path d="M24 24C24 14 30 6 44 3c1 12-6 20-20 21z" fill="#4C6B2F"/>
-      <path d="M24 24C24 15 18 7 5 4c-1 11 6 19 19 20z" fill="#2E4020"/>
-      <path d="M13 24c3-4 7-6 11-6s8 2 11 6z" fill="#C87A2B"/>
-    </svg>`;
+  // beeldmerk: uit de foto van de pot gehaald (donker blad + olijfblad + oranje blad)
+  const merk = `<img class="merkje" src="../assets/etiket/conservajar-beeldmerk.png"
+                     alt="ConservAjar">`;
 
   const herkomst = esc(rr.herkomst)
     .replace(/([؀-ۿ\s]{2,})$/, m => `<span class="ar">${m}</span>`);
@@ -449,6 +476,17 @@ body{
     </div>
 
     <div class="barcode">${bc.html}</div>`;
+
+  /* ── Gewichtsvermelding op de voorkant ──────────────────────────────── */
+  if (E.midden) {
+    const g = document.getElementById('midden-gewicht'), v = E.midden.vlak;
+    g.style.left   = v.links   + '%';
+    g.style.top    = v.boven   + '%';
+    g.style.width  = v.breedte + '%';
+    g.style.height = v.hoogte  + '%';
+    g.innerHTML = `<b>${esc(E.midden.label)}</b><span>${esc(E.midden.waarde)}<i>e</i></span>`;
+    g.hidden = false;
+  }
 
   /* ── Controles op het scherm ────────────────────────────────────────── */
   const meld = m => document.querySelector('.bar')

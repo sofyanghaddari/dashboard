@@ -1393,13 +1393,17 @@ op **Over ons**, precies zoals de opdracht voorschrijft: **ná** het vertrouwens
   zijpanelen gebruiken diezelfde booghoogte zodat de bovenrand over de vouwlijnen doorloopt.
   Linker- en rechterpaneel zijn opnieuw opgebouwd met de **echte potgegevens** (zie foto's van de
   pot): voedingswaarden 3-talig, uitlekgewicht 160 g 5-talig, ONSSA/FOODEX-codes, THT-tekst,
-  ingrediënten in 6 talen, ConservAjar-adres, EAN-13 `6111264714986`. Alle tekst staat in het
-  `ETIKET`-object bovenin het bestand. Barcode wordt uit het nummer gegenereerd inclusief
+  ingrediënten in 6 talen, ConservAjar-adres, EAN-13 `6111264714986`. Alle tekst is **letterlijk**
+  overgenomen van de huidige pot, inclusief de schrijffouten die daar staan (die zijn per regel
+  in commentaar gemarkeerd). Het ConservAjar-beeldmerk is uit de potfoto geëxtraheerd
+  (`assets/etiket/conservajar-beeldmerk.png`). Op de voorkant stond "POIDS NET 130 g"; die tekst
+  is uit de afbeelding weggeschilderd en vervangen door "POIDS NET ÉGOUTTÉ 160 g". Alle tekst
+  staat in het `ETIKET`-object bovenin het bestand. Barcode wordt uit het nummer gegenereerd inclusief
   rustzones, controlecijfer-check en 80 %-vergroting. Arabisch via lokaal gevendorde
   **Noto Naskh Arabic**. **Open punten:** echte potmaten ontbreken (huidige maat is aanname),
-  x-hoogte van de kleine tekst haalt de EU-eis van 1,2 mm niet, ONSSA/FOODEX/ConservAjar-logo's
-  zijn nog tekstblokken resp. een nagetekend merkje, en het middenblad zegt nog "POIDS NET 130 g"
-  terwijl het uitlekgewicht 160 g is.
+  x-hoogte van de kleine tekst haalt de EU-eis van 1,2 mm niet, ONSSA/FOODEX hebben nog geen
+  echt logo (alleen tekstblokken met hun code), het ConservAjar-beeldmerk is een extractie uit
+  een foto in plaats van een vectorbestand, en het nettogewicht mét pekel is nog onbekend.
 - **8 pagina's:** Home, Over ons, Product, Kennis (v6g), Zakelijke klanten, Contact, Sample-landingspagina, Privacy.
 - **Sample-landing (`sample.html`)** als QR-doel met UTM-per-kanaal + "tip een collega"-veld.
 - **Formulieren** (offerte/sample + presentatie-aanvraag) met honeypot, Formspree- of WhatsApp-fallback.
