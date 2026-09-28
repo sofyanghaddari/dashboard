@@ -1,4 +1,5 @@
 import { fmtMoney } from './utils.js';
+import { invoiceEpcPayload, qrCanvas } from './sepa-qr.js';
 
 let _gsiLoading  = null;
 let _accessToken = null;
@@ -125,8 +126,9 @@ function isOverdue(iso) {
 function fmtIBANEmail(iban) { return String(iban || '').replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim(); }
 
 // Alle regels + BTW per tarief (een ritten-factuur heeft meerdere regels)
-function invoiceParts(inv) {
-  const lines = (inv.lines || []).filter(l => l && (l.description || l.amountExcl || l.amountIncl));
+function invoiceParts(inv, bedrijf = {}) {
+  let lines = (inv.lines || []).filter(l => l && (l.description || l.amountExcl || l.amountIncl));
+  if (!lines.length) lines = [{ description: bedrijf.defaultDesc || 'Dienst', vatRate: bedrijf.defaultVat ?? 0, amountExcl: inv.totalExcl || 0, vatAmount: inv.totalVat || 0, amountIncl: inv.totalIncl || 0 }];
   const vatByRate = new Map();
   for (const l of lines) {
     const rate = l.vatRate ?? 0;
@@ -146,7 +148,7 @@ function defaultMessage(inv, bedrijf) {
 
 function buildHtmlEmail(inv, bedrijf, options = {}) {
   const client   = inv.client || {};
-  const { lines, vatRows } = invoiceParts(inv);
+  const { lines, vatRows } = invoiceParts(inv, bedrijf);
   const overdue  = isOverdue(inv.dueDate);
   const message  = options.message || defaultMessage(inv, bedrijf);
   const BORDER   = '#e6e2dd';
@@ -215,7 +217,22 @@ function buildHtmlEmail(inv, bedrijf, options = {}) {
             <strong>T.n.v.:</strong> ${esc(bedrijf.naam)}<br>
             <strong>O.v.v.:</strong> ${esc(inv.number || '—')}
           </td>
-        </tr>
+        </tr>${options.qrCid ? `
+        <tr>
+          <td style="padding:0 18px 16px">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid ${BORDER};width:100%">
+              <tr>
+                <td width="124" style="padding:14px 14px 0 0;vertical-align:middle">
+                  <img src="cid:${options.qrCid}" width="120" height="120" alt="Betaal-QR" style="display:block;width:120px;height:120px;border-radius:6px;border:0">
+                </td>
+                <td style="padding:14px 0 0;vertical-align:middle;font-size:13px;color:#444;line-height:1.55">
+                  <strong style="color:#1a1a1a">Direct betalen</strong><br>
+                  Scan deze code met uw bank-app. Bedrag, IBAN en factuurnummer worden automatisch ingevuld.
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>` : ''}
       </table>
 
       <p style="font-size:13px;color:${MUTED};margin:0 0 22px">De factuur zit als PDF in de bijlage.</p>
@@ -239,7 +256,7 @@ function buildHtmlEmail(inv, bedrijf, options = {}) {
 // Platte-tekstversie (multipart/alternative) — beter voor spamfilters en tekst-only clients
 function buildTextEmail(inv, bedrijf, options = {}) {
   const client = inv.client || {};
-  const { lines, vatRows } = invoiceParts(inv);
+  const { lines, vatRows } = invoiceParts(inv, bedrijf);
   const overdue = isOverdue(inv.dueDate);
   const out = [
     options.message || defaultMessage(inv, bedrijf),
@@ -278,12 +295,41 @@ export async function sendInvoiceEmail(inv, bedrijf, pdfBlob, options = {}) {
 
   const filename = `${inv.number || 'factuur'}.pdf`;
   const subject  = options.subject || `${options.subjectPrefix || ''}Factuur ${inv.number} — ${bedrijf.naam}`;
-  const htmlBody = buildHtmlEmail(inv, bedrijf, { message: options.message });
+  // Betaal-QR als ingesloten PNG (cid) — Gmail toont geen data:-afbeeldingen
+  let qrB64 = null;
+  try {
+    const payload = invoiceEpcPayload(inv, bedrijf);
+    if (payload) qrB64 = qrCanvas(payload).toDataURL('image/png').split(',')[1] || null;
+  } catch (_) { qrB64 = null; }
+  const qrCid    = qrB64 ? `betaal-qr-${Date.now().toString(36)}@dashboard` : null;
+
+  const htmlBody = buildHtmlEmail(inv, bedrijf, { message: options.message, qrCid });
   const textBody = buildTextEmail(inv, bedrijf, { message: options.message });
   const pdfB64   = await blobToBase64Lines(pdfBlob);
   const rnd      = () => Math.random().toString(36).slice(2);
   const outerB   = `----=_Mixed_${rnd()}`;
   const altB     = `----=_Alt_${rnd()}`;
+  const relB     = `----=_Rel_${rnd()}`;
+  const htmlPart = [
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    textToBase64Lines(htmlBody),
+  ];
+  const htmlBlock = qrB64 ? [
+    `Content-Type: multipart/related; boundary="${relB}"`,
+    '',
+    `--${relB}`,
+    ...htmlPart,
+    `--${relB}`,
+    'Content-Type: image/png; name="betaal-qr.png"',
+    'Content-Transfer-Encoding: base64',
+    `Content-ID: <${qrCid}>`,
+    'Content-Disposition: inline; filename="betaal-qr.png"',
+    '',
+    qrB64.match(/.{1,76}/g).join('\r\n'),
+    `--${relB}--`,
+  ] : htmlPart;
   const clean    = v => String(v).replace(/[\r\n]+/g, ' ').trim();
 
   const mime = [
@@ -303,10 +349,7 @@ export async function sendInvoiceEmail(inv, bedrijf, pdfBlob, options = {}) {
     '',
     textToBase64Lines(textBody),
     `--${altB}`,
-    'Content-Type: text/html; charset=UTF-8',
-    'Content-Transfer-Encoding: base64',
-    '',
-    textToBase64Lines(htmlBody),
+    ...htmlBlock,
     `--${altB}--`,
     '',
     `--${outerB}`,

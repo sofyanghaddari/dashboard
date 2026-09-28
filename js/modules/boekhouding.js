@@ -3,6 +3,7 @@ import { icon } from '../icons.js';
 import { uid, fmtMoney, parseAmount, escapeHTML, ymd } from '../utils.js';
 import { ok, err } from '../components/toast.js';
 import { parseInvoiceText } from '../invoice-nlp.js';
+import { invoiceEpcPayload, qrModules, qrSvg } from '../sepa-qr.js';
 
 function gmailConfigured() { return !!localStorage.getItem('gmailClientId'); }
 function fmtMoneyPDF(n) {
@@ -2694,6 +2695,8 @@ function generateInvoiceHTML(inv, bedrijf) {
   const lines   = inv.lines?.length ? inv.lines : [_fallbackLine];
   const client  = inv.client || {};
   const ibanFmt = fmtIBAN(bedrijf.iban);
+  let qrPayload = null;
+  try { qrPayload = invoiceEpcPayload(inv, bedrijf); } catch (_) {}
   return `<!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -2725,6 +2728,9 @@ function generateInvoiceHTML(inv, bedrijf) {
   .pay-box { background: #f8f7f5; border-radius: 10px; padding: 20px 24px; font-size: 13px; color: #555; line-height: 1.8; }
   .pay-box strong { color: #1a1a1a; }
   .pay-iban { font-size: 15px; font-weight: 700; color: #1a1a1a; letter-spacing: .5px; }
+  .pay-wrap { display: flex; gap: 20px; align-items: center; justify-content: space-between; }
+  .pay-qr { flex: 0 0 auto; text-align: center; font-size: 11px; color: #888; line-height: 1.4; }
+  .pay-qr svg { display: block; margin: 0 auto 4px; border-radius: 6px; }
   .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e8e4de; font-size: 11px; color: #aaa; display: flex; justify-content: space-between; }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
@@ -2765,7 +2771,7 @@ function generateInvoiceHTML(inv, bedrijf) {
     </tr></thead>
     <tbody>
       ${lines.map(l => `<tr>
-        <td>${escapeHTML(l.description || 'Vervoersdienst')}</td>
+        <td style="white-space:pre-line">${escapeHTML(l.description || 'Vervoersdienst')}</td>
         <td>${l.vatRate ?? 0}%</td>
         <td>${fmtMoney(l.amountExcl ?? 0)}</td>
         <td>${fmtMoney(l.amountIncl ?? 0)}</td>
@@ -2777,12 +2783,12 @@ function generateInvoiceHTML(inv, bedrijf) {
     <div class="t-row"><span>BTW</span><span>${fmtMoney(inv.totalVat || 0)}</span></div>
     <div class="t-grand"><span>Totaal</span><span>${fmtMoney(inv.totalIncl || 0)}</span></div>
   </div>
-  <div class="pay-box">
+  <div class="pay-box"><div class="pay-wrap"><div>
     Gelieve het bedrag van <strong>${fmtMoney(inv.totalIncl || 0)}</strong> vóór <strong>${fmtDateLong(inv.dueDate)}</strong> over te maken naar:<br>
     <span class="pay-iban">${escapeHTML(ibanFmt)}</span> — t.n.v. ${escapeHTML(bedrijf.naam)}<br>
     ${bedrijf.bic ? `BIC: <strong>${escapeHTML(bedrijf.bic)}</strong><br>` : ''}
     o.v.v. factuurnummer <strong>${escapeHTML(inv.number || '')}</strong>
-  </div>
+  </div>${qrPayload ? `<div class="pay-qr">${qrSvg(qrPayload, 104)}Scan met uw bank-app</div>` : ''}</div></div>
   <div class="footer">
     <span>${escapeHTML(bedrijf.naam)} · KvK ${escapeHTML(bedrijf.kvk)} · BTW ${escapeHTML(bedrijf.btw)}</span>
     <span>${escapeHTML(inv.number || '')}</span>
@@ -3025,7 +3031,8 @@ async function generateInvoicePDF(inv, bedrijf) {
   }
 
   // ── Totalen — nieuwe pagina als geen ruimte meer ──
-  const TOTALS_H = 75;
+  const qrPayload = (() => { try { return invoiceEpcPayload(inv, bedrijf); } catch (_) { return null; } })();
+  const TOTALS_H = qrPayload ? 82 : 75;
   if (rowEndY + TOTALS_H > PAGE_H - FOOT_H - 5) _newPage();
 
   let tTY = rowEndY + 9;
@@ -3044,7 +3051,7 @@ async function generateInvoicePDF(inv, bedrijf) {
 
   // ── Betaalinstructies ──
   const pY    = tTY + 12;
-  const pBoxH = bedrijf.bic ? 30 : 24;
+  const pBoxH = qrPayload ? 36 : (bedrijf.bic ? 30 : 24);
   doc.setFillColor(...BG);
   doc.roundedRect(L, pY, W, pBoxH, 2, 2, 'F');
   doc.setFillColor(...TAUPE);
@@ -3058,6 +3065,22 @@ async function generateInvoicePDF(inv, bedrijf) {
   if (bedrijf.bic) {
     doc.setTextColor(...DIM);
     doc.text(`BIC: ${bedrijf.bic}`, L + 7, pY + 26);
+  }
+  // Betaal-QR (EPC/SEPA) rechts in het betaalvak — vector, dus scherp bij printen
+  if (qrPayload) {
+    try {
+      const { n, isDark } = qrModules(qrPayload);
+      const qs = 30, qx = R - 4 - qs, qy = pY + 3;
+      const mod = qs / (n + 8), pad = mod * 4; // stille zone van 4 modules
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(qx, qy, qs, qs, 1.2, 1.2, 'F');
+      doc.setFillColor(0, 0, 0);
+      for (let r = 0; r < n; r++)
+        for (let c = 0; c < n; c++)
+          if (isDark(r, c)) doc.rect(qx + pad + c * mod, qy + pad + r * mod, mod + 0.01, mod + 0.01, 'F');
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...DIM);
+      doc.text('Of scan de QR-code met uw bank-app om direct te betalen.', L + 7, pY + 32);
+    } catch (_) {}
   }
 
   // ── Footer laatste pagina ──

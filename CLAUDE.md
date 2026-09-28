@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=8), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v168** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v169** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -22,6 +22,7 @@ Lokaal: `/Users/soef/claude code`
 - Open-Meteo voor weer (geen API key, default Amsterdam centrum 52.3676, 4.9041)
 - GitHub Gist API voor encrypted auto-sync met versie-historie
 - Gmail API (`gmail.send` scope) voor factuur-verzending met PDF-bijlage
+- qrcode-generator v1.4.4 (MIT, lokaal gevendord in `js/vendor/qrcode-generator.js` als ES-module) voor de SEPA-betaal-QR op facturen (`js/sepa-qr.js`)
 - Web Crypto API voor AES-GCM versleuteling (PBKDF2 200k iter)
 - Motion One (lokaal gevendord in `js/vendor/motion.min.js`, geen build/CDN) voor subtiele scroll-in reveals via `js/motion.js` — respecteert prefers-reduced-motion
 - WebAuthn voor Face ID/Touch ID
@@ -130,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v168)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v169)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -145,6 +146,7 @@ js/
   animate.js                     — countUp, initCountUps ([data-countup] tel-animaties), (legacy) staggerIn, bindRipple
   motion.js                      — Motion One wiring: revealView() scroll-in reveals (window.staggerIn wijst hiernaar)
   vendor/motion.min.js           — lokaal gevendorde Motion One (offline-safe, in SW-cache)
+  vendor/qrcode-generator.js     — lokaal gevendorde QR-encoder (ES-module, in SW-cache)
   notifications.js               — browser-notificaties voor taken met deadline
   privacy.js                     — blur-toggle voor bedragen op dashboard
   weather.js                     — open-meteo + Amsterdam spitsuur-heuristiek
@@ -166,7 +168,8 @@ js/
   gestures.js                    — swipe-back van links
   longpress.js                   — long-press helper + context menu
   app-badge.js                   — navigator.setAppBadge
-  gmail.js                       — Gmail OAuth2 via GSI + sendInvoiceEmail() + buildHtmlEmail() + preloadGSI()
+  gmail.js                       — Gmail OAuth2 via GSI + sendInvoiceEmail() + buildHtmlEmail()/buildTextEmail() + preloadGSI()
+  sepa-qr.js                     — SEPA/EPC-betaal-QR: epcPayload(), invoiceEpcPayload(), qrModules(), qrCanvas() (mail-PNG), qrSvg() (printversie)
   receipt-ocr.js                 — Tesseract.js OCR wrapper: ocrReceipt() + parseReceiptText()
   invoice-nlp.js                 — NLP parser voor factuur-extractie
   income-road.js                 — gedeelde incomeRoad() taxi-weg-animatie (Taxi-overzicht)
@@ -196,7 +199,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v168
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v169
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -307,6 +310,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++38. **📱 SEPA-betaal-QR op facturen v169 (28 sept 2026):** op verzoek van user. EPC069-12-QR ("GiroCode": BCD/002/UTF-8/SCT, BIC, naam, IBAN, `EUR75.00`, omschrijving = factuurnummer, foutcorrectie M) in (1) de **factuurmail** — als inline PNG via `multipart/related` + `cid:` (Gmail toont géén `data:`-afbeeldingen), in het betaalvak met "Direct betalen"-uitleg; (2) de **PDF** — als vector (jsPDF-rects, stille zone 4 modules) rechts in het betaalvak, `TOTALS_H` 75→82; (3) de **HTML-print/bekijkversie** — inline SVG. Alleen bij openstaande facturen met bedrag > 0 (`invoiceEpcPayload()` geeft null bij `status:'betaald'`, €0 of negatief). Alle drie getest door de QR terug te lezen met jsQR (inhoud identiek). **Let op (eerlijk naar user gecommuniceerd):** scanbaar in ING, bunq, SNS, ASN, Knab — **niet** in Rabobank/ABN AMRO, daarom blijven de gewone betaalgegevens altijd ernaast staan. Printversie: rit-omschrijving nu met regelafbrekingen (`white-space:pre-line`).
 
 +37. **✉️ Factuurmail herontworpen v167-v168 (28 sept 2026):** op verzoek van user. (1) **v167:** bedragen in de mail toonden `<span class="blurred-amount">` als tekst — `fmtMoney()` zonder `raw` in `gmail.js` + herinnering/aanmaning/WhatsApp/clipboard-teksten → nu overal `fmtMoney(x, true)`. **Regel: in e-mail/platte tekst ALTIJD `fmtMoney(n, true)`.** (2) **v168 `buildHtmlEmail()`:** kop met factuurnummer + groot totaal + "Te betalen vóór …" (rood "Vervallen op …" als de vervaldatum voorbij is), rijen Aan/Factuurdatum/Vervaldatum, **álle factuurregels** (was alleen `lines[0]` — ritten-facturen misten regels) met regelafbrekingen in de omschrijving, BTW per tarief, betaalbox, bedrijfsgegevens-footer **zonder dubbele "Met vriendelijke groet"** (die staat al in het bericht). Verborgen preheader voor de inbox-preview. MIME is nu `multipart/mixed` → `multipart/alternative` (text/plain via `buildTextEmail()` + html), body-delen base64 (geen 998-tekens-regellimiet). Nieuwe standaardtekst "normaal" in de send-modal ("Hierbij ontvangt u factuur … van € … vóór …").
 

@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v168';
+const CACHE = 'dashboard-v169';
 
 
 
@@ -70,6 +70,8 @@ const ASSETS = [
   './js/modules/boekhouding.js',
   './js/invoice-nlp.js',
   './js/gmail.js',
+  './js/sepa-qr.js',
+  './js/vendor/qrcode-generator.js',
   './js/qibla.js',
   './js/components/calendar.js',
   './js/components/year-review.js',
