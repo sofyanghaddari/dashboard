@@ -3206,7 +3206,7 @@ function openSendModal(inv, bedrijf, container) {
   };
 
   const MESSAGES = {
-    normaal:     `Geachte ${clientName || 'relatie'},\n\nGelieve bijgevoegde factuur voor de daarop vermelde datum te betalen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
+    normaal:     `Geachte ${clientName || 'relatie'},\n\nHierbij ontvangt u factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0, true)}. Wij verzoeken u het bedrag vóór ${fmtDateLong(inv.dueDate)} over te maken. De betaalgegevens staan hieronder en in de bijgevoegde PDF.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
     herinnering: `Geachte ${clientName || 'relatie'},\n\nWij willen u vriendelijk herinneren dat factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0, true)} op ${fmtDateLong(inv.dueDate)} betaald diende te zijn.\n\nHebt u al betaald? Dan kunt u deze herinnering als niet verzonden beschouwen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
     aanmaning:   `Geachte ${clientName || 'relatie'},\n\nOndanks onze eerdere herinnering staat factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0, true)} nog steeds open. Wij verzoeken u dringend het verschuldigde bedrag binnen 7 dagen te voldoen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
   };

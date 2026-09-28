@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=8), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v167** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v168** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -130,7 +130,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v167)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v168)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -196,7 +196,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v167
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v168
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -307,6 +307,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++37. **✉️ Factuurmail herontworpen v167-v168 (28 sept 2026):** op verzoek van user. (1) **v167:** bedragen in de mail toonden `<span class="blurred-amount">` als tekst — `fmtMoney()` zonder `raw` in `gmail.js` + herinnering/aanmaning/WhatsApp/clipboard-teksten → nu overal `fmtMoney(x, true)`. **Regel: in e-mail/platte tekst ALTIJD `fmtMoney(n, true)`.** (2) **v168 `buildHtmlEmail()`:** kop met factuurnummer + groot totaal + "Te betalen vóór …" (rood "Vervallen op …" als de vervaldatum voorbij is), rijen Aan/Factuurdatum/Vervaldatum, **álle factuurregels** (was alleen `lines[0]` — ritten-facturen misten regels) met regelafbrekingen in de omschrijving, BTW per tarief, betaalbox, bedrijfsgegevens-footer **zonder dubbele "Met vriendelijke groet"** (die staat al in het bericht). Verborgen preheader voor de inbox-preview. MIME is nu `multipart/mixed` → `multipart/alternative` (text/plain via `buildTextEmail()` + html), body-delen base64 (geen 998-tekens-regellimiet). Nieuwe standaardtekst "normaal" in de send-modal ("Hierbij ontvangt u factuur … van € … vóór …").
 
 +36. **🫒 AJAR v30 — professionele site-audit (17 juli 2026):** volledige audit (snelheid/veiligheid/SEO/i18n) op verzoek van user. Acht fixes: (1) CSP `img-src` + `https://*.goatcounter.com` op alle 9 shells — GoatCounters `<img>`-beacon-fallback (hun expliciete CSP-noodpad) zou anders stil geblokkeerd worden zodra `goatcounterCode` ingevuld wordt; (2) noindex-pagina's privacy/voorwaarden uit sitemap.xml (v27b zette ze er per abuis in — levert Search Console-klachten op); (3) LCP-preload voor de home-hero (`sfeer-09.webp`, fetchpriority=high) in index.html, **met smoke-test-bewaking** dat de preload synchroon blijft met `home.hero.image` in content.js; (4) vertaalgat `lbl.verification`/`lbl.registeredAddress` (VIES-regels sample-formulier) gedicht in NL/EN/FR; (5) 5 hardcoded-NL alt-teksten + QR-prefix in main.js naar `ui`-sleutels met EN/FR-vertalingen; (6) `:has()`-selector-lijsten voor icoon-tegels vervangen door `noimg`-klasse direct in de processMedia-markup (één niet-ondersteunde :has() dropt de hele regel); (7) `noindex` op tools/specsheet.html+presentatie.html (robots.txt in submap wordt niet gelezen); (8) ongebruikte 2,5 MB `stock-hero-orchard.jpg` verwijderd (Soefs eigen hero-01/story-02 blijven). Expliciet gecheckt en al in orde: -webkit-backdrop-filter-paren, font-subsetting, safe-areas, WebP-dekking, esc()/honeypots, aspect-ratio's, ankers. Smoke-test + eigen v30-verificatiescript (EN/FR, CSP-beide-richtingen, preload-hergebruik, screenshots) groen. Changelog: `ajar/PROJECT.md`.
 
