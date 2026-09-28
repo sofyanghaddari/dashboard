@@ -162,19 +162,19 @@ function buildHtmlEmail(inv, bedrijf, options = {}) {
         <!-- Subtotaal -->
         <tr>
           <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;color:#888">Subtotaal</td>
-          <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;text-align:right">${esc(fmtMoney(inv.totalExcl || 0))}</td>
+          <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;text-align:right">${esc(fmtMoney(inv.totalExcl || 0, true))}</td>
         </tr>
 
         <!-- BTW -->
         <tr>
           <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;color:#888">BTW ${line.vatRate ?? 0}%</td>
-          <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;text-align:right">${esc(fmtMoney(inv.totalVat || 0))}</td>
+          <td style="padding:13px 16px;border-bottom:1px solid #e0ddd9;font-size:14px;text-align:right">${esc(fmtMoney(inv.totalVat || 0, true))}</td>
         </tr>
 
         <!-- Totaal -->
         <tr style="background:#faf9f7">
           <td style="padding:15px 16px;font-size:15px;font-weight:700">Totaal</td>
-          <td style="padding:15px 16px;font-size:17px;font-weight:700;text-align:right;color:${TAUPE}">${esc(fmtMoney(inv.totalIncl || 0))}</td>
+          <td style="padding:15px 16px;font-size:17px;font-weight:700;text-align:right;color:${TAUPE}">${esc(fmtMoney(inv.totalIncl || 0, true))}</td>
         </tr>
 
       </table>
