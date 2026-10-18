@@ -63,7 +63,7 @@ const ADMINS = {
     id:          'adab',
     icon:        'ball',
     label:       'Adab',
-    naam:        'Sofyan Ghaddari',
+    naam:        'Woosh-Amsterdam',
     adres:       'Jephtastraat 28',
     postcode:    '1055JV Amsterdam',
     btw:         'NL003042226B35',

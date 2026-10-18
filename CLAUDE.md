@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=8), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v174** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v175** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v174)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v175)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -199,7 +199,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v174
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v175
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -310,6 +310,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++43. **Adab-afzender = Woosh-Amsterdam v175 (18 okt 2026):** user wil zijn bedrijfsnaam bovenaan Adab-facturen i.p.v. 'Sofyan Ghaddari' → `ADMINS.adab.naam = 'Woosh-Amsterdam'` (zelfde als taxi; ook t.n.v./footer/mailgroet).
 
 +42. **Adab btw-tekst v174 (18 okt 2026):** user: 0% omdat de activiteiten (TSO/sport met kinderen) vrijgesteld zijn — niet KOR. Nieuwe standaard-vrijstellingstekst `VAT_NOTES.art11` = "Btw vrijgesteld op grond van artikel 11 Wet op de omzetbelasting 1968." (KOR/onderwijs/geen blijven als keuze).
 
