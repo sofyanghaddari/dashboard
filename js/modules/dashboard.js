@@ -835,6 +835,7 @@ function dayCard(kind, offset) {
         <div class="daycard-controls">
           <button class="daycard-btn" data-day-prev="${kind}" title="Vorige dag" aria-label="Vorige dag">‹</button>
           <button class="daycard-btn" data-day-speak="${kind}" title="${speakTitle}" aria-label="${speakTitle}">${icon('volume')}</button>
+          ${kind === 'hadith' ? `<button class="daycard-btn" data-day-copy="${kind}" title="Kopiëren" aria-label="Hadith kopiëren">${icon('copy')}</button>` : ''}
           <button class="daycard-btn" data-day-next="${kind}" title="Volgende dag" aria-label="Volgende dag" ${offset >= 0 ? 'disabled' : ''}>›</button>
         </div>
       </div>
@@ -866,6 +867,22 @@ function bindDayWidgets(container) {
     if (k === 'hadith') { if (_hadithOffset < 0) _hadithOffset += 1; }
     else                { if (_woordOffset  < 0) _woordOffset  += 1; }
     refresh(k);
+  });
+  container.querySelectorAll('[data-day-copy]').forEach(b => b.onclick = async () => {
+    // Alles wat op de kaart staat: Arabisch, vertaling en bron
+    const h = _hadithAt(_hadithOffset);
+    const text = `${h.ar}\n\n${h.nl}\n\n${h.bron}`;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (_) {
+      const ta = Object.assign(document.createElement('textarea'), { value: text });
+      ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      const okCopy = document.execCommand('copy'); ta.remove();
+      if (!okCopy) { toast('Kopiëren lukte niet', { type: 'err' }); return; }
+    }
+    b.innerHTML = '✓'; setTimeout(() => { b.innerHTML = icon('copy'); }, 1500);
+    toast('Hadith gekopieerd', { type: 'ok' });
   });
   container.querySelectorAll('[data-day-speak]').forEach(b => b.onclick = () => {
     const k = b.dataset.daySpeak;

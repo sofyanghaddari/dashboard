@@ -7470,3 +7470,8 @@ label.gram-add-btn, .gram-footer label.btn {
 .bk-les-two > div { min-width: 0; }
 #bk-les-desc { font-family: inherit; line-height: 1.45; }
 .bk-section-title .ic { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
+
+/* Hadith-kaart heeft 4 knoppen (incl. kopiëren) — compacter zodat de titel op één regel blijft */
+.hadith-card .daycard-controls { gap: 3px; }
+.hadith-card .daycard-btn { width: 36px; height: 36px; }
+.hadith-card .daycard-head .card-title { white-space: nowrap; min-width: 0; letter-spacing: .07em; }
