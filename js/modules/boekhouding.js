@@ -83,6 +83,7 @@ const ADMINS = {
 
 // Btw-vrijstellingstekst die op een 0%-factuur moet staan (wettelijk verplicht)
 const VAT_NOTES = {
+  art11:     'Btw vrijgesteld op grond van artikel 11 Wet op de omzetbelasting 1968.',
   kor:       'Vrijgesteld van btw op grond van de kleineondernemersregeling (KOR).',
   onderwijs: 'Btw vrijgesteld op grond van art. 11 lid 1 sub o Wet OB 1968 (onderwijs).',
 };
@@ -2111,7 +2112,7 @@ function lessonsSectionHTML(inv0, bedrijf, last) {
   const line    = isEdit ? (inv0.lines?.[0] || {}) : {};
   const vatRate = isEdit ? (line.vatRate ?? bedrijf.defaultVat) : (last?.lines?.[0]?.vatRate ?? bedrijf.defaultVat);
   const noteSrc = isEdit ? inv0.vatNote : last?.vatNote;
-  const noteKey = Object.keys(VAT_NOTES).find(k => VAT_NOTES[k] === noteSrc) || (noteSrc === '' && last ? 'geen' : 'kor');
+  const noteKey = Object.keys(VAT_NOTES).find(k => VAT_NOTES[k] === noteSrc) || (noteSrc === '' && last ? 'geen' : 'art11');
 
   // Standaard: vorige maand (je factureert na afloop van de maand)
   const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
@@ -2152,8 +2153,9 @@ function lessonsSectionHTML(inv0, bedrijf, last) {
           <div id="bk-les-note-wrap" style="display:${vatRate === 0 ? 'block' : 'none'}">
             <label>Tekst vrijstelling op de factuur</label>
             <select id="bk-les-note">
-              <option value="kor" ${noteKey === 'kor' ? 'selected' : ''}>Kleineondernemersregeling (KOR)</option>
+              <option value="art11" ${noteKey === 'art11' ? 'selected' : ''}>Vrijgestelde activiteiten (art. 11 Wet OB)</option>
               <option value="onderwijs" ${noteKey === 'onderwijs' ? 'selected' : ''}>Onderwijsvrijstelling</option>
+              <option value="kor" ${noteKey === 'kor' ? 'selected' : ''}>Kleineondernemersregeling (KOR)</option>
               <option value="geen" ${noteKey === 'geen' ? 'selected' : ''}>Geen tekst</option>
             </select>
           </div>
