@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=8), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v170** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v171** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v170)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v171)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -199,7 +199,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v170
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v171
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -311,7 +311,7 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 
 ## Recente beslissingen (chronologisch, meest recent boven)
 
-+39. **🗂 Derde administratie ADAB + Olijfolie→Olijf v170 (18 okt 2026):** op verzoek van user. Switcher toont nu Taxi / Olijf / Adab. Intern blijft id `olijfolie` (bestaande facturen/klanten hebben `adminId:'olijfolie'`), alleen `label` → 'Olijf'. Nieuw `ADMINS.adab` (id `adab`, icoon `book`, prefix `ADAB`, 21% BTW, termijn 14d, PDF-logo = monogram via `logoGlyph:'letter'`). **Bedrijfsgegevens van ADAB (naam/KvK/BTW/IBAN) zijn tijdelijk overgenomen van Olijf — user moet de echte gegevens nog aanleveren.**
++39. **🗂 Derde administratie ADAB + Olijfolie→Olijf v170 (18 okt 2026):** op verzoek van user. Switcher toont nu Taxi / Olijf / Adab. Intern blijft id `olijfolie` (bestaande facturen/klanten hebben `adminId:'olijfolie'`), alleen `label` → 'Olijf'. Nieuw `ADMINS.adab` (id `adab`, icoon `book`, prefix `ADAB`, 21% BTW, termijn 14d, PDF-logo = monogram via `logoGlyph:'letter'`). **ADAB is een opdrachtgever** (bedrijf waar Soef zzp-werk voor doet): de administratie bundelt de facturen die hij als zzp'er (eigen eenmanszaak, zelfde KvK/BTW/IBAN als Olijf) naar Adab stuurt. Afzender = 'Sofyan Ghaddari', tagline/standaardregel 'Zzp-werkzaamheden'. Adab zelf hoort als klant in Klanten.
 
 +38. **📱 SEPA-betaal-QR op facturen v169 (28 sept 2026):** op verzoek van user. EPC069-12-QR ("GiroCode": BCD/002/UTF-8/SCT, BIC, naam, IBAN, `EUR75.00`, omschrijving = factuurnummer, foutcorrectie M) in (1) de **factuurmail** — als inline PNG via `multipart/related` + `cid:` (Gmail toont géén `data:`-afbeeldingen), in het betaalvak met "Direct betalen"-uitleg; (2) de **PDF** — als vector (jsPDF-rects, stille zone 4 modules) rechts in het betaalvak, `TOTALS_H` 75→82; (3) de **HTML-print/bekijkversie** — inline SVG. Alleen bij openstaande facturen met bedrag > 0 (`invoiceEpcPayload()` geeft null bij `status:'betaald'`, €0 of negatief). Alle drie getest door de QR terug te lezen met jsQR (inhoud identiek). **Let op (eerlijk naar user gecommuniceerd):** scanbaar in ING, bunq, SNS, ASN, Knab — **niet** in Rabobank/ABN AMRO, daarom blijven de gewone betaalgegevens altijd ernaast staan. Printversie: rit-omschrijving nu met regelafbrekingen (`white-space:pre-line`).
 
