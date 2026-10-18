@@ -44,7 +44,7 @@ const ADMINS = {
   olijfolie: {
     id:          'olijfolie',
     icon:        'leaf',
-    label:       'Olijfolie',
+    label:       'Olijf',
     naam:        'Sofyan Ghaddari',
     adres:       'Jephtastraat 28',
     postcode:    '1055JV Amsterdam',
@@ -58,6 +58,24 @@ const ADMINS = {
     defaultDesc: 'Levering olijfolie',
     tagline:     'Premium olijfolie',
     logoGlyph:   'leaf',
+  },
+  adab: {
+    id:          'adab',
+    icon:        'book',
+    label:       'Adab',
+    naam:        'ADAB',
+    adres:       'Jephtastraat 28',
+    postcode:    '1055JV Amsterdam',
+    btw:         'NL003042226B35',
+    kvk:         '77755170',
+    iban:        'NL67INGB0660701413',
+    bic:         'INGBNL2A',
+    termijn:     14,
+    prefix:      'ADAB',
+    defaultVat:  21,
+    defaultDesc: 'Levering',
+    tagline:     'Adab',
+    logoGlyph:   'letter',
   },
 };
 
@@ -2857,6 +2875,12 @@ function drawCompanyLogo(doc, bedrijf, x, y, s, TAUPE, DARK) {
     doc.setFillColor(255, 255, 255);
     doc.circle(x + s * 0.33, wy, r * 0.42, 'F');
     doc.circle(x + s * 0.67, wy, r * 0.42, 'F');
+  } else if (glyph === 'letter') {
+    // Monogram: eerste letter van de naam in wit
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(s * 2.2);
+    doc.setTextColor(255, 255, 255);
+    doc.text((bedrijf.naam || bedrijf.label || '?').charAt(0).toUpperCase(), x + s / 2, y + s * 0.72, { align: 'center' });
   } else {
     // Blad-silhouet voor olijfolie
     doc.setFillColor(255, 255, 255);
