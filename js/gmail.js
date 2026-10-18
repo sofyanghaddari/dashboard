@@ -141,7 +141,7 @@ function invoiceParts(inv, bedrijf = {}) {
 
 function defaultMessage(inv, bedrijf) {
   const client = inv.client || {};
-  return `Geachte ${client.name || 'relatie'},\n\nHierbij ontvangt u factuur ${inv.number || ''} van ${money(inv.totalIncl)}. `
+  return `Geachte ${client.name || 'relatie'},\n\nHierbij ontvangt u factuur ${inv.number || ''}${inv.kind === 'lessen' && inv.period ? ` voor de werkzaamheden in ${inv.period.toLowerCase()}` : ''} van ${money(inv.totalIncl)}. `
     + `Wij verzoeken u het bedrag ${isOverdue(inv.dueDate) ? 'zo snel mogelijk' : `vóór ${fmtDateLong(inv.dueDate)}`} over te maken. De betaalgegevens staan hieronder en in de bijgevoegde PDF.`
     + `\n\nMet vriendelijke groet,\n${bedrijf.naam}`;
 }
@@ -153,7 +153,7 @@ function buildHtmlEmail(inv, bedrijf, options = {}) {
   const message  = options.message || defaultMessage(inv, bedrijf);
   const BORDER   = '#e6e2dd';
   const MUTED    = '#8a857f';
-  const ACCENT   = '#7A5C20';
+  const ACCENT   = bedrijf.accent ? `rgb(${bedrijf.accent.join(',')})` : '#7A5C20';
   const cell     = `padding:12px 18px;border-bottom:1px solid ${BORDER};font-size:14px;line-height:1.5`;
   const label    = `${cell};color:${MUTED};white-space:nowrap`;
   const value    = `${cell};text-align:right`;
@@ -196,6 +196,8 @@ function buildHtmlEmail(inv, bedrijf, options = {}) {
         ${row('Aan', `<strong>${esc(client.name || '—')}</strong>`, true)}
         ${row('Factuurdatum', esc(fmtDate(inv.date)))}
         ${row('Vervaldatum', esc(fmtDate(inv.dueDate)))}
+        ${inv.period ? row('Periode', esc(inv.period)) : ''}
+        ${inv.reference ? row('Kenmerk', esc(inv.reference), true) : ''}
         <tr><td colspan="2" style="padding:14px 18px 6px;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:${MUTED};font-weight:700">Omschrijving</td></tr>
         ${lineRows}
         ${row('Subtotaal (excl. BTW)', esc(money(inv.totalExcl)))}
@@ -205,6 +207,7 @@ function buildHtmlEmail(inv, bedrijf, options = {}) {
           <td style="padding:15px 18px;font-size:17px;font-weight:700;text-align:right;white-space:nowrap">${esc(money(inv.totalIncl))}</td>
         </tr>
       </table>
+      ${inv.vatNote ? `<p style="font-size:12px;color:${MUTED};font-style:italic;margin:-8px 0 20px">${esc(inv.vatNote)}</p>` : ''}
 
       <!-- Betaalgegevens -->
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -266,12 +269,15 @@ function buildTextEmail(inv, bedrijf, options = {}) {
     `Aan:           ${client.name || '—'}`,
     `Factuurdatum:  ${fmtDate(inv.date)}`,
     `Vervaldatum:   ${fmtDate(inv.dueDate)}`,
+    ...(inv.period ? [`Periode:       ${inv.period}`] : []),
+    ...(inv.reference ? [`Kenmerk:       ${inv.reference}`] : []),
     '',
     ...lines.map(l => `${String(l.description || bedrijf.defaultDesc || 'Dienst').replace(/\n+/g, ' · ')}\n  ${money(l.amountExcl ?? l.amountIncl)}`),
     '',
     `Subtotaal (excl. BTW): ${money(inv.totalExcl)}`,
     ...vatRows.map(([rate, amt]) => `BTW ${rate}%: ${money(amt)}`),
     `Totaal: ${money(inv.totalIncl)}`,
+    ...(inv.vatNote ? [inv.vatNote] : []),
     '----------------------------------------',
     '',
     overdue ? 'Graag zo snel mogelijk overmaken naar:' : `Maak het bedrag over vóór ${fmtDateLong(inv.dueDate)} naar:`,

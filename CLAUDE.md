@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=8), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v171** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v172** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v171)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v172)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -199,7 +199,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v171
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v172
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -310,6 +310,8 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++40. **⚽ Adab lessen-factuur v172 (18 okt 2026):** Adab = zzp-sportactiviteiten met kleine kinderen op basisscholen. `ADMINS.adab` heeft `lessons:true`, eigen accent `accent:[31,122,99]` (diepgroen — PDF/print/mail gebruiken `bedrijf.accent` i.p.v. taupe), `logoGlyph:'ball'` (vector-bal in PDF) en nieuw icoon `ball` in icons.js. In lessen-modus vervangt de sectie "Lessen & uren" het bedrag-veld (plak-sectie verborgen): periode, kenmerk/PO, uurtarief (onthouden in `localStorage.lessonRate-adab`), per les datum · uren · school · activiteit (datalist-suggesties uit eerdere facturen, "+ Les toevoegen" kopieert de vorige les een week later), BTW 21/9/0 — bij 0% verplichte vrijstellingstekst (`VAT_NOTES`: KOR of onderwijs art. 11 lid 1 sub o). Factuur krijgt `kind:'lessen'`, `period`, `reference`, `vatNote`; regels hebben `date/school/activity/qty/unit/rate` + een leesbare `description` ("Gymles — School\n6 oktober 2026 · 1,5 uur × € 35,00") zodat alle bestaande weergaven (mail, tekst, detail, CSV) zonder aanpassing werken. PDF/print/mail tonen Periode/Kenmerk, "N lessen · X uur" en de vrijstellingstekst. Lessen-facturen blijven bewerkbaar (rijen worden teruggeladen).
 
 +39. **🗂 Derde administratie ADAB + Olijfolie→Olijf v170 (18 okt 2026):** op verzoek van user. Switcher toont nu Taxi / Olijf / Adab. Intern blijft id `olijfolie` (bestaande facturen/klanten hebben `adminId:'olijfolie'`), alleen `label` → 'Olijf'. Nieuw `ADMINS.adab` (id `adab`, icoon `book`, prefix `ADAB`, 21% BTW, termijn 14d, PDF-logo = monogram via `logoGlyph:'letter'`). **ADAB is een opdrachtgever** (bedrijf waar Soef zzp-werk voor doet): de administratie bundelt de facturen die hij als zzp'er (eigen eenmanszaak, zelfde KvK/BTW/IBAN als Olijf) naar Adab stuurt. Afzender = 'Sofyan Ghaddari', tagline/standaardregel 'Zzp-werkzaamheden'. Adab zelf hoort als klant in Klanten.
 

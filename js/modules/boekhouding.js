@@ -61,7 +61,7 @@ const ADMINS = {
   },
   adab: {
     id:          'adab',
-    icon:        'book',
+    icon:        'ball',
     label:       'Adab',
     naam:        'Sofyan Ghaddari',
     adres:       'Jephtastraat 28',
@@ -74,10 +74,31 @@ const ADMINS = {
     prefix:      'ADAB',
     defaultVat:  21,
     defaultDesc: 'Zzp-werkzaamheden',
-    tagline:     'Zzp-werkzaamheden',
-    logoGlyph:   'letter',
+    tagline:     'Sportactiviteiten basisonderwijs',
+    logoGlyph:   'ball',
+    accent:      [31, 122, 99],   // sportief diepgroen i.p.v. taupe
+    lessons:     true,            // factuur = lessen (datum · school · activiteit · uren × tarief)
   },
 };
+
+// Btw-vrijstellingstekst die op een 0%-factuur moet staan (wettelijk verplicht)
+const VAT_NOTES = {
+  kor:       'Vrijgesteld van btw op grond van de kleineondernemersregeling (KOR).',
+  onderwijs: 'Btw vrijgesteld op grond van art. 11 lid 1 sub o Wet OB 1968 (onderwijs).',
+};
+
+function fmtHours(n) {
+  return (Number(n) || 0).toLocaleString('nl-NL', { maximumFractionDigits: 2 });
+}
+
+// Samenvatting van een lessen-factuur: aantal lessen + totaal uren
+function lessonSummary(inv) {
+  if (inv.kind !== 'lessen') return null;
+  const ls = (inv.lines || []).filter(l => l.qty != null);
+  if (!ls.length) return null;
+  const hours = ls.reduce((s, l) => s + (Number(l.qty) || 0), 0);
+  return `${ls.length} ${ls.length === 1 ? 'les' : 'lessen'} · ${fmtHours(hours)} uur`;
+}
 
 function getAdmin(container) {
   return ADMINS[container.dataset.bkAdmin || 'taxi'] || ADMINS.taxi;
@@ -1792,7 +1813,8 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
   const dueStr   = isEdit ? existingInv.dueDate : addDays(todayStr, bedrijf.termijn);
   const inv0     = existingInv || {};
 
-  const isMultiLine = isEdit && (existingInv.lines?.length || 0) > 1;
+  const isLessons   = !!bedrijf.lessons;
+  const isMultiLine = !isLessons && isEdit && (existingInv.lines?.length || 0) > 1;
   const invVatRate  = inv0.lines?.[0]?.vatRate ?? bedrijf.defaultVat;
   const invDesc     = inv0.lines?.[0]?.description || bedrijf.defaultDesc;
 
@@ -1814,7 +1836,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         ${icon('users')} Kies opgeslagen klant
       </button>
 
-      <div class="bk-paste-section">
+      ${isLessons ? '' : `<div class="bk-paste-section">
         <label class="bk-paste-label">${icon('clipboard')} Of plak WhatsApp- / e-mailtekst — velden worden automatisch ingevuld</label>
         <textarea id="bk-paste" class="bk-paste-area" rows="3"
           placeholder="Supreme Transit Solutions&#10;Baden Powellweg, Amsterdam 1069 LK&#10;KvK: 85234362&#10;€320 incl 9% btw"></textarea>
@@ -1822,7 +1844,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         <div id="bk-rides-banner" class="bk-rides-banner" style="display:none"></div>
       </div>
 
-      <div class="bk-divider">— of handmatig —</div>
+      <div class="bk-divider">— of handmatig —</div>`}
       ` : ''}
 
       <form id="bk-form" autocomplete="off">
@@ -1842,7 +1864,9 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
           <input id="bk-client-phone" type="tel" inputmode="tel" placeholder="+31 6 12345678" value="${escapeHTML(inv0.client?.phone || '')}" />
         </div>
 
-        ${!isMultiLine ? `
+        ${isLessons ? lessonsSectionHTML(inv0, bedrijf) : ''}
+
+        ${!isMultiLine && !isLessons ? `
         <div class="bk-form-section">
           <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 7.5H10a2.5 2.5 0 0 0 0 5h2.5a2.5 2.5 0 0 1 0 5H8"/><path d="M12 5.5v13"/></svg>Bedrag &amp; BTW</div>
           <label>Omschrijving *</label>
@@ -1909,6 +1933,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
 
     // Smart paste
     const pasteArea = backdrop.querySelector('#bk-paste');
+    if (pasteArea) {
     const ridesBanner = backdrop.querySelector('#bk-rides-banner');
     let parseTimer = null;
     const runSmartParse = () => {
@@ -1950,7 +1975,10 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         clientPrefill: { name: clientName, email: clientEmail },
       });
     });
+    }
   }
+
+  if (isLessons) await initLessons(backdrop, inv0, bedrijf);
 
   const refreshCalcFn = () => refreshCalc(backdrop);
   if (backdrop.querySelector('#bk-amount')) {
@@ -1968,9 +1996,15 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
   backdrop.querySelector('#bk-form').onsubmit = async e => {
     e.preventDefault();
     const clientName = backdrop.querySelector('#bk-client-name').value.trim();
-    const raw        = parseAmount(backdrop.querySelector('#bk-amount').value);
     if (!clientName) { err('Vul een klantnaam in'); return; }
-    if (!raw || isNaN(raw) || raw <= 0) { err('Vul een geldig bedrag in'); return; }
+    let lessonData = null;
+    if (isLessons) {
+      lessonData = collectLessons(backdrop, bedrijf);
+      if (lessonData.error) { err(lessonData.error); return; }
+    } else {
+      const raw = parseAmount(backdrop.querySelector('#bk-amount')?.value);
+      if (!isMultiLine && (!raw || isNaN(raw) || raw <= 0)) { err('Vul een geldig bedrag in'); return; }
+    }
 
     const client = {
       name:    clientName,
@@ -1982,11 +2016,14 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
     };
 
     let lines, totalExcl, totalVat, totalIncl;
-    if (isMultiLine) {
+    if (isLessons) {
+      ({ lines, totalExcl, totalVat, totalIncl } = lessonData);
+    } else if (isMultiLine) {
       // Preserve all original lines and totals; only update metadata
       lines = existingInv.lines;
       totalExcl = existingInv.totalExcl; totalVat = existingInv.totalVat; totalIncl = existingInv.totalIncl;
     } else {
+      const raw     = parseAmount(backdrop.querySelector('#bk-amount').value);
       const vatRate = parseInt(backdrop.querySelector('#bk-vat').value);
       const isIncl  = backdrop.querySelector('input[name="bk-ie"]:checked')?.value === 'incl';
       const vat     = calcVat(raw, vatRate, isIncl);
@@ -2004,6 +2041,10 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       note:    backdrop.querySelector('#bk-note').value.trim(),
       client, lines, totalExcl, totalVat, totalIncl,
     };
+    if (isLessons) {
+      Object.assign(inv, { kind: 'lessen', period: lessonData.period, reference: lessonData.reference, vatNote: lessonData.vatNote });
+      try { localStorage.setItem('lessonRate-' + bedrijf.id, String(lessonData.rate)); } catch (_) {}
+    }
 
     if (isEdit) {
       await put('invoices', { ...cleanInv(existingInv), ...inv, paidAt: existingInv.paidAt, sentAt: existingInv.sentAt });
@@ -2044,6 +2085,164 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       setTimeout(() => openSendModal(inv, bedrijf, container), 150);
     }
   };
+}
+
+// ─── LESSEN-FACTUUR (Adab: sportlessen op basisscholen) ──────────────────────
+
+function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+function lessonsSectionHTML(inv0, bedrijf) {
+  const isEdit   = !!inv0.id;
+  const vatRate  = inv0.lines?.[0]?.vatRate ?? bedrijf.defaultVat;
+  const noteKey  = Object.keys(VAT_NOTES).find(k => VAT_NOTES[k] === inv0.vatNote) || 'kor';
+  const period   = isEdit ? (inv0.period || '') : capitalize(new Date().toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }));
+  let rate = inv0.lines?.find(l => l.rate != null)?.rate;
+  if (rate == null) { try { rate = parseFloat(localStorage.getItem('lessonRate-' + bedrijf.id)) || ''; } catch (_) { rate = ''; } }
+  return `
+        <div class="bk-form-section">
+          <div class="bk-section-title">${icon('ball')}Lessen &amp; uren</div>
+          <div class="bk-les-two">
+            <div><label>Periode</label>
+              <input id="bk-les-period" type="text" placeholder="Oktober 2026" value="${escapeHTML(period)}" /></div>
+            <div><label>Kenmerk (optioneel)</label>
+              <input id="bk-les-ref" type="text" placeholder="Van opdrachtgever" value="${escapeHTML(inv0.reference || '')}" /></div>
+          </div>
+          <label>Tarief per uur (excl. BTW) *</label>
+          <input id="bk-les-rate" type="text" inputmode="decimal" placeholder="35" value="${rate ? String(rate).replace('.', ',') : ''}" />
+          <div id="bk-les-list" class="bk-les-list"></div>
+          <button type="button" id="bk-les-add" class="btn secondary bk-les-add">${icon('plus')} Les toevoegen</button>
+          <datalist id="bk-les-schools"></datalist>
+          <datalist id="bk-les-acts"></datalist>
+          <label style="margin-top:12px">BTW-tarief</label>
+          <select id="bk-les-vat">
+            <option value="21" ${vatRate === 21 ? 'selected' : ''}>21% — standaard</option>
+            <option value="9"  ${vatRate === 9  ? 'selected' : ''}>9% — verlaagd</option>
+            <option value="0"  ${vatRate === 0  ? 'selected' : ''}>0% — vrijgesteld</option>
+          </select>
+          <div id="bk-les-note-wrap" style="display:${vatRate === 0 ? 'block' : 'none'}">
+            <label>Reden vrijstelling (komt op de factuur)</label>
+            <select id="bk-les-note">
+              <option value="kor" ${noteKey === 'kor' ? 'selected' : ''}>Kleineondernemersregeling (KOR)</option>
+              <option value="onderwijs" ${noteKey === 'onderwijs' ? 'selected' : ''}>Onderwijsvrijstelling (o.a. CRKBO)</option>
+            </select>
+          </div>
+          <div id="bk-les-calc" class="bk-calc-preview"></div>
+        </div>`;
+}
+
+function lessonRowHTML(l = {}) {
+  return `
+    <div class="bk-les-row">
+      <div class="bk-les-top">
+        <input class="les-date" type="date" value="${escapeHTML(l.date || ymd())}" aria-label="Datum" />
+        <input class="les-hours" type="text" inputmode="decimal" placeholder="Uren" value="${l.qty != null ? String(l.qty).replace('.', ',') : ''}" aria-label="Uren" />
+        <span class="bk-les-unit">uur</span>
+        <button type="button" class="bk-les-del" aria-label="Les verwijderen">×</button>
+      </div>
+      <input class="les-school" type="text" list="bk-les-schools" placeholder="School / locatie" value="${escapeHTML(l.school || '')}" />
+      <input class="les-act" type="text" list="bk-les-acts" placeholder="Activiteit (bv. gymles groep 3-4)" value="${escapeHTML(l.activity || '')}" />
+    </div>`;
+}
+
+async function initLessons(backdrop, inv0, bedrijf) {
+  const list = backdrop.querySelector('#bk-les-list');
+  // Eerdere lessen → suggesties voor school/activiteit + startwaarden
+  const prev = (await all('invoices'))
+    .filter(i => i.adminId === bedrijf.id && i.kind === 'lessen' && i.id !== inv0.id)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const prevLines = prev.flatMap(i => i.lines || []).filter(l => l.qty != null);
+  const uniq = arr => [...new Set(arr.filter(Boolean))];
+  backdrop.querySelector('#bk-les-schools').innerHTML = uniq(prevLines.map(l => l.school)).map(v => `<option value="${escapeHTML(v)}">`).join('');
+  backdrop.querySelector('#bk-les-acts').innerHTML    = uniq(prevLines.map(l => l.activity)).map(v => `<option value="${escapeHTML(v)}">`).join('');
+
+  const existing = (inv0.lines || []).filter(l => l.qty != null);
+  if (existing.length) list.innerHTML = existing.map(lessonRowHTML).join('');
+  else {
+    const last = prev[0]?.lines?.filter(l => l.qty != null).slice(-1)[0];
+    list.innerHTML = lessonRowHTML(last ? { school: last.school, activity: last.activity, qty: last.qty } : {});
+  }
+
+  const recalc = () => refreshLessonCalc(backdrop, bedrijf);
+  backdrop.querySelector('#bk-les-add').onclick = () => {
+    // Nieuwe les = kopie van de vorige, een week later (vaste wekelijkse les)
+    const rows = list.querySelectorAll('.bk-les-row');
+    const lastRow = rows[rows.length - 1];
+    const data = lastRow ? {
+      date:     addDays(lastRow.querySelector('.les-date').value || ymd(), 7),
+      qty:      parseAmount(lastRow.querySelector('.les-hours').value) || null,
+      school:   lastRow.querySelector('.les-school').value,
+      activity: lastRow.querySelector('.les-act').value,
+    } : {};
+    list.insertAdjacentHTML('beforeend', lessonRowHTML(data));
+    recalc();
+  };
+  list.addEventListener('click', e => {
+    const del = e.target.closest('.bk-les-del');
+    if (!del) return;
+    if (list.querySelectorAll('.bk-les-row').length <= 1) { err('Minimaal één les'); return; }
+    del.closest('.bk-les-row').remove();
+    recalc();
+  });
+  const vatSel = backdrop.querySelector('#bk-les-vat');
+  vatSel.addEventListener('change', () => {
+    backdrop.querySelector('#bk-les-note-wrap').style.display = vatSel.value === '0' ? 'block' : 'none';
+  });
+  const section = list.closest('.bk-form-section');
+  section.addEventListener('input', recalc);
+  section.addEventListener('change', recalc);
+  recalc();
+}
+
+function collectLessons(backdrop, bedrijf) {
+  const r2   = v => Math.round(v * 100) / 100;
+  const rate = parseAmount(backdrop.querySelector('#bk-les-rate').value);
+  const vatRate = parseInt(backdrop.querySelector('#bk-les-vat').value) || 0;
+  const rows = [...backdrop.querySelectorAll('.bk-les-row')].map(row => ({
+    date:     row.querySelector('.les-date').value,
+    qty:      parseAmount(row.querySelector('.les-hours').value),
+    school:   row.querySelector('.les-school').value.trim(),
+    activity: row.querySelector('.les-act').value.trim(),
+  })).filter(r => r.date || r.qty || r.school || r.activity);
+  if (!rate || isNaN(rate) || rate <= 0) return { error: 'Vul een geldig uurtarief in', rows, rate: 0 };
+  if (!rows.length) return { error: 'Voeg minimaal één les toe', rows, rate };
+  if (rows.some(r => !r.date)) return { error: 'Elke les heeft een datum nodig', rows, rate };
+  if (rows.some(r => !r.qty || isNaN(r.qty) || r.qty <= 0)) return { error: 'Vul bij elke les het aantal uren in', rows, rate };
+
+  rows.sort((a, b) => a.date.localeCompare(b.date));
+  const lines = rows.map(r => {
+    const vat  = calcVat(r2(r.qty * rate), vatRate, false);
+    const head = [r.activity || bedrijf.defaultDesc, r.school].filter(Boolean).join(' — ');
+    return {
+      description: `${head}\n${fmtDateLong(r.date)} · ${fmtHours(r.qty)} uur × ${fmtMoney(rate, true)}`,
+      date: r.date, school: r.school, activity: r.activity, qty: r.qty, unit: 'uur', rate,
+      amountExcl: vat.amountExcl, vatRate, vatAmount: vat.vatAmount, amountIncl: vat.amountIncl,
+    };
+  });
+  const totalExcl = r2(lines.reduce((s, l) => s + l.amountExcl, 0));
+  const totalVat  = r2(lines.reduce((s, l) => s + l.vatAmount, 0));
+  return {
+    lines, rate, totalExcl, totalVat, totalIncl: r2(totalExcl + totalVat),
+    hours:     rows.reduce((s, r) => s + r.qty, 0),
+    period:    backdrop.querySelector('#bk-les-period').value.trim(),
+    reference: backdrop.querySelector('#bk-les-ref').value.trim(),
+    vatNote:   vatRate === 0 ? VAT_NOTES[backdrop.querySelector('#bk-les-note').value] : '',
+  };
+}
+
+function refreshLessonCalc(backdrop, bedrijf) {
+  const el = backdrop.querySelector('#bk-les-calc');
+  const d  = collectLessons(backdrop, bedrijf);
+  const n  = d.rows?.length ?? d.lines?.length ?? 0;
+  if (d.error) {
+    const hours = (d.rows || []).reduce((s, r) => s + (r.qty || 0), 0);
+    el.innerHTML = `<div class="bk-calc-row"><span>${n} ${n === 1 ? 'les' : 'lessen'} · ${fmtHours(hours)} uur</span><span>—</span></div>`;
+    return;
+  }
+  const vatRate = d.lines[0].vatRate;
+  el.innerHTML = `
+    <div class="bk-calc-row"><span>${d.lines.length} ${d.lines.length === 1 ? 'les' : 'lessen'} · ${fmtHours(d.hours)} uur × ${fmtMoney(d.rate)}</span><span>${fmtMoney(d.totalExcl)}</span></div>
+    <div class="bk-calc-row"><span>BTW ${vatRate}%</span><span>${fmtMoney(d.totalVat)}</span></div>
+    <div class="bk-calc-row bk-calc-total"><span>Totaal</span><span class="money">${fmtMoney(d.totalIncl)}</span></div>`;
 }
 
 function applyParsed(parsed, backdrop) {
@@ -2715,6 +2914,8 @@ function generateInvoiceHTML(inv, bedrijf) {
   const ibanFmt = fmtIBAN(bedrijf.iban);
   let qrPayload = null;
   try { qrPayload = invoiceEpcPayload(inv, bedrijf); } catch (_) {}
+  const accent  = bedrijf.accent ? `rgb(${bedrijf.accent.join(',')})` : '#8a7e6f';
+  const summary = lessonSummary(inv);
   return `<!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -2728,7 +2929,7 @@ function generateInvoiceHTML(inv, bedrijf) {
   .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 32px; border-bottom: 1.5px solid #e8e4de; margin-bottom: 36px; }
   .brand { font-size: 22px; font-weight: 800; letter-spacing: -.5px; color: #1a1a1a; margin-bottom: 8px; }
   .co-info { font-size: 12px; color: #666; line-height: 1.7; }
-  .inv-title { font-size: 36px; font-weight: 800; color: #8a7e6f; letter-spacing: -1px; }
+  .inv-title { font-size: 36px; font-weight: 800; color: ${accent}; letter-spacing: -1px; }
   .inv-meta { font-size: 12px; color: #666; margin-top: 10px; line-height: 1.7; text-align: right; }
   .inv-meta strong { color: #1a1a1a; }
   .client-box { background: #f8f7f5; border-radius: 10px; padding: 20px 24px; margin-bottom: 36px; }
@@ -2749,6 +2950,10 @@ function generateInvoiceHTML(inv, bedrijf) {
   .pay-wrap { display: flex; gap: 20px; align-items: center; justify-content: space-between; }
   .pay-qr { flex: 0 0 auto; text-align: center; font-size: 11px; color: #888; line-height: 1.4; }
   .pay-qr svg { display: block; margin: 0 auto 4px; border-radius: 6px; }
+  .tagline { font-size: 11px; text-transform: uppercase; letter-spacing: 1.4px; color: ${accent}; font-weight: 700; margin: -4px 0 8px; }
+  .notes { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
+  .notes-left { font-size: 13px; color: #555; line-height: 1.6; padding-top: 5px; }
+  .notes-left em { display: block; font-size: 12px; color: #777; margin-top: 4px; }
   .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e8e4de; font-size: 11px; color: #aaa; display: flex; justify-content: space-between; }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
@@ -2758,6 +2963,7 @@ function generateInvoiceHTML(inv, bedrijf) {
   <div class="header">
     <div>
       <div class="brand">${escapeHTML(bedrijf.naam)}</div>
+      ${bedrijf.tagline ? `<div class="tagline">${escapeHTML(bedrijf.tagline)}</div>` : ''}
       <div class="co-info">
         ${escapeHTML(bedrijf.adres)}<br>${escapeHTML(bedrijf.postcode)}<br>
         BTW: ${escapeHTML(bedrijf.btw)}<br>KvK: ${escapeHTML(bedrijf.kvk)}<br>IBAN: ${escapeHTML(ibanFmt)}
@@ -2769,6 +2975,8 @@ function generateInvoiceHTML(inv, bedrijf) {
         Nummer: <strong>${escapeHTML(inv.number || '—')}</strong><br>
         Datum: <strong>${fmtDateLong(inv.date)}</strong><br>
         Vervaldatum: <strong>${fmtDateLong(inv.dueDate)}</strong>
+        ${inv.period ? `<br>Periode: <strong>${escapeHTML(inv.period)}</strong>` : ''}
+        ${inv.reference ? `<br>Kenmerk: <strong>${escapeHTML(inv.reference)}</strong>` : ''}
       </div>
     </div>
   </div>
@@ -2796,10 +3004,13 @@ function generateInvoiceHTML(inv, bedrijf) {
       </tr>`).join('')}
     </tbody>
   </table>
+  <div class="notes">
+  <div class="notes-left">${summary ? `<strong>${escapeHTML(summary)}</strong>` : ''}${inv.vatNote ? `<em>${escapeHTML(inv.vatNote)}</em>` : ''}</div>
   <div class="totals">
     <div class="t-row"><span>Subtotaal excl. BTW</span><span>${fmtMoney(inv.totalExcl || 0)}</span></div>
     <div class="t-row"><span>BTW</span><span>${fmtMoney(inv.totalVat || 0)}</span></div>
     <div class="t-grand"><span>Totaal</span><span>${fmtMoney(inv.totalIncl || 0)}</span></div>
+  </div>
   </div>
   <div class="pay-box"><div class="pay-wrap"><div>
     Gelieve het bedrag van <strong>${fmtMoney(inv.totalIncl || 0)}</strong> vóór <strong>${fmtDateLong(inv.dueDate)}</strong> over te maken naar:<br>
@@ -2875,6 +3086,19 @@ function drawCompanyLogo(doc, bedrijf, x, y, s, TAUPE, DARK) {
     doc.setFillColor(255, 255, 255);
     doc.circle(x + s * 0.33, wy, r * 0.42, 'F');
     doc.circle(x + s * 0.67, wy, r * 0.42, 'F');
+  } else if (glyph === 'ball') {
+    // Bal-silhouet: witte bal met vijfhoek + naden in accentkleur
+    const cx = x + s / 2, cy = y + s / 2, r = s * 0.32;
+    doc.setFillColor(255, 255, 255);
+    doc.circle(cx, cy, r, 'F');
+    const pts = [0, 1, 2, 3, 4].map(i => {
+      const a = -Math.PI / 2 + i * 2 * Math.PI / 5;
+      return [cx + Math.cos(a) * r * 0.42, cy + Math.sin(a) * r * 0.42, cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+    });
+    doc.setFillColor(...TAUPE);
+    doc.setDrawColor(...TAUPE); doc.setLineWidth(0.35);
+    doc.lines(pts.slice(1).map((p, i) => [p[0] - pts[i][0], p[1] - pts[i][1]]), pts[0][0], pts[0][1], [1, 1], 'FD', true);
+    pts.forEach(p => doc.line(p[0], p[1], p[2], p[3]));
   } else if (glyph === 'letter') {
     // Monogram: eerste letter van de naam in wit
     doc.setFont('helvetica', 'bold');
@@ -2897,7 +3121,7 @@ async function generateInvoicePDF(inv, bedrijf) {
   const lines  = inv.lines?.length ? inv.lines : [_pdfFallback];
   const client = inv.client  || {};
   const L = 20, R = 190, W = 170;
-  const TAUPE = [138, 126, 111];
+  const TAUPE = bedrijf.accent || [138, 126, 111];
   const DARK  = [26, 26, 26];
   const MED   = [85, 85, 85];
   const DIM   = [153, 153, 153];
@@ -2933,12 +3157,17 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.text('FACTUUR', R, 18, { align: 'right' });
 
   let mY = 27;
-  [['Nummer:', inv.number || '—'], ['Datum:', fmtDateLong(inv.date)], ['Vervaldatum:', fmtDateLong(inv.dueDate)]].forEach(([lbl, val]) => {
+  const metaRows = [['Nummer:', inv.number || '—'], ['Datum:', fmtDateLong(inv.date)], ['Vervaldatum:', fmtDateLong(inv.dueDate)]];
+  if (inv.period)    metaRows.push(['Periode:', inv.period]);
+  if (inv.reference) metaRows.push(['Kenmerk:', inv.reference]);
+  if (metaRows.length > 3) mY = 25;
+  const mStep = metaRows.length > 4 ? 4.8 : 5.5;
+  metaRows.forEach(([lbl, val]) => {
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...DIM);
     doc.text(lbl, R - 55, mY);
     doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
     doc.text(val, R, mY, { align: 'right' });
-    mY += 5.5;
+    mY += mStep;
   });
 
   // ── Scheidingslijn ──
@@ -3072,6 +3301,19 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.text('Te betalen', totX, tTY);
   doc.setFontSize(14); doc.setTextColor(...TAUPE);
   doc.text(fmtMoneyPDF(inv.totalIncl || 0), R, tTY, { align: 'right' });
+
+  // Links naast de totalen: lessen-samenvatting + btw-vrijstellingstekst
+  let noteY = rowEndY + 9;
+  const summary = lessonSummary(inv);
+  if (summary) {
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...DARK);
+    doc.text(summary, L + 2, noteY);
+    noteY += 5.5;
+  }
+  if (inv.vatNote) {
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...MED);
+    doc.text(doc.splitTextToSize(inv.vatNote, totX - L - 10), L + 2, noteY, { lineHeightFactor: 1.35 });
+  }
 
   // ── Betaalinstructies ──
   const pY    = tTY + 12;
@@ -3253,7 +3495,7 @@ function openSendModal(inv, bedrijf, container) {
   };
 
   const MESSAGES = {
-    normaal:     `Geachte ${clientName || 'relatie'},\n\nHierbij ontvangt u factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0, true)}. Wij verzoeken u het bedrag vóór ${fmtDateLong(inv.dueDate)} over te maken. De betaalgegevens staan hieronder en in de bijgevoegde PDF.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
+    normaal:     `Geachte ${clientName || 'relatie'},\n\nHierbij ontvangt u factuur ${inv.number}${inv.kind === 'lessen' && inv.period ? ` voor de werkzaamheden in ${inv.period.toLowerCase()}` : ''} van ${fmtMoney(inv.totalIncl || 0, true)}. Wij verzoeken u het bedrag vóór ${fmtDateLong(inv.dueDate)} over te maken. De betaalgegevens staan hieronder en in de bijgevoegde PDF.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
     herinnering: `Geachte ${clientName || 'relatie'},\n\nWij willen u vriendelijk herinneren dat factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0, true)} op ${fmtDateLong(inv.dueDate)} betaald diende te zijn.\n\nHebt u al betaald? Dan kunt u deze herinnering als niet verzonden beschouwen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
     aanmaning:   `Geachte ${clientName || 'relatie'},\n\nOndanks onze eerdere herinnering staat factuur ${inv.number} van ${fmtMoney(inv.totalIncl || 0, true)} nog steeds open. Wij verzoeken u dringend het verschuldigde bedrag binnen 7 dagen te voldoen.\n\nMet vriendelijke groet,\n${bedrijf.naam}`,
   };
