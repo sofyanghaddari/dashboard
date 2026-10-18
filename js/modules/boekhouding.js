@@ -72,12 +72,12 @@ const ADMINS = {
     bic:         'INGBNL2A',
     termijn:     14,
     prefix:      'ADAB',
-    defaultVat:  21,
-    defaultDesc: 'Zzp-werkzaamheden',
+    defaultVat:  0,
+    defaultDesc: 'TSO (tussenschoolse opvang) IBS Elif Zaandam',
     tagline:     'Sportactiviteiten basisonderwijs',
     logoGlyph:   'ball',
     accent:      [31, 122, 99],   // sportief diepgroen i.p.v. taupe
-    lessons:     true,            // factuur = lessen (datum · school · activiteit · uren × tarief)
+    lessons:     true,            // factuur = één regel: omschrijving + uren × tarief
   },
 };
 
@@ -95,7 +95,7 @@ function fmtHours(n) {
 function lessonSummary(inv) {
   if (inv.kind !== 'lessen') return null;
   const ls = (inv.lines || []).filter(l => l.qty != null);
-  if (!ls.length) return null;
+  if (ls.length < 2) return null;
   const hours = ls.reduce((s, l) => s + (Number(l.qty) || 0), 0);
   return `${ls.length} ${ls.length === 1 ? 'les' : 'lessen'} · ${fmtHours(hours)} uur`;
 }
@@ -1813,7 +1813,9 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
   const dueStr   = isEdit ? existingInv.dueDate : addDays(todayStr, bedrijf.termijn);
   const inv0     = existingInv || {};
 
-  const isLessons   = !!bedrijf.lessons;
+  // Oudere Adab-facturen met meerdere regels blijven als 'meerregelig' bewaard
+  const isLessons   = !!bedrijf.lessons && !(isEdit && (existingInv.lines?.length || 0) > 1);
+  const lastHours   = isLessons && !isEdit ? await lastHoursInvoice(bedrijf) : null;
   const isMultiLine = !isLessons && isEdit && (existingInv.lines?.length || 0) > 1;
   const invVatRate  = inv0.lines?.[0]?.vatRate ?? bedrijf.defaultVat;
   const invDesc     = inv0.lines?.[0]?.description || bedrijf.defaultDesc;
@@ -1864,7 +1866,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
           <input id="bk-client-phone" type="tel" inputmode="tel" placeholder="+31 6 12345678" value="${escapeHTML(inv0.client?.phone || '')}" />
         </div>
 
-        ${isLessons ? lessonsSectionHTML(inv0, bedrijf) : ''}
+        ${isLessons ? lessonsSectionHTML(inv0, bedrijf, lastHours) : ''}
 
         ${!isMultiLine && !isLessons ? `
         <div class="bk-form-section">
@@ -1978,7 +1980,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
     }
   }
 
-  if (isLessons) await initLessons(backdrop, inv0, bedrijf);
+  if (isLessons) initLessons(backdrop, bedrijf);
 
   const refreshCalcFn = () => refreshCalc(backdrop);
   if (backdrop.querySelector('#bk-amount')) {
@@ -1999,7 +2001,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
     if (!clientName) { err('Vul een klantnaam in'); return; }
     let lessonData = null;
     if (isLessons) {
-      lessonData = collectLessons(backdrop, bedrijf);
+      lessonData = collectLessons(backdrop);
       if (lessonData.error) { err(lessonData.error); return; }
     } else {
       const raw = parseAmount(backdrop.querySelector('#bk-amount')?.value);
@@ -2043,7 +2045,6 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
     };
     if (isLessons) {
       Object.assign(inv, { kind: 'lessen', period: lessonData.period, reference: lessonData.reference, vatNote: lessonData.vatNote });
-      try { localStorage.setItem('lessonRate-' + bedrijf.id, String(lessonData.rate)); } catch (_) {}
     }
 
     if (isEdit) {
@@ -2087,161 +2088,142 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
   };
 }
 
-// ─── LESSEN-FACTUUR (Adab: sportlessen op basisscholen) ──────────────────────
+// ─── UREN-FACTUUR (Adab: TSO / sport op basisscholen) ────────────────────────
+// Eén regel: omschrijving (vrij aan te passen) + uren × tarief. De omschrijving
+// volgt het vaste patroon "<werk> - <mnd>/ <uren> uur x <tarief>,-" en wordt
+// meegewerkt zolang dat staartje er nog in staat.
+
+const HOURS_TAIL_RE = /\s*[-–—]\s*[a-z]{3,}\.?\s*\/\s*[\d.,]+\s*uur\s*x\s*[\d.,]+(?:,-)?\s*$/i;
 
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
-function lessonsSectionHTML(inv0, bedrijf) {
-  const isEdit   = !!inv0.id;
-  const vatRate  = inv0.lines?.[0]?.vatRate ?? bedrijf.defaultVat;
-  const noteKey  = Object.keys(VAT_NOTES).find(k => VAT_NOTES[k] === inv0.vatNote) || 'kor';
-  const period   = isEdit ? (inv0.period || '') : capitalize(new Date().toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }));
-  let rate = inv0.lines?.find(l => l.rate != null)?.rate;
-  if (rate == null) { try { rate = parseFloat(localStorage.getItem('lessonRate-' + bedrijf.id)) || ''; } catch (_) { rate = ''; } }
+function fmtRateShort(r) {
+  return Number.isInteger(r) ? `${r},-` : (Math.round(r * 100) / 100).toFixed(2).replace('.', ',');
+}
+
+function hoursTail(monthIdx, hours, rate) {
+  const mnd = new Date(2000, monthIdx, 1).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', '');
+  return ` - ${mnd}/ ${fmtHours(hours)} uur x ${fmtRateShort(rate)}`;
+}
+
+function lessonsSectionHTML(inv0, bedrijf, last) {
+  const isEdit  = !!inv0.id;
+  const line    = isEdit ? (inv0.lines?.[0] || {}) : {};
+  const vatRate = isEdit ? (line.vatRate ?? bedrijf.defaultVat) : (last?.lines?.[0]?.vatRate ?? bedrijf.defaultVat);
+  const noteSrc = isEdit ? inv0.vatNote : last?.vatNote;
+  const noteKey = Object.keys(VAT_NOTES).find(k => VAT_NOTES[k] === noteSrc) || (noteSrc === '' && last ? 'geen' : 'kor');
+
+  // Standaard: vorige maand (je factureert na afloop van de maand)
+  const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
+  const period = isEdit ? (inv0.period || '') : capitalize(d.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }));
+  const lastLine = last?.lines?.[0];
+  const hours = isEdit ? line.qty : (lastLine?.qty ?? 20);
+  const rate  = isEdit ? line.rate : (lastLine?.rate ?? 30);
+  let desc;
+  if (isEdit) desc = line.description || '';
+  else {
+    const base = (lastLine?.description || bedrijf.defaultDesc).split('\n')[0].replace(HOURS_TAIL_RE, '');
+    desc = base + hoursTail(d.getMonth(), hours, rate);
+  }
+  const num = v => (v == null || v === '' ? '' : String(v).replace('.', ','));
   return `
         <div class="bk-form-section">
-          <div class="bk-section-title">${icon('ball')}Lessen &amp; uren</div>
+          <div class="bk-section-title">${icon('ball')}Werkzaamheden</div>
+          <label>Omschrijving *</label>
+          <textarea id="bk-les-desc" rows="2" style="resize:vertical">${escapeHTML(desc)}</textarea>
+          <div class="bk-les-two">
+            <div><label>Uren *</label>
+              <input id="bk-les-hours" type="text" inputmode="decimal" value="${num(hours)}" /></div>
+            <div><label>Tarief per uur *</label>
+              <input id="bk-les-rate" type="text" inputmode="decimal" value="${num(rate)}" /></div>
+          </div>
           <div class="bk-les-two">
             <div><label>Periode</label>
-              <input id="bk-les-period" type="text" placeholder="Oktober 2026" value="${escapeHTML(period)}" /></div>
-            <div><label>Kenmerk (optioneel)</label>
-              <input id="bk-les-ref" type="text" placeholder="Van opdrachtgever" value="${escapeHTML(inv0.reference || '')}" /></div>
+              <input id="bk-les-period" type="text" placeholder="September 2026" value="${escapeHTML(period)}" /></div>
+            <div><label>Kenmerk</label>
+              <input id="bk-les-ref" type="text" value="${escapeHTML(inv0.reference || '')}" /></div>
           </div>
-          <label>Tarief per uur (excl. BTW) *</label>
-          <input id="bk-les-rate" type="text" inputmode="decimal" placeholder="35" value="${rate ? String(rate).replace('.', ',') : ''}" />
-          <div id="bk-les-list" class="bk-les-list"></div>
-          <button type="button" id="bk-les-add" class="btn secondary bk-les-add">${icon('plus')} Les toevoegen</button>
-          <datalist id="bk-les-schools"></datalist>
-          <datalist id="bk-les-acts"></datalist>
-          <label style="margin-top:12px">BTW-tarief</label>
+          <label>BTW-tarief</label>
           <select id="bk-les-vat">
+            <option value="0"  ${vatRate === 0  ? 'selected' : ''}>0% — vrijgesteld</option>
             <option value="21" ${vatRate === 21 ? 'selected' : ''}>21% — standaard</option>
             <option value="9"  ${vatRate === 9  ? 'selected' : ''}>9% — verlaagd</option>
-            <option value="0"  ${vatRate === 0  ? 'selected' : ''}>0% — vrijgesteld</option>
           </select>
           <div id="bk-les-note-wrap" style="display:${vatRate === 0 ? 'block' : 'none'}">
-            <label>Reden vrijstelling (komt op de factuur)</label>
+            <label>Tekst vrijstelling op de factuur</label>
             <select id="bk-les-note">
               <option value="kor" ${noteKey === 'kor' ? 'selected' : ''}>Kleineondernemersregeling (KOR)</option>
-              <option value="onderwijs" ${noteKey === 'onderwijs' ? 'selected' : ''}>Onderwijsvrijstelling (o.a. CRKBO)</option>
+              <option value="onderwijs" ${noteKey === 'onderwijs' ? 'selected' : ''}>Onderwijsvrijstelling</option>
+              <option value="geen" ${noteKey === 'geen' ? 'selected' : ''}>Geen tekst</option>
             </select>
           </div>
           <div id="bk-les-calc" class="bk-calc-preview"></div>
         </div>`;
 }
 
-function lessonRowHTML(l = {}) {
-  return `
-    <div class="bk-les-row">
-      <div class="bk-les-top">
-        <input class="les-date" type="date" value="${escapeHTML(l.date || ymd())}" aria-label="Datum" />
-        <input class="les-hours" type="text" inputmode="decimal" placeholder="Uren" value="${l.qty != null ? String(l.qty).replace('.', ',') : ''}" aria-label="Uren" />
-        <span class="bk-les-unit">uur</span>
-        <button type="button" class="bk-les-del" aria-label="Les verwijderen">×</button>
-      </div>
-      <input class="les-school" type="text" list="bk-les-schools" placeholder="School / locatie" value="${escapeHTML(l.school || '')}" />
-      <input class="les-act" type="text" list="bk-les-acts" placeholder="Activiteit (bv. gymles groep 3-4)" value="${escapeHTML(l.activity || '')}" />
-    </div>`;
+async function lastHoursInvoice(bedrijf, excludeId) {
+  return (await all('invoices'))
+    .filter(i => i.adminId === bedrijf.id && i.kind === 'lessen' && i.id !== excludeId && i.lines?.[0]?.qty != null)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.number || '').localeCompare(a.number || ''))[0] || null;
 }
 
-async function initLessons(backdrop, inv0, bedrijf) {
-  const list = backdrop.querySelector('#bk-les-list');
-  // Eerdere lessen → suggesties voor school/activiteit + startwaarden
-  const prev = (await all('invoices'))
-    .filter(i => i.adminId === bedrijf.id && i.kind === 'lessen' && i.id !== inv0.id)
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  const prevLines = prev.flatMap(i => i.lines || []).filter(l => l.qty != null);
-  const uniq = arr => [...new Set(arr.filter(Boolean))];
-  backdrop.querySelector('#bk-les-schools').innerHTML = uniq(prevLines.map(l => l.school)).map(v => `<option value="${escapeHTML(v)}">`).join('');
-  backdrop.querySelector('#bk-les-acts').innerHTML    = uniq(prevLines.map(l => l.activity)).map(v => `<option value="${escapeHTML(v)}">`).join('');
-
-  const existing = (inv0.lines || []).filter(l => l.qty != null);
-  if (existing.length) list.innerHTML = existing.map(lessonRowHTML).join('');
-  else {
-    const last = prev[0]?.lines?.filter(l => l.qty != null).slice(-1)[0];
-    list.innerHTML = lessonRowHTML(last ? { school: last.school, activity: last.activity, qty: last.qty } : {});
-  }
-
+function initLessons(backdrop, bedrijf) {
+  const $ = sel => backdrop.querySelector(sel);
   const recalc = () => refreshLessonCalc(backdrop, bedrijf);
-  backdrop.querySelector('#bk-les-add').onclick = () => {
-    // Nieuwe les = kopie van de vorige, een week later (vaste wekelijkse les)
-    const rows = list.querySelectorAll('.bk-les-row');
-    const lastRow = rows[rows.length - 1];
-    const data = lastRow ? {
-      date:     addDays(lastRow.querySelector('.les-date').value || ymd(), 7),
-      qty:      parseAmount(lastRow.querySelector('.les-hours').value) || null,
-      school:   lastRow.querySelector('.les-school').value,
-      activity: lastRow.querySelector('.les-act').value,
-    } : {};
-    list.insertAdjacentHTML('beforeend', lessonRowHTML(data));
-    recalc();
+  // Uren/tarief/periode aangepast → staartje "- mnd/ X uur x Y,-" in de omschrijving meeschrijven
+  const syncDesc = () => {
+    const desc = $('#bk-les-desc');
+    if (!HOURS_TAIL_RE.test(desc.value)) return;   // zelf herschreven → niet aanraken
+    const hours = parseAmount($('#bk-les-hours').value);
+    const rate  = parseAmount($('#bk-les-rate').value);
+    if (!hours || !rate) return;
+    const m = $('#bk-les-desc').value.match(/[-–—]\s*([a-z]{3,})\.?\s*\//i);
+    let monthIdx = MONTHS_NL.findIndex(n => $('#bk-les-period').value.toLowerCase().startsWith(n));
+    if (monthIdx < 0 && m) monthIdx = MONTHS_NL.findIndex(n => n.startsWith(m[1].toLowerCase().slice(0, 3)));
+    if (monthIdx < 0) return;
+    desc.value = desc.value.replace(HOURS_TAIL_RE, '') + hoursTail(monthIdx, hours, rate);
   };
-  list.addEventListener('click', e => {
-    const del = e.target.closest('.bk-les-del');
-    if (!del) return;
-    if (list.querySelectorAll('.bk-les-row').length <= 1) { err('Minimaal één les'); return; }
-    del.closest('.bk-les-row').remove();
+  ['#bk-les-hours', '#bk-les-rate', '#bk-les-period'].forEach(id => $(id).addEventListener('input', () => { syncDesc(); recalc(); }));
+  $('#bk-les-desc').addEventListener('input', recalc);
+  const vatSel = $('#bk-les-vat');
+  vatSel.addEventListener('change', () => {
+    $('#bk-les-note-wrap').style.display = vatSel.value === '0' ? 'block' : 'none';
     recalc();
   });
-  const vatSel = backdrop.querySelector('#bk-les-vat');
-  vatSel.addEventListener('change', () => {
-    backdrop.querySelector('#bk-les-note-wrap').style.display = vatSel.value === '0' ? 'block' : 'none';
-  });
-  const section = list.closest('.bk-form-section');
-  section.addEventListener('input', recalc);
-  section.addEventListener('change', recalc);
   recalc();
 }
 
-function collectLessons(backdrop, bedrijf) {
-  const r2   = v => Math.round(v * 100) / 100;
-  const rate = parseAmount(backdrop.querySelector('#bk-les-rate').value);
-  const vatRate = parseInt(backdrop.querySelector('#bk-les-vat').value) || 0;
-  const rows = [...backdrop.querySelectorAll('.bk-les-row')].map(row => ({
-    date:     row.querySelector('.les-date').value,
-    qty:      parseAmount(row.querySelector('.les-hours').value),
-    school:   row.querySelector('.les-school').value.trim(),
-    activity: row.querySelector('.les-act').value.trim(),
-  })).filter(r => r.date || r.qty || r.school || r.activity);
-  if (!rate || isNaN(rate) || rate <= 0) return { error: 'Vul een geldig uurtarief in', rows, rate: 0 };
-  if (!rows.length) return { error: 'Voeg minimaal één les toe', rows, rate };
-  if (rows.some(r => !r.date)) return { error: 'Elke les heeft een datum nodig', rows, rate };
-  if (rows.some(r => !r.qty || isNaN(r.qty) || r.qty <= 0)) return { error: 'Vul bij elke les het aantal uren in', rows, rate };
+const MONTHS_NL = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
 
-  rows.sort((a, b) => a.date.localeCompare(b.date));
-  const lines = rows.map(r => {
-    const vat  = calcVat(r2(r.qty * rate), vatRate, false);
-    const head = [r.activity || bedrijf.defaultDesc, r.school].filter(Boolean).join(' — ');
-    return {
-      description: `${head}\n${fmtDateLong(r.date)} · ${fmtHours(r.qty)} uur × ${fmtMoney(rate, true)}`,
-      date: r.date, school: r.school, activity: r.activity, qty: r.qty, unit: 'uur', rate,
-      amountExcl: vat.amountExcl, vatRate, vatAmount: vat.vatAmount, amountIncl: vat.amountIncl,
-    };
-  });
-  const totalExcl = r2(lines.reduce((s, l) => s + l.amountExcl, 0));
-  const totalVat  = r2(lines.reduce((s, l) => s + l.vatAmount, 0));
+function collectLessons(backdrop) {
+  const $ = sel => backdrop.querySelector(sel);
+  const r2 = v => Math.round(v * 100) / 100;
+  const description = $('#bk-les-desc').value.trim();
+  const qty     = parseAmount($('#bk-les-hours').value);
+  const rate    = parseAmount($('#bk-les-rate').value);
+  const vatRate = parseInt($('#bk-les-vat').value) || 0;
+  if (!description) return { error: 'Vul een omschrijving in' };
+  if (!qty || isNaN(qty) || qty <= 0) return { error: 'Vul het aantal uren in' };
+  if (!rate || isNaN(rate) || rate <= 0) return { error: 'Vul een geldig uurtarief in' };
+  const vat  = calcVat(r2(qty * rate), vatRate, false);
+  const note = $('#bk-les-note').value;
   return {
-    lines, rate, totalExcl, totalVat, totalIncl: r2(totalExcl + totalVat),
-    hours:     rows.reduce((s, r) => s + r.qty, 0),
-    period:    backdrop.querySelector('#bk-les-period').value.trim(),
-    reference: backdrop.querySelector('#bk-les-ref').value.trim(),
-    vatNote:   vatRate === 0 ? VAT_NOTES[backdrop.querySelector('#bk-les-note').value] : '',
+    lines: [{ description, qty, unit: 'uur', rate, amountExcl: vat.amountExcl, vatRate, vatAmount: vat.vatAmount, amountIncl: vat.amountIncl }],
+    qty, rate, totalExcl: vat.amountExcl, totalVat: vat.vatAmount, totalIncl: vat.amountIncl,
+    period:    $('#bk-les-period').value.trim(),
+    reference: $('#bk-les-ref').value.trim(),
+    vatNote:   vatRate === 0 && VAT_NOTES[note] ? VAT_NOTES[note] : '',
   };
 }
 
-function refreshLessonCalc(backdrop, bedrijf) {
+function refreshLessonCalc(backdrop) {
   const el = backdrop.querySelector('#bk-les-calc');
-  const d  = collectLessons(backdrop, bedrijf);
-  const n  = d.rows?.length ?? d.lines?.length ?? 0;
-  if (d.error) {
-    const hours = (d.rows || []).reduce((s, r) => s + (r.qty || 0), 0);
-    el.innerHTML = `<div class="bk-calc-row"><span>${n} ${n === 1 ? 'les' : 'lessen'} · ${fmtHours(hours)} uur</span><span>—</span></div>`;
-    return;
-  }
-  const vatRate = d.lines[0].vatRate;
+  const d  = collectLessons(backdrop);
+  if (d.error) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
   el.innerHTML = `
-    <div class="bk-calc-row"><span>${d.lines.length} ${d.lines.length === 1 ? 'les' : 'lessen'} · ${fmtHours(d.hours)} uur × ${fmtMoney(d.rate)}</span><span>${fmtMoney(d.totalExcl)}</span></div>
-    <div class="bk-calc-row"><span>BTW ${vatRate}%</span><span>${fmtMoney(d.totalVat)}</span></div>
+    <div class="bk-calc-row"><span>${fmtHours(d.qty)} uur × ${fmtMoney(d.rate)}</span><span>${fmtMoney(d.totalExcl)}</span></div>
+    <div class="bk-calc-row"><span>BTW ${d.lines[0].vatRate}%</span><span>${fmtMoney(d.totalVat)}</span></div>
     <div class="bk-calc-row bk-calc-total"><span>Totaal</span><span class="money">${fmtMoney(d.totalIncl)}</span></div>`;
 }
 

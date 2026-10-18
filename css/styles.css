@@ -7465,27 +7465,8 @@ label.gram-add-btn, .gram-footer label.btn {
   .gram-spinner { animation-duration: 2s; }
 }
 
-/* ── Lessen-factuur (Adab) ─────────────────────────────────── */
+/* ── Uren-factuur (Adab) ───────────────────────────────────── */
 .bk-les-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .bk-les-two > div { min-width: 0; }
-.bk-les-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-.bk-les-row {
-  background: var(--bg-elev-3);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-sm);
-  padding: 8px;
-  display: flex; flex-direction: column; gap: 6px;
-}
-.bk-les-row input { margin: 0; }
-.bk-les-top { display: flex; gap: 6px; align-items: center; }
-.bk-les-top .les-date { flex: 1 1 auto; min-width: 0; }
-.bk-les-top .les-hours { flex: 0 0 64px; width: 64px; text-align: right; }
-.bk-les-unit { font-size: .8rem; color: var(--text-dim); }
-.bk-les-del {
-  flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%;
-  border: 1px solid var(--border); background: transparent; color: var(--text-dim);
-  font-size: 1.1rem; line-height: 1; cursor: pointer;
-}
-.bk-les-add { width: 100%; margin-top: 8px; }
-.bk-les-add .ic, .bk-section-title .ic { width: 18px; height: 18px; }
-.bk-section-title .ic { color: var(--accent); flex-shrink: 0; }
+#bk-les-desc { font-family: inherit; line-height: 1.45; }
+.bk-section-title .ic { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
