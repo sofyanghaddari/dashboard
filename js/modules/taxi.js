@@ -333,6 +333,7 @@ function renderRitten(content, container, year, month, byDate, rides, now) {
     <div class="card">
       <h2 class="card-title">Jaarverloop</h2>
       <div id="chart"></div>
+      <button class="mo-link" id="go-months">Per maand bekijken &amp; vergelijken →</button>
     </div>
     <button class="btn secondary block" id="export-csv" style="margin-top:4px;font-size:.875rem">CSV exporteren</button>
   `;
@@ -350,6 +351,7 @@ function renderRitten(content, container, year, month, byDate, rides, now) {
     render(container);
   };
   content.querySelector('#export-csv').onclick = () => exportCSV(rides);
+  content.querySelector('#go-months').onclick = () => { window.__statsFocus = 'months'; document.querySelector('.tab[data-route="stats"]')?.click(); };
 }
 
 // ─── KOSTEN TAB ───────────────────────────────────────────────────────────

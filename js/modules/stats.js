@@ -1,6 +1,7 @@
 import { all } from '../db.js';
 import { icon } from '../icons.js';
 import { ymd, escapeHTML, fmtMoney as fmtMoneyUtil } from '../utils.js';
+import { mountMonthOverview } from '../month-overview.js';
 
 export async function render(container) {
   const period = container.dataset.statsPeriod || '30';
@@ -24,12 +25,13 @@ export async function render(container) {
     btn.onclick = () => { container.dataset.statsPeriod = btn.dataset.p; render(container); };
   });
 
-  const [rides, hizbLog, cards, todos, purchases] = await Promise.all([
+  const [rides, hizbLog, cards, todos, purchases, invoices] = await Promise.all([
     all('rides').catch(() => []),
     all('hizb_log').catch(() => []),
     all('cards').catch(() => []),
     all('todos').catch(() => []),
     all('purchase_invoices').catch(() => []),
+    all('invoices').catch(() => []),
   ]);
 
   const body = container.querySelector('#stats-body');
@@ -37,12 +39,20 @@ export async function render(container) {
 
   body.innerHTML =
     renderInkomenHero(rides, cutoff, period) +
+    `<div class="stats-section-wrap" style="--i:1" id="stats-months"></div>` +
     renderNettoMarge(rides, purchases) +
     renderWeekdayStats(rides, cutoff) +
     renderKoranRing(hizbLog) +
     renderArabicMastery(cards) +
     renderTakenDonut(todos, cutoff) +
     renderActivityGrid(rides);
+
+  mountMonthOverview(body.querySelector('#stats-months'), { rides, invoices });
+  // Vanuit Taxi → "Per maand vergelijken": direct naar het maandoverzicht
+  if (window.__statsFocus === 'months') {
+    window.__statsFocus = null;
+    setTimeout(() => body.querySelector('#stats-months')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
+  }
 
   // Count-ups start immediately
   requestAnimationFrame(() => {

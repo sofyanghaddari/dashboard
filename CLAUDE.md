@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=8), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v176** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v177** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -52,7 +52,7 @@ Lokaal: `/Users/soef/claude code`
 5. **✅ To-do** — compacte layout (v54): header met open-teller-pill, quick-add + ＋-knop bovenaan, daaronder direct de taken; alléén niet-lege prioriteitsgroepen (geen lege placeholder-blokken), één scrollbare chip-rij (filters+tags+selecteer), horizontale actieknoppen op de kaart, afvink-animatie (check-pop + kaart glijdt uit), stagger-entree. Verder: prioriteit/medium/waiting, tags, subtaken, herhalend, bulk, undo, later-parkeren, quick-NL-input ("morgen 10:00 APK")
 6. **📝 Notities** — notities + ideeën sub-tabs, lichte markdown
 7. **🗓 Week** (`agenda.js`) — week-tijdrooster 06:00–24:00, dag-selector met dag-inkomen, blokken per categorie; tik een leeg tijdvak om te plannen (werkt op mobiel, geen hover nodig). Events in IndexedDB-store `agenda_events` (eenmalige migratie vanuit localStorage)
-8. **📊 Stats** (`stats.js`) — inkomen-inzichten met 7d/30d/90d/Alles filter, totalen + per-week bar-chart (WIP, serif titel)
+8. **📊 Stats** (`stats.js`) — inkomen-inzichten met 7d/30d/90d/Alles filter, totalen + per-week bar-chart (WIP, serif titel). Direct onder de hero het **Maandoverzicht** (`js/month-overview.js`, v177): inkomen per maand/jaar met jaar-chips + "Alle jaren", bron-chips (Alles/Taxi/Adab/Olijf), vergelijken en CSV
 9. **🧾 Boekhouding** (`boekhouding.js`) — volledig boekhoudprogramma Moneybird-stijl:
    - **Verkoopfacturen:** maak + verstuur facturen (Taxi-administratie of Olijfolie-bedrijf), PDF-generatie via jsPDF, HTML-print versie
    - **Gmail-verzending:** OAuth2 via Google Identity Services, PDF als bijlage, CC-veld, "Stuur kopie naar mezelf" toggle (default ON → kopie naar sofyanghaddari@gmail.com)
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v176)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v177)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -179,6 +179,7 @@ js/
   push.js                        — web-push subscription + push-config gist (refreshPushConfig)
   qibla.js                       — qibla-kaart dashboard + volledig kompas-modal
   today-panel.js                 — "Vandaag"-paneel (taken + agenda) op dashboard
+  month-overview.js              — Maandoverzicht in Stats: mountMonthOverview(mount, {rides, invoices}) — inkomen per maand/jaar, vergelijken, CSV
   markitdown.js                  — document→Markdown import voor Notities (lokale MarkItDown-server, valt terug op pdf.js/mammoth/Tesseract via CDN)
   modules/
     dashboard.js                 — home view, hero, weer, alles aggregatie
@@ -199,7 +200,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v176
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v177
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -310,6 +311,13 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++45. **📅 Maandoverzicht in Stats v177 (8 nov 2026):** op verzoek van user ("per maand zien wat ik verdiend heb, vergelijken, filteren per jaar, jaartotaal"). Nieuw `js/month-overview.js` (`mountMonthOverview()`), gemount in `stats.js` direct onder de inkomen-hero (`#stats-months`).
+   - **Bronnen:** Taxi = `rides` (dagregistratie, `effectiveDate`), Adab/Olijf = `invoices` op **factuurdatum, incl. btw** (`totalIncl`). **Taxi-facturen (adminId taxi) bewust NIET meegeteld** — aanname: die ritten zitten al in de dagregistratie (geen dubbeltelling). Bron-chips verschijnen alleen als er Adab/Olijf-data is.
+   - **Per jaar:** totaal + groei vs vorig jaar (lopend jaar: **zelfde periode** t/m dezelfde datum), gem. per (actieve) maand, beste maand, rijdagen + gem./rijdag, prognose (na 14 dagen) of "maanddoel gehaald x/y". Grafiek: 12 maanden, gestapeld per bron, vorig jaar als grijze schaduwstaaf, stippellijn maanddoel (`monthlyIncomeGoal`). Lijst nieuwste-boven, lege maanden vóór de eerste inkomsten weggelaten, ✓ doel-tag, delta vs vorige maand (lopende maand: t/m dezelfde dag).
+   - **Maand openklappen** (tik rij of staaf): verdeling per bron, rijdagen, gem./rijdag, beste dag, facturen + "nog niet betaald", vs vorige maand en vs zelfde maand vorig jaar (lopende maand: t/m zelfde dag), en **"Vergelijk met…"**-select → gestapelde vergelijkrijen (totaal/rijdagen/per rijdag/beste dag + verschil).
+   - **Alle jaren:** jaartotalen + staafjes, gem./mnd, beste maand, groei per jaar. **CSV ↓**: alle maanden met kolommen taxi/adab/olijf/totaal/rijdagen/nog_open + jaartotalen (`sep=;`, NL-komma).
+   - State sessie-only (module-vars `_year/_src/_sel/_cmp`). Taxi → Ritten → Jaarverloop heeft link "Per maand bekijken & vergelijken →" (`window.__statsFocus='months'` + tab-klik, Stats scrolt ernaartoe). CSS-sectie "MAANDOVERZICHT (Stats)" (`.mo-*`, bronkleuren via `--src-*`, licht-thema-variant). Getest op 375px (donker + licht, lege DB, bron/jaar-wissel, vergelijken, lopende-maand-rekensom).
 
 +44. **📋 Kopieerknop Hadith van de dag v176 (18 okt 2026):** op verzoek van user — extra knop (`data-day-copy`, nieuw icoon `copy` in icons.js) naast voorlezen op de hadith-kaart; kopieert álles wat er staat (Arabisch + NL-vertaling + bron, gescheiden door lege regels) via `navigator.clipboard` met `execCommand`-fallback, ✓-feedback + toast. Werkt ook voor eerdere dagen (‹). Hadith-knoppen 36px + titel letter-spacing .07em zodat het op 375px op één regel past.
 

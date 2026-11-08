@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v176';
+const CACHE = 'dashboard-v177';
 
 
 
@@ -61,6 +61,7 @@ const ASSETS = [
   './js/modules/taxi.js',
   './js/modules/agenda.js',
   './js/modules/stats.js',
+  './js/month-overview.js',
   './js/modules/koran.js',
   './js/modules/arabic.js',
   './js/modules/arabic-srs.js',
