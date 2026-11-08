@@ -7638,3 +7638,15 @@ body[data-preset="daylight"] .mo-card { --src-adab: #1f7a63; --src-olijf: #6f7a1
 .bk-group-note strong { color: var(--text); font-weight: 600; }
 .bk-group-per { color: var(--text-faint); font-size: .74rem; margin-top: 2px; }
 .bk-btw-row-info { opacity: .7; font-style: italic; }
+
+/* ── Klant uit foto (OCR) v179 ── */
+.bk-photo-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 2px 0 10px; padding: 11px; border: 1.5px solid var(--accent); color: var(--accent); background: transparent; }
+.bk-photo-btn svg, .bk-client-src svg { width: 17px; height: 17px; }
+.bk-photo-btn:disabled { opacity: .75; cursor: progress; }
+.bk-client-src { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.bk-client-src .bk-pick-client-btn { margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: .85rem; padding: 10px 8px; }
+.bk-client-src .bk-pick-client-btn:disabled { opacity: .75; cursor: progress; }
+#bk-client-photo-hint:empty { display: none; }
+#bk-client-photo-hint { margin: 0 0 10px; }
+.bk-paste-hint.warn { color: var(--danger); font-weight: 600; }
+.bk-modal input.bk-field-filled { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--bg-elev-2)); transition: border-color .3s, background .3s; }

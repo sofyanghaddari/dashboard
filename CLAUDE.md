@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=8), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v178** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v179** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v178)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v179)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -170,7 +170,7 @@ js/
   app-badge.js                   — navigator.setAppBadge
   gmail.js                       — Gmail OAuth2 via GSI + sendInvoiceEmail() + buildHtmlEmail()/buildTextEmail() + preloadGSI()
   sepa-qr.js                     — SEPA/EPC-betaal-QR: epcPayload(), invoiceEpcPayload(), qrModules(), qrCanvas() (mail-PNG), qrSvg() (printversie)
-  receipt-ocr.js                 — Tesseract.js OCR wrapper: ocrReceipt() + parseReceiptText()
+  receipt-ocr.js                 — Tesseract.js OCR wrapper: ocrReceipt() + parseReceiptText() + ocrImage() (algemeen, met voorbewerking: schalen + dark-mode omkeren)
   invoice-nlp.js                 — NLP parser voor factuur-extractie
   income-road.js                 — gedeelde incomeRoad() taxi-weg-animatie (Taxi-overzicht)
   cabman.js                      — gestileerde Cabman-taximeter (Taxi-overzicht): rolling digits + live klok
@@ -200,7 +200,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v178
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v179
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -311,6 +311,13 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++47. **📷 Klant uit foto v179 (8 nov 2026):** op verzoek van user (krijgt klantgegevens vaak als foto/screenshot, bv. visitekaartje-achtig blok met naam/adres/btw/KvK/tel/mail/IBAN/BIC).
+   - **Knop "Klant uit foto / screenshot"** in Klanten → "+ Klant" (boven het Snel-invullen-veld) én **"Klant uit foto"** naast "Opgeslagen klant" in het factuurformulier. `bindClientPhoto()` in `boekhouding.js`: kies foto/camera (`accept="image/*"`) óf **plak een gekopieerde afbeelding** in het plakveld → `ocrImage()` (Tesseract, lazy, gratis, geen API) → `cleanOcrText()` (ruisregels weg) → bestaande `parseClientText()` → velden gevuld + goud gemarkeerd (`.bk-field-filled`). Ruwe OCR-tekst blijft zichtbaar/bewerkbaar in het plakveld (bewerken = opnieuw parsen).
+   - **OCR-correcties in `parseClientText()`** (werken ook voor getypte tekst): `fixBtw()` (O→0 in cijferposities, en "00" dat als "O0O" gelezen wordt → één teken eruit, want NL-btw = NL + 9 cijfers + B + 2), `fixIban()` (NL: cijfers/letters per positie), `fixPhone()` (**"+31 (0) 6…" → "+31 6…"**, anders brak de WhatsApp-link), KvK O→0. Controles: `ibanValid()` (mod-97) en `btwValid()` → rode waarschuwing in de hint. Naam: groetregels ("Met vriendelijke groet") overgeslagen, regel met rechtsvorm (B.V./VOF/stichting…) krijgt voorrang; website-regels genegeerd; ook labels "T:"/"M:"/"Mob".
+   - **Geen dubbele klanten:** opslaan zoekt bestaande klant op KvK / btw / e-mail / naam → bijwerken i.p.v. nieuw. In het factuurformulier wordt een bekende klant herkend en aangevuld.
+   - `ocrImage()` in `receipt-ocr.js`: schaalt (klein → max 2× op naar 1400px, groot → 2400px) en keert donkere afbeeldingen (dark-mode) om; hergebruikt de Tesseract-worker van de bonnetjes-scanner.
+   - Getest met de echte foto van user (Kruize Chauffeurs) + omgekeerde dark-versie, met échte Tesseract in headless Chromium: 9/9 velden correct in 1-2 s, opslaan → herkenning in factuurformulier, geen JS-fouten/overflow op 375px. Parser-unittests: OCR-varianten, getypte tekst, e-mailhandtekening.
 
 +46. **🧾 Factuur-controle v178 (8 nov 2026):** op verzoek van user (omschrijving liep op de PDF over de BTW-kolom heen) + "grote controle" van facturen/boekhouding.
    - **PDF-tabel herschreven** (`generateInvoicePDF`): oorzaak overlap = `splitTextToSize()` meet met het **actieve** font — er werd afgebroken op 7,5pt (tabelkop) en getekend op 9pt vet → ~20% te breed. **Regel: altijd eerst font zetten, dán afbreken.** Vaste kolommen (`COL`: omschrijving 98mm, BTW/excl/incl rechts met 3mm binnenmarge — "TOTAAL INCL." viel eerst buiten de kop), regels één voor één getekend met eigen regelhoogte, bedragen op de eerste regel (niet meer verticaal gecentreerd), rij-hoogte klopt (geen loze witruimte meer). Eerste regel vet als kopje; een lange enkele alinea in normaal gewicht. Rij langer dan een pagina loopt door op de volgende ("(vervolg)"-kop); totalen-only pagina zonder lege tabelkop. Footer "Pagina x van y".

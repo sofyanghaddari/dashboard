@@ -32,6 +32,48 @@ async function getWorker(onProgress) {
   return _workerLoading;
 }
 
+// Foto klaarmaken voor OCR: juiste maat (kleine screenshots opschalen, grote foto's
+// verkleinen = sneller) en donkere afbeeldingen (dark-mode screenshot) omkeren naar
+// zwart-op-wit — daar is Tesseract veel beter in.
+async function prepareImage(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error('Afbeelding kon niet worden geopend'));
+      i.src = url;
+    });
+    const w0 = img.naturalWidth, h0 = img.naturalHeight, M = Math.max(w0, h0);
+    const scale = M > 2400 ? 2400 / M : M < 1400 ? Math.min(2, 1400 / M) : 1;
+    const c = document.createElement('canvas');
+    c.width = Math.round(w0 * scale); c.height = Math.round(h0 * scale);
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    const d = ctx.getImageData(0, 0, c.width, c.height);
+    let sum = 0;
+    for (let p = 0; p < d.data.length; p += 16) sum += d.data[p] * 0.3 + d.data[p + 1] * 0.59 + d.data[p + 2] * 0.11;
+    if (sum / (d.data.length / 16) < 90) {
+      for (let p = 0; p < d.data.length; p += 4) { d.data[p] = 255 - d.data[p]; d.data[p + 1] = 255 - d.data[p + 1]; d.data[p + 2] = 255 - d.data[p + 2]; }
+      ctx.putImageData(d, 0, 0);
+    }
+    return c;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+// Algemene tekstherkenning (klantgegevens, visitekaartje, e-mailhandtekening)
+export async function ocrImage(imageFile, onProgress) {
+  onProgress?.('Foto voorbereiden…', 0);
+  let src = imageFile;
+  try { src = await prepareImage(imageFile); } catch (_) { /* val terug op het origineel */ }
+  const worker = await getWorker(onProgress);
+  const { data: { text } } = await worker.recognize(src);
+  onProgress?.('Klaar', 1);
+  return text;
+}
+
 export async function ocrReceipt(imageFile, onProgress) {
   onProgress?.('OCR starten…', 0);
   const worker = await getWorker(onProgress);

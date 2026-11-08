@@ -1408,27 +1408,84 @@ function openEditClientModal(client, container) {
 // Herkent (met of zonder label): naam, straat+nr, postcode+stad, KvK, BTW,
 // IBAN, BIC, e-mail en telefoon. Gelabelde regels ("Btw-nummer: …") winnen;
 // ongelabelde regels worden op patroon herkend.
+// ── OCR-correcties: tekstherkenning verwart cijfers en letters (0↔O, 1↔I, 8↔B…).
+// Alleen toegepast op plekken waar zeker cijfers (of letters) horen.
+const _OCR_DIGIT  = { O: '0', o: '0', Q: '0', D: '0', I: '1', l: '1', '|': '1', i: '1', Z: '2', z: '2', S: '5', s: '5', G: '6', B: '8' };
+const _OCR_LETTER = { 0: 'O', 1: 'I', 2: 'Z', 5: 'S', 6: 'G', 8: 'B' };
+const ocrDigits  = v => String(v).replace(/[OoQDIl|iZzSsGB]/g, c => _OCR_DIGIT[c]);
+const ocrLetters = v => String(v).toUpperCase().replace(/[012568]/g, c => _OCR_LETTER[c]);
+
+function fixBtw(v) {
+  const t = String(v || '').toUpperCase().replace(/[\s.\-]/g, '');
+  const m = t.match(/^([A-Z]{2})([0-9A-Z]{9,10})B([0-9A-Z]{2})$/);
+  if (!m) return t;
+  let mid = m[2];
+  // OCR leest twee nullen soms als drie tekens ("00" → "O0O"). Een btw-nummer heeft
+  // precies 9 cijfers tussen landcode en B: bij 10 met zo'n reeks er één uit halen.
+  if (mid.length === 10) {
+    const run = mid.match(/[O0Q]{3,}/);
+    if (!run) return t;
+    mid = mid.slice(0, run.index) + mid.slice(run.index + 1);
+  }
+  return `${m[1]}${ocrDigits(mid)}B${ocrDigits(m[3])}`;
+}
+export function btwValid(v) {
+  const t = String(v || '').toUpperCase().replace(/\s/g, '');
+  return t.startsWith('NL') ? /^NL\d{9}B\d{2}$/.test(t) : /^[A-Z]{2}[0-9A-Z+*]{2,12}$/.test(t);
+}
+function fixIban(v) {
+  const t = String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const m = t.match(/^(NL)([0-9A-Z]{2})([0-9A-Z]{4})([0-9A-Z]{10})$/);   // NL: 2 cijfers, 4 letters, 10 cijfers
+  return m ? `NL${ocrDigits(m[2])}${ocrLetters(m[3])}${ocrDigits(m[4])}` : t;
+}
+export function ibanValid(iban) {
+  const t = String(iban || '').toUpperCase().replace(/\s/g, '');
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(t)) return false;
+  const num = (t.slice(4) + t.slice(0, 4)).replace(/[A-Z]/g, c => c.charCodeAt(0) - 55);
+  let r = 0;
+  for (const ch of num) r = (r * 10 + +ch) % 97;
+  return r === 1;
+}
+function fixPhone(v) {
+  return String(v || '')
+    .replace(/\(\s*[0O]\s*\)/g, ' ')                 // +31 (0) 6 … → +31 6 … (anders breekt WhatsApp)
+    .replace(/[OoIl|]/g, c => _OCR_DIGIT[c])
+    .replace(/[^\d+\s\-]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+
+// OCR-ruis weghalen: regels zonder (genoeg) letters/cijfers, losse streepjes, ‘|’ van randen
+export function cleanOcrText(text) {
+  return String(text || '').split(/\r?\n/)
+    .map(l => l.replace(/[|_~`]+/g, ' ').replace(/\s+/g, ' ').trim())
+    .filter(l => {
+      const alnum = (l.match(/[A-Za-z0-9@]/g) || []).length;
+      return alnum >= 3 && alnum / l.length >= 0.5;
+    })
+    .join('\n');
+}
+
 export function parseClientText(raw) {
   const res = {};
   const lines = (raw || '').split(/\r?\n/).map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
   const leftover = [];
-  const afterLabel = line => (line.includes(':') ? line.slice(line.indexOf(':') + 1) : line).trim();
+  const afterLabel = line => (line.includes(':') ? line.slice(line.indexOf(':') + 1) : line.replace(/^\S+\s*/, '')).trim();
 
   for (const line of lines) {
     const lower = line.toLowerCase();
-    if (!res.btw && /\bbtw|\bvat\b/.test(lower)) {
-      const m = line.match(/[A-Z]{2}\s?\d{9}\s?B\s?\d{2}/i);
-      res.btw = (m ? m[0] : afterLabel(line)).replace(/[\s.]/g, '').toUpperCase();
+    if (!res.btw && /\bbtw|\bvat\b|\bb\.?t\.?w\.?\b/.test(lower)) {
+      const m = line.match(/[A-Z]{2}\s?[0-9OQDILSZ]{9,10}\s?B\s?[0-9OQDILSZ]{2}/i);
+      res.btw = fixBtw(m ? m[0] : afterLabel(line));
       continue;
     }
-    if (!res.kvk && /k\.?v\.?k|kamer van koophandel/.test(lower)) {
-      const m = line.match(/\d{8}/);
+    if (!res.kvk && /k\.?v\.?k|kamer van koophandel|coc\b/.test(lower)) {
+      const m = ocrDigits(afterLabel(line).replace(/\s/g, '')).match(/\d{8}/);
       res.kvk = m ? m[0] : afterLabel(line);
       continue;
     }
-    if (!res.iban && /iban|rekeningnummer/.test(lower)) {
-      const m = line.match(/[A-Z]{2}\d{2}[A-Z0-9 ]{10,36}/i);
-      res.iban = (m ? m[0] : afterLabel(line)).replace(/\s/g, '').toUpperCase();
+    if (!res.iban && /iban|rekeningnummer|rekening/.test(lower)) {
+      const m = line.match(/[A-Z]{2}\s?[0-9OQDIL]{2}(?:\s?[A-Z0-9]{4}){3,7}(?:\s?[A-Z0-9]{1,3})?/i);
+      res.iban = fixIban(m ? m[0] : afterLabel(line));
       continue;
     }
     if (!res.bic && /\bbic\b|swift/.test(lower)) {
@@ -1440,8 +1497,8 @@ export function parseClientText(raw) {
       const m = line.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/);
       if (m && !res.email) { res.email = m[0].toLowerCase(); continue; }
     }
-    if (!res.phone && /^(tel(efoon)?|mobiel|phone|gsm)\b/.test(lower)) {
-      res.phone = afterLabel(line);
+    if (!res.phone && /^(tel(efoon)?|t\b|mob(iel)?|m\b|phone|gsm|whatsapp)\.?\s*[:.]?/i.test(lower) && /\d{3}/.test(line)) {
+      res.phone = fixPhone(afterLabel(line));
       continue;
     }
     leftover.push(line);
@@ -1451,16 +1508,20 @@ export function parseClientText(raw) {
   for (const line of leftover) {
     let m;
     if (!res.email && (m = line.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/))) { res.email = m[0].toLowerCase(); continue; }
-    if (!res.btw && (m = line.match(/\b[A-Z]{2}\s?\d{9}\s?B\s?\d{2}\b/i))) { res.btw = m[0].replace(/\s/g, '').toUpperCase(); continue; }
-    if (!res.iban && (m = line.match(/\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]{4}){3,7}(?:\s?[A-Z0-9]{1,3})?\b/))) { res.iban = m[0].replace(/\s/g, '').toUpperCase(); continue; }
+    if (!res.btw && (m = line.match(/\b[A-Z]{2}\s?\d{9}\s?B\s?\d{2}\b/i))) { res.btw = fixBtw(m[0]); continue; }
+    if (!res.iban && (m = line.match(/\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]{4}){3,7}(?:\s?[A-Z0-9]{1,3})?\b/))) { res.iban = fixIban(m[0]); continue; }
     if (!res.kvk && (m = line.match(/^\d{8}$/))) { res.kvk = m[0]; continue; }
     if (!res.city && (m = line.match(/^(\d{4})\s?([A-Za-z]{2})\s+(.+)$/))) { res.city = `${m[1]} ${m[2].toUpperCase()} ${m[3]}`; continue; }
-    if (!res.phone && /^(\+31|0)[\d\s\-()]{7,}$/.test(line)) { res.phone = line; continue; }
+    if (!res.phone && /^(\+\d{2}|0)[\d\s\-()]{7,}$/.test(line)) { res.phone = fixPhone(line); continue; }
     if (!res.address && /^[^\d@]{2,}\s\d+\S*$/.test(line)) { res.address = line; continue; }
+    if (/^(www\.|https?:)/i.test(line)) continue;    // website-regel is geen naam
+    if (/^(met )?(vriendelijke )?groet(en)?|^mvg\b|^(kind |best )?regards|^gr(oe)?t?\.?,?$/i.test(line)) continue;   // aanhef/afsluiting
     rest.push(line);
   }
 
-  if (rest.length) res.name = rest[0];
+  // Bedrijfsnaam met rechtsvorm heeft voorrang (handtekening: eerst persoon, dan bedrijf)
+  const LEGAL = /\b(b\.?\s?v\.?|v\.?o\.?f\.?|n\.?v\.?|c\.?v\.?|holding|stichting|vereniging|gmbh|ltd|bvba|sarl)(\s|$|\.)/i;
+  if (rest.length) res.name = rest.find(l => LEGAL.test(l)) || rest[0];
   return res;
 }
 
@@ -1474,7 +1535,9 @@ function openNewClientModal(container) {
       <form id="nc-form" autocomplete="off">
         <div class="bk-form-section bk-paste-box">
           <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3.5" width="10" height="4" rx="1.2"/><path d="M17 5.5h2a1.5 1.5 0 0 1 1.5 1.5v12A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V7A1.5 1.5 0 0 1 5 5.5h2"/><path d="M8 11.5h8M8 15h5.5"/></svg>Snel invullen</div>
-          <textarea id="nc-paste" rows="4" placeholder="Plak hier de klantgegevens (naam, adres, KvK, BTW, IBAN, e-mail…) — de velden hieronder worden automatisch ingevuld"></textarea>
+          <button type="button" class="btn secondary bk-photo-btn" id="nc-photo">${icon('camera')} Klant uit foto / screenshot</button>
+          <input type="file" id="nc-photo-file" accept="image/*" hidden />
+          <textarea id="nc-paste" rows="4" placeholder="…of plak hier de klantgegevens als tekst (of een gekopieerde afbeelding) — de velden hieronder worden automatisch ingevuld"></textarea>
           <div id="nc-paste-hint" class="bk-paste-hint"></div>
         </div>
         <div class="bk-form-section">
@@ -1509,39 +1572,100 @@ function openNewClientModal(container) {
 
   const FIELD_MAP = { name: '#nc-name', address: '#nc-addr', city: '#nc-city', kvk: '#nc-kvk', btw: '#nc-btw', iban: '#nc-iban', bic: '#nc-bic', email: '#nc-email', phone: '#nc-phone' };
   const pasteEl = backdrop.querySelector('#nc-paste');
-  pasteEl.addEventListener('input', () => {
+  const hint    = backdrop.querySelector('#nc-paste-hint');
+  const applyText = (fromPhoto = false) => {
     const parsed = parseClientText(pasteEl.value);
     let count = 0;
     for (const [key, sel] of Object.entries(FIELD_MAP)) {
-      if (parsed[key]) { backdrop.querySelector(sel).value = parsed[key]; count++; }
+      const el = backdrop.querySelector(sel);
+      el.classList.remove('bk-field-filled');
+      if (parsed[key]) { el.value = key === 'iban' ? fmtIBAN(parsed[key]) : parsed[key]; el.classList.add('bk-field-filled'); count++; }
     }
-    const hint = backdrop.querySelector('#nc-paste-hint');
-    if (count) hint.textContent = `✓ ${count} veld${count !== 1 ? 'en' : ''} herkend — controleer hieronder en sla op`;
+    const warn = [
+      parsed.iban && !ibanValid(parsed.iban) ? 'IBAN klopt niet (controlegetal)' : '',
+      parsed.btw && !btwValid(parsed.btw) ? 'btw-nummer heeft geen geldig formaat' : '',
+    ].filter(Boolean).map(w => ` · ⚠ ${w} — check het nummer`).join('');
+    if (count) hint.textContent = `✓ ${count} veld${count !== 1 ? 'en' : ''} herkend${fromPhoto ? ' uit de foto' : ''} — controleer hieronder en sla op${warn}`;
     else hint.textContent = pasteEl.value.trim() ? 'Niets herkend — vul de velden handmatig in' : '';
-    hint.classList.toggle('ok', count > 0);
+    hint.classList.toggle('ok', count > 0 && !warn);
+    hint.classList.toggle('warn', !!warn);
+  };
+  pasteEl.addEventListener('input', () => applyText(false));
+  bindClientPhoto(backdrop, {
+    button: '#nc-photo', file: '#nc-photo-file', pasteTarget: pasteEl, hint,
+    onText: text => { pasteEl.value = text; applyText(true); },
   });
 
   backdrop.querySelector('#nc-form').onsubmit = async e => {
     e.preventDefault();
     const name = backdrop.querySelector('#nc-name').value.trim();
     if (!name) { err('Vul een naam in'); return; }
-    await add('clients', {
-      id:      uid(),
+    const data = {
       name,
       address: backdrop.querySelector('#nc-addr').value.trim(),
       city:    backdrop.querySelector('#nc-city').value.trim(),
       kvk:     backdrop.querySelector('#nc-kvk').value.trim(),
-      btw:     backdrop.querySelector('#nc-btw').value.trim(),
+      btw:     backdrop.querySelector('#nc-btw').value.replace(/\s/g, '').toUpperCase(),
       iban:    backdrop.querySelector('#nc-iban').value.trim(),
-      bic:     backdrop.querySelector('#nc-bic').value.trim(),
+      bic:     backdrop.querySelector('#nc-bic').value.trim().toUpperCase(),
       email:   backdrop.querySelector('#nc-email').value.trim(),
       phone:   backdrop.querySelector('#nc-phone').value.trim(),
-      lastUsed: Date.now(),
-    });
-    ok(`${name} opgeslagen ✓`);
+    };
+    // Bestaat deze klant al (zelfde KvK, btw-nummer, e-mail of naam)? Dan bijwerken i.p.v. dubbel aanmaken
+    const norm = v => String(v || '').toLowerCase().replace(/\s/g, '');
+    const existing = (await all('clients')).find(c =>
+      (data.kvk && norm(c.kvk) === norm(data.kvk)) || (data.btw && norm(c.btw) === norm(data.btw)) ||
+      (data.email && norm(c.email) === norm(data.email)) || norm(c.name) === norm(name));
+    if (existing) {
+      const merged = { ...existing, lastUsed: Date.now() };
+      for (const [k, v] of Object.entries(data)) if (v) merged[k] = v;
+      await put('clients', merged);
+      ok(`${name} bestond al — gegevens bijgewerkt ✓`);
+    } else {
+      await add('clients', { id: uid(), ...data, lastUsed: Date.now() });
+      ok(`${name} opgeslagen ✓`);
+    }
     backdrop.remove();
     render(container);
   };
+}
+
+// Foto/screenshot met klantgegevens → tekst (OCR, lazy geladen) → onText(text).
+// Werkt via de knop (fotobibliotheek of camera) én door een afbeelding te plakken.
+function bindClientPhoto(root, { button, file, pasteTarget, hint, onText }) {
+  const btn   = root.querySelector(button);
+  const input = root.querySelector(file);
+  if (!btn || !input) return;
+  const label = btn.innerHTML;
+  let busy = false;
+  const run = async (img) => {
+    if (busy || !img) return;
+    busy = true; btn.disabled = true;
+    const show = (msg, p) => {
+      btn.innerHTML = `${icon('camera')} ${msg}${p > 0 && p < 1 ? ` ${Math.round(p * 100)}%` : ''}`;
+    };
+    try {
+      const { ocrImage } = await import('../receipt-ocr.js');
+      const raw  = await ocrImage(img, show);
+      const text = cleanOcrText(raw);
+      if (!text) { err('Geen tekst gevonden op de foto — probeer een scherpere foto of screenshot'); return; }
+      onText(text);
+    } catch (e) {
+      err('Foto lezen mislukt: ' + (e.message || 'onbekende fout'));
+      if (hint) hint.textContent = '';
+    } finally {
+      busy = false; btn.disabled = false; btn.innerHTML = label; input.value = '';
+    }
+  };
+  btn.onclick = () => input.click();
+  input.onchange = () => run(input.files?.[0]);
+  // Afbeelding geplakt (bv. gekopieerd uit WhatsApp) → direct lezen
+  pasteTarget?.addEventListener('paste', e => {
+    const item = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/'));
+    if (!item) return;
+    e.preventDefault();
+    run(item.getAsFile());
+  });
 }
 
 // Helper: open client picker mini-modal, resolves with selected client or null
@@ -1944,9 +2068,16 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       ` : ''}
 
       ${!isEdit ? `
-      <button type="button" id="bk-pick-client" class="btn secondary bk-pick-client-btn">
-        ${icon('users')} Kies opgeslagen klant
-      </button>
+      <div class="bk-client-src">
+        <button type="button" id="bk-pick-client" class="btn secondary bk-pick-client-btn">
+          ${icon('users')} Opgeslagen klant
+        </button>
+        <button type="button" id="bk-client-photo" class="btn secondary bk-pick-client-btn">
+          ${icon('camera')} Klant uit foto
+        </button>
+        <input type="file" id="bk-client-photo-file" accept="image/*" hidden />
+      </div>
+      <div id="bk-client-photo-hint" class="bk-paste-hint"></div>
 
       ${isLessons ? '' : `<div class="bk-paste-section">
         <label class="bk-paste-label">${icon('clipboard')} Of plak WhatsApp- / e-mailtekst — velden worden automatisch ingevuld</label>
@@ -2054,6 +2185,33 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       const chosen = await openClientPicker(savedClients);
       if (chosen) fillClient(chosen);
     };
+
+    // Klant uit foto/screenshot: OCR → klantvelden (alleen herkende velden overschrijven)
+    const photoHint = backdrop.querySelector('#bk-client-photo-hint');
+    bindClientPhoto(backdrop, {
+      button: '#bk-client-photo', file: '#bk-client-photo-file', hint: photoHint,
+      pasteTarget: backdrop.querySelector('#bk-paste'),
+      onText: async text => {
+        const p = parseClientText(text);
+        // Al bekend als klant? Dan de opgeslagen gegevens als basis gebruiken
+        const norm = v => String(v || '').toLowerCase().replace(/\s/g, '');
+        const known = (await all('clients')).find(c =>
+          (p.kvk && norm(c.kvk) === norm(p.kvk)) || (p.btw && norm(c.btw) === norm(p.btw)) ||
+          (p.email && norm(c.email) === norm(p.email)) || (p.name && norm(c.name) === norm(p.name)));
+        const merged = { ...(known || {}) };
+        for (const k of ['name', 'address', 'city', 'kvk', 'btw', 'email', 'phone']) if (p[k]) merged[k] = p[k];
+        const count = ['name', 'address', 'city', 'kvk', 'btw', 'email', 'phone'].filter(k => p[k]).length;
+        if (!count) { photoHint.textContent = 'Niets herkend op de foto — vul de klant handmatig in'; photoHint.className = 'bk-paste-hint'; return; }
+        const ids = { name: '#bk-client-name', address: '#bk-client-addr', city: '#bk-client-city', kvk: '#bk-client-kvk', btw: '#bk-client-btw', email: '#bk-client-email', phone: '#bk-client-phone' };
+        for (const [k, sel] of Object.entries(ids)) {
+          const el = backdrop.querySelector(sel);
+          if (merged[k] && el) { el.value = merged[k]; el.classList.add('bk-field-filled'); }
+        }
+        const badBtw = p.btw && !btwValid(p.btw);
+        photoHint.textContent = `✓ ${count} klantgegevens uit de foto overgenomen${known ? ' · bestaande klant herkend' : ''} — controleer ze even${badBtw ? ' · ⚠ btw-nummer heeft geen geldig formaat' : ''}`;
+        photoHint.className = `bk-paste-hint ${badBtw ? 'warn' : 'ok'}`;
+      },
+    });
 
     // Smart paste
     const pasteArea = backdrop.querySelector('#bk-paste');
