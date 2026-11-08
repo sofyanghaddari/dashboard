@@ -13,7 +13,7 @@ Lokaal: `/Users/soef/claude code`
 
 - Vanilla HTML/CSS/JavaScript (ES modules), geen build
 - IndexedDB voor data (DB_VERSION=8), localStorage voor settings
-- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v177** — bump óók `APP_VERSION` in `js/components/settings.js`)
+- Service worker voor offline + caching (CACHE versie bumpen bij wijzigingen, huidig: **v178** — bump óók `APP_VERSION` in `js/components/settings.js`)
 - pdf.js (CDN) wordt **lazy** geladen, alléén bij PDF-import in Arabisch (`loadPdfJs()` in `js/modules/arabic.js`) — niet meer in index.html
 - jsPDF (CDN) wordt **lazy** geladen door `js/modules/boekhouding.js` voor factuur-PDF generatie
 - Tesseract.js v5 (CDN) wordt **lazy** geladen door `js/receipt-ocr.js` voor bonnetje-OCR — worker hergebruikt
@@ -131,7 +131,7 @@ Lokaal: `/Users/soef/claude code`
 ```
 index.html                       — html shell + splash + offline-banner
 manifest.json                    — PWA manifest + shortcuts
-service-worker.js                — bump CACHE bij wijzigingen (huidig: v177)
+service-worker.js                — bump CACHE bij wijzigingen (huidig: v178)
 CLAUDE.md                        — dit bestand
 css/styles.css                   — alle CSS, inclusief preset-themes
 js/
@@ -200,7 +200,7 @@ js/
     hizbs.js                     — hizb-indeling (koran voortgangskaart)
   components/
     modal.js                     — basis modal met × close button
-    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v177
+    settings.js                  — ⚙️ modal (groot, alle settings), APP_VERSION = v178
     toast.js                     — ok/err/info popup
     celebrate.js                 — confetti + popups
     swipe.js                     — swipe-to-delete on list items
@@ -311,6 +311,17 @@ Elke schrijfactie krijgt automatisch `_updatedAt: Date.now()` voor merge-resolut
 - **Merge logic:** universal `_updatedAt` first, dan per-store fallback (cards: repetitions hoger wint, goals: progress hoger wint, pots: current hoger wint, todos: done wint van niet-done)
 
 ## Recente beslissingen (chronologisch, meest recent boven)
+
++46. **🧾 Factuur-controle v178 (8 nov 2026):** op verzoek van user (omschrijving liep op de PDF over de BTW-kolom heen) + "grote controle" van facturen/boekhouding.
+   - **PDF-tabel herschreven** (`generateInvoicePDF`): oorzaak overlap = `splitTextToSize()` meet met het **actieve** font — er werd afgebroken op 7,5pt (tabelkop) en getekend op 9pt vet → ~20% te breed. **Regel: altijd eerst font zetten, dán afbreken.** Vaste kolommen (`COL`: omschrijving 98mm, BTW/excl/incl rechts met 3mm binnenmarge — "TOTAAL INCL." viel eerst buiten de kop), regels één voor één getekend met eigen regelhoogte, bedragen op de eerste regel (niet meer verticaal gecentreerd), rij-hoogte klopt (geen loze witruimte meer). Eerste regel vet als kopje; een lange enkele alinea in normaal gewicht. Rij langer dan een pagina loopt door op de volgende ("(vervolg)"-kop); totalen-only pagina zonder lege tabelkop. Footer "Pagina x van y".
+   - **`pdfText()`**: standaardfonts kennen alleen WinAnsi → Turkse/Poolse namen werden rommel ("Şahin" → "^ahin"), emoji/pijlen ook. `doc.text`/`splitTextToSize` worden per document gewrapt: accenten → basisletter, → wordt ->, rest weg.
+   - **BTW per tarief** (`vatBreakdown()`) op PDF, printversie en detail-modal (wettelijk: btw-bedrag per tarief; bij meerdere tarieven "BTW 21% over € x"). `fmtMoneyPDF` heeft nu duizendtallen (€ 1.455,00) en wordt ook in de HTML-printversie gebruikt. "voor" → "vóór". Lange kenmerk/PO-waarde loopt niet meer over het label (kleiner of volgende regel). Klantnaam wrapt.
+   - **Printversie/Bekijken** (`generateInvoiceHTML`): viewport-meta, bedragen `nowrap` + rechts, mobiele media-query (op 375px brak "€ / 59,63" af), "Te betalen" i.p.v. "Totaal".
+   - **Factuurformulier:** omschrijving is nu een **meeregroeiende textarea** (was `<input>` → geplakte ritgegevens werden één lange regel); nieuw veld **BTW-nummer klant** (`client.btw`, ook uit klantkiezer + mee opgeslagen); bij **0%** verplichte tekstkeuze (`VAT_NOTES`: art11/**verlegd**/kor/onderwijs/geen) → `inv.vatNote` (was: 0% zonder vrijstellingstekst = ongeldige factuur). Verlegd zonder klant-btw-nummer wordt geweigerd.
+   - **BTW-tab gecorrigeerd:** rubrieken stonden **omgedraaid** (1a = hoog 21%, 1b = laag 9% — was andersom); 0% stond als "1c" (fout): nu verlegd → 1e, vrijgesteld (Adab art. 11) apart als "hoort niet in de aangifte". **Taxi + Olijf + Adab = één btw-nummer → aangifte telt alle drie samen** (`groupNotice()` toont welke + omzet per administratie). Eerder rekende elke tab alleen zijn eigen administratie → te lage aangifte.
+   - **W&V:** idem samengevoegd op KvK (inkomstenbelasting is per persoon). Fiscale cijfers per jaar (`FISCAAL`, `fiscaal()`, `box1Tax()`): 2025 zelfstandigenaftrek € 2.470, 2026 € 1.200; box 1 nu 3 schijven (oude code: 2 schijven met de 2024-grens). Disclaimer noemt urencriterium.
+   - Kleiner: rit-import datum-fallback gebruikte UTC (00-02u = gisteren) → `ymd()`; CSV-export bevat alle regels + alle tarieven; e-mail-omschrijvingscel `overflow-wrap`.
+   - Getest: PDF's gerenderd + bekeken (originele factuur 019, 14 ritten/4 pagina's, 90-regelige omschrijving, gemengd 9/21%, Adab 0% art. 11, verlegd), HTML op 375/800px, UI-flow op 375px (formulier → opslaan → detail → BTW → W&V), geen JS-fouten/overflow.
 
 +45. **📅 Maandoverzicht in Stats v177 (8 nov 2026):** op verzoek van user ("per maand zien wat ik verdiend heb, vergelijken, filteren per jaar, jaartotaal"). Nieuw `js/month-overview.js` (`mountMonthOverview()`), gemount in `stats.js` direct onder de inkomen-hero (`#stats-months`).
    - **Bronnen:** Taxi = `rides` (dagregistratie, `effectiveDate`), Adab/Olijf = `invoices` op **factuurdatum, incl. btw** (`totalIncl`). **Taxi-facturen (adminId taxi) bewust NIET meegeteld** — aanname: die ritten zitten al in de dagregistratie (geen dubbeltelling). Bron-chips verschijnen alleen als er Adab/Olijf-data is.

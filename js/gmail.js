@@ -165,7 +165,7 @@ function buildHtmlEmail(inv, bedrijf, options = {}) {
 
   const lineRows = lines.map(l => `
         <tr>
-          <td style="${cell};vertical-align:top">${nl2br(l.description || bedrijf.defaultDesc || 'Dienst')}</td>
+          <td style="${cell};vertical-align:top;word-break:break-word;overflow-wrap:anywhere">${nl2br(l.description || bedrijf.defaultDesc || 'Dienst')}</td>
           <td style="${value};vertical-align:top;white-space:nowrap">${esc(money(l.amountExcl ?? l.amountIncl))}</td>
         </tr>`).join('');
 

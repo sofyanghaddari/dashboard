@@ -7620,3 +7620,21 @@ body[data-preset="daylight"] .mo-card { --src-adab: #1f7a63; --src-olijf: #6f7a1
 @media (prefers-reduced-motion: reduce) {
   .mo-anim .mo-bar { animation: none; }
 }
+
+/* ── Facturen: meerregelige omschrijving + detailweergave (v178) ── */
+.bk-modal .bk-label-hint { font-size: .7rem; color: var(--text-faint); font-weight: 400; margin-left: 4px; text-transform: none; letter-spacing: 0; }
+.bk-modal textarea.bk-desc-area { resize: vertical; min-height: 44px; line-height: 1.45; overflow-y: auto; }
+.bk-detail-line { align-items: flex-start; gap: 10px; }
+.bk-detail-desc { flex: 1; min-width: 0; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.45; color: var(--text); }
+.bk-detail-vatnote { font-size: .75rem; font-style: italic; color: var(--text-faint); padding: 4px 0 2px; line-height: 1.4; }
+.bk-group-note {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: .78rem; color: var(--text-dim); line-height: 1.45;
+  background: var(--bg-elev-2); border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm); padding: 8px 11px; margin-bottom: 12px;
+}
+.bk-group-ic { flex: 0 0 auto; display: inline-flex; padding-top: 2px; color: var(--accent); }
+.bk-group-ic svg { width: 15px; height: 15px; }
+.bk-group-note strong { color: var(--text); font-weight: 600; }
+.bk-group-per { color: var(--text-faint); font-size: .74rem; margin-top: 2px; }
+.bk-btw-row-info { opacity: .7; font-style: italic; }

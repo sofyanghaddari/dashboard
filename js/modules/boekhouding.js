@@ -7,8 +7,41 @@ import { invoiceEpcPayload, qrModules, qrSvg } from '../sepa-qr.js';
 
 function gmailConfigured() { return !!localStorage.getItem('gmailClientId'); }
 function fmtMoneyPDF(n) {
-  const v = isFinite(n) ? +n : 0;
-  return '€ ' + v.toFixed(2).replace('.', ',');
+  const v = isFinite(n) ? Math.round(+n * 100) / 100 : 0;
+  const [int, dec] = Math.abs(v).toFixed(2).split('.');
+  return `€ ${v < 0 ? '-' : ''}${int.replace(/\B(?=(\d{3})+(?!\d))/g, '.')},${dec}`;
+}
+
+// jsPDF-standaardfonts kennen alleen WinAnsi (Latin-1 + €, “”, –, …). Alles daarbuiten
+// werd onleesbaar ("Şahin" → "^ahin", emoji/pijlen → rommel). Daarom: letters met
+// accent terug naar de basisletter, bekende tekens vervangen, de rest weglaten.
+const _WIN_EXTRA = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
+const _PDF_MAP = {
+  '→': '->', '←': '<-', '⇒': '=>', '↔': '<->', '➔': '->', '≈': '~', '✓': 'v', '✔': 'v',
+  '−': '-', '‐': '-', '‑': '-', ' ': ' ', ' ': ' ', '​': '', '\t': ' ',
+  'ı': 'i', 'ł': 'l', 'Ł': 'L', 'đ': 'd', 'Đ': 'D', 'ħ': 'h', 'ŀ': 'l',
+};
+function pdfText(s) {
+  return String(s ?? '').replace(/\r/g, '').replace(/[^\n\x20-\x7E\xA0-\xFF]/g, ch => {
+    if (_WIN_EXTRA.includes(ch)) return ch;
+    if (_PDF_MAP[ch] != null) return _PDF_MAP[ch];
+    const base = ch.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return base !== ch && /^[\x20-\x7E\xA0-\xFF]+$/.test(base) ? base : '';
+  }).replace(/ {2,}/g, ' ');
+}
+
+// BTW per tarief: [tarief, bedrag excl., btw] — verplicht per tarief op de factuur
+function vatBreakdown(lines) {
+  const r2 = v => Math.round(v * 100) / 100;
+  const map = new Map();
+  for (const l of lines) {
+    const rate = Number(l.vatRate ?? 0);
+    const excl = Number(l.amountExcl ?? 0);
+    const vat  = Number(l.vatAmount ?? ((l.amountIncl ?? 0) - excl));
+    const cur  = map.get(rate) || [0, 0];
+    map.set(rate, [cur[0] + excl, cur[1] + vat]);
+  }
+  return [...map].map(([rate, [excl, vat]]) => [rate, r2(excl), r2(vat)]).sort((a, b) => b[0] - a[0]);
 }
 
 // Escape-toets sluit het bovenste boekhouding-modal (eenmalig geregistreerd).
@@ -86,6 +119,7 @@ const VAT_NOTES = {
   art11:     'Btw vrijgesteld op grond van artikel 11 Wet op de omzetbelasting 1968.',
   kor:       'Vrijgesteld van btw op grond van de kleineondernemersregeling (KOR).',
   onderwijs: 'Btw vrijgesteld op grond van art. 11 lid 1 sub o Wet OB 1968 (onderwijs).',
+  verlegd:   'Btw verlegd.',
 };
 
 function fmtHours(n) {
@@ -108,12 +142,29 @@ function getAdmin(container) {
 const OWNER_EMAIL = 'sofyanghaddari@gmail.com';
 
 // ─── FISCALE CONSTANTEN 2025 ─────────────────────────────────────────────────
-const KM_VERGOEDING = 0.23;   // €0,23 per zakelijke km (2025)
-const ZELFST_AFTREK = 2470;   // zelfstandigenaftrek 2025
-const MKB_PCT       = 0.127;  // MKB-winstvrijstelling 12,7%
-const BOX1_GRENS    = 75518;  // 2e belastingschijf grens 2025
-const BOX1_LAAG     = 0.3582; // 35,82% box 1 schijf 1
-const BOX1_HOOG     = 0.495;  // 49,50% box 1 schijf 2
+const KM_VERGOEDING = 0.23;   // €0,23 per zakelijke km (2025 en 2026)
+
+// ─── FISCALE CIJFERS PER JAAR (schatting W&V) ────────────────────────────────
+// Box 1 kent sinds 2025 drie schijven (onder AOW-leeftijd). Zelfstandigenaftrek daalt
+// hard: 2025 € 2.470 → 2026 € 1.200 → 2027 € 900. Onbekend jaar → dichtstbijzijnde jaar.
+const FISCAAL = {
+  2025: { zelfst: 2470, mkb: 0.127, schijven: [[38441, 0.3582], [76817, 0.3748], [Infinity, 0.495]] },
+  2026: { zelfst: 1200, mkb: 0.127, schijven: [[38883, 0.3575], [78426, 0.3756], [Infinity, 0.495]] },
+};
+function fiscaal(year) {
+  const yrs = Object.keys(FISCAAL).map(Number).sort((a, b) => a - b);
+  const y = yrs.includes(year) ? year : (year < yrs[0] ? yrs[0] : yrs[yrs.length - 1]);
+  return { year: y, ...FISCAAL[y] };
+}
+function box1Tax(income, schijven) {
+  let tax = 0, prev = 0;
+  for (const [grens, tarief] of schijven) {
+    if (income <= prev) break;
+    tax += (Math.min(income, grens) - prev) * tarief;
+    prev = grens;
+  }
+  return tax;
+}
 
 // ─── KOSTENCATEGORIEËN ───────────────────────────────────────────────────────
 const CATS = [
@@ -335,8 +386,19 @@ export async function render(container) {
     case 'klanten':   renderKlanten(view, clients, withStatus, container); break;
     case 'kosten':    renderKosten(view, purchases, container); break;
     case 'km':        renderKm(view, kmLogs, container); break;
-    case 'btw':       renderBTW(view, withStatus, purchases, container); break;
-    case 'wv':        renderWV(view, withStatus, purchases, kmLogs, container); break;
+    case 'btw':
+    case 'wv': {
+      // Taxi, Olijf en Adab vallen onder één onderneming (zelfde btw-nummer/KvK):
+      // btw-aangifte en inkomstenbelasting gaan over alles samen, niet per administratie.
+      const key   = tab === 'btw' ? 'btw' : 'kvk';
+      const group = Object.values(ADMINS).filter(a => a[key] === ADMINS[adminId]?.[key]).map(a => a.id);
+      const inGroup = r => group.includes(r.adminId || 'taxi');
+      const invG = allInvoices.filter(inGroup).map(inv => ({ ...inv, _status: computeStatus(inv) }));
+      const purG = allPurchases.filter(inGroup);
+      if (tab === 'btw') renderBTW(view, invG, purG, container, group);
+      else renderWV(view, invG, purG, allKmLogs.filter(inGroup), container, group);
+      break;
+    }
     default:          renderOverview(view, withStatus, purchases, kmLogs, container);
   }
   animateKPIs(view);
@@ -562,9 +624,9 @@ function renderFacturen(view, invoices, container) {
       Klant: i.client?.name || '',
       KvK: i.client?.kvk || '',
       Email: i.client?.email || '',
-      Omschrijving: i.lines?.[0]?.description || '',
+      Omschrijving: (i.lines || []).map(l => String(l.description || '').replace(/\s*\n\s*/g, ' · ')).join(' | '),
       'Excl BTW': (i.totalExcl || 0).toFixed(2).replace('.', ','),
-      'BTW%': i.lines?.[0]?.vatRate || 0,
+      'BTW%': [...new Set((i.lines || []).map(l => l.vatRate ?? 0))].join('/') || 0,
       'BTW bedrag': (i.totalVat || 0).toFixed(2).replace('.', ','),
       'Incl BTW': (i.totalIncl || 0).toFixed(2).replace('.', ','),
     })),
@@ -841,7 +903,17 @@ function renderKm(view, kmLogs, container) {
 
 // ─── BTW-AANGIFTE ────────────────────────────────────────────────────────────
 
-function renderBTW(view, invoices, purchases, container) {
+// Klein blokje boven BTW/W&V: welke administraties zijn samengevoegd + omzet per administratie
+function groupNotice(group, invoices, label) {
+  if (group.length < 2) return '';
+  const per = group.map(id => {
+    const omzet = invoices.filter(i => (i.adminId || 'taxi') === id).reduce((s, i) => s + (i.totalExcl || 0), 0);
+    return `${escapeHTML(ADMINS[id].label)} ${fmtMoney(omzet)}`;
+  }).join(' · ');
+  return `<div class="bk-group-note"><span class="bk-group-ic">${icon('building')}</span><div><div>${label}: <strong>${group.map(id => escapeHTML(ADMINS[id].label)).join(' + ')}</strong> samen — één onderneming, één btw-nummer.</div><div class="bk-group-per">Omzet excl. btw: ${per}</div></div></div>`;
+}
+
+function renderBTW(view, invoices, purchases, container, group = []) {
   const now    = new Date();
   const curQ   = Math.floor(now.getMonth() / 3);
   const curY   = now.getFullYear();
@@ -850,20 +922,26 @@ function renderBTW(view, invoices, purchases, container) {
 
   // BTW over verkoopfacturen — som per BTW-tarief over alle regels (niet alleen lines[0])
   const qInvoices = invoices.filter(i => inQuarter(i.date, selQ, selY));
-  let omzet9 = 0, btw9 = 0, omzet21 = 0, btw21 = 0, omzet0 = 0;
-  const inv9Set = new Set(), inv21Set = new Set(), inv0Set = new Set();
+  // Rubrieken aangifte: 1a = hoog tarief (21%), 1b = laag tarief (9%), 1c = overige tarieven,
+  // 1e = 0% / verlegd. Vrijgestelde omzet (art. 11, bv. Adab) en KOR horen níet in de aangifte.
+  let omzet9 = 0, btw9 = 0, omzet21 = 0, btw21 = 0, omzetOv = 0, btwOv = 0, omzetVerl = 0, omzetVrij = 0;
+  const inv9Set = new Set(), inv21Set = new Set(), invOvSet = new Set(), invVerlSet = new Set(), invVrijSet = new Set();
   for (const inv of qInvoices) {
+    const verlegd = inv.vatNote === VAT_NOTES.verlegd;
     for (const line of (inv.lines || [])) {
-      const rate = line.vatRate ?? 0;
+      const rate = Number(line.vatRate ?? 0);
       const excl = line.amountExcl ?? 0;
       const vat  = line.vatAmount  ?? 0;
-      if (rate === 9)       { omzet9  += excl; btw9  += vat; inv9Set.add(inv.id); }
-      else if (rate === 21) { omzet21 += excl; btw21 += vat; inv21Set.add(inv.id); }
-      else                  { omzet0  += excl;               inv0Set.add(inv.id); }
+      if (rate === 21)     { omzet21 += excl; btw21 += vat; inv21Set.add(inv.id); }
+      else if (rate === 9) { omzet9  += excl; btw9  += vat; inv9Set.add(inv.id); }
+      else if (rate > 0)   { omzetOv += excl; btwOv += vat; invOvSet.add(inv.id); }
+      else if (verlegd)    { omzetVerl += excl; invVerlSet.add(inv.id); }
+      else                 { omzetVrij += excl; invVrijSet.add(inv.id); }
     }
   }
-  const totOmzet = omzet9 + omzet21 + omzet0;
-  const totBtwAf = btw9 + btw21;
+  const totOmzet = omzet9 + omzet21 + omzetOv + omzetVerl + omzetVrij;
+  const nFact = n => `${n} ${n === 1 ? 'factuur' : 'facturen'}`;
+  const totBtwAf = btw9 + btw21 + btwOv;
 
   // Voorbelasting (BTW op inkoopfacturen)
   const purQ    = purchases.filter(p => inQuarter(p.date, selQ, selY));
@@ -897,6 +975,8 @@ function renderBTW(view, invoices, purchases, container) {
       </select>
     </div>
 
+    ${groupNotice(group, qInvoices, 'Aangifte voor')}
+
     ${isPast ? `
       <div class="bk-btw-deadline ${isLate ? 'bk-deadline-late' : ''}">
         ${isLate ? icon('warning') + ' Aangifte deadline verstreken' : `${icon('calendar')} Aangifte deadline: ${fmtDateLong(deadline)}`}
@@ -908,21 +988,37 @@ function renderBTW(view, invoices, purchases, container) {
 
       <div class="bk-btw-row">
         <span class="bk-btw-rubriek">1a</span>
-        <span>Belast met 9% — ${inv9Set.size} facturen</span>
-        <span class="money">${fmtMoney(omzet9)}</span>
-        <span class="bk-btw-vat">${fmtMoney(btw9)}</span>
-      </div>
-      <div class="bk-btw-row">
-        <span class="bk-btw-rubriek">1b</span>
-        <span>Belast met 21% — ${inv21Set.size} facturen</span>
+        <span>Hoog tarief 21% — ${nFact(inv21Set.size)}</span>
         <span class="money">${fmtMoney(omzet21)}</span>
         <span class="bk-btw-vat">${fmtMoney(btw21)}</span>
       </div>
-      ${omzet0 > 0 ? `
+      <div class="bk-btw-row">
+        <span class="bk-btw-rubriek">1b</span>
+        <span>Laag tarief 9% — ${nFact(inv9Set.size)}</span>
+        <span class="money">${fmtMoney(omzet9)}</span>
+        <span class="bk-btw-vat">${fmtMoney(btw9)}</span>
+      </div>
+      ${omzetOv ? `
         <div class="bk-btw-row">
           <span class="bk-btw-rubriek">1c</span>
-          <span>Belast met 0%</span>
-          <span class="money">${fmtMoney(omzet0)}</span>
+          <span>Overige tarieven — ${nFact(invOvSet.size)}</span>
+          <span class="money">${fmtMoney(omzetOv)}</span>
+          <span class="bk-btw-vat">${fmtMoney(btwOv)}</span>
+        </div>
+      ` : ''}
+      ${omzetVerl ? `
+        <div class="bk-btw-row">
+          <span class="bk-btw-rubriek">1e</span>
+          <span>0% / btw verlegd — ${nFact(invVerlSet.size)}</span>
+          <span class="money">${fmtMoney(omzetVerl)}</span>
+          <span class="bk-btw-vat">—</span>
+        </div>
+      ` : ''}
+      ${omzetVrij ? `
+        <div class="bk-btw-row bk-btw-row-info">
+          <span class="bk-btw-rubriek">—</span>
+          <span>Vrijgesteld (bv. art. 11) — ${nFact(invVrijSet.size)} · hoort niet in de aangifte</span>
+          <span class="money">${fmtMoney(omzetVrij)}</span>
           <span class="bk-btw-vat">—</span>
         </div>
       ` : ''}
@@ -937,7 +1033,7 @@ function renderBTW(view, invoices, purchases, container) {
       <div class="bk-btw-section-head" style="margin-top:12px">Voorbelasting (aftrekbaar)</div>
       <div class="bk-btw-row">
         <span class="bk-btw-rubriek">5b</span>
-        <span>BTW op inkopen — ${purQ.length} bonnen</span>
+        <span>BTW op inkopen — ${purQ.length} ${purQ.length === 1 ? 'bon' : 'bonnen'}</span>
         <span></span>
         <span class="bk-btw-vat" style="color:var(--ok)">- ${fmtMoney(voorBel)}</span>
       </div>
@@ -963,14 +1059,26 @@ function renderBTW(view, invoices, purchases, container) {
   };
 
   view.querySelector('#btw-copy').onclick = () => {
-    const text = `BTW-aangifte ${quarterLabel(selQ, selY)}\n\nRubriek 1a (9%): €${omzet9.toFixed(2)} | BTW: €${btw9.toFixed(2)}\nRubriek 1b (21%): €${omzet21.toFixed(2)} | BTW: €${btw21.toFixed(2)}\nRubriek 5b (voorbelasting): -€${voorBel.toFixed(2)}\n\n${saldo > 0 ? 'TE BETALEN' : 'TERUG TE ONTVANGEN'}: €${Math.abs(saldo).toFixed(2)}`;
+    const eur = n => fmtMoneyPDF(n);
+    const text = [
+      `BTW-aangifte ${quarterLabel(selQ, selY)}${group.length > 1 ? ` (${group.map(id => ADMINS[id].label).join(' + ')})` : ''}`,
+      '',
+      `Rubriek 1a (hoog, 21%): omzet ${eur(omzet21)} | btw ${eur(btw21)}`,
+      `Rubriek 1b (laag, 9%): omzet ${eur(omzet9)} | btw ${eur(btw9)}`,
+      ...(omzetOv ? [`Rubriek 1c (overige tarieven): omzet ${eur(omzetOv)} | btw ${eur(btwOv)}`] : []),
+      ...(omzetVerl ? [`Rubriek 1e (0% / verlegd): omzet ${eur(omzetVerl)}`] : []),
+      `Rubriek 5b (voorbelasting): ${eur(voorBel)}`,
+      ...(omzetVrij ? ['', `Niet aangeven - vrijgestelde omzet: ${eur(omzetVrij)}`] : []),
+      '',
+      `${saldo > 0 ? 'TE BETALEN' : 'TERUG TE ONTVANGEN'}: ${eur(Math.abs(saldo))}`,
+    ].join('\n');
     navigator.clipboard.writeText(text).then(() => ok('Samenvatting gekopieerd')).catch(() => err('Kopiëren mislukt'));
   };
 }
 
 // ─── WINST & VERLIES ─────────────────────────────────────────────────────────
 
-function renderWV(view, invoices, purchases, kmLogs, container) {
+function renderWV(view, invoices, purchases, kmLogs, container, group = []) {
   const now  = new Date();
   const year = container.dataset.wvYear ? parseInt(container.dataset.wvYear) : now.getFullYear();
 
@@ -984,15 +1092,14 @@ function renderWV(view, invoices, purchases, kmLogs, container) {
   const kmAftrek = kmTotaal * KM_VERGOEDING;
 
   const brutoWinst  = omzet - kosten - kmAftrek;
-  const zelfstAftrek = brutoWinst > 0 ? Math.min(ZELFST_AFTREK, brutoWinst) : 0;
+  const fis = fiscaal(year);
+  const zelfstAftrek = brutoWinst > 0 ? Math.min(fis.zelfst, brutoWinst) : 0;
   const naZelfst    = Math.max(0, brutoWinst - zelfstAftrek);
-  const mkbAftrek   = naZelfst * MKB_PCT;
+  const mkbAftrek   = naZelfst * fis.mkb;
   const belastbaar  = Math.max(0, naZelfst - mkbAftrek);
 
-  // Belasting schatting (box 1)
-  const belasting = belastbaar <= BOX1_GRENS
-    ? belastbaar * BOX1_LAAG
-    : BOX1_GRENS * BOX1_LAAG + (belastbaar - BOX1_GRENS) * BOX1_HOOG;
+  // Belasting schatting (box 1, schijven van dat jaar)
+  const belasting = box1Tax(belastbaar, fis.schijven);
 
   const nettoNaBelasting = brutoWinst - belasting;
 
@@ -1006,6 +1113,8 @@ function renderWV(view, invoices, purchases, kmLogs, container) {
         ${years.map(y => `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`).join('')}
       </select>
     </div>
+
+    ${groupNotice(group, invYear, 'Winst over')}
 
     <div class="bk-wv-table">
       <div class="bk-wv-section">OMZET</div>
@@ -1039,13 +1148,13 @@ function renderWV(view, invoices, purchases, kmLogs, container) {
     </div>
 
     <div class="bk-wv-table" style="margin-top:12px">
-      <div class="bk-wv-section">FISCALE AFTREKKEN (schatting ${year})</div>
+      <div class="bk-wv-section">FISCALE AFTREKKEN (schatting, cijfers ${fis.year})</div>
       <div class="bk-wv-row">
-        <span>Zelfstandigenaftrek</span>
+        <span>Zelfstandigenaftrek (max. € ${fis.zelfst.toLocaleString('nl-NL')})</span>
         <span class="money" style="color:var(--ok)">- ${fmtMoney(zelfstAftrek)}</span>
       </div>
       <div class="bk-wv-row">
-        <span>MKB-winstvrijstelling (12,7%)</span>
+        <span>MKB-winstvrijstelling (${String(fis.mkb * 100).replace('.', ',')}%)</span>
         <span class="money" style="color:var(--ok)">- ${fmtMoney(mkbAftrek)}</span>
       </div>
       <div class="bk-wv-row bk-wv-subtotal">
@@ -1064,7 +1173,7 @@ function renderWV(view, invoices, purchases, kmLogs, container) {
     </div>
 
     <div class="bk-btw-disclaimer">
-      ⚠ Dit is een ruwe schatting. Heffingskortingen, startersaftrek en andere persoonlijke omstandigheden zijn niet meegenomen. Laat je aangifte controleren door een boekhouder.
+      ⚠ Dit is een ruwe schatting. Zelfstandigenaftrek geldt alleen bij minimaal 1.225 uur per jaar (urencriterium). Heffingskortingen, startersaftrek en andere persoonlijke omstandigheden zijn niet meegenomen. Laat je aangifte controleren door een boekhouder.
     </div>
   `;
 
@@ -1529,7 +1638,7 @@ function _riExtractDate(lines) {
       if (mon) return `${m[3] || yr}-${String(mon).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
     }
   }
-  return new Date().toISOString().slice(0,10);
+  return ymd();   // lokale datum (toISOString gaf tussen 00:00 en 02:00 nog 'gisteren')
 }
 
 function _riIsLikelyName(str) {
@@ -1861,6 +1970,8 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
           <input id="bk-client-city" type="text" placeholder="1234 AB Amsterdam" value="${escapeHTML(inv0.client?.city || '')}" />
           <label>KvK-nummer</label>
           <input id="bk-client-kvk" type="text" inputmode="numeric" placeholder="12345678" value="${escapeHTML(inv0.client?.kvk || '')}" />
+          <label>BTW-nummer klant <span class="bk-label-hint">optioneel</span></label>
+          <input id="bk-client-btw" type="text" autocapitalize="characters" placeholder="NL123456789B01" value="${escapeHTML(inv0.client?.btw || '')}" />
           <label>E-mailadres</label>
           <input id="bk-client-email" type="email" placeholder="info@bedrijf.nl" value="${escapeHTML(inv0.client?.email || '')}" />
           <label>Telefoon / WhatsApp</label>
@@ -1872,8 +1983,8 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
         ${!isMultiLine && !isLessons ? `
         <div class="bk-form-section">
           <div class="bk-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 7.5H10a2.5 2.5 0 0 0 0 5h2.5a2.5 2.5 0 0 1 0 5H8"/><path d="M12 5.5v13"/></svg>Bedrag &amp; BTW</div>
-          <label>Omschrijving *</label>
-          <input id="bk-desc" type="text" placeholder="${escapeHTML(bedrijf.defaultDesc)}" value="${escapeHTML(invDesc)}" ${isMultiLine ? '' : 'required'} />
+          <label>Omschrijving * <span class="bk-label-hint">Enter = nieuwe regel</span></label>
+          <textarea id="bk-desc" class="bk-desc-area" rows="2" placeholder="${escapeHTML(bedrijf.defaultDesc)}" ${isMultiLine ? '' : 'required'}>${escapeHTML(invDesc)}</textarea>
           <label>Bedrag *</label>
           <div class="bk-amount-row">
             <input id="bk-amount" type="text" inputmode="decimal" placeholder="320" value="${isEdit ? (inv0.totalIncl || '') : ''}" ${isMultiLine ? '' : 'required'} />
@@ -1884,8 +1995,17 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
           <select id="bk-vat">
             <option value="9"  ${invVatRate === 9  ? 'selected' : ''}>9% — verlaagd (personenvervoer)</option>
             <option value="21" ${invVatRate === 21 ? 'selected' : ''}>21% — standaard</option>
-            <option value="0"  ${invVatRate === 0  ? 'selected' : ''}>0% — vrijgesteld</option>
+            <option value="0"  ${invVatRate === 0  ? 'selected' : ''}>0% — vrijgesteld / verlegd</option>
           </select>
+          <div id="bk-vatnote-wrap" style="display:${invVatRate === 0 ? 'block' : 'none'}">
+            <label>Tekst op de factuur (verplicht bij 0%)</label>
+            <select id="bk-vatnote">
+              ${(() => { const k = Object.keys(VAT_NOTES).find(x => VAT_NOTES[x] === inv0.vatNote) || (isEdit && inv0.vatNote === '' ? 'geen' : 'art11'); return [
+                ['art11', 'Vrijgesteld (art. 11 Wet OB)'], ['verlegd', 'Btw verlegd (afnemer draagt btw af)'],
+                ['kor', 'Kleineondernemersregeling (KOR)'], ['onderwijs', 'Onderwijsvrijstelling'], ['geen', 'Geen tekst'],
+              ].map(([v, t]) => `<option value="${v}" ${k === v ? 'selected' : ''}>${t}</option>`).join(''); })()}
+            </select>
+          </div>
           <div id="bk-calc" class="bk-calc-preview" style="display:none"></div>
         </div>
         ` : ''}
@@ -1922,6 +2042,7 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       backdrop.querySelector('#bk-client-addr').value  = c.address || '';
       backdrop.querySelector('#bk-client-city').value  = c.city    || '';
       backdrop.querySelector('#bk-client-kvk').value   = c.kvk     || '';
+      backdrop.querySelector('#bk-client-btw').value   = c.btw     || '';
       backdrop.querySelector('#bk-client-email').value = c.email   || '';
       backdrop.querySelector('#bk-client-phone').value = c.phone   || '';
     }
@@ -1984,9 +2105,19 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
   if (isLessons) initLessons(backdrop, bedrijf);
 
   const refreshCalcFn = () => refreshCalc(backdrop);
+  const descArea = backdrop.querySelector('#bk-desc');
+  if (descArea) {
+    // Groeit mee met de tekst — lange (geplakte) omschrijvingen blijven leesbaar
+    const grow = () => { descArea.style.height = 'auto'; descArea.style.height = Math.min(descArea.scrollHeight + 3, 320) + 'px'; };
+    descArea.addEventListener('input', grow);
+    requestAnimationFrame(grow);
+  }
   if (backdrop.querySelector('#bk-amount')) {
     backdrop.querySelector('#bk-amount').addEventListener('input', refreshCalcFn);
-    backdrop.querySelector('#bk-vat').addEventListener('input', refreshCalcFn);
+    backdrop.querySelector('#bk-vat').addEventListener('input', () => {
+      backdrop.querySelector('#bk-vatnote-wrap').style.display = backdrop.querySelector('#bk-vat').value === '0' ? 'block' : 'none';
+      refreshCalcFn();
+    });
     backdrop.querySelectorAll('input[name="bk-ie"]').forEach(r => r.addEventListener('change', refreshCalcFn));
   }
   backdrop.querySelector('#bk-date').addEventListener('change', e => {
@@ -2014,11 +2145,12 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       address: backdrop.querySelector('#bk-client-addr').value.trim(),
       city:    backdrop.querySelector('#bk-client-city').value.trim(),
       kvk:     backdrop.querySelector('#bk-client-kvk').value.trim(),
+      btw:     backdrop.querySelector('#bk-client-btw').value.replace(/\s/g, '').toUpperCase(),
       email:   backdrop.querySelector('#bk-client-email').value.trim(),
       phone:   backdrop.querySelector('#bk-client-phone').value.trim(),
     };
 
-    let lines, totalExcl, totalVat, totalIncl;
+    let lines, totalExcl, totalVat, totalIncl, vatNoteSingle = null;
     if (isLessons) {
       ({ lines, totalExcl, totalVat, totalIncl } = lessonData);
     } else if (isMultiLine) {
@@ -2030,8 +2162,12 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
       const vatRate = parseInt(backdrop.querySelector('#bk-vat').value);
       const isIncl  = backdrop.querySelector('input[name="bk-ie"]:checked')?.value === 'incl';
       const vat     = calcVat(raw, vatRate, isIncl);
-      lines     = [{ description: backdrop.querySelector('#bk-desc').value.trim() || bedrijf.defaultDesc, amountExcl: vat.amountExcl, vatRate, vatAmount: vat.vatAmount, amountIncl: vat.amountIncl }];
+      const desc = backdrop.querySelector('#bk-desc').value.replace(/\r/g, '').split('\n').map(s => s.trim()).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+      lines     = [{ description: desc || bedrijf.defaultDesc, amountExcl: vat.amountExcl, vatRate, vatAmount: vat.vatAmount, amountIncl: vat.amountIncl }];
       totalExcl = vat.amountExcl; totalVat = vat.vatAmount; totalIncl = vat.amountIncl;
+      const noteKey = backdrop.querySelector('#bk-vatnote')?.value;
+      vatNoteSingle = vatRate === 0 && VAT_NOTES[noteKey] ? VAT_NOTES[noteKey] : '';
+      if (vatRate === 0 && noteKey === 'verlegd' && !client.btw) { err('Btw verlegd: vul het BTW-nummer van de klant in'); return; }
     }
 
     const inv = {
@@ -2046,6 +2182,8 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
     };
     if (isLessons) {
       Object.assign(inv, { kind: 'lessen', period: lessonData.period, reference: lessonData.reference, vatNote: lessonData.vatNote });
+    } else if (vatNoteSingle !== null) {
+      inv.vatNote = vatNoteSingle;
     }
 
     if (isEdit) {
@@ -2070,13 +2208,14 @@ async function openInvoiceModal(container, { prefillClient = null, existingInv =
           address: inv.client.address || existing.address,
           city:    inv.client.city    || existing.city,
           kvk:     inv.client.kvk     || existing.kvk,
+          btw:     inv.client.btw     || existing.btw,
           email:   inv.client.email   || existing.email,
           phone:   inv.client.phone   || existing.phone,
           lastUsed: Date.now(),
         });
         ok(`Factuur ${inv.number} aangemaakt ✓`);
       } else if (name) {
-        await add('clients', { id: uid(), name, address: inv.client.address, city: inv.client.city, kvk: inv.client.kvk, email, phone: inv.client.phone, lastUsed: Date.now() });
+        await add('clients', { id: uid(), name, address: inv.client.address, city: inv.client.city, kvk: inv.client.kvk, btw: inv.client.btw, email, phone: inv.client.phone, lastUsed: Date.now() });
         ok(`Factuur ${inv.number} aangemaakt · ${name} opgeslagen als klant ✓`);
       } else {
         ok(`Factuur ${inv.number} aangemaakt ✓`);
@@ -2238,7 +2377,10 @@ function applyParsed(parsed, backdrop) {
   set('#bk-client-kvk',   parsed.clientKvk);
   set('#bk-client-email', parsed.clientEmail);
   if (parsed.amount != null) set('#bk-amount', parsed.amount);
-  if (parsed.vatRate != null) backdrop.querySelector('#bk-vat').value = String(parsed.vatRate);
+  if (parsed.vatRate != null && [0, 9, 21].includes(parsed.vatRate)) {
+    backdrop.querySelector('#bk-vat').value = String(parsed.vatRate);
+    backdrop.querySelector('#bk-vat').dispatchEvent(new Event('input'));
+  }
   if (parsed._inclExplicit) {
     const r = backdrop.querySelector(`input[name="bk-ie"][value="${parsed.isIncl ? 'incl' : 'excl'}"]`);
     if (r) r.checked = true;
@@ -2566,14 +2708,17 @@ function openDetailModal(inv, container) {
       <div class="bk-detail-block">
         <div class="bk-detail-label">Regels</div>
         ${(inv.lines || [line]).map(l => `
-          <div class="bk-detail-row" style="align-items:flex-start">
-            <span style="flex:1;padding-right:8px">${escapeHTML(l.description || 'Vervoersdienst')}</span>
+          <div class="bk-detail-row bk-detail-line">
+            <span class="bk-detail-desc">${escapeHTML(l.description || 'Vervoersdienst')}</span>
             <span style="white-space:nowrap">${fmtMoney(l.amountIncl ?? l.amountExcl ?? 0)}</span>
           </div>
         `).join('')}
         <div style="border-top:1px solid var(--border-faint);margin:6px 0"></div>
         <div class="bk-detail-row"><span>Excl. BTW</span><span>${fmtMoney(inv.totalExcl || 0)}</span></div>
-        <div class="bk-detail-row"><span>BTW</span><span>${fmtMoney(inv.totalVat || 0)}</span></div>
+        ${inv.lines?.length
+          ? vatBreakdown(inv.lines).map(([rate, , vat]) => `<div class="bk-detail-row"><span>BTW ${rate}%</span><span>${fmtMoney(vat)}</span></div>`).join('')
+          : `<div class="bk-detail-row"><span>BTW</span><span>${fmtMoney(inv.totalVat || 0)}</span></div>`}
+        ${inv.vatNote ? `<div class="bk-detail-vatnote">${escapeHTML(inv.vatNote)}</div>` : ''}
         <div class="bk-detail-row bk-detail-total"><span>Totaal</span><span class="money">${fmtMoney(inv.totalIncl || 0)}</span></div>
       </div>
 
@@ -2900,10 +3045,12 @@ function generateInvoiceHTML(inv, bedrijf) {
   try { qrPayload = invoiceEpcPayload(inv, bedrijf); } catch (_) {}
   const accent  = bedrijf.accent ? `rgb(${bedrijf.accent.join(',')})` : '#8a7e6f';
   const summary = lessonSummary(inv);
+  const vatRows = vatBreakdown(lines);
   return `<!DOCTYPE html>
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Factuur ${escapeHTML(inv.number || '')}</title>
 <style>
   @page { margin: 20mm 22mm; }
@@ -2922,9 +3069,11 @@ function generateInvoiceHTML(inv, bedrijf) {
   .client-detail { font-size: 13px; color: #555; line-height: 1.7; }
   table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
   thead th { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #999; font-weight: 600; padding: 8px 12px; border-bottom: 1.5px solid #e8e4de; text-align: left; }
-  thead th:last-child { text-align: right; }
-  tbody td { padding: 14px 12px; border-bottom: 1px solid #f0ede8; font-size: 14px; }
-  tbody td:last-child { text-align: right; font-weight: 500; }
+  thead th.num { text-align: right; }
+  tbody td { padding: 14px 12px; border-bottom: 1px solid #f0ede8; font-size: 14px; vertical-align: top; }
+  tbody td.num { text-align: right; white-space: nowrap; }
+  tbody td.num-strong { font-weight: 600; }
+  td.desc { white-space: pre-line; overflow-wrap: anywhere; word-break: break-word; }
   .totals { margin-left: auto; width: 300px; margin-bottom: 40px; }
   .t-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; color: #555; }
   .t-grand { display: flex; justify-content: space-between; padding: 14px 0 0; margin-top: 10px; border-top: 2px solid #1a1a1a; font-size: 20px; font-weight: 800; color: #1a1a1a; }
@@ -2938,7 +3087,23 @@ function generateInvoiceHTML(inv, bedrijf) {
   .notes { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
   .notes-left { font-size: 13px; color: #555; line-height: 1.6; padding-top: 5px; }
   .notes-left em { display: block; font-size: 12px; color: #777; margin-top: 4px; }
-  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e8e4de; font-size: 11px; color: #aaa; display: flex; justify-content: space-between; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e8e4de; font-size: 11px; color: #aaa; display: flex; justify-content: space-between; gap: 12px; }
+  .t-row span:last-child, .t-grand span:last-child { white-space: nowrap; }
+  @media (max-width: 560px) {
+    body { font-size: 13px; padding: 16px 14px; }
+    .header { flex-direction: column; gap: 18px; padding-bottom: 22px; margin-bottom: 24px; }
+    .header > div:last-child { text-align: left !important; }
+    .inv-meta { text-align: left; }
+    .inv-title { font-size: 28px; }
+    .client-box, .pay-box { padding: 16px; margin-bottom: 24px; }
+    thead th, tbody td { padding: 10px 6px; font-size: 12.5px; }
+    thead th { font-size: 9px; letter-spacing: .5px; }
+    td.desc { font-size: 12.5px; }
+    .notes { flex-direction: column; gap: 8px; }
+    .totals { width: 100%; margin-bottom: 24px; }
+    .pay-wrap { flex-direction: column; align-items: flex-start; }
+    .footer { flex-direction: column; }
+  }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
 </head>
@@ -2971,33 +3136,34 @@ function generateInvoiceHTML(inv, bedrijf) {
       ${client.address ? escapeHTML(client.address) + '<br>' : ''}
       ${client.city    ? escapeHTML(client.city)    + '<br>' : ''}
       ${client.kvk     ? 'KvK: '   + escapeHTML(client.kvk)   + '<br>' : ''}
+      ${client.btw     ? 'BTW: '   + escapeHTML(client.btw)   + '<br>' : ''}
       ${client.email   ? escapeHTML(client.email) : ''}
     </div>
   </div>
   <table>
     <thead><tr>
-      <th style="width:50%">Omschrijving</th>
-      <th>BTW</th><th>Excl. BTW</th><th>Totaal incl.</th>
+      <th>Omschrijving</th>
+      <th class="num">BTW</th><th class="num">Excl. BTW</th><th class="num">Totaal incl.</th>
     </tr></thead>
     <tbody>
       ${lines.map(l => `<tr>
-        <td style="white-space:pre-line">${escapeHTML(l.description || 'Vervoersdienst')}</td>
-        <td>${l.vatRate ?? 0}%</td>
-        <td>${fmtMoney(l.amountExcl ?? 0)}</td>
-        <td>${fmtMoney(l.amountIncl ?? 0)}</td>
+        <td class="desc">${escapeHTML(String(l.description || bedrijf.defaultDesc || 'Vervoersdienst').replace(/[ \t]{2,}/g, ' ').trim())}</td>
+        <td class="num">${l.vatRate ?? 0}%</td>
+        <td class="num">${fmtMoneyPDF(l.amountExcl ?? 0)}</td>
+        <td class="num num-strong">${fmtMoneyPDF(l.amountIncl ?? 0)}</td>
       </tr>`).join('')}
     </tbody>
   </table>
   <div class="notes">
   <div class="notes-left">${summary ? `<strong>${escapeHTML(summary)}</strong>` : ''}${inv.vatNote ? `<em>${escapeHTML(inv.vatNote)}</em>` : ''}</div>
   <div class="totals">
-    <div class="t-row"><span>Subtotaal excl. BTW</span><span>${fmtMoney(inv.totalExcl || 0)}</span></div>
-    <div class="t-row"><span>BTW</span><span>${fmtMoney(inv.totalVat || 0)}</span></div>
-    <div class="t-grand"><span>Totaal</span><span>${fmtMoney(inv.totalIncl || 0)}</span></div>
+    <div class="t-row"><span>Subtotaal excl. BTW</span><span>${fmtMoneyPDF(inv.totalExcl || 0)}</span></div>
+    ${vatRows.map(([rate, excl, vat]) => `<div class="t-row"><span>BTW ${rate}%${vatRows.length > 1 ? ` over ${fmtMoneyPDF(excl)}` : ''}</span><span>${fmtMoneyPDF(vat)}</span></div>`).join('')}
+    <div class="t-grand"><span>Te betalen</span><span>${fmtMoneyPDF(inv.totalIncl || 0)}</span></div>
   </div>
   </div>
   <div class="pay-box"><div class="pay-wrap"><div>
-    Gelieve het bedrag van <strong>${fmtMoney(inv.totalIncl || 0)}</strong> vóór <strong>${fmtDateLong(inv.dueDate)}</strong> over te maken naar:<br>
+    Gelieve het bedrag van <strong>${fmtMoneyPDF(inv.totalIncl || 0)}</strong> vóór <strong>${fmtDateLong(inv.dueDate)}</strong> over te maken naar:<br>
     <span class="pay-iban">${escapeHTML(ibanFmt)}</span> — t.n.v. ${escapeHTML(bedrijf.naam)}<br>
     ${bedrijf.bic ? `BIC: <strong>${escapeHTML(bedrijf.bic)}</strong><br>` : ''}
     o.v.v. factuurnummer <strong>${escapeHTML(inv.number || '')}</strong>
@@ -3101,6 +3267,18 @@ function drawCompanyLogo(doc, bedrijf, x, y, s, TAUPE, DARK) {
 async function generateInvoicePDF(inv, bedrijf) {
   const JsPDF = await loadJsPdf();
   const doc    = new JsPDF({ unit: 'mm', format: 'a4' });
+  // Alle tekst door pdfText(): de standaardfonts kunnen alleen WinAnsi-tekens tonen
+  const _text  = doc.text.bind(doc);
+  doc.text = (t, ...rest) => _text(Array.isArray(t) ? t.map(pdfText) : pdfText(t), ...rest);
+  const _split = doc.splitTextToSize.bind(doc);
+  doc.splitTextToSize = (t, w, o) => _split(pdfText(t), w, o);
+  doc.setProperties({
+    title:   pdfText(`Factuur ${inv.number || ''}`),
+    subject: pdfText(`Factuur ${inv.number || ''} - ${inv.client?.name || ''}`),
+    author:  pdfText(bedrijf.naam),
+    creator: pdfText(bedrijf.naam),
+  });
+
   const _pdfFallback = { description: bedrijf?.defaultDesc || 'Vervoersdienst', vatRate: bedrijf?.defaultVat ?? 9, amountExcl: inv.totalExcl || 0, vatAmount: inv.totalVat || 0, amountIncl: inv.totalIncl || 0 };
   const lines  = inv.lines?.length ? inv.lines : [_pdfFallback];
   const client = inv.client  || {};
@@ -3110,6 +3288,7 @@ async function generateInvoicePDF(inv, bedrijf) {
   const MED   = [85, 85, 85];
   const DIM   = [153, 153, 153];
   const BG    = [248, 247, 245];
+  const font  = (style, size, color) => { doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(...color); };
 
   // ── Accent balk bovenin ──
   doc.setFillColor(...TAUPE);
@@ -3117,27 +3296,19 @@ async function generateInvoicePDF(inv, bedrijf) {
 
   // ── Logo-badge + woordmerk ──
   drawCompanyLogo(doc, bedrijf, L, 9, 13, TAUPE, DARK);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(...DARK);
+  font('bold', 14, DARK);
   doc.text(bedrijf.naam, L + 17, 16);
   if (bedrijf.tagline) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...TAUPE);
+    font('normal', 7.5, TAUPE);
     doc.text(bedrijf.tagline.toUpperCase(), L + 17, 20.5, { charSpace: 0.3 });
   }
 
   // ── Bedrijfsgegevens ──
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...MED);
+  font('normal', 8.5, MED);
   doc.text([bedrijf.adres, bedrijf.postcode, `KvK: ${bedrijf.kvk}   BTW: ${bedrijf.btw}`, `IBAN: ${fmtIBAN(bedrijf.iban)}`].join('\n'), L, 28, { lineHeightFactor: 1.6 });
 
   // ── "FACTUUR" + meta rechts ──
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(28);
-  doc.setTextColor(...TAUPE);
+  font('bold', 28, TAUPE);
   doc.text('FACTUUR', R, 18, { align: 'right' });
 
   let mY = 27;
@@ -3147,10 +3318,22 @@ async function generateInvoicePDF(inv, bedrijf) {
   if (metaRows.length > 3) mY = 25;
   const mStep = metaRows.length > 4 ? 4.8 : 5.5;
   metaRows.forEach(([lbl, val]) => {
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...DIM);
+    font('normal', 9, DIM);
     doc.text(lbl, R - 55, mY);
-    doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
-    doc.text(val, R, mY, { align: 'right' });
+    // Lange waarde (bv. kenmerk/PO-nummer) mag nooit over het label heen lopen:
+    // eerst iets kleiner, past het dan nog niet → op de regel eronder.
+    const maxW = 55 - doc.getTextWidth(lbl) - 3;
+    let size = 9;
+    font('bold', size, DARK);
+    while (size > 7.5 && doc.getTextWidth(pdfText(val)) > maxW) doc.setFontSize(size -= 0.5);
+    if (doc.getTextWidth(pdfText(val)) > maxW) {
+      mY += mStep * 0.85;
+      let v = pdfText(val);
+      while (v.length > 4 && doc.getTextWidth(v) > 70) v = v.slice(0, -2);
+      doc.text(v === pdfText(val) ? v : v.trimEnd() + '…', R, mY, { align: 'right' });
+    } else {
+      doc.text(val, R, mY, { align: 'right' });
+    }
     mY += mStep;
   });
 
@@ -3159,158 +3342,161 @@ async function generateInvoicePDF(inv, bedrijf) {
   doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.4); doc.line(L, sep1, R, sep1);
 
   // ── Klantbox (dynamische hoogte) ──
-  const clientInfoLines = [client.address, client.city, client.kvk ? `KvK: ${client.kvk}` : null, client.email, client.phone].filter(Boolean);
-  const boxH = 22 + clientInfoLines.length * 5;
+  font('bold', 12, DARK);
+  const nameLines = doc.splitTextToSize(client.name || '—', W - 14);
+  const clientInfoLines = [client.address, client.city, client.kvk ? `KvK: ${client.kvk}` : null, client.btw ? `BTW: ${client.btw}` : null, client.email, client.phone].filter(Boolean);
+  const nameExtra = (nameLines.length - 1) * 5;
+  const boxH = 22 + nameExtra + clientInfoLines.length * 5;
   const boxY = sep1 + 5;
   doc.setFillColor(...BG);
   doc.roundedRect(L, boxY, W, boxH, 2, 2, 'F');
   doc.setFillColor(...TAUPE);
   doc.rect(L, boxY, 3, boxH, 'F');
 
-  doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(...DIM);
+  font('bold', 7.5, DIM);
   doc.text('FACTUUR AAN', L + 7, boxY + 8);
-  doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
-  doc.text(client.name || '—', L + 7, boxY + 15);
+  font('bold', 12, DARK);
+  doc.text(nameLines, L + 7, boxY + 15, { lineHeightFactor: 1.2 });
   if (clientInfoLines.length) {
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
-    doc.text(clientInfoLines.join('\n'), L + 7, boxY + 21, { lineHeightFactor: 1.55 });
+    font('normal', 9, MED);
+    doc.text(clientInfoLines.join('\n'), L + 7, boxY + 21 + nameExtra, { lineHeightFactor: 1.55 });
   }
 
-  // ── Tabelkop ──
-  const tY = boxY + boxH + 10;
-  doc.setFillColor(...TAUPE);
-  doc.rect(L, tY, W, 7, 'F');
-  doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
-  doc.text('OMSCHRIJVING', L + 2, tY + 5);
-  doc.text('BTW', R - 53, tY + 5, { align: 'right' });
-  doc.text('EXCL. BTW', R - 27, tY + 5, { align: 'right' });
-  doc.text('TOTAAL INCL.', R, tY + 5, { align: 'right' });
+  // ── Tabel: vaste kolommen. Omschrijving heeft een eigen kolom en loopt naar
+  //    beneden door (nooit over BTW/bedragen heen); bedragen staan op de eerste regel.
+  const COL = { desc: L + 3, descW: 98, vat: R - 54, excl: R - 28, incl: R - 3 };
+  const PAGE_H = 297;
+  const FOOT_H = 22;                       // footer-hoogte (altijd gereserveerd onderaan)
+  const LIMIT  = PAGE_H - FOOT_H - 4;      // onderste schrijfgrens van de tabel
+  const PAD_T  = 5.2;                      // rijbovenkant → eerste basislijn
+  const PAD_B  = 3.4;                      // laatste basislijn → scheidingslijn
+  const HEAD   = { style: 'bold',   size: 9, color: DARK, lh: 4.3 };
+  const BODY   = { style: 'normal', size: 9, color: DARK, lh: 4.3 };
+  const DETAIL = { style: 'normal', size: 8, color: MED,  lh: 3.8 };
 
-  // ── Tabelrijen — één per factuurregel, met automatische paginaovergang ──
-  const PAGE_H     = 297;
-  const FOOT_H     = 22;   // footer-hoogte (altijd gereserveerd onderaan)
-  const DESC_W     = 108;  // breedte beschrijving-kolom (mm)
-  let rowEndY      = tY + 7;
-  let pageCount    = 1;
-  doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
-  doc.line(L, rowEndY, R, rowEndY);
-
-  const _footer = () => {
-    doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.3);
-    doc.line(L, PAGE_H - FOOT_H + 2, R, PAGE_H - FOOT_H + 2);
-    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(...DIM);
-    doc.text(`${bedrijf.naam}  ·  KvK ${bedrijf.kvk}  ·  BTW ${bedrijf.btw}`, L, PAGE_H - 8);
-    doc.text(`${inv.number || ''}   ·   Pagina ${pageCount}`, R, PAGE_H - 8, { align: 'right' });
+  const drawTableHead = (y) => {
+    doc.setFillColor(...TAUPE);
+    doc.rect(L, y, W, 7, 'F');
+    font('bold', 7.5, [255, 255, 255]);
+    doc.text('OMSCHRIJVING', COL.desc, y + 4.8);
+    doc.text('BTW',          COL.vat,  y + 4.8, { align: 'right' });
+    doc.text('EXCL. BTW',    COL.excl, y + 4.8, { align: 'right' });
+    doc.text('TOTAAL INCL.', COL.incl, y + 4.8, { align: 'right' });
+    doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
+    doc.line(L, y + 7, R, y + 7);
+    return y + 7;
   };
 
-  const _newPage = () => {
-    _footer();
+  let rowEndY = drawTableHead(boxY + boxH + 10);
+
+  const _newPage = (withTableHead = true) => {
     doc.addPage();
-    pageCount++;
     // Mini-header
     doc.setFillColor(...TAUPE); doc.rect(0, 0, 210, 4, 'F');
-    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
+    font('bold', 8, DARK);
     doc.text(bedrijf.naam, L, 11);
-    doc.setFont('helvetica', 'normal'); doc.setTextColor(...DIM);
-    doc.text(`Factuur ${inv.number || ''}`, R, 11, { align: 'right' });
-    // Tabelkop
-    const hY = 15;
-    doc.setFillColor(...TAUPE); doc.rect(L, hY, W, 7, 'F');
-    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
-    doc.text('OMSCHRIJVING', L + 2, hY + 5);
-    doc.text('BTW',          R - 53, hY + 5, { align: 'right' });
-    doc.text('EXCL. BTW',   R - 27, hY + 5, { align: 'right' });
-    doc.text('TOTAAL INCL.', R,     hY + 5, { align: 'right' });
-    rowEndY = hY + 7;
-    doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
-    doc.line(L, rowEndY, R, rowEndY);
+    font('normal', 8, DIM);
+    doc.text(`Factuur ${inv.number || ''} (vervolg)`, R, 11, { align: 'right' });
+    rowEndY = withTableHead ? drawTableHead(15) : 15;
   };
 
+  // Omschrijving → losse, al afgebroken regels. Afbreken gebeurt pas NA het zetten
+  // van het juiste font: splitTextToSize meet met het actieve font (dat was de fout:
+  // er werd gemeten op 7,5pt en getekend op 9pt vet → tekst liep ~20% te breed door).
+  const descLines = (l) => {
+    const raw = String(l.description || bedrijf.defaultDesc || 'Vervoersdienst')
+      .split('\n').map(s => s.replace(/\s+/g, ' ').trim()).filter(Boolean);
+    if (!raw.length) raw.push(bedrijf.defaultDesc || 'Vervoersdienst');
+    const out = [];
+    const wrap = (text, st) => { font(st.style, st.size, st.color); return doc.splitTextToSize(text, COL.descW).map(t => ({ t, ...st })); };
+    // Eerste regel vet als kopje — maar een lange alinea niet als één zwaar vet blok
+    const head = wrap(raw[0], HEAD);
+    out.push(...(head.length <= 2 ? head : wrap(raw[0], BODY)));
+    raw.slice(1).forEach(r => out.push(...wrap(r, DETAIL)));
+    return out;
+  };
+
+  const usableFresh = LIMIT - 22;          // ruimte op een nieuwe pagina onder de tabelkop
   for (const l of lines) {
-    const descText = l.description || bedrijf.defaultDesc || 'Vervoersdienst';
-    // Splits in regels, filter leeg
-    const rawLines = descText.split('\n').map(s => s.trim()).filter(Boolean);
+    const dl   = descLines(l);
+    const adv  = dl.map((ln, i) => i === 0 ? 0 : ln.lh + (ln.size !== dl[i - 1].size ? 0.8 : 0));
+    const rowH = PAD_T + adv.reduce((s, a) => s + a, 0) + PAD_B;
+    const room = LIMIT - rowEndY;
+    // Past de hele rij niet meer? Naar een nieuwe pagina — tenzij de rij zelf langer
+    // is dan een pagina, dan loopt hij netjes door op de volgende pagina.
+    if (rowH > room && (rowH <= usableFresh || room < 25)) _newPage();
 
-    // Eerste regel = vette kop (passagier/referentie)
-    const mainWrapped   = doc.splitTextToSize(rawLines[0] || descText, DESC_W);
-    // Overige regels = details kleiner
-    const detailText    = rawLines.slice(1).join('\n');
-    const detailWrapped = detailText ? doc.splitTextToSize(detailText, DESC_W) : [];
+    let y = rowEndY + PAD_T;
+    // Bedragen op de eerste regel (kolommen rechts)
+    font('normal', 9, MED);
+    doc.text(`${l.vatRate ?? 0}%`, COL.vat, y, { align: 'right' });
+    doc.text(fmtMoneyPDF(l.amountExcl ?? 0), COL.excl, y, { align: 'right' });
+    font('bold', 9, DARK);
+    doc.text(fmtMoneyPDF(l.amountIncl ?? 0), COL.incl, y, { align: 'right' });
 
-    const mainH   = mainWrapped.length  * 5.5;
-    const detailH = detailWrapped.length * 4.2;
-    const rowH    = Math.max(14, mainH + (detailH > 0 ? detailH + 2 : 0) + 6);
+    dl.forEach((ln, i) => {
+      if (i > 0) {
+        if (y + adv[i] + PAD_B > LIMIT) { _newPage(); y = rowEndY + PAD_T; }
+        else y += adv[i];
+      }
+      font(ln.style, ln.size, ln.color);
+      doc.text(ln.t, COL.desc, y);
+    });
 
-    if (rowEndY + rowH > PAGE_H - FOOT_H - 5) _newPage();
-
-    const rowTopY = rowEndY;
-    const rowMidY = rowTopY + rowH / 2 + 1;
-
-    // Beschrijving — vet hoofd
-    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
-    doc.text(mainWrapped, L + 2, rowTopY + 5.5);
-    // Detailregels dimmer + kleiner
-    if (detailWrapped.length) {
-      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
-      doc.text(detailWrapped, L + 2, rowTopY + 5.5 + mainH, { lineHeightFactor: 1.3 });
-    }
-
-    // Bedragen rechts, verticaal gecentreerd
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
-    doc.text(`${l.vatRate ?? 0}%`, R - 53, rowMidY, { align: 'right' });
-    doc.text(fmtMoneyPDF(l.amountExcl ?? 0), R - 27, rowMidY, { align: 'right' });
-    doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
-    doc.text(fmtMoneyPDF(l.amountIncl ?? 0), R, rowMidY, { align: 'right' });
-
-    rowEndY = rowTopY + rowH;
+    rowEndY = y + PAD_B;
     doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.25);
     doc.line(L, rowEndY, R, rowEndY);
   }
 
-  // ── Totalen — nieuwe pagina als geen ruimte meer ──
+  // ── Totalen + betaalvak — samen naar een nieuwe pagina als ze niet meer passen ──
   const qrPayload = (() => { try { return invoiceEpcPayload(inv, bedrijf); } catch (_) { return null; } })();
-  const TOTALS_H = qrPayload ? 82 : 75;
-  if (rowEndY + TOTALS_H > PAGE_H - FOOT_H - 5) _newPage();
+  const vatRows   = vatBreakdown(lines);
+  const multiVat  = vatRows.length > 1;
+  const totRows   = [
+    ['Subtotaal excl. BTW', fmtMoneyPDF(inv.totalExcl || 0)],
+    ...vatRows.map(([rate, excl, vat]) => [multiVat ? `BTW ${rate}% over ${fmtMoneyPDF(excl)}` : `BTW ${rate}%`, fmtMoneyPDF(vat)]),
+  ];
+  const pBoxH    = qrPayload ? 36 : (bedrijf.bic ? 30 : 24);
+  const TOTALS_H = 9 + totRows.length * 5.5 + 6 + 12 + pBoxH + 2;
+  if (rowEndY + TOTALS_H > PAGE_H - FOOT_H - 2) _newPage(false);   // alleen totalen → geen lege tabelkop
 
   let tTY = rowEndY + 9;
   const totX = R - 75;
-  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
-  [[`Subtotaal excl. BTW`, fmtMoneyPDF(inv.totalExcl || 0)],
-   [`BTW`,                 fmtMoneyPDF(inv.totalVat  || 0)]].forEach(([lbl, val]) => {
+  font('normal', 9, MED);
+  totRows.forEach(([lbl, val]) => {
     doc.text(lbl, totX, tTY); doc.text(val, R, tTY, { align: 'right' }); tTY += 5.5;
   });
   doc.setDrawColor(...TAUPE); doc.setLineWidth(0.8); doc.line(totX, tTY + 1, R, tTY + 1);
   tTY += 6;
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...DARK);
+  font('bold', 13, DARK);
   doc.text('Te betalen', totX, tTY);
-  doc.setFontSize(14); doc.setTextColor(...TAUPE);
+  font('bold', 14, TAUPE);
   doc.text(fmtMoneyPDF(inv.totalIncl || 0), R, tTY, { align: 'right' });
 
   // Links naast de totalen: lessen-samenvatting + btw-vrijstellingstekst
   let noteY = rowEndY + 9;
   const summary = lessonSummary(inv);
   if (summary) {
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...DARK);
+    font('bold', 9, DARK);
     doc.text(summary, L + 2, noteY);
     noteY += 5.5;
   }
   if (inv.vatNote) {
-    doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...MED);
+    font('italic', 8, MED);
     doc.text(doc.splitTextToSize(inv.vatNote, totX - L - 10), L + 2, noteY, { lineHeightFactor: 1.35 });
   }
 
   // ── Betaalinstructies ──
-  const pY    = tTY + 12;
-  const pBoxH = qrPayload ? 36 : (bedrijf.bic ? 30 : 24);
+  const pY = tTY + 12;
   doc.setFillColor(...BG);
   doc.roundedRect(L, pY, W, pBoxH, 2, 2, 'F');
   doc.setFillColor(...TAUPE);
   doc.rect(L, pY, 3, pBoxH, 'F');
-  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MED);
-  doc.text(`Gelieve ${fmtMoneyPDF(inv.totalIncl || 0)} voor ${fmtDateLong(inv.dueDate)} over te maken naar:`, L + 7, pY + 7);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...DARK);
+  font('normal', 9, MED);
+  doc.text(`Gelieve ${fmtMoneyPDF(inv.totalIncl || 0)} vóór ${fmtDateLong(inv.dueDate)} over te maken naar:`, L + 7, pY + 7);
+  font('bold', 11, DARK);
   doc.text(fmtIBAN(bedrijf.iban), L + 7, pY + 14);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MED);
+  font('normal', 9, MED);
   doc.text(`t.n.v. ${bedrijf.naam}   o.v.v. ${inv.number || ''}`, L + 7, pY + 20);
   if (bedrijf.bic) {
     doc.setTextColor(...DIM);
@@ -3328,13 +3514,21 @@ async function generateInvoicePDF(inv, bedrijf) {
       for (let r = 0; r < n; r++)
         for (let c = 0; c < n; c++)
           if (isDark(r, c)) doc.rect(qx + pad + c * mod, qy + pad + r * mod, mod + 0.01, mod + 0.01, 'F');
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...DIM);
+      font('normal', 8, DIM);
       doc.text('Of scan de QR-code met uw bank-app om direct te betalen.', L + 7, pY + 32);
     } catch (_) {}
   }
 
-  // ── Footer laatste pagina ──
-  _footer();
+  // ── Footer op elke pagina (met "Pagina x van y" bij meerdere pagina's) ──
+  const pages = doc.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    doc.setDrawColor(220, 215, 208); doc.setLineWidth(0.3);
+    doc.line(L, PAGE_H - FOOT_H + 2, R, PAGE_H - FOOT_H + 2);
+    font('normal', 8, DIM);
+    doc.text(`${bedrijf.naam}  ·  KvK ${bedrijf.kvk}  ·  BTW ${bedrijf.btw}`, L, PAGE_H - 8);
+    doc.text(`${inv.number || ''}   ·   Pagina ${p}${pages > 1 ? ` van ${pages}` : ''}`, R, PAGE_H - 8, { align: 'right' });
+  }
 
   return doc.output('blob');
 }
